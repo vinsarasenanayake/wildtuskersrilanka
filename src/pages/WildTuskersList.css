@@ -1,0 +1,347 @@
+/* ─── Wild Tuskers List Page ─────────────────────────────────── */
+
+.tuskers-page {
+  background-color: #ffffff;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-top: calc(var(--header-height) + 2.5rem);
+  padding-bottom: 5rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+/* ── Header ──────────────────────────────────────────────────── */
+.tuskers-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.tuskers-title {
+  font-family: var(--font-sans);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #111111;
+  margin-bottom: 0.4rem;
+}
+
+.tuskers-subtitle {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  color: #777777;
+}
+
+/* ── Toolbar ─────────────────────────────────────────────────── */
+.tuskers-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Search field wrapper */
+.search-field {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+
+.location-field {
+  max-width: 280px;
+}
+
+.search-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f7f7f8;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 10px;
+  padding: 0.6rem 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input-wrap:focus-within {
+  border-color: #c69b55;
+  box-shadow: 0 0 0 3px rgba(198, 155, 85, 0.12);
+  background: #ffffff;
+}
+
+.search-icon {
+  color: #aaaaaa;
+  flex-shrink: 0;
+}
+
+.location-icon {
+  color: #c69b55;
+}
+
+.search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: #111111;
+  width: 100%;
+}
+
+.search-input::placeholder {
+  color: #bbbbbb;
+}
+
+.search-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaaaaa;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.search-clear:hover { color: #555555; }
+
+.search-chevron {
+  color: #aaaaaa;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+/* Dropdown suggestions */
+.suggest-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  z-index: 200;
+  list-style: none;
+  margin: 0;
+  padding: 0.4rem 0;
+  overflow: hidden;
+}
+
+.suggest-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  color: #333333;
+  transition: background 0.12s;
+}
+
+.suggest-item:hover,
+.suggest-item.active {
+  background: #faf5ec;
+}
+
+.suggest-id {
+  font-weight: 600;
+  color: #c69b55;
+  min-width: 42px;
+  font-size: 0.8rem;
+}
+
+.suggest-name {
+  flex: 1;
+  color: #111111;
+  font-weight: 500;
+}
+
+.suggest-loc {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: #aaaaaa;
+  font-size: 0.78rem;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.loc-pin {
+  color: #c69b55;
+  flex-shrink: 0;
+}
+
+.loc-count {
+  margin-left: auto;
+  font-size: 0.78rem;
+  color: #aaaaaa;
+}
+
+/* ── Sort Button ─────────────────────────────────────────────── */
+.sort-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 1.1rem;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 10px;
+  background: #f7f7f8;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #555555;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.sort-btn:hover {
+  border-color: #c69b55;
+  color: #c69b55;
+  background: #faf5ec;
+}
+
+/* ── Results Bar ─────────────────────────────────────────────── */
+.tuskers-results-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: #888888;
+}
+
+.clear-all {
+  background: none;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: #c69b55;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.clear-all:hover { color: #a07830; }
+
+/* ── 4-Column Grid ───────────────────────────────────────────── */
+.tuskers-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem 1.5rem;
+  min-height: 60vh;
+  align-content: start;
+}
+
+/* Card */
+.tusker-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  cursor: pointer;
+}
+
+.tusker-card-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-color: #e8e8e8;
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: opacity 0.2s;
+}
+
+.tusker-card:hover .tusker-card-image { opacity: 0.82; }
+
+.tusker-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  inset: 0;
+}
+
+.tusker-card-id-badge {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  color: #999999;
+  letter-spacing: 1px;
+  z-index: 1;
+}
+
+.tusker-card-location {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  color: #bbbbbb;
+  z-index: 1;
+}
+
+.tusker-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.tusker-card-name {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #111111;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.tusker-sinhala {
+  font-weight: 400;
+  color: #444444;
+}
+
+.tusker-card-photos {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: #999999;
+  margin: 0;
+}
+
+/* ── Empty State ─────────────────────────────────────────────── */
+.tuskers-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 60vh;
+  padding: 2rem 1rem;
+  color: #bbbbbb;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .tuskers-grid { grid-template-columns: repeat(3, 1fr); }
+  .location-field { max-width: 100%; }
+}
+
+@media (max-width: 640px) {
+  .tuskers-grid { grid-template-columns: repeat(2, 1fr); }
+  .tuskers-toolbar { flex-direction: column; }
+  .search-field, .location-field { max-width: 100%; width: 100%; }
+}
