@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Lock, Mail, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import wtsLogo from '../assets/images/wtslogo.png';
@@ -10,6 +10,10 @@ export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = 'Wild Tuskers Sri Lanka | Admin';
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();

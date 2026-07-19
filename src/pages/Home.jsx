@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import wtsLogo from '../assets/images/wtslogo.png';
 import '../App.css';
 
 export default function Home() {
+  useEffect(() => {
+    document.title = 'Wild Tuskers Sri Lanka | Home';
+  }, []);
   return (
     <main className="main-content">
       <section id="home" className="hero-section">

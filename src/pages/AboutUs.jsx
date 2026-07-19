@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './AboutUs.css';
 import { Star, Trophy, TrendingUp } from 'lucide-react';
 
@@ -133,6 +133,10 @@ const badgeConfig = {
 };
 
 export default function AboutUs() {
+  useEffect(() => {
+    document.title = 'Wild Tuskers Sri Lanka | About Us';
+  }, []);
+
   const admins     = team.filter(m => m.role === 'Admin');
   const moderators = team.filter(m => m.role === 'Moderator');
 

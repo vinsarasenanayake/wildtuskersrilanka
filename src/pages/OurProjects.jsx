@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getEvents } from '../utils/projectsStore';
 import { Calendar, ChevronRight } from 'lucide-react';
@@ -15,6 +15,10 @@ function formatEventDate(dateStr) {
 export default function OurProjects() {
   const navigate = useNavigate();
   const isAdmin = localStorage.getItem('isAdmin') === 'true';
+
+  useEffect(() => {
+    document.title = 'Wild Tuskers Sri Lanka | Our Projects';
+  }, []);
 
   // Load events dynamically from store
   const { upcoming: upcomingEvents, past: pastEvents } = useMemo(() => getEvents(), []);

@@ -9,6 +9,8 @@ import TuskerProfile from './pages/TuskerProfile';
 import AdminLogin from './pages/AdminLogin';
 import TuskerForm from './pages/TuskerForm';
 import EventForm from './pages/EventForm';
+import OurResearch from './pages/OurResearch';
+import ResearchForm from './pages/ResearchForm';
 import './App.css';
 
 function App() {
@@ -24,10 +26,12 @@ function App() {
         <Route path="/tuskers"             element={<WildTuskersList />} />
         <Route path="/tuskers/:id"         element={<TuskerProfile />} />
         <Route path="/projects"            element={<OurProjects />} />
+        <Route path="/research"            element={<OurResearch />} />
         <Route path="/admin"               element={<AdminLogin />} />
         <Route path="/admin/add-tusker"    element={<TuskerForm />} />
         <Route path="/admin/edit-tusker/:id" element={<TuskerForm />} />
         <Route path="/admin/create-event"  element={<EventForm />} />
+        <Route path="/admin/create-research" element={<ResearchForm />} />
       </Routes>
     </>
   );

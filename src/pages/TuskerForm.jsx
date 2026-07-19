@@ -11,6 +11,10 @@ export default function TuskerForm() {
   const navigate = useNavigate();
   const isEditMode = !!id;
 
+  useEffect(() => {
+    document.title = `Wild Tuskers Sri Lanka | ${isEditMode ? 'Edit Tusker' : 'Add New Tusker'}`;
+  }, [isEditMode]);
+
   const [formData, setFormData] = useState({
     id: '',
     name: '',

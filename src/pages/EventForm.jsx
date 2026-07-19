@@ -16,6 +16,10 @@ export default function EventForm() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    document.title = 'Wild Tuskers Sri Lanka | Create Event';
+  }, []);
+
+  useEffect(() => {
     // Admin route protection
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
     if (!isAdmin) {

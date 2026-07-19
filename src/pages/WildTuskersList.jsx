@@ -8,6 +8,10 @@ export default function WildTuskersList() {
   const navigate = useNavigate();
   const tuskers = useMemo(() => getTuskers(), []);
 
+  useEffect(() => {
+    document.title = 'Wild Tuskers Sri Lanka | Wild Tuskers List';
+  }, []);
+
   const allLocations = useMemo(() => {
     return [...new Set(tuskers.map(t => t.location).filter(Boolean))].sort();
   }, [tuskers]);
@@ -21,7 +25,7 @@ export default function WildTuskersList() {
   const [showLocDrop, setShowLocDrop]     = useState(false);
   const [locSuggestions, setLocSugg]      = useState([]);
 
-  const [sortAZ, setSortAZ]               = useState(true); // true = A→Z, false = Z→A
+  const sortAZ = true; // Default A→Z sorting
 
   const nameRef     = useRef(null);
   const locationRef = useRef(null);
@@ -91,7 +95,7 @@ export default function WildTuskersList() {
     list.sort((a, b) =>
       sortAZ ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name));
     return list;
-  }, [nameQuery, selectedLocation, sortAZ]);
+  }, [nameQuery, selectedLocation, sortAZ, tuskers]);
 
   return (
     <div className="tuskers-page">

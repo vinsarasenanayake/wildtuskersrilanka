@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, User, Calendar, AlertTriangle, Tag, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import './TuskerProfile.css';
@@ -92,6 +92,12 @@ export default function TuskerProfile() {
   const tuskers = getTuskers();
   const tusker = tuskers.find(t => t.id.toLowerCase() === id?.toLowerCase());
   const isAdmin = localStorage.getItem('isAdmin') === 'true';
+
+  useEffect(() => {
+    if (tusker) {
+      document.title = `Wild Tuskers Sri Lanka | ${tusker.name}`;
+    }
+  }, [tusker]);
 
   if (!tusker) {
     return (

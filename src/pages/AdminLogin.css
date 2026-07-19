@@ -117,7 +117,7 @@
   pointer-events: none;
 }
 
-.form-input {
+.login-card .form-input {
   width: 100%;
   background: #f7f7f8;
   border: 1.5px solid #e8e8e8;
@@ -130,11 +130,11 @@
   transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
 }
 
-.form-input::placeholder {
+.login-card .form-input::placeholder {
   color: #bbbbbb;
 }
 
-.form-input:focus {
+.login-card .form-input:focus {
   border-color: #c69b55;
   box-shadow: 0 0 0 3px rgba(198, 155, 85, 0.12);
   background-color: #ffffff;
