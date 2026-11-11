@@ -1,3 +1,6 @@
+/* ==============================================================
+   SECTION 1: DEFAULT EVENTS SEED DATA
+============================================================== */
 const defaultPastEvents = [
   {
     id: 1,
@@ -10,7 +13,7 @@ const defaultPastEvents = [
   {
     id: 2,
     date: '2019-03-12',
-    title: 'WTS Photography Expedition – Minneriya',
+    title: 'WTS Photography Expedition - Minneriya',
     description: 'A field expedition to Minneriya National Park to document and photograph tuskers during the annual elephant gathering.',
     sharedBy: 'WTS Team',
     image: null,
@@ -18,7 +21,7 @@ const defaultPastEvents = [
   {
     id: 3,
     date: '2020-08-05',
-    title: 'Online Webinar – Identifying Sri Lankan Tuskers',
+    title: 'Online Webinar - Identifying Sri Lankan Tuskers',
     description: 'An interactive online session showcasing the methodology used by WTS to identify individual tuskers through tusk and ear patterns.',
     sharedBy: 'WTS Team',
     image: null,
@@ -27,6 +30,9 @@ const defaultPastEvents = [
 
 const defaultUpcomingEvents = [];
 
+/* ==============================================================
+   SECTION 2: EVENTS STORAGE & CRUD OPERATIONS
+============================================================== */
 export function getEvents() {
   const local = localStorage.getItem('wts_events');
   if (!local) {
@@ -50,5 +56,12 @@ export function addEvent(event, type) {
   } else {
     all.past.unshift(event);
   }
+  saveEvents(all);
+}
+
+export function deleteEvent(id) {
+  const all = getEvents();
+  all.upcoming = (all.upcoming || []).filter(e => e.id !== Number(id));
+  all.past = (all.past || []).filter(e => e.id !== Number(id));
   saveEvents(all);
 }

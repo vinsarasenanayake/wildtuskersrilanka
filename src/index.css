@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 
-:root {
-  /* Color Palette - Nature, Forest & Tusks */
+@import "tailwindcss";
+
+@theme {
   --color-primary: #0b2518;      /* Deep Forest Green */
   --color-primary-light: #16402b;
   --color-accent: #c69b55;       /* Tusk Amber / Gold */
@@ -12,106 +12,54 @@
   --color-text-muted: #5c6c64;
   --color-border: #e3ece8;
   
-  /* Fonts */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-serif: 'Playfair Display', Georgia, serif;
-  
-  /* Transitions */
-  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-fast: all 0.15s ease;
-  
-  /* Layout */
-  --max-width-content: 1200px;
-  --header-height: 80px;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF UI Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF UI Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-
-
-/* Base resets */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    font-family: var(--font-sans);
+    background-color: #ffffff;
+    color: var(--color-text-dark);
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+  button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: var(--font-sans);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }
 
-html {
-  scroll-behavior: smooth;
-}
+@layer utilities {
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 
-body {
-  font-family: var(--font-sans);
-  background-color: #ffffff;
-  color: var(--color-text-dark);
-  line-height: 1.6;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-serif);
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-  transition: var(--transition-fast);
-}
-
-button {
-  cursor: pointer;
-  border: none;
-  background: none;
-  font-family: var(--font-sans);
-  transition: var(--transition-smooth);
-}
-
-/* Container Utility */
-.container {
-  width: 100%;
-  max-width: var(--max-width-content);
-  margin-right: auto;
-  margin-left: auto;
-  padding-right: 2rem;
-  padding-left: 2rem;
-}
-
-/* Main Layout override default Vite style */
-#root {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Utilities */
-.btn-primary {
-  background-color: var(--color-accent);
-  color: #0b2518; /* Dark text for contrast against gold */
-  font-weight: 600;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  box-shadow: 0 4px 14px rgba(198, 155, 85, 0.2);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.95rem;
-}
-
-.btn-primary:hover {
-  background-color: var(--color-accent-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(198, 155, 85, 0.35);
-}
-
-.btn-outline {
-  border: 1px solid var(--color-border);
-  color: var(--color-text-dark);
-  font-weight: 500;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-}
-
-.btn-outline:hover {
-  background-color: var(--color-border);
+  .animate-fade-in {
+    animation: fade-in 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
 }
