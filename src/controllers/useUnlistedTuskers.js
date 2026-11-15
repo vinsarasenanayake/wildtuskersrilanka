@@ -9,22 +9,24 @@ import { useAuth } from './useAuth';
 
 export function useUnlistedTuskers() {
   /* ── Data State & Sync ─────────────────────────────────────── */
-  const [tuskers, setTuskers] = useState(() => getUnlistedTuskers());
-  const { isAdmin } = useAuth();
+  const [tuskers, setTuskers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { isAdmin, authLoading } = useAuth();
 
-  const reloadData = useCallback(() => {
-    setTuskers(getUnlistedTuskers());
+  const reloadData = useCallback(async () => {
+    try {
+      setTuskers(await getUnlistedTuskers());
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  // Admin-only table: load once we know the user is an admin
   useEffect(() => {
-    const handleUpdate = () => reloadData();
-    window.addEventListener('unlistedTuskersChange', handleUpdate);
-    window.addEventListener('storage', handleUpdate);
-    return () => {
-      window.removeEventListener('unlistedTuskersChange', handleUpdate);
-      window.removeEventListener('storage', handleUpdate);
-    };
-  }, [reloadData]);
+    if (!authLoading && isAdmin) reloadData();
+  }, [authLoading, isAdmin, reloadData]);
 
   /* ── Filter & Search State ─────────────────────────────────── */
   const allLocations = useMemo(() => {
@@ -95,25 +97,32 @@ export function useUnlistedTuskers() {
   }, [tuskers, searchQuery, selectedLocation, locationQuery]);
 
   /* ── Mutation Handlers ─────────────────────────────────────── */
-  const handleAdd = (entry) => {
-    const created = addUnlistedTusker(entry);
-    reloadData();
+  const handleAdd = async (entry) => {
+    const created = await addUnlistedTusker(entry);
+    await reloadData();
     return created;
   };
 
-  const handleUpdate = (id, updated) => {
-    const res = updateUnlistedTusker(id, updated);
-    reloadData();
+  const handleUpdate = async (id, updated) => {
+    const res = await updateUnlistedTusker(id, updated);
+    await reloadData();
     return res;
   };
 
-  const handleDelete = (id) => {
-    deleteUnlistedTusker(id);
-    reloadData();
+  const handleDelete = async (id) => {
+    if (!window.confirm(`Are you sure you want to delete ${id}?`)) return;
+    try {
+      await deleteUnlistedTusker(id);
+    } catch (err) {
+      alert(`Delete failed: ${err.message}`);
+    }
+    await reloadData();
   };
 
   return {
     tuskers,
+    loading,
+    authLoading,
     filtered,
     allLocations,
     searchQuery,

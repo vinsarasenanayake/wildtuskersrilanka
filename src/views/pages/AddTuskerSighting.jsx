@@ -2,19 +2,20 @@ import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Image as ImageIcon } from 'lucide-react';
 import { useSightingForm } from '../../controllers/useTusker';
+import ImageUploadBox from '../components/ImageUploadBox';
 
 export default function AddTuskerSighting() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { formData, error, handleChange, submitSighting } = useSightingForm(id);
+  const { formData, error, handleChange, handleImagesChange, submitSighting } = useSightingForm(id);
 
   useEffect(() => {
     document.title = `Wild Tuskers Sri Lanka | Add Sighting for ${id.toUpperCase()}`;
   }, [id]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = submitSighting();
+    const success = await submitSighting();
     if (success) {
       navigate(`/tuskers/${id.toLowerCase()}`);
     }
@@ -47,18 +48,16 @@ export default function AddTuskerSighting() {
             {error && <div className="bg-[#fff5f5] border border-[#ffcccc] text-[#e53e3e] rounded-[8px] px-4 py-3 font-sans text-[0.85rem] font-medium">{error}</div>}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
-              {/* Image URL */}
+              {/* Direct Photo Upload */}
               <div className="flex flex-col gap-1.5 sm:col-span-2">
-                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">
-                  Image URL<span className="text-[#e53e3e]"> *</span>
-                </label>
-                <input
-                  type="url"
-                  name="imageUrl"
-                  className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
-                  placeholder="https://example.com/image.jpg"
-                  value={formData.imageUrl}
-                  onChange={handleChange}
+                <ImageUploadBox
+                  label="Tusker Sighting Photos"
+                  required
+                  folder="sightings"
+                  multiple
+                  value={formData.imageUrls && formData.imageUrls.length > 0 ? formData.imageUrls : (formData.imageUrl ? [formData.imageUrl] : [])}
+                  onChange={handleImagesChange}
+                  aspectClass="aspect-[16/10]"
                 />
               </div>
 

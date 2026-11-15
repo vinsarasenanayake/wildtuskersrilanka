@@ -1,22 +1,27 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Shield, PlusCircle, Trash2, Edit3, Eye, FileText, Binoculars, Calendar,
-  Radar, Database, CheckCircle2, XCircle, Search, ArrowUpRight, LogOut, RefreshCw, AlertCircle
+  Radar, Database, CheckCircle2, XCircle, Search, LogOut, RefreshCw, AlertCircle, Check, Users, ExternalLink, Save, X
 } from 'lucide-react';
 import { getTuskers, deleteTusker } from '../../models/TuskerModel';
-import { getUnlistedTuskers } from '../../models/UnlistedTuskersModel';
+import { getUnlistedTuskers, deleteUnlistedTusker, addUnlistedTusker } from '../../models/UnlistedTuskersModel';
 import { getSpecialObservations, deleteSpecialObservation } from '../../models/SpecialObservationsModel';
 import { getEvents, deleteEvent } from '../../models/ProjectModel';
 import { getFieldNotes, approveFieldNote, rejectFieldNote } from '../../models/FieldNotesModel';
+import { getGalleryPhotos, approveGalleryPhoto, rejectGalleryPhoto, deleteGalleryPhoto } from '../../models/GalleryModel';
+import { getTeamMembers, addTeamMember, updateTeamMember, deleteTeamMember } from '../../models/TeamModel';
 import { useAuth } from '../../controllers/useAuth';
+import StatusBadge from '../components/StatusBadge';
+import ImageUploadBox from '../components/ImageUploadBox';
 
 /* ==============================================================
    CENTRAL ADMINISTRATIVE CONSOLE COMPONENT
 ============================================================== */
 export default function AdminPortal() {
   const navigate = useNavigate();
-  const { isAdmin, logout } = useAuth();
+  const { isAdmin, authLoading, logout } = useAuth();
 
   const [activeTab, setActiveTab] = useState('tuskers');
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,33 +33,89 @@ export default function AdminPortal() {
   const [observations, setObservations] = useState([]);
   const [events, setEvents] = useState({ upcoming: [], past: [] });
   const [fieldNotes, setFieldNotes] = useState({ approved: [], pending: [] });
+  const [galleryPhotos, setGalleryPhotos] = useState([]);
+  const [teamMembers, setTeamMembers] = useState([]);
+
+  // Team Admin Modal state
+  const [showTeamModal, setShowTeamModal] = useState(false);
+  const [editingTeamMember, setEditingTeamMember] = useState(null);
+  const [teamFormData, setTeamFormData] = useState({
+    name: '',
+    role: 'Admin',
+    facebookUrl: '',
+    image: '',
+    displayOrder: 1,
+  });
+  const [savingTeamMember, setSavingTeamMember] = useState(false);
+  const [teamFormError, setTeamFormError] = useState('');
+
+  // Unlisted Tusker Modal state
+  const [showAddUnlistedModal, setShowAddUnlistedModal] = useState(false);
+  const [unlistedFormData, setUnlistedFormData] = useState({
+    id: '',
+    location: '',
+    listedDate: new Date().toISOString().split('T')[0],
+    recordedBy: 'WTS Field Team',
+    description: '',
+    specialMarks: '',
+    photoUrl: '',
+    photos: [],
+  });
+  const [savingUnlisted, setSavingUnlisted] = useState(false);
+  const [unlistedError, setUnlistedError] = useState('');
 
   useEffect(() => {
     document.title = 'Wild Tuskers Sri Lanka | Admin Portal';
   }, []);
 
   useEffect(() => {
-    if (!isAdmin) {
+    if (!authLoading && !isAdmin) {
       navigate('/login');
     }
-  }, [isAdmin, navigate]);
+  }, [authLoading, isAdmin, navigate]);
 
-  const loadAllData = () => {
-    setTuskers(getTuskers());
-    setUnlisted(getUnlistedTuskers());
-    setObservations(getSpecialObservations());
-    setEvents(getEvents());
-    const rawNotes = getFieldNotes();
-    const notesArray = Array.isArray(rawNotes) ? rawNotes : [];
-    setFieldNotes({
-      approved: notesArray.filter(n => n.status === 'approved'),
-      pending: notesArray.filter(n => n.status === 'pending'),
-    });
+  const loadAllData = async () => {
+    try {
+      const [tuskerList, unlistedList, observationList, eventGroups, rawNotes, rawGallery, teamList] = await Promise.all([
+        getTuskers(),
+        getUnlistedTuskers(),
+        getSpecialObservations(),
+        getEvents(),
+        getFieldNotes({ admin: true }),
+        getGalleryPhotos({ admin: true }),
+        getTeamMembers(),
+      ]);
+      setTuskers(tuskerList);
+      setUnlisted(unlistedList);
+      setObservations(observationList);
+      setEvents(eventGroups);
+      const notesArray = Array.isArray(rawNotes) ? rawNotes : [];
+      setFieldNotes({
+        approved: notesArray.filter(n => n.status === 'approved'),
+        pending: notesArray.filter(n => n.status === 'pending'),
+      });
+      setGalleryPhotos(Array.isArray(rawGallery) ? rawGallery : []);
+      setTeamMembers(Array.isArray(teamList) ? teamList : []);
+    } catch (err) {
+      showToast(`Could not load data: ${err.message}`);
+    }
   };
 
   useEffect(() => {
-    loadAllData();
-  }, []);
+    if (!authLoading && isAdmin) loadAllData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, isAdmin]);
+
+  /** Run a mutation, reload, then toast (or report the error). */
+  const runAction = async (action, successMsg) => {
+    try {
+      await action();
+      await loadAllData();
+      showToast(successMsg);
+    } catch (err) {
+      showToast(`Action failed: ${err.message}`);
+    }
+  };
 
   const showToast = (msg) => {
     setNotification(msg);
@@ -64,41 +125,172 @@ export default function AdminPortal() {
   // CRUD Handlers
   const handleDeleteTusker = (id, name) => {
     if (window.confirm(`Are you sure you want to delete Tusker ${id} (${name})? This action cannot be undone.`)) {
-      deleteTusker(id);
-      loadAllData();
-      showToast(`Tusker ${id} was deleted successfully.`);
+      runAction(() => deleteTusker(id), `Tusker ${id} was deleted successfully.`);
     }
   };
 
   const handleDeleteObservation = (id, title) => {
     if (window.confirm(`Are you sure you want to delete observation "${title}"?`)) {
-      deleteSpecialObservation(id);
-      loadAllData();
-      showToast('Special observation was deleted successfully.');
+      runAction(() => deleteSpecialObservation(id), 'Special observation was deleted successfully.');
     }
   };
 
   const handleDeleteEvent = (id, title) => {
     if (window.confirm(`Are you sure you want to delete event "${title}"?`)) {
-      deleteEvent(id);
-      loadAllData();
-      showToast('Event was deleted successfully.');
+      runAction(() => deleteEvent(id), 'Event was deleted successfully.');
     }
   };
 
   const handleApproveFieldNote = (id) => {
-    approveFieldNote(id);
-    loadAllData();
-    showToast('Field note approved and published to public feed.');
+    runAction(() => approveFieldNote(id), 'Field note approved and published to public feed.');
   };
 
   const handleDeleteFieldNote = (id) => {
     if (window.confirm('Are you sure you want to delete this field note?')) {
-      rejectFieldNote(id);
-      loadAllData();
-      showToast('Field note removed.');
+      runAction(() => rejectFieldNote(id), 'Field note removed.');
     }
   };
+
+  const handleApprovePhoto = (id) => {
+    runAction(() => approveGalleryPhoto(id), 'Photo approved and published to gallery.');
+  };
+
+  const handleRejectPhoto = (id) => {
+    if (window.confirm('Are you sure you want to reject this photo?')) {
+      runAction(() => rejectGalleryPhoto(id), 'Photo rejected.');
+    }
+  };
+
+  const handleDeletePhoto = (id) => {
+    if (window.confirm('Are you sure you want to delete this gallery photo?')) {
+      runAction(() => deleteGalleryPhoto(id), 'Gallery photo deleted.');
+    }
+  };
+
+  const openAddTeamModal = () => {
+    setEditingTeamMember(null);
+    setTeamFormData({
+      name: '',
+      role: 'Admin',
+      facebookUrl: '',
+      image: '',
+      displayOrder: (teamMembers.length || 0) + 1,
+    });
+    setTeamFormError('');
+    setShowTeamModal(true);
+  };
+
+  const openEditTeamModal = (member) => {
+    setEditingTeamMember(member);
+    setTeamFormData({
+      name: member.name || '',
+      role: member.role || 'Admin',
+      facebookUrl: member.facebookUrl || '',
+      image: member.image || '',
+      displayOrder: member.displayOrder || 1,
+    });
+    setTeamFormError('');
+    setShowTeamModal(true);
+  };
+
+  const handleDeleteTeamMember = (member) => {
+    if (window.confirm(`Are you sure you want to delete team member "${member.name}"?`)) {
+      runAction(async () => {
+        if (member.id) await deleteTeamMember(member.id);
+      }, `Team member "${member.name}" was removed.`);
+    }
+  };
+
+  const handleSaveTeamMember = async (e) => {
+    e.preventDefault();
+    if (!teamFormData.name.trim()) {
+      setTeamFormError('Please enter member name.');
+      return;
+    }
+    setSavingTeamMember(true);
+    setTeamFormError('');
+    try {
+      const payload = {
+        name: teamFormData.name.trim(),
+        role: teamFormData.role.trim() || 'Admin',
+        facebookUrl: teamFormData.facebookUrl.trim() || null,
+        image: teamFormData.image || null,
+        displayOrder: Number(teamFormData.displayOrder) || 1,
+      };
+      if (editingTeamMember && editingTeamMember.id) {
+        await updateTeamMember(editingTeamMember.id, payload);
+        showToast(`Updated "${payload.name}".`);
+      } else {
+        await addTeamMember(payload);
+        showToast(`Added new team admin "${payload.name}".`);
+      }
+      setShowTeamModal(false);
+      await loadAllData();
+    } catch (err) {
+      setTeamFormError(err.message);
+    } finally {
+      setSavingTeamMember(false);
+    }
+  };
+
+  const handleDeleteUnlisted = (id) => {
+    if (window.confirm(`Are you sure you want to delete unlisted record "${id}"?`)) {
+      runAction(() => deleteUnlistedTusker(id), `Unlisted record ${id} removed.`);
+    }
+  };
+
+  const handleSaveUnlisted = async (e) => {
+    e.preventDefault();
+    if (!unlistedFormData.location.trim()) {
+      setUnlistedError('Please enter a location.');
+      return;
+    }
+    if (!unlistedFormData.description.trim()) {
+      setUnlistedError('Please enter description or sighting details.');
+      return;
+    }
+    setSavingUnlisted(true);
+    setUnlistedError('');
+    try {
+      const photos = (unlistedFormData.photos && unlistedFormData.photos.length > 0)
+        ? unlistedFormData.photos
+        : (unlistedFormData.photoUrl
+            ? (unlistedFormData.photoUrl.includes(',')
+                ? unlistedFormData.photoUrl.split(',').map(s => s.trim()).filter(Boolean)
+                : [unlistedFormData.photoUrl])
+            : []);
+      const payload = {
+        id: unlistedFormData.id.trim() || undefined,
+        location: unlistedFormData.location.trim(),
+        listedDate: unlistedFormData.listedDate,
+        recordedBy: unlistedFormData.recordedBy.trim(),
+        description: unlistedFormData.description.trim(),
+        specialMarks: unlistedFormData.specialMarks.trim(),
+        photos,
+      };
+      await addUnlistedTusker(payload);
+      showToast('New unlisted tusker record logged successfully.');
+      setShowAddUnlistedModal(false);
+      setUnlistedFormData({
+        id: '',
+        location: '',
+        listedDate: new Date().toISOString().split('T')[0],
+        recordedBy: 'WTS Field Team',
+        description: '',
+        specialMarks: '',
+        photoUrl: '',
+      });
+      await loadAllData();
+    } catch (err) {
+      setUnlistedError(err.message);
+    } finally {
+      setSavingUnlisted(false);
+    }
+  };
+
+  const pendingGalleryPhotos = useMemo(() => {
+    return galleryPhotos.filter(p => p.status === 'pending');
+  }, [galleryPhotos]);
 
   // Filtered queries
   const filteredTuskers = useMemo(() => {
@@ -147,10 +339,21 @@ export default function AdminPortal() {
   const pendingNotes = fieldNotes.pending || [];
   const approvedNotes = fieldNotes.approved || [];
 
+  const filteredGallery = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return galleryPhotos;
+    return galleryPhotos.filter(p =>
+      (p.title && p.title.toLowerCase().includes(q)) ||
+      (p.photographer && p.photographer.toLowerCase().includes(q)) ||
+      (p.tuskerName && p.tuskerName.toLowerCase().includes(q)) ||
+      (p.location && p.location.toLowerCase().includes(q))
+    );
+  }, [galleryPhotos, searchQuery]);
+
   return (
-    <div className="min-h-screen bg-[#f8faf9] text-[#1f2824] pt-[95px] pb-24">
+    <div className="min-h-screen bg-[#f8faf9] text-[#1f2824] pb-24">
       {/* Top Banner / Header */}
-      <div className="w-full bg-[#0b2518] text-white py-10 px-6 sm:px-10 lg:px-16 shadow-lg mb-8">
+      <div className="w-full bg-[#0b2518] text-white pt-[calc(80px+2rem)] pb-10 px-6 sm:px-10 lg:px-16 shadow-lg mb-8">
         <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[#d4af37] text-xs font-semibold tracking-wider uppercase mb-3">
@@ -174,8 +377,8 @@ export default function AdminPortal() {
               <span>View Live Website</span>
             </Link>
             <button
-              onClick={() => {
-                logout();
+              onClick={async () => {
+                await logout();
                 navigate('/login');
               }}
               className="bg-[#c2410c] hover:bg-[#9a3412] text-white font-semibold text-sm px-4 py-2.5 rounded-lg transition-all flex items-center gap-2 cursor-pointer border-none shadow-sm"
@@ -222,13 +425,9 @@ export default function AdminPortal() {
             <p className="text-xs text-[#8a9b92] mt-1 mb-0">Documented profiles</p>
           </div>
 
-          <div
-            onClick={() => setActiveTab('unlisted')}
-            className={`p-5 rounded-2xl border transition-all cursor-pointer ${
-              activeTab === 'unlisted'
-                ? 'bg-white border-[#0b2518] shadow-md ring-2 ring-[#0b2518]/10'
-                : 'bg-white border-[#e2e8e4] hover:border-[#c8d4ce]'
-            }`}
+          <Link
+            to="/unlisted"
+            className="p-5 rounded-2xl border transition-all cursor-pointer bg-white border-[#e2e8e4] hover:border-[#c8d4ce] hover:shadow-sm no-underline block"
           >
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold text-[#6a7c73] uppercase tracking-wider">Unlisted</span>
@@ -236,7 +435,7 @@ export default function AdminPortal() {
             </div>
             <div className="font-serif text-3xl font-extrabold text-[#0b2518]">{unlisted.length}</div>
             <p className="text-xs text-[#8a9b92] mt-1 mb-0">Under monitoring</p>
-          </div>
+          </Link>
 
           <div
             onClick={() => setActiveTab('observations')}
@@ -352,18 +551,19 @@ export default function AdminPortal() {
               </div>
             </Link>
 
-            <Link
-              to="/add-field-note"
-              className="flex items-center gap-3 p-3.5 rounded-xl bg-[#0b2518] hover:bg-[#16402b] text-white transition-all shadow-sm group"
+            <button
+              type="button"
+              onClick={() => setActiveTab('team')}
+              className="flex items-center gap-3 p-3.5 rounded-xl bg-[#0b2518] hover:bg-[#16402b] text-white transition-all shadow-sm group border-none cursor-pointer text-left"
             >
               <div className="w-9 h-9 rounded-lg bg-white/15 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                <FileText size={18} />
+                <Users size={18} />
               </div>
               <div className="overflow-hidden">
-                <div className="font-semibold text-sm leading-tight">Publish Field Note</div>
-                <div className="text-[0.75rem] text-white/70 truncate">Write direct note</div>
+                <div className="font-semibold text-sm leading-tight">Admins &amp; Team</div>
+                <div className="text-[0.75rem] text-white/70 truncate">Manage team members</div>
               </div>
-            </Link>
+            </button>
           </div>
         </div>
 
@@ -381,17 +581,6 @@ export default function AdminPortal() {
                 }`}
               >
                 Wild Tuskers ({tuskers.length})
-              </button>
-
-              <button
-                onClick={() => setActiveTab('unlisted')}
-                className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all cursor-pointer whitespace-nowrap ${
-                  activeTab === 'unlisted'
-                    ? 'bg-[#0b2518] text-white shadow-sm'
-                    : 'text-[#56685f] hover:bg-[#f0f5f2]'
-                }`}
-              >
-                Unlisted Monitoring ({unlisted.length})
               </button>
 
               <button
@@ -429,6 +618,32 @@ export default function AdminPortal() {
                   <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                 )}
               </button>
+
+              <button
+                onClick={() => setActiveTab('gallery')}
+                className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
+                  activeTab === 'gallery'
+                    ? 'bg-[#0b2518] text-white shadow-sm'
+                    : 'text-[#56685f] hover:bg-[#f0f5f2]'
+                }`}
+              >
+                <span>The Gallery ({galleryPhotos.length})</span>
+                {pendingGalleryPhotos.length > 0 && (
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                )}
+              </button>
+
+              <button
+                onClick={() => setActiveTab('team')}
+                className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
+                  activeTab === 'team'
+                    ? 'bg-[#0b2518] text-white shadow-sm'
+                    : 'text-[#56685f] hover:bg-[#f0f5f2]'
+                }`}
+              >
+                <Users size={15} />
+                <span>Team &amp; Admins ({teamMembers.length})</span>
+              </button>
             </div>
 
             {/* Search Input */}
@@ -459,13 +674,22 @@ export default function AdminPortal() {
                 <span className="text-sm font-semibold text-[#5a6c63]">
                   Showing {filteredTuskers.length} of {tuskers.length} tuskers
                 </span>
-                <Link
-                  to="/admin/add-tusker"
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#0b2518] hover:bg-[#16402b] px-4 py-2 rounded-lg transition-all"
-                >
-                  <PlusCircle size={15} />
-                  <span>Add Tusker</span>
-                </Link>
+                <div className="flex items-center gap-2.5">
+                  <Link
+                    to="/unlisted"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0b2518] bg-[#faf5ec] hover:bg-[#f3ebd9] border border-accent/40 px-3.5 py-2 rounded-lg transition-all no-underline shadow-xs"
+                  >
+                    <Radar size={15} className="text-accent" />
+                    <span>Unlisted Monitoring</span>
+                  </Link>
+                  <Link
+                    to="/admin/add-tusker"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#0b2518] hover:bg-[#16402b] px-4 py-2 rounded-lg transition-all no-underline"
+                  >
+                    <PlusCircle size={15} />
+                    <span>Add Tusker</span>
+                  </Link>
+                </div>
               </div>
 
               <div className="overflow-x-auto border border-[#e8eee9] rounded-xl">
@@ -475,7 +699,7 @@ export default function AdminPortal() {
                       <th className="py-3 px-4">Tusker ID</th>
                       <th className="py-3 px-4">Name</th>
                       <th className="py-3 px-4">Location</th>
-                      <th className="py-3 px-4">Listed Date</th>
+                      <th className="py-3 px-4">Status</th>
                       <th className="py-3 px-4">Sightings</th>
                       <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
@@ -492,10 +716,12 @@ export default function AdminPortal() {
                         <tr key={t.id} className="hover:bg-[#fbfcfb] transition-colors">
                           <td className="py-3 px-4 font-mono font-bold text-[#0b2518]">{t.id}</td>
                           <td className="py-3 px-4 font-semibold text-[#182620]">
-                            {t.name} <span className="text-xs text-[#7e9087] font-normal">({t.sinhala || 'N/A'})</span>
+                            {t.name}{t.sinhala && <span className="text-xs text-[#7e9087] font-normal"> ({t.sinhala})</span>}
                           </td>
                           <td className="py-3 px-4 text-[#4a5c53]">{t.location || 'Unknown'}</td>
-                          <td className="py-3 px-4 text-[#7e9087] text-xs">{t.listedDate || 'Unspecified'}</td>
+                          <td className="py-3 px-4 text-xs">
+                            <StatusBadge status={t.livingStatus} deathYear={t.deathYear} className="px-2 py-0.5 text-[0.7rem]" />
+                          </td>
                           <td className="py-3 px-4">
                             <span className="px-2 py-0.5 rounded-full bg-[#eef5f1] text-[#0b2518] font-bold text-xs">
                               {t.sightings?.length || 0} sightings
@@ -545,17 +771,27 @@ export default function AdminPortal() {
           {/* TAB 2: UNLISTED MONITORING */}
           {activeTab === 'unlisted' && (
             <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <span className="text-sm font-semibold text-[#5a6c63]">
                   Showing {filteredUnlisted.length} of {unlisted.length} unlisted records
                 </span>
-                <Link
-                  to="/unlisted"
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#0b2518] hover:bg-[#16402b] px-4 py-2 rounded-lg transition-all"
-                >
-                  <Radar size={15} />
-                  <span>Open Monitoring Board</span>
-                </Link>
+                <div className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddUnlistedModal(true)}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-primary hover:bg-primary-light px-4 py-2 rounded-lg transition-all shadow-sm border-none cursor-pointer"
+                  >
+                    <PlusCircle size={15} />
+                    <span>Add Unlisted Tusker</span>
+                  </button>
+                  <Link
+                    to="/unlisted"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0b2518] bg-[#0b2518]/10 hover:bg-[#0b2518]/15 px-4 py-2 rounded-lg transition-all"
+                  >
+                    <Radar size={15} />
+                    <span>Open Monitoring Board</span>
+                  </Link>
+                </div>
               </div>
 
               <div className="overflow-x-auto border border-[#e8eee9] rounded-xl">
@@ -588,13 +824,23 @@ export default function AdminPortal() {
                               {u.description || 'Under monitoring.'}
                             </td>
                             <td className="py-3 px-4 text-right">
-                              <Link
-                                to={`/unlisted/${slug}`}
-                                className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#0b2518]/8 text-[#0b2518] hover:bg-[#0b2518] hover:text-white transition-all"
-                              >
-                                <span>Inspect Profile</span>
-                                <ArrowUpRight size={14} />
-                              </Link>
+                              <div className="inline-flex items-center gap-1.5 justify-end">
+                                <Link
+                                  to={`/unlisted/${slug}`}
+                                  className="p-1.5 rounded-lg text-[#5a6c63] hover:text-[#0b2518] hover:bg-[#eef3f0] transition-all inline-flex items-center justify-center"
+                                  title="View unlisted profile"
+                                >
+                                  <Eye size={16} />
+                                </Link>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteUnlisted(u.id)}
+                                  className="p-1.5 rounded-lg text-[#dc2626] hover:bg-[#fee2e2] transition-all border-none bg-transparent cursor-pointer inline-flex items-center justify-center"
+                                  title="Delete unlisted record"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         );
@@ -824,13 +1070,6 @@ export default function AdminPortal() {
                 <span className="text-sm font-semibold text-[#5a6c63]">
                   Published Field Notes ({approvedNotes.length})
                 </span>
-                <Link
-                  to="/add-field-note"
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#0b2518] hover:bg-[#16402b] px-4 py-2 rounded-lg transition-all"
-                >
-                  <PlusCircle size={15} />
-                  <span>Write Field Note</span>
-                </Link>
               </div>
 
               <div className="overflow-x-auto border border-[#e8eee9] rounded-xl">
@@ -886,8 +1125,563 @@ export default function AdminPortal() {
               </div>
             </div>
           )}
+
+          {/* TAB 6: THE GALLERY */}
+          {activeTab === 'gallery' && (
+            <div className="p-6 sm:p-8">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                  <h3 className="font-serif text-xl font-bold text-[#0b2518] m-0">Wild Tuskers Sri Lanka Gallery</h3>
+                  <p className="text-sm text-[#5a6c63] mt-1 m-0">
+                    Review community photo submissions, approve high-resolution photographs, and manage published gallery records.
+                  </p>
+                </div>
+                <Link
+                  to="/gallery"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold shadow-xs hover:bg-primary-light transition-all self-start sm:self-auto"
+                >
+                  <Eye size={14} />
+                  <span>View Public Gallery</span>
+                </Link>
+              </div>
+
+              {/* Pending Approvals Section if any */}
+              {pendingGalleryPhotos.length > 0 && (
+                <div className="mb-8 p-5 rounded-2xl bg-amber-50/70 border border-amber-200">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                    <h4 className="font-sans text-sm font-bold text-amber-950 m-0">
+                      Pending Photo Submissions ({pendingGalleryPhotos.length})
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {pendingGalleryPhotos.map((photo) => (
+                      <div key={photo.id} className="bg-white rounded-xl border border-amber-200 overflow-hidden shadow-xs flex flex-col justify-between">
+                        <div className="aspect-[16/10] bg-black/5 overflow-hidden relative">
+                          <img src={photo.imageUrl} alt={photo.title} className="w-full h-full object-cover" />
+                          <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-amber-500 text-white font-bold text-[0.7rem]">
+                            Pending
+                          </span>
+                        </div>
+                        <div className="p-4 flex-1 flex flex-col justify-between">
+                          <div>
+                            <h5 className="font-bold text-sm text-[#111111] m-0">{photo.title}</h5>
+                            <p className="text-xs text-[#666666] m-0 mt-1">
+                              By <strong>{photo.photographer}</strong> {photo.location ? `• ${photo.location}` : ''}
+                            </p>
+                            {photo.tuskerName && (
+                              <p className="text-xs text-accent font-semibold m-0 mt-0.5">{photo.tuskerName}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center justify-end gap-2 pt-3 mt-3 border-t border-[#f0f0f0]">
+                            <button
+                              onClick={() => handleApprovePhoto(photo.id)}
+                              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs border-none cursor-pointer flex items-center gap-1"
+                            >
+                              <Check size={13} /> Approve
+                            </button>
+                            <button
+                              onClick={() => handleRejectPhoto(photo.id)}
+                              className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs border-none cursor-pointer"
+                            >
+                              Reject
+                            </button>
+                            <button
+                              onClick={() => handleDeletePhoto(photo.id)}
+                              className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg border-none bg-transparent cursor-pointer"
+                              title="Delete"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Published Photos Table */}
+              <div className="overflow-x-auto border border-[#e8eee9] rounded-xl">
+                <table className="w-full text-left text-sm border-collapse">
+                  <thead>
+                    <tr className="bg-[#f4f7f5] text-[#4d5f56] text-xs font-bold uppercase tracking-wider border-b border-[#e8eee9]">
+                      <th className="py-3 px-4">Photo</th>
+                      <th className="py-3 px-4">Title</th>
+                      <th className="py-3 px-4">Tusker / Location</th>
+                      <th className="py-3 px-4">Photographer</th>
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#eef3f0]">
+                    {filteredGallery.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="py-8 text-center text-[#7e9087]">
+                          No gallery photos found.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredGallery.map((item) => (
+                        <tr key={item.id} className="hover:bg-[#fbfcfb] transition-colors">
+                          <td className="py-2 px-4 w-16">
+                            <div className="w-12 h-12 rounded-lg bg-black/5 overflow-hidden">
+                              <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 font-medium text-[#182620] max-w-[260px] truncate">{item.title}</td>
+                          <td className="py-3 px-4 text-xs text-[#5a6c63]">
+                            <div>{item.tuskerName || '—'}</div>
+                            <div className="text-[#888888]">{item.location || '—'}</div>
+                          </td>
+                          <td className="py-3 px-4 text-xs text-[#5a6c63]">
+                            <div>{item.photographer}</div>
+                            <div className="text-[0.72rem] text-[#999999]">{item.date}</div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`inline-block px-2.5 py-0.5 rounded-full text-[0.72rem] font-bold ${
+                              item.status === 'approved'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : item.status === 'pending'
+                                ? 'bg-amber-100 text-amber-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {item.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <div className="inline-flex items-center gap-1.5 justify-end">
+                              {item.status === 'pending' && (
+                                <button
+                                  onClick={() => handleApprovePhoto(item.id)}
+                                  className="p-1.5 rounded-lg text-emerald-700 hover:bg-emerald-50 border-none bg-transparent cursor-pointer"
+                                  title="Approve"
+                                >
+                                  <Check size={16} />
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleDeletePhoto(item.id)}
+                                className="p-1.5 rounded-lg text-[#dc2626] hover:bg-[#fee2e2] transition-all border-none bg-transparent cursor-pointer"
+                                title="Delete photo"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+          {/* TAB 7: TEAM & ADMINS */}
+          {activeTab === 'team' && (
+            <div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                  <h3 className="text-lg font-bold text-[#1b2a22] m-0">Team &amp; Admin Members ({teamMembers.length})</h3>
+                  <p className="text-xs text-[#6a7c73] mt-1 mb-0">
+                    Manage the administrators and researchers displayed on the About Us page. Changes sync live with Supabase.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={openAddTeamModal}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#0b2518] hover:bg-[#16402b] px-4 py-2.5 rounded-lg transition-all shadow-sm border-none cursor-pointer self-start sm:self-auto"
+                >
+                  <PlusCircle size={15} />
+                  <span>Add Admin / Team Member</span>
+                </button>
+              </div>
+
+              <div className="overflow-x-auto border border-[#e8eee9] rounded-xl">
+                <table className="w-full text-left text-sm border-collapse">
+                  <thead>
+                    <tr className="bg-[#f4f7f5] text-[#4d5f56] text-xs font-bold uppercase tracking-wider border-b border-[#e8eee9]">
+                      <th className="py-3 px-4 w-16">Avatar</th>
+                      <th className="py-3 px-4">Name</th>
+                      <th className="py-3 px-4">Role</th>
+                      <th className="py-3 px-4">Order</th>
+                      <th className="py-3 px-4">Facebook</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#eef3f0]">
+                    {teamMembers.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="py-8 text-center text-[#7e9087]">
+                          No team members found.
+                        </td>
+                      </tr>
+                    ) : (
+                      teamMembers.map((member) => {
+                        const cleanName = (member.name || '').replace(/^(Dr\.?|Prof\.?|Mr\.?|Mrs\.?|Ms\.?)\s+/i, '');
+                        const words = cleanName.trim().split(/\s+/);
+                        const initials = words.length >= 2
+                          ? (words[0][0] + words[1][0]).toUpperCase()
+                          : (member.name || 'WT').slice(0, 2).toUpperCase();
+
+                        return (
+                          <tr key={member.id || member.name} className="hover:bg-[#fbfcfb] transition-colors">
+                            <td className="py-2.5 px-4">
+                              <div className="w-10 h-10 rounded-full bg-[#0b2518] text-[#c69b55] font-bold text-xs flex items-center justify-center overflow-hidden border border-[#dce4df] shrink-0">
+                                {member.image ? (
+                                  <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <span>{initials}</span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 font-semibold text-[#182620]">
+                              {member.name}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="inline-block px-2.5 py-0.5 rounded-full text-[0.72rem] font-bold bg-[#c69b55]/12 text-[#a07830] border border-[#c69b55]/30">
+                                {member.role || 'Admin'}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-xs text-[#5a6c63] font-mono">
+                              #{member.displayOrder || 1}
+                            </td>
+                            <td className="py-3 px-4 text-xs text-[#5a6c63]">
+                              {member.facebookUrl ? (
+                                <a
+                                  href={member.facebookUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-accent hover:underline inline-flex items-center gap-1 font-medium"
+                                >
+                                  <span>Profile Link</span>
+                                  <ExternalLink size={11} />
+                                </a>
+                              ) : (
+                                <span className="text-[#aaaaaa]">—</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <div className="inline-flex items-center gap-1.5 justify-end">
+                                <button
+                                  type="button"
+                                  onClick={() => openEditTeamModal(member)}
+                                  className="p-1.5 rounded-lg text-[#0b2518] hover:bg-[#eef4f0] transition-all border-none bg-transparent cursor-pointer"
+                                  title="Edit details"
+                                >
+                                  <Edit3 size={16} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteTeamMember(member)}
+                                  className="p-1.5 rounded-lg text-[#dc2626] hover:bg-[#fee2e2] transition-all border-none bg-transparent cursor-pointer"
+                                  title="Remove member"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Team Member Modal */}
+      {showTeamModal &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-fade-in"
+            onClick={() => setShowTeamModal(false)}
+          >
+            <div
+              className="bg-white rounded-2xl max-w-[500px] w-full p-6 sm:p-8 shadow-2xl relative my-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-accent/15 text-accent flex items-center justify-center">
+                    <Shield size={20} />
+                  </div>
+                  <div>
+                    <h3 className="font-sans text-lg font-bold text-gray-900 m-0">
+                      {editingTeamMember ? 'Edit Admin / Team Member' : 'Add New Admin / Team Member'}
+                    </h3>
+                    <p className="font-sans text-xs text-gray-500 m-0">
+                      Directly managed in database and displayed on About Us
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowTeamModal(false)}
+                  className="text-gray-400 hover:text-gray-600 bg-none border-none cursor-pointer p-1"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {teamFormError && (
+                <div className="mb-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg p-3 text-xs font-medium">
+                  {teamFormError}
+                </div>
+              )}
+
+              <form onSubmit={handleSaveTeamMember} className="flex flex-col gap-4">
+                {/* Photo Upload with ImageUploadBox (Circle Mode) */}
+                <div className="flex flex-col items-center justify-center mb-2">
+                  <ImageUploadBox
+                    circle
+                    folder="team"
+                    value={teamFormData.image}
+                    onChange={(url) => setTeamFormData({ ...teamFormData, image: url })}
+                  />
+                  <span className="text-[0.72rem] text-gray-400 mt-1">Profile Photo (Optional)</span>
+                </div>
+
+                {/* Name */}
+                <div>
+                  <label className="text-xs font-bold text-gray-600 uppercase tracking-wider block mb-1">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Milinda Wattegedara"
+                    value={teamFormData.name}
+                    onChange={(e) => setTeamFormData({ ...teamFormData, name: e.target.value })}
+                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"
+                  />
+                </div>
+
+                {/* Role & Order */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 uppercase tracking-wider block mb-1">
+                      Role
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Admin"
+                      value={teamFormData.role}
+                      onChange={(e) => setTeamFormData({ ...teamFormData, role: e.target.value })}
+                      className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 uppercase tracking-wider block mb-1">
+                      Display Order
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={teamFormData.displayOrder}
+                      onChange={(e) => setTeamFormData({ ...teamFormData, displayOrder: e.target.value })}
+                      className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"
+                    />
+                  </div>
+                </div>
+
+                {/* Facebook URL */}
+                <div>
+                  <label className="text-xs font-bold text-gray-600 uppercase tracking-wider block mb-1">
+                    Facebook Profile Link (Optional)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://www.facebook.com/username"
+                    value={teamFormData.facebookUrl}
+                    onChange={(e) => setTeamFormData({ ...teamFormData, facebookUrl: e.target.value })}
+                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"
+                  />
+                </div>
+
+                {/* Buttons */}
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowTeamModal(false)}
+                    className="px-4 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg border border-gray-300 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingTeamMember}
+                    className="px-6 py-2.5 text-xs font-bold text-white bg-primary hover:bg-primary-light rounded-lg border-none shadow-sm cursor-pointer flex items-center gap-1.5 disabled:opacity-60"
+                  >
+                    <Save size={14} />
+                    <span>{savingTeamMember ? 'Saving…' : 'Save Details'}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body
+        )}
+      {/* Add Unlisted Tusker Modal */}
+      {showAddUnlistedModal &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-fade-in"
+            onClick={() => setShowAddUnlistedModal(false)}
+          >
+            <div
+              className="bg-white rounded-2xl max-w-[540px] w-full p-6 sm:p-8 shadow-2xl relative my-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-accent/15 text-accent flex items-center justify-center">
+                    <Radar size={20} />
+                  </div>
+                  <div>
+                    <h3 className="font-sans text-lg font-bold text-gray-900 m-0">
+                      Add Unlisted Tusker
+                    </h3>
+                    <p className="font-sans text-xs text-gray-500 m-0">
+                      Create a provisional monitoring entry
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAddUnlistedModal(false)}
+                  className="text-gray-400 hover:text-gray-600 bg-none border-none cursor-pointer p-1"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {unlistedError && (
+                <div className="mb-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg p-3 text-xs font-medium">
+                  {unlistedError}
+                </div>
+              )}
+
+              <form onSubmit={handleSaveUnlisted} className="flex flex-col gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 uppercase tracking-wider block mb-1">
+                      Unlisted ID (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. UNLISTED 011"
+                      value={unlistedFormData.id}
+                      onChange={(e) => setUnlistedFormData({ ...unlistedFormData, id: e.target.value })}
+                      className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 uppercase tracking-wider block mb-1">
+                      Location *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Yala, Galgamuwa, Minneriya"
+                      value={unlistedFormData.location}
+                      onChange={(e) => setUnlistedFormData({ ...unlistedFormData, location: e.target.value })}
+                      className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 uppercase tracking-wider block mb-1">
+                      First Spotted Date
+                    </label>
+                    <input
+                      type="date"
+                      value={unlistedFormData.listedDate}
+                      onChange={(e) => setUnlistedFormData({ ...unlistedFormData, listedDate: e.target.value })}
+                      className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 uppercase tracking-wider block mb-1">
+                      First Sighted By
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. WTS Field Team"
+                      value={unlistedFormData.recordedBy}
+                      onChange={(e) => setUnlistedFormData({ ...unlistedFormData, recordedBy: e.target.value })}
+                      className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-gray-600 uppercase tracking-wider block mb-1">
+                    Special Marks &amp; Identifiers
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Broken left tusk tip, triangular tear on right ear"
+                    value={unlistedFormData.specialMarks}
+                    onChange={(e) => setUnlistedFormData({ ...unlistedFormData, specialMarks: e.target.value })}
+                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-gray-600 uppercase tracking-wider block mb-1">
+                    Field Description / Observation Details *
+                  </label>
+                  <textarea
+                    required
+                    rows="3"
+                    placeholder="Record initial sighting coordinates, estimated age, tusk shape, herd behavior..."
+                    value={unlistedFormData.description}
+                    onChange={(e) => setUnlistedFormData({ ...unlistedFormData, description: e.target.value })}
+                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans resize-y"
+                  />
+                </div>
+
+                {/* Direct Image Upload Box */}
+                <ImageUploadBox
+                  label="Direct Photo Upload"
+                  folder="unlisted"
+                  multiple
+                  value={unlistedFormData.photos && unlistedFormData.photos.length > 0 ? unlistedFormData.photos : (unlistedFormData.photoUrl ? [unlistedFormData.photoUrl] : [])}
+                  onChange={(urls) => {
+                    const list = Array.isArray(urls) ? urls : (urls ? [urls] : []);
+                    setUnlistedFormData({ ...unlistedFormData, photos: list, photoUrl: list[0] || '' });
+                  }}
+                  aspectClass="aspect-[16/10]"
+                />
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddUnlistedModal(false)}
+                    className="px-4 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg border border-gray-300 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingUnlisted}
+                    className="px-6 py-2.5 text-xs font-bold text-white bg-primary hover:bg-primary-light rounded-lg border-none shadow-sm cursor-pointer flex items-center gap-1.5 disabled:opacity-60"
+                  >
+                    <Save size={14} />
+                    <span>{savingUnlisted ? 'Saving…' : 'Save Unlisted Tusker'}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

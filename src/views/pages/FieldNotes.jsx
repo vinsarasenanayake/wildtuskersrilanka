@@ -58,7 +58,7 @@ export default function FieldNotes() {
   };
 
   const handleReject = (note) => {
-    if (window.confirm(`Are you sure you want to decline and remove this submission from "${note.author}"?`)) {
+    if (window.confirm(`Are you sure you want to delete this submission from "${note.author}"?`)) {
       rejectNote(note.id);
       setActionNotice({
         type: 'info',
@@ -119,15 +119,17 @@ export default function FieldNotes() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3 flex-shrink-0 self-start">
-            <button
-              onClick={() => navigate('/add-field-note')}
-              className="bg-accent text-primary font-semibold text-[0.9rem] px-5 py-2.5 rounded-[6px] inline-flex items-center gap-2 shadow-[0_4px_10px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-accent-hover transition-all duration-300 border-none cursor-pointer whitespace-nowrap"
-            >
-              <PlusCircle size={16} />
-              <span>Submit Field Note</span>
-            </button>
-          </div>
+          {!isAdmin && (
+            <div className="flex items-center gap-3 flex-shrink-0 self-start">
+              <button
+                onClick={() => navigate('/add-field-note')}
+                className="bg-accent text-primary font-semibold text-[0.88rem] px-5 py-2.5 rounded-[6px] inline-flex items-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap"
+              >
+                <PlusCircle size={16} />
+                <span>Submit Field Note</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Admin Pending Review Banner (if on public tabs but pending notes exist) */}
@@ -155,46 +157,48 @@ export default function FieldNotes() {
           </div>
         )}
 
-        {/* Tabs Bar */}
-        <div className="bg-white p-2 rounded-t-[12px] shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex flex-wrap items-center gap-1 border-b-[3px] border-[#d1d5db]">
-          
-          {/* Admin Review & Accept Tab */}
-          {isAdmin && (
-            <button
-              onClick={() => setActiveTab('pending')}
-              className={`font-sans text-[0.92rem] font-bold py-2.5 px-5 rounded-t-[8px] transition-all cursor-pointer border-none outline-none flex items-center gap-2 ${
-                isPendingView
-                  ? 'bg-amber-500 text-white shadow-sm'
-                  : 'bg-amber-100 text-amber-900 hover:bg-amber-200'
-              }`}
-            >
-              <ShieldCheck size={16} />
-              <span>Review & Accept</span>
-              {pendingNotes.length > 0 && (
-                <span className={`text-[0.72rem] font-extrabold px-2 py-0.5 rounded-full ${
-                  isPendingView ? 'bg-white text-amber-600' : 'bg-amber-600 text-white'
-                }`}>
-                  {pendingNotes.length}
-                </span>
-              )}
-            </button>
-          )}
+        {/* Tabs Bar - Only rendered when tabs exist */}
+        {(availableYears.length > 0 || (isAdmin && pendingNotes.length > 0)) && (
+          <div className="bg-white p-2 rounded-t-[12px] shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex flex-wrap items-center gap-1 border-b-[3px] border-[#d1d5db]">
+            
+            {/* Admin Review & Accept Tab */}
+            {isAdmin && (
+              <button
+                onClick={() => setActiveTab('pending')}
+                className={`font-sans text-[0.92rem] font-bold py-2.5 px-5 rounded-t-[8px] transition-all cursor-pointer border-none outline-none flex items-center gap-2 ${
+                  isPendingView
+                    ? 'bg-amber-500 text-white shadow-sm'
+                    : 'bg-amber-100 text-amber-900 hover:bg-amber-200'
+                }`}
+              >
+                <ShieldCheck size={16} />
+                <span>Review & Accept</span>
+                {pendingNotes.length > 0 && (
+                  <span className={`text-[0.72rem] font-extrabold px-2 py-0.5 rounded-full ${
+                    isPendingView ? 'bg-white text-amber-600' : 'bg-amber-600 text-white'
+                  }`}>
+                    {pendingNotes.length}
+                  </span>
+                )}
+              </button>
+            )}
 
-          {/* Year Tabs */}
-          {availableYears.map(year => (
-            <button
-              key={year}
-              onClick={() => setActiveTab(year)}
-              className={`font-sans text-[0.95rem] font-bold py-2.5 px-6 rounded-t-[8px] transition-colors cursor-pointer border-none outline-none ${
-                activeTab === year
-                  ? 'bg-[#f3f4f6] text-[#111111]' // Highlighted tab
-                  : 'bg-[#4b5563] text-white hover:bg-[#374151]' // Gray tab
-              }`}
-            >
-              {year}
-            </button>
-          ))}
-        </div>
+            {/* Year Tabs */}
+            {availableYears.map(year => (
+              <button
+                key={year}
+                onClick={() => setActiveTab(year)}
+                className={`font-sans text-[0.95rem] font-bold py-2.5 px-6 rounded-t-[8px] transition-colors cursor-pointer border-none outline-none ${
+                  activeTab === year
+                    ? 'bg-[#f3f4f6] text-[#111111]' // Highlighted tab
+                    : 'bg-[#4b5563] text-white hover:bg-[#374151]' // Gray tab
+                }`}
+              >
+                {year}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Content Area */}
 
@@ -433,15 +437,19 @@ export default function FieldNotes() {
             </div>
             <h3 className="font-sans text-lg font-bold text-gray-800 m-0">No Field Notes Published Yet</h3>
             <p className="font-sans text-[0.95rem] text-[#888888] max-w-[420px] m-0">
-              Be the first to submit a field note observation! Anyone can submit and reports will appear here after admin review.
+              {isAdmin
+                ? 'Community submissions will appear here once submitted and approved by admin.'
+                : 'Be the first to submit a field note observation! Anyone can submit and reports will appear here after admin review.'}
             </p>
-            <button
-              onClick={() => navigate('/add-field-note')}
-              className="mt-2 bg-accent text-primary font-semibold text-[0.88rem] px-5 py-2.5 rounded-[6px] inline-flex items-center gap-2 border-none cursor-pointer"
-            >
-              <PlusCircle size={16} />
-              <span>Submit First Field Note</span>
-            </button>
+            {!isAdmin && (
+              <button
+                onClick={() => navigate('/add-field-note')}
+                className="mt-2 bg-accent text-primary font-semibold text-[0.88rem] px-5 py-2.5 rounded-[6px] inline-flex items-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors"
+              >
+                <PlusCircle size={16} />
+                <span>Submit First Field Note</span>
+              </button>
+            )}
           </div>
         )}
 

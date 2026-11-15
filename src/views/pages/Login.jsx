@@ -1,28 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Shield, Lock, Mail, Eye, EyeOff, ArrowRight } from 'lucide-react';
-import wtsLogo from '../../assets/images/wtslogo.png';
+import { SITE_ASSETS } from '../../constants/siteAssets';
+const wtsLogo = SITE_ASSETS.wtsLogo;
 import { useAuth } from '../../controllers/useAuth';
 
 export default function Login() {
-  const [email, setEmail] = useState('admin@wildtuskers.lk');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const { login } = useAuth();
+  const { login, isAdmin, authLoading } = useAuth();
 
   useEffect(() => {
     document.title = 'Wild Tuskers Sri Lanka | Admin Login';
-    if (localStorage.getItem('isAdmin') === 'true') {
+  }, []);
+
+  useEffect(() => {
+    if (!authLoading && isAdmin) {
       navigate('/admin');
     }
-  }, [navigate]);
+  }, [authLoading, isAdmin, navigate]);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const errMsg = login(email, password);
+    if (submitting) return;
+    setSubmitting(true);
+    const errMsg = await login(email, password);
+    setSubmitting(false);
     if (errMsg) {
       setError(errMsg);
     } else {
@@ -131,9 +139,10 @@ export default function Login() {
           {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-[#0b2518] text-white py-3.5 rounded-xl font-bold hover:bg-[#16402b] hover:-translate-y-[0.5px] hover:shadow-[0_6px_20px_rgba(11,37,24,0.25)] transition-all cursor-pointer mt-3 text-[0.95rem] flex items-center justify-center gap-2 border-none shadow-md"
+            disabled={submitting}
+            className="disabled:opacity-60 disabled:cursor-wait w-full bg-[#0b2518] text-white py-3.5 rounded-xl font-bold hover:bg-[#16402b] hover:-translate-y-[0.5px] hover:shadow-[0_6px_20px_rgba(11,37,24,0.25)] transition-all cursor-pointer mt-3 text-[0.95rem] flex items-center justify-center gap-2 border-none shadow-md"
           >
-            <span>Sign In to Admin Portal</span>
+            <span>{submitting ? 'Signing in…' : 'Sign In to Admin Portal'}</span>
             <ArrowRight size={17} />
           </button>
         </form>

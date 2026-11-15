@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   MapPin,
@@ -13,24 +14,94 @@ import {
   ExternalLink,
   Camera,
   Maximize2,
-  X
+  X,
+  Eye,
+  Map as MapIcon,
+  HeartPulse,
+  Hourglass,
+  Skull,
+  StickyNote,
 } from 'lucide-react';
 import { useTuskerProfile } from '../../controllers/useTusker';
+import StatusBadge from '../components/StatusBadge';
+import { getCachedAspect, setCachedAspect, probeImageAspect } from '../../utils/photoAspectCache';
 
 /* ── Slideshow Component ─────────────────────────────────────── */
 function PhotoSlideshow({ photos, name, current, prev, next, setCurrent }) {
+  const currentPhoto = photos && photos[current];
+  const [isPortrait, setIsPortrait] = useState(() => {
+    const cached = getCachedAspect(currentPhoto);
+    return cached !== null ? cached : false;
+  });
+  const imgRef = useRef(null);
+
+  useEffect(() => {
+    if (!currentPhoto) {
+      setIsPortrait(false);
+      return;
+    }
+
+    const cached = getCachedAspect(currentPhoto);
+    if (cached !== null) {
+      setIsPortrait(cached);
+      return;
+    }
+
+    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0 && imgRef.current.naturalHeight > 0) {
+      const portrait = imgRef.current.naturalHeight > imgRef.current.naturalWidth;
+      setCachedAspect(currentPhoto, portrait);
+      setIsPortrait(portrait);
+      return;
+    }
+
+    probeImageAspect(currentPhoto, (portrait) => {
+      setIsPortrait(portrait);
+    });
+  }, [currentPhoto]);
+
+  const handleImageLoad = (e) => {
+    const { naturalWidth, naturalHeight } = e.target;
+    if (naturalWidth && naturalHeight) {
+      const portrait = naturalHeight > naturalWidth;
+      setCachedAspect(currentPhoto, portrait);
+      setIsPortrait(portrait);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4 min-[820px]:sticky min-[820px]:top-[calc(80px+1.5rem)]">
-      <div className="relative w-full aspect-[4/3] bg-[#e8e8e8] rounded-[14px] overflow-hidden flex items-center justify-center">
-        {photos[current]
-          ? <img src={photos[current]} alt={`${name} photo ${current + 1}`} className="w-full h-full object-cover" />
-          : <div className="flex flex-col items-center gap-1.5">
+      <div
+        className={`relative w-full rounded-[14px] overflow-hidden flex items-center justify-center transition-all duration-300 shadow-sm ${
+          !currentPhoto
+            ? 'aspect-[4/3] bg-[#e8e8e8]'
+            : isPortrait
+              ? 'aspect-[3/4] bg-[#e8e8e8]'
+              : 'aspect-[4/3] bg-[#e8e8e8]'
+        }`}
+      >
+        {currentPhoto ? (
+          <img
+            ref={(el) => {
+              imgRef.current = el;
+              if (el && el.complete && el.naturalWidth > 0 && el.naturalHeight > 0) {
+                const portrait = el.naturalHeight > el.naturalWidth;
+                setCachedAspect(currentPhoto, portrait);
+                setIsPortrait((prev) => (prev !== portrait ? portrait : prev));
+              }
+            }}
+            src={currentPhoto}
+            alt={`${name} photo ${current + 1}`}
+            onLoad={handleImageLoad}
+            className="w-full h-full object-cover object-center rounded-[14px]"
+          />
+        ) : (
+          <div className="flex flex-col items-center gap-1.5 p-8">
             <span className="font-sans text-[1.4rem] font-bold text-[#bbbbbb]">{name}</span>
             <span className="font-sans text-[0.82rem] text-[#cccccc]">Photo {current + 1}</span>
           </div>
-        }
+        )}
 
-        {photos.length > 1 && (
+        {photos && photos.length > 1 && (
           <>
             <button
               className="absolute top-1/2 -translate-y-1/2 bg-white/85 rounded-full w-10 h-10 flex items-center justify-center cursor-pointer text-[#333333] shadow-[0_2px_8px_rgba(0,0,0,0.12)] hover:bg-white hover:-translate-y-1/2 hover:scale-108 transition-all z-[2] left-3"
@@ -49,11 +120,15 @@ function PhotoSlideshow({ photos, name, current, prev, next, setCurrent }) {
           </>
         )}
 
-        <span className="absolute bottom-3 right-3.5 bg-black/45 text-white font-sans text-[0.75rem] font-semibold px-2 py-0.5 rounded-full z-[2]">{current + 1} / {photos.length}</span>
+        {photos && photos.length > 0 && (
+          <span className="absolute bottom-3 right-3.5 bg-black/55 text-white font-sans text-[0.75rem] font-semibold px-2.5 py-0.5 rounded-full z-[2] backdrop-blur-xs">
+            {current + 1} / {photos.length}
+          </span>
+        )}
       </div>
 
       {/* Dot navigation */}
-      {photos.length > 1 && (
+      {photos && photos.length > 1 && (
         <div className="flex justify-center gap-2">
           {photos.map((_, i) => (
             <button
@@ -72,6 +147,7 @@ function PhotoSlideshow({ photos, name, current, prev, next, setCurrent }) {
 /* ── Detail Row ──────────────────────────────────────────────── */
 function DetailRow({ icon, label, value }) {
   if (!value) return null;
+
   return (
     <div className="flex items-start gap-3.5">
       <div className="w-[34px] h-[34px] rounded-[8px] bg-[#faf5ec] flex items-center justify-center text-accent shrink-0 mt-0.5">{icon}</div>
@@ -82,6 +158,22 @@ function DetailRow({ icon, label, value }) {
     </div>
   );
 }
+
+/** "2026-05-01" → "May 2026" (last-seen dates are month precision). */
+function formatMonth(dateStr) {
+  if (!dateStr) return '';
+  const [y, m] = dateStr.split('-');
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const idx = parseInt(m, 10) - 1;
+  return idx >= 0 && idx < 12 ? `${months[idx]} ${y}` : dateStr;
+}
+
+const THREAT_STYLES = {
+  Low: 'bg-[#e8f5ec] text-[#1f7a3d]',
+  Medium: 'bg-[#fff6e5] text-[#9a6200]',
+  High: 'bg-[#fdecea] text-[#c0392b]',
+  Highest: 'bg-[#c0392b] text-white',
+};
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
@@ -105,6 +197,7 @@ export default function TuskerProfile() {
 
   const {
     tusker,
+    loading,
     comparisonList,
     earComparisonList,
     isAdmin,
@@ -124,6 +217,24 @@ export default function TuskerProfile() {
     }
   }, [tusker]);
 
+  useEffect(() => {
+    if (selectedComparisonImg || showRiskModal) {
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prevOverflow;
+      };
+    }
+  }, [selectedComparisonImg, showRiskModal]);
+
+  if (loading) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center font-sans text-[#888888] pt-[80px]">
+        Loading tusker profile…
+      </div>
+    );
+  }
+
   if (!tusker) {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center gap-6 font-sans text-[#888888] pt-[80px]">
@@ -137,6 +248,8 @@ export default function TuskerProfile() {
       </div>
     );
   }
+
+  const isDeceased = tusker.livingStatus === 'Deceased';
 
   return (
     <div className="w-full min-h-screen bg-white pt-[calc(80px+2rem)] pb-20">
@@ -197,10 +310,17 @@ export default function TuskerProfile() {
                   </span>
                 )}
               </h1>
+              <StatusBadge
+                status={tusker.livingStatus}
+                deathYear={tusker.deathYear}
+                className="mt-3 text-[0.8rem] px-3 py-1"
+              />
             </div>
 
             {/* Description */}
-            <p className="font-sans text-[0.95rem] leading-[1.75] text-[#444444] m-0">{tusker.description}</p>
+            {tusker.description && (
+              <p className="font-sans text-[0.95rem] leading-[1.75] text-[#444444] m-0">{tusker.description}</p>
+            )}
 
             <div className="h-px bg-[#f0f0f0]" />
 
@@ -209,63 +329,142 @@ export default function TuskerProfile() {
               <DetailRow
                 icon={<MapPin size={16} />}
                 label="Location"
-                value={tusker.location}
+                value={tusker.location || 'Not Applicable'}
               />
               <DetailRow
                 icon={<User size={16} />}
                 label="First Recorded By"
-                value={tusker.recordedBy}
+                value={tusker.recordedBy || 'Not Applicable'}
               />
               <DetailRow
                 icon={<UserCheck size={16} />}
                 label="Nickname Suggested By"
-                value={tusker.nicknameGivenBy || tusker.recordedBy}
+                value={tusker.nicknameGivenBy || tusker.recordedBy || 'Not Applicable'}
               />
               <DetailRow
                 icon={<Calendar size={16} />}
                 label="First Recorded Date"
-                value={formatDate(tusker.listedDate)}
+                value={formatDate(tusker.listedDate) || 'Not Applicable'}
               />
-              <DetailRow
-                icon={<Tag size={16} />}
-                label="Special Marks"
-                value={
-                  <div className="flex flex-col gap-1">
-                    <span>{tusker.specialMarks || 'None recorded.'}</span>
-                    {((tusker.specialWounds && tusker.specialWounds !== 'None recorded.') || tusker.wounds) && (
-                      <span className="text-[0.88rem] text-[#555555]">
-                        <strong className="text-[#222222] font-semibold">Wounds: </strong>
-                        {tusker.specialWounds || tusker.wounds}
+              {/* Special Marks (hide if Not Applicable and no wounds) */}
+              {((tusker.specialMarks && tusker.specialMarks !== 'Not Applicable' && tusker.specialMarks !== 'None') || tusker.specialWounds || tusker.wounds) && (
+                <DetailRow
+                  icon={<Tag size={16} />}
+                  label="Special Marks"
+                  value={
+                    <div className="flex flex-col gap-1">
+                      {tusker.specialMarks && tusker.specialMarks !== 'Not Applicable' && (
+                        <span>{tusker.specialMarks}</span>
+                      )}
+                      {((tusker.specialWounds && tusker.specialWounds !== 'None recorded.') || tusker.wounds) && (
+                        <span className="text-[0.88rem] text-[#555555]">
+                          <strong className="text-[#222222] font-semibold">Wounds: </strong>
+                          {tusker.specialWounds || tusker.wounds}
+                        </span>
+                      )}
+                    </div>
+                  }
+                />
+              )}
+
+              {/* Death Details (Prominently displayed for deceased tuskers) */}
+              {isDeceased && (
+                <DetailRow
+                  icon={<Skull size={16} className="text-red-500" />}
+                  label="Death Details"
+                  value={
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-semibold text-red-700">
+                        {[tusker.deathYear ? `Year: ${tusker.deathYear}` : null, tusker.deathReason ? `Cause: ${tusker.deathReason}` : null].filter(Boolean).join(' · ') || 'Details not recorded'}
                       </span>
-                    )}
-                  </div>
-                }
-              />
-              <DetailRow
-                icon={<ShieldAlert size={16} />}
-                label="Risk Score"
-                value={
-                  <div className="flex items-center gap-2.5 flex-wrap">
-                    <span className="font-sans text-[0.92rem] font-bold text-[#111111]">
-                      {tusker.riskScore || '6.5 / 10 (Moderate)'}
+                    </div>
+                  }
+                />
+              )}
+
+              {/* Risk Score (Only for living / actively monitored tuskers) */}
+              {!isDeceased && (tusker.riskScore || tusker.riskLink) && (
+                <DetailRow
+                  icon={<ShieldAlert size={16} />}
+                  label="Risk Score"
+                  value={
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <span className="font-sans text-[0.92rem] font-bold text-[#111111]">
+                        {tusker.riskScore || 'Not Applicable'}
+                      </span>
+                      {(tusker.riskLink || tusker.riskScore) && (
+                        <a
+                          href={tusker.riskLink && tusker.riskLink.startsWith('http') ? tusker.riskLink : '#risk-assessment'}
+                          target={tusker.riskLink?.startsWith('http') ? '_blank' : undefined}
+                          rel="noopener noreferrer"
+                          onClick={(e) => {
+                            if (!tusker.riskLink || tusker.riskLink === '#' || tusker.riskLink === '#risk-assessment') {
+                              e.preventDefault();
+                              setShowRiskModal(true);
+                            }
+                          }}
+                          className="inline-flex items-center gap-1 font-sans text-[0.82rem] font-semibold text-accent hover:text-accent-hover hover:underline transition-colors cursor-pointer"
+                        >
+                          View Risk Assessment <ExternalLink size={12} />
+                        </a>
+                      )}
+                    </div>
+                  }
+                />
+              )}
+
+              {/* Additional Official Registry Fields */}
+              {tusker.ageRange && (
+                <DetailRow
+                  icon={<Hourglass size={16} />}
+                  label={isDeceased ? "Estimated Age (at death)" : "Estimated Age"}
+                  value={`${tusker.ageRange} years`}
+                />
+              )}
+
+              {/* Health Condition (Hidden for deceased tuskers) */}
+              {!isDeceased && tusker.healthCondition && (
+                <DetailRow
+                  icon={<HeartPulse size={16} />}
+                  label="Health Condition"
+                  value={tusker.healthCondition}
+                />
+              )}
+
+              {/* Life Threat Level (Hidden for deceased tuskers) */}
+              {!isDeceased && tusker.threatLevel && (
+                <DetailRow
+                  icon={<ShieldAlert size={16} />}
+                  label="Life Threat Level"
+                  value={
+                    <span className={`inline-block font-sans text-[0.82rem] font-bold rounded-full px-3 py-0.5 ${THREAT_STYLES[tusker.threatLevel] || ''}`}>
+                      {tusker.threatLevel}
                     </span>
-                    <a
-                      href={tusker.riskLink || '#risk-assessment'}
-                      target={tusker.riskLink?.startsWith('http') ? '_blank' : undefined}
-                      rel="noopener noreferrer"
-                      onClick={(e) => {
-                        if (!tusker.riskLink || tusker.riskLink === '#' || tusker.riskLink === '#risk-assessment') {
-                          e.preventDefault();
-                          setShowRiskModal(true);
-                        }
-                      }}
-                      className="inline-flex items-center gap-1 font-sans text-[0.82rem] font-semibold text-accent hover:text-accent-hover hover:underline transition-colors"
-                    >
-                      View Risk Assessment <ExternalLink size={12} />
-                    </a>
-                  </div>
-                }
-              />
+                  }
+                />
+              )}
+
+              {tusker.lastSeenArea && (
+                <DetailRow
+                  icon={<Eye size={16} />}
+                  label={isDeceased ? "Last Documented Area" : "Last Seen"}
+                  value={[tusker.lastSeenArea, formatMonth(tusker.lastSeen)].filter(Boolean).join(' · ')}
+                />
+              )}
+              {(tusker.zone || tusker.district || tusker.province) && (
+                <DetailRow
+                  icon={<MapIcon size={16} />}
+                  label="Region"
+                  value={[tusker.zone, tusker.district, tusker.province].filter(Boolean).join(' · ')}
+                />
+              )}
+              {tusker.remarks && (
+                <DetailRow
+                  icon={<StickyNote size={16} />}
+                  label="Remarks"
+                  value={tusker.remarks}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -346,33 +545,23 @@ export default function TuskerProfile() {
           </div>
         )}
 
-        {/* EAR BIOMETRIC COMPARISON (3x1 Horizontal Collage - Visible ONLY to Admins) */}
-        {isAdmin && earComparisonList && earComparisonList.length > 0 && (
-          <div className="mt-14 pt-10 border-t-2 border-dashed border-[#c69b55]/30 bg-gradient-to-b from-[#fbf9f4]/60 to-transparent -mx-6 px-6 sm:-mx-8 sm:px-8 py-8 rounded-2xl">
+        {/* EAR BIOMETRIC COMPARISON (2 Boxes) */}
+        {earComparisonList && earComparisonList.length > 0 && (
+          <div className="mt-14 pt-10 border-t border-[#eeeeee]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-3">
               <div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0b2518] text-[#c69b55] font-semibold text-[0.76rem] tracking-wider uppercase mb-2 shadow-xs">
-                  <ShieldAlert size={13} className="text-[#c69b55]" />
-                  <span>Admin Only Biometric Identification</span>
-                </div>
                 <h2 className="font-sans text-[1.6rem] font-bold text-[#111111] m-0 flex items-center gap-2">
                   <span>Ear Biometric & Venation Comparison</span>
                 </h2>
                 <p className="font-sans text-[0.9rem] text-[#666666] mt-1.5 mb-0 max-w-[780px] leading-relaxed">
-                  Confidential administrative identification panel comparing pinna edge contours, tears, V-notches, and vascular branching across monitoring intervals.
+                  Identification panel comparing pinna edge contours, tears, V-notches, and vascular branching across monitoring intervals.
                 </p>
-              </div>
-
-              <div className="self-start sm:self-center">
-                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 font-sans text-xs font-bold shadow-xs">
-                  <span>Admin Access Verified</span>
-                </span>
               </div>
             </div>
 
-            {/* 3x1 Horizontal Collage of Ears */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {earComparisonList.map((item, index) => (
+            {/* 2-Column Horizontal Collage of Ears */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {earComparisonList.slice(0, 2).map((item, index) => (
                 <div
                   key={index}
                   className="bg-white border border-[#e0e5e2] rounded-[16px] overflow-hidden flex flex-col shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
@@ -461,13 +650,13 @@ export default function TuskerProfile() {
       </div>
 
       {/* Risk Assessment Modal */}
-      {showRiskModal && (
+      {showRiskModal && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setShowRiskModal(false)}
         >
           <div
-            className="bg-white rounded-[16px] max-w-[500px] w-full p-6 shadow-2xl border border-[#e8e8e8] flex flex-col gap-4 relative"
+            className="bg-white rounded-[16px] max-w-[500px] w-full p-6 shadow-2xl border border-[#e8e8e8] flex flex-col gap-4 relative my-auto"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center pb-3 border-b border-[#eeeeee]">
@@ -491,7 +680,7 @@ export default function TuskerProfile() {
             <div className="flex flex-col gap-3 font-sans text-[0.9rem] text-[#444444]">
               <div className="flex justify-between items-center p-3 rounded-[10px] bg-[#f9faf8] border border-[#eeeeee]">
                 <span className="font-medium text-[#666666]">Overall Risk Rating</span>
-                <span className="font-bold text-[#111111] text-[1rem]">{tusker.riskScore || '6.5 / 10'}</span>
+                <span className="font-bold text-[#111111] text-[1rem]">{tusker.riskScore || 'Not Applicable'}</span>
               </div>
 
               <div className="flex flex-col gap-2 pt-1">
@@ -499,7 +688,7 @@ export default function TuskerProfile() {
                   The WTS Risk Score is an index calculated based on:
                 </p>
                 <ul className="m-0 pl-5 text-[0.85rem] text-[#666666] flex flex-col gap-1.5">
-                  <li><strong className="text-[#222222]">Corridor Proximity:</strong> Frequency of movement across human settlements and farming areas in {tusker.location}.</li>
+                  <li><strong className="text-[#222222]">Corridor Proximity:</strong> Frequency of movement across human settlements and farming areas in {tusker.location || 'Sri Lanka'}.</li>
                   <li><strong className="text-[#222222]">Physical Vulnerability:</strong> Tusk span attractiveness for illicit poaching and snare frequency.</li>
                   <li><strong className="text-[#222222]">Conflict & Injury History:</strong> {tusker.specialWounds && tusker.specialWounds !== 'None recorded.' ? tusker.specialWounds : 'No previous severe conflict injuries recorded.'}</li>
                 </ul>
@@ -515,20 +704,21 @@ export default function TuskerProfile() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Comparison Image Lightbox Modal */}
-      {selectedComparisonImg && (
+      {selectedComparisonImg && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in"
+          className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-fade-in select-none"
           onClick={() => setSelectedComparisonImg(null)}
         >
           <div
-            className="relative max-w-3xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col"
+            className="relative max-w-3xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col my-auto border border-white/20"
             onClick={e => e.stopPropagation()}
           >
-            <div className="p-4 bg-white border-b border-gray-100 flex items-center justify-between">
+            <div className="p-4 bg-white border-b border-gray-100 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2.5">
                 <span className="bg-[#0b2518] text-[#c69b55] font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1">
                   <Calendar size={12} />
@@ -540,17 +730,18 @@ export default function TuskerProfile() {
               </div>
               <button
                 onClick={() => setSelectedComparisonImg(null)}
-                className="text-gray-400 hover:text-gray-600 bg-none border-none cursor-pointer p-1"
+                className="text-gray-400 hover:text-gray-700 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center border-none cursor-pointer transition-colors p-0"
+                aria-label="Close image preview"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <div className="w-full aspect-[4/3] bg-black max-h-[65vh] flex items-center justify-center">
+            <div className="w-full bg-[#0a0f0d] flex items-center justify-center min-h-[260px] max-h-[62vh] overflow-hidden shrink-0">
               <img
                 src={selectedComparisonImg.photo}
                 alt={`${tusker.name} ${selectedComparisonImg.year}`}
-                className="w-full h-full object-contain"
+                className="w-full h-full max-h-[62vh] object-contain"
               />
             </div>
 
@@ -560,7 +751,8 @@ export default function TuskerProfile() {
               </p>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

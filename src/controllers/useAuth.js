@@ -1,12 +1,51 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
+import { supabase } from '../lib/supabaseClient';
 
-/**
- * Controller hook managing authentication state (admin privileges)
- * and top-level navigation responsive state (scroll & mobile drawer).
- */
+/* ==============================================================
+   SECTION 1: SHARED AUTH STORE (Supabase Auth)
+   One subscription for the whole app. `isAdmin` is true only when
+   the signed-in user is listed in public.admin_users — the same
+   check the database's Row Level Security uses.
+============================================================== */
+let authState = { isAdmin: false, authLoading: true, user: null };
+const listeners = new Set();
+
+function setAuthState(next) {
+  authState = { ...authState, ...next };
+  listeners.forEach(l => l());
+}
+
+async function checkAdmin(user) {
+  if (!user) return false;
+  const { data, error } = await supabase
+    .from('admin_users').select('user_id').eq('user_id', user.id).maybeSingle();
+  if (error) console.error('[Auth] admin check failed', error);
+  return Boolean(data);
+}
+
+async function applySession(session) {
+  const user = session?.user ?? null;
+  const isAdmin = await checkAdmin(user);
+  setAuthState({ user, isAdmin, authLoading: false });
+}
+
+supabase.auth.getSession().then(({ data }) => applySession(data.session));
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') return;
+  // Defer: Supabase recommends not awaiting other calls inside this callback.
+  setTimeout(() => applySession(session), 0);
+});
+
+const subscribe = (l) => { listeners.add(l); return () => listeners.delete(l); };
+const getSnapshot = () => authState;
+
+/* ==============================================================
+   SECTION 2: HOOK
+   Authentication state (admin privileges) plus top-level
+   navigation responsive state (scroll & mobile drawer).
+============================================================== */
 export function useAuth() {
-  /* ── State ─────────────────────────────────────────────────── */
-  const [isAdmin, setIsAdmin] = useState(localStorage.getItem('isAdmin') === 'true');
+  const { isAdmin, authLoading, user } = useSyncExternalStore(subscribe, getSnapshot);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -19,38 +58,33 @@ export function useAuth() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  /* ── Auth Synchronization Across Windows/Components ───────── */
-  useEffect(() => {
-    const handleAuthChange = () => {
-      setIsAdmin(localStorage.getItem('isAdmin') === 'true');
-    };
-    window.addEventListener('authChange', handleAuthChange);
-    return () => window.removeEventListener('authChange', handleAuthChange);
-  }, []);
-
   /* ── Authentication Handlers ───────────────────────────────── */
-  const login = (email, password) => {
+  /** Resolves to '' on success, or an error message. */
+  const login = async (email, password) => {
     if (!email || !password) {
       return 'Please enter both your admin email and password.';
     }
-    const cleanEmail = email.trim().toLowerCase();
-    if (
-      cleanEmail === 'admin@wildtuskers.lk' &&
-      password === 'admin123'
-    ) {
-      localStorage.setItem('isAdmin', 'true');
-      localStorage.removeItem('isMember');
-      window.dispatchEvent(new Event('authChange'));
-      return '';
-    } else {
-      return 'Invalid admin credentials. Use admin@wildtuskers.lk and admin123.';
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
+    if (error) {
+      return error.message === 'Invalid login credentials'
+        ? 'Invalid admin credentials.'
+        : error.message;
     }
+    const admin = await checkAdmin(data.user);
+    if (!admin) {
+      await supabase.auth.signOut();
+      return 'This account does not have admin access.';
+    }
+    setAuthState({ user: data.user, isAdmin: true, authLoading: false });
+    return '';
   };
 
-  const logout = () => {
-    localStorage.removeItem('isAdmin');
-    localStorage.removeItem('isMember');
-    window.dispatchEvent(new Event('authChange'));
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setAuthState({ user: null, isAdmin: false, authLoading: false });
   };
 
   /* ── Navigation Drawer Controls ────────────────────────────── */
@@ -64,6 +98,8 @@ export function useAuth() {
 
   return {
     isAdmin,
+    authLoading,
+    user,
     isScrolled,
     isOpen,
     toggleMenu,

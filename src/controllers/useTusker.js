@@ -1,11 +1,14 @@
 import { useState, useMemo, useEffect } from 'react';
 import {
   getTuskers,
+  getTuskerById,
+  tuskerExists,
   addTusker,
   updateTusker,
   addSightingToTusker,
   getTuskerComparison,
-  getTuskerEarComparison
+  getTuskerEarComparison,
+  compareTuskerId
 } from '../models/TuskerModel';
 import { useAuth } from './useAuth';
 
@@ -13,22 +16,64 @@ import { useAuth } from './useAuth';
    SECTION 1: WILD TUSKERS DIRECTORY & SEARCH CONTROLLER
 ============================================================== */
 export function useTuskerList() {
-  const tuskers = useMemo(() => getTuskers(), []);
+  const [tuskers, setTuskers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    getTuskers()
+      .then(list => { if (active) setTuskers(list); })
+      .catch(err => { if (active) setLoadError(err.message); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  // Roaming areas are often combined ("Minneriya / Kaudulla") or
+  // list multiple park blocks ("Yala Block 3,5"), so expand blocks and
+  // split them into individual areas for the filter.
+  const splitAreas = (loc) => {
+    if (!loc) return [];
+    const normalized = loc.replace(
+      /(\b(?:Yala\s+)?Block\s+)(\d+)\s*,\s*(\d+)/gi,
+      (_, prefix, n1, n2) => `${prefix}${n1} / ${prefix}${n2}`
+    );
+    return normalized
+      .split(/[/,]/)
+      .map((a) => a.trim())
+      .filter((a) => Boolean(a) && !/^\d+$/.test(a));
+  };
 
   const allLocations = useMemo(() => {
-    return [...new Set(tuskers.map(t => t.location).filter(Boolean))].sort();
+    const byKey = new Map();
+    tuskers.forEach(t => splitAreas(t.location).forEach(a => {
+      const key = a.toLowerCase();
+      if (!byKey.has(key)) byKey.set(key, a);
+    }));
+    return [...byKey.values()].sort((a, b) => a.localeCompare(b));
+  }, [tuskers]);
+
+  const tuskerRoamsIn = (t, area) =>
+    splitAreas(t.location).some(a => a.toLowerCase() === area.toLowerCase());
+
+  const statusCounts = useMemo(() => {
+    const counts = { ALL: tuskers.length };
+    tuskers.forEach(t => {
+      const k = t.livingStatus || 'Unknown';
+      counts[k] = (counts[k] || 0) + 1;
+    });
+    return counts;
   }, [tuskers]);
 
   const [nameQuery, setNameQuery]         = useState('');
   const [nameSuggestions, setNameSugg]    = useState([]);
   const [showNameSugg, setShowNameSugg]   = useState(false);
 
+  const [statusFilter, setStatusFilter]   = useState('ALL');
   const [locationQuery, setLocationQuery] = useState('');
   const [selectedLocation, setSelectedLoc]= useState('');
   const [showLocDrop, setShowLocDrop]     = useState(false);
   const [locSuggestions, setLocSugg]      = useState([]);
-
-  const sortAZ = true;
 
   const handleNameInput = (val) => {
     setNameQuery(val);
@@ -38,9 +83,9 @@ export function useTuskerList() {
       return;
     }
     const q = val.toLowerCase();
-    const matches = tuskers.filter(t =>
-      t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q)
-    );
+    const matches = tuskers
+      .filter(t => t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q))
+      .sort((a, b) => compareTuskerId(a.id, b.id));
     setNameSugg(matches.slice(0, 5));
     setShowNameSugg(true);
   };
@@ -77,6 +122,7 @@ export function useTuskerList() {
     setNameQuery('');
     setSelectedLoc('');
     setLocationQuery('');
+    setStatusFilter('ALL');
   };
 
   const focusLocation = () => {
@@ -92,15 +138,23 @@ export function useTuskerList() {
         t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q));
     }
     if (selectedLocation) {
-      list = list.filter(t => t.location === selectedLocation);
+      list = list.filter(t => tuskerRoamsIn(t, selectedLocation));
     }
-    list.sort((a, b) =>
-      sortAZ ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name));
+    if (statusFilter !== 'ALL') {
+      list = list.filter(t => t.livingStatus === statusFilter);
+    }
+    list.sort((a, b) => compareTuskerId(a.id, b.id));
     return list;
-  }, [nameQuery, selectedLocation, sortAZ, tuskers]);
+  }, [nameQuery, selectedLocation, statusFilter, tuskers]);
 
   return {
     tuskers,
+    loading,
+    loadError,
+    statusFilter,
+    setStatusFilter,
+    statusCounts,
+    countInArea: (area) => tuskers.filter(t => tuskerRoamsIn(t, area)).length,
     nameQuery,
     nameSuggestions,
     showNameSugg,
@@ -125,13 +179,31 @@ export function useTuskerList() {
    SECTION 2: TUSKER PROFILE & SLIDESHOW CONTROLLER
 ============================================================== */
 export function useTuskerProfile(id) {
-  const tuskers = getTuskers();
-  const tusker = tuskers.find(t => t.id.toLowerCase() === id?.toLowerCase());
+  const [tusker, setTusker] = useState(null);
+  const [loading, setLoading] = useState(true);
   const { isAdmin } = useAuth();
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    getTuskerById(id)
+      .then(t => { if (active) setTusker(t); })
+      .catch(err => { console.error(err); if (active) setTusker(null); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [id]);
   const canAddSighting = isAdmin;
 
-  const comparisonList = useMemo(() => getTuskerComparison(tusker), [tusker]);
-  const earComparisonList = useMemo(() => getTuskerEarComparison(tusker), [tusker]);
+  // Only show comparisons that were actually recorded for this tusker.
+  // (The auto-generated narrative would invent history for real elephants.)
+  const comparisonList = useMemo(
+    () => (tusker?.photographicComparison?.length ? getTuskerComparison(tusker) : []),
+    [tusker]
+  );
+  const earComparisonList = useMemo(
+    () => ((tusker?.earComparison?.length || tusker?.earPhotos?.length) ? getTuskerEarComparison(tusker) : []),
+    [tusker]
+  );
 
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
 
@@ -145,6 +217,7 @@ export function useTuskerProfile(id) {
 
   return {
     tusker,
+    loading,
     comparisonList,
     earComparisonList,
     isAdmin,
@@ -162,6 +235,7 @@ export function useTuskerProfile(id) {
 export function useSightingForm(tuskerId) {
   const [formData, setFormData] = useState({
     imageUrl: '',
+    imageUrls: [],
     captureDate: '',
     note: ''
   });
@@ -173,27 +247,51 @@ export function useSightingForm(tuskerId) {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const submitSighting = () => {
-    const { imageUrl, captureDate, note } = formData;
-    if (!imageUrl || !captureDate) {
-      setError('Please provide an image URL and capture date.');
+  const handleImagesChange = (urls) => {
+    const list = Array.isArray(urls) ? urls : (urls ? [urls] : []);
+    setFormData(prev => ({
+      ...prev,
+      imageUrls: list,
+      imageUrl: list[0] || ''
+    }));
+  };
+
+  const submitSighting = async () => {
+    const { imageUrl, imageUrls, captureDate, note } = formData;
+    const finalUrls = (imageUrls && imageUrls.length > 0)
+      ? imageUrls
+      : (imageUrl ? (imageUrl.includes(',') ? imageUrl.split(',').map(s => s.trim()).filter(Boolean) : [imageUrl]) : []);
+
+    if (finalUrls.length === 0 || !captureDate) {
+      setError('Please provide at least one photo and capture date.');
       return false;
     }
-    
-    addSightingToTusker(tuskerId, {
-      imageUrl,
-      captureDate,
-      note,
-      author: isAdmin ? 'Admin' : 'Researcher'
-    });
-    
+
+    try {
+      await Promise.all(
+        finalUrls.map(url =>
+          addSightingToTusker(tuskerId, {
+            imageUrl: url,
+            captureDate,
+            note,
+            author: isAdmin ? 'Admin' : 'Researcher'
+          })
+        )
+      );
+    } catch (err) {
+      setError(`Could not save sighting: ${err.message}`);
+      return false;
+    }
+
     return true;
   };
 
   return {
     formData,
+    setFormData,
     error,
     handleChange,
+    handleImagesChange,
     submitSighting
   };
 }
@@ -201,109 +299,143 @@ export function useSightingForm(tuskerId) {
 /* ==============================================================
    SECTION 4: CREATE / EDIT TUSKER PROFILE FORM CONTROLLER
 ============================================================== */
-export function useTuskerForm(id, locationsList) {
+const EMPTY_TUSKER_FORM = {
+  id: '',
+  name: '',
+  sinhala: '',
+  location: '',
+  listedDate: '',
+  recordedBy: '',
+  nicknameGivenBy: '',
+  description: '',
+  specialMarks: '',
+  specialWounds: '',
+  riskScore: '',
+  riskLink: '#risk-assessment',
+  photo: '',
+  photos: [],
+  // Official registry fields
+  livingStatus: 'Alive',
+  deathYear: '',
+  deathReason: '',
+  lastSeenArea: '',
+  lastSeen: '',        // "YYYY-MM" in the form, stored as YYYY-MM-01
+  zone: '',
+  district: '',
+  province: '',
+  ageRange: '',
+  healthCondition: '',
+  threatLevel: '',
+  remarks: '',
+};
+
+export function useTuskerForm(id) {
   const isEditMode = !!id;
-  const [formData, setFormData] = useState({
-    id: '',
-    name: '',
-    sinhala: '',
-    location: locationsList[0] || '',
-    listedDate: '',
-    recordedBy: '',
-    nicknameGivenBy: '',
-    description: '',
-    specialMarks: '',
-    specialWounds: '',
-    riskScore: '',
-    riskLink: ''
-  });
+  const [formData, setFormData] = useState(EMPTY_TUSKER_FORM);
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (isEditMode) {
-      const tuskers = getTuskers();
-      const existing = tuskers.find(t => t.id.toLowerCase() === id.toLowerCase());
-      if (existing) {
-        setFormData({
-          id: existing.id,
-          name: existing.name,
-          sinhala: existing.sinhala,
-          location: existing.location || locationsList[0] || '',
-          listedDate: existing.listedDate || '',
-          recordedBy: existing.recordedBy || '',
-          nicknameGivenBy: existing.nicknameGivenBy || existing.recordedBy || '',
-          description: existing.description || '',
-          specialMarks: existing.specialMarks || '',
-          specialWounds: existing.specialWounds || '',
-          riskScore: existing.riskScore || '',
-          riskLink: existing.riskLink || ''
-        });
-      } else {
+    if (!isEditMode) return;
+    let active = true;
+    getTuskerById(id).then(existing => {
+      if (!active) return;
+      if (!existing) {
         setError('Tusker not found for editing.');
+        return;
       }
-    }
-  }, [id, isEditMode, locationsList]);
+      const next = { ...EMPTY_TUSKER_FORM };
+      Object.keys(next).forEach(k => {
+        if (existing[k] !== null && existing[k] !== undefined) next[k] = String(existing[k]);
+      });
+      next.lastSeen = existing.lastSeen ? existing.lastSeen.slice(0, 7) : '';
+      if (existing.photos && existing.photos.length > 0) {
+        next.photos = existing.photos;
+        next.photo = existing.photos[0];
+      } else if (existing.photo) {
+        next.photos = [existing.photo];
+        next.photo = existing.photo;
+      }
+      setFormData(next);
+    }).catch(err => active && setError(err.message));
+    return () => { active = false; };
+  }, [id, isEditMode]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const saveProfile = () => {
-    const { id: tuskerId, name, sinhala, location, listedDate, recordedBy, nicknameGivenBy, description, specialMarks, specialWounds, riskScore, riskLink } = formData;
+  const handlePhotosChange = (urls) => {
+    const list = Array.isArray(urls) ? urls : (urls ? [urls] : []);
+    setFormData(prev => ({
+      ...prev,
+      photos: list,
+      photo: list[0] || ''
+    }));
+  };
 
-    if (!tuskerId || !name || !sinhala || !listedDate) {
-      setError('Please fill in all required fields (ID, Name, Sinhala Name, First Recorded Date).');
+  /** Resolves to the saved tusker ID, or false on error. */
+  const saveProfile = async () => {
+    const f = Object.fromEntries(
+      Object.entries(formData).map(([k, v]) => [k, typeof v === 'string' ? v.trim() : v])
+    );
+
+    if (!f.id || !f.name) {
+      setError('Please fill in the Tusker ID and Name.');
+      return false;
+    }
+    if (f.deathYear && !/^\d{4}$/.test(f.deathYear)) {
+      setError('Year of death must be a 4-digit year.');
       return false;
     }
 
-    const formattedId = tuskerId.toUpperCase().trim();
+    const formattedId = f.id.toUpperCase();
+    const isDeceased = f.livingStatus === 'Deceased';
+    const photosArray = Array.isArray(f.photos) && f.photos.length > 0
+      ? f.photos
+      : (f.photo ? (typeof f.photo === 'string' ? f.photo.split(',').map(s => s.trim()).filter(Boolean) : [f.photo]) : []);
 
-    if (isEditMode) {
-      updateTusker(id, {
-        name,
-        sinhala,
-        location,
-        listedDate,
-        recordedBy,
-        nicknameGivenBy,
-        description,
-        specialMarks,
-        specialWounds,
-        riskScore,
-        riskLink
-      });
-    } else {
-      const tuskers = getTuskers();
-      if (tuskers.some(t => t.id.toUpperCase() === formattedId)) {
-        setError(`Tusker with ID ${formattedId} already exists.`);
-        return false;
+    const payload = {
+      ...f,
+      riskLink: f.riskLink && f.riskLink.trim() ? f.riskLink.trim() : '#risk-assessment',
+      deathYear: isDeceased && f.deathYear ? Number(f.deathYear) : null,
+      deathReason: isDeceased ? f.deathReason : '',
+      lastSeen: f.lastSeen ? `${f.lastSeen}-01` : '',
+      photos: photosArray,
+    };
+    delete payload.id;
+    delete payload.photo;
+
+    setError('');
+    setSaving(true);
+    try {
+      if (isEditMode) {
+        await updateTusker(id, payload);
+      } else {
+        if (await tuskerExists(formattedId)) {
+          setError(`Tusker with ID ${formattedId} already exists.`);
+          return false;
+        }
+        await addTusker({ ...payload, id: formattedId, photos: photosArray });
       }
-
-      addTusker({
-        id: formattedId,
-        name,
-        sinhala,
-        location,
-        listedDate,
-        recordedBy,
-        nicknameGivenBy,
-        description,
-        specialMarks,
-        specialWounds,
-        riskScore,
-        riskLink,
-        photos: [null]
-      });
+    } catch (err) {
+      setError(`Could not save tusker: ${err.message}`);
+      return false;
+    } finally {
+      setSaving(false);
     }
     return formattedId;
   };
 
   return {
     formData,
+    setFormData,
     error,
-    handleChange,
-    saveProfile,
+    saving,
     isEditMode,
+    handleChange,
+    handlePhotosChange,
+    saveProfile,
   };
 }

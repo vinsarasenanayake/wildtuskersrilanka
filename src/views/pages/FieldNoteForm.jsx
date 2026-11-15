@@ -12,7 +12,8 @@ import {
   UploadCloud,
   X,
   CheckCircle2,
-  ShieldCheck
+  ShieldCheck,
+  Loader2
 } from 'lucide-react';
 import { useFieldNoteForm } from '../../controllers/useFieldNotes';
 
@@ -21,6 +22,7 @@ export default function FieldNoteForm() {
   const {
     formData,
     error,
+    submitting,
     isAdmin,
     handleChange,
     handleAddImages,
@@ -28,14 +30,16 @@ export default function FieldNoteForm() {
     createNote
   } = useFieldNoteForm();
   const [submittedStatus, setSubmittedStatus] = useState(null);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
 
   useEffect(() => {
     document.title = 'Wild Tuskers Sri Lanka | Add Field Note';
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = createNote();
+    if (submitting || uploadingPhotos) return;
+    const result = await createNote();
     if (result && result.success) {
       if (result.isPending) {
         setSubmittedStatus('pending');
@@ -45,20 +49,19 @@ export default function FieldNoteForm() {
     }
   };
 
-  const handleFileSelect = (e) => {
-    const files = Array.from(e.target.files || []);
+  const handleFilesArray = async (filesList) => {
+    const files = Array.from(filesList || []).filter((f) => f.type && f.type.startsWith('image/'));
     if (!files.length) return;
+    setUploadingPhotos(true);
+    try {
+      await handleAddImages(files);
+    } finally {
+      setUploadingPhotos(false);
+    }
+  };
 
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          handleAddImages([event.target.result]);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-
+  const handleFileSelect = (e) => {
+    handleFilesArray(e.target.files);
     e.target.value = '';
   };
 
@@ -247,13 +250,25 @@ export default function FieldNoteForm() {
                 {/* Dropzone Trigger */}
                 <label
                   htmlFor="field-note-file-input"
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                      handleFilesArray(e.dataTransfer.files);
+                    }
+                  }}
                   className="border-2 border-dashed border-[#d1d5db] hover:border-accent hover:bg-accent/5 rounded-[12px] p-6 text-center flex flex-col items-center justify-center gap-2 cursor-pointer transition-all bg-[#fcfcfd]"
                 >
                   <div className="w-10 h-10 rounded-full bg-accent/12 text-accent flex items-center justify-center">
-                    <UploadCloud size={20} />
+                    {uploadingPhotos ? (
+                      <Loader2 size={20} className="animate-spin text-accent" />
+                    ) : (
+                      <UploadCloud size={20} />
+                    )}
                   </div>
                   <div className="font-sans text-sm font-semibold text-[#222222]">
-                    Click to attach photos or drag & drop
+                    {uploadingPhotos ? 'Uploading photos to database storage…' : 'Click to attach photos or drag & drop'}
                   </div>
                   <div className="font-sans text-xs text-[#777777]">
                     Supports JPG, PNG, WEBP (multiple attachments allowed)
@@ -298,10 +313,11 @@ export default function FieldNoteForm() {
                 </button>
                 <button
                   type="submit"
-                  className="bg-primary text-white border-none font-sans text-[0.88rem] font-semibold rounded-[10px] px-7 py-2.5 cursor-pointer flex items-center gap-2 shadow-[0_4px_14px_rgba(11,37,24,0.15)] hover:bg-primary-light transition-all"
+                  disabled={submitting}
+                  className="disabled:opacity-60 disabled:cursor-wait bg-primary text-white border-none font-sans text-[0.88rem] font-semibold rounded-[10px] px-7 py-2.5 cursor-pointer flex items-center gap-2 shadow-[0_4px_14px_rgba(11,37,24,0.15)] hover:bg-primary-light transition-all"
                 >
                   <Save size={16} />
-                  <span>{isAdmin ? 'Publish Field Note' : 'Submit for Review'}</span>
+                  <span>{submitting ? 'Submitting…' : isAdmin ? 'Publish Field Note' : 'Submit for Review'}</span>
                 </button>
               </div>
             </form>

@@ -1,0 +1,414 @@
+import React, { useRef, useState, useMemo } from 'react';
+import { UploadCloud, Camera, Trash2, Loader2, CheckCircle2, Plus, Image as ImageIcon } from 'lucide-react';
+import { uploadMediaFile } from '../../utils/storageUpload';
+
+/**
+ * Universal Direct Image Upload Component
+ * Supports single and multiple image uploads directly to Supabase storage (wts-media bucket).
+ *
+ * @param {string|string[]} value - Current image URL or array of URLs
+ * @param {function} onChange - Callback: (urls: string[] | string, primaryUrl: string) => void
+ * @param {string} folder - Destination folder in Supabase wts-media (e.g. 'tuskers', 'unlisted', 'sightings', 'events', 'team')
+ * @param {string} label - Optional label above box
+ * @param {boolean} multiple - Allow multiple image selection (defaults to true unless circle is set)
+ * @param {boolean} circle - Render circular avatar upload (single profile photo mode)
+ * @param {string} aspectClass - Aspect ratio class (default 'aspect-[4/3]')
+ * @param {boolean} required - Display required indicator
+ */
+export default function ImageUploadBox({
+  value,
+  onChange,
+  folder = 'uploads',
+  label = 'Upload Photos',
+  multiple,
+  circle = false,
+  aspectClass = 'aspect-[4/3]',
+  required = false,
+}) {
+  const fileInputRef = useRef(null);
+  const addMoreInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadCount, setUploadCount] = useState(0);
+  const [dragActive, setDragActive] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+
+  // Default to multiple=true unless circle mode or explicitly set to false
+  const isMultiple = circle ? false : (multiple !== undefined ? multiple : true);
+
+  // Normalize value into a clean array of URL strings
+  const imageList = useMemo(() => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value.filter(Boolean);
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) return [];
+      if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (Array.isArray(parsed)) return parsed.filter(Boolean);
+        } catch {
+          // ignore
+        }
+      }
+      return trimmed.split(',').map((s) => s.trim()).filter(Boolean);
+    }
+    return [];
+  }, [value]);
+
+  const emitChange = (nextList) => {
+    if (!onChange) return;
+    const cleanList = nextList.filter(Boolean);
+    if (!isMultiple) {
+      onChange(cleanList[0] || '');
+    } else {
+      // If parent passed an array initially, pass array; if parent passed a string or expects string, support both
+      if (Array.isArray(value)) {
+        onChange(cleanList, cleanList[0] || '');
+      } else if (typeof value === 'string') {
+        onChange(cleanList.join(', '), cleanList[0] || '');
+      } else {
+        onChange(cleanList, cleanList[0] || '');
+      }
+    }
+  };
+
+  const handleFiles = async (filesList) => {
+    if (!filesList || filesList.length === 0) return;
+    const rawFiles = Array.from(filesList);
+    const validFiles = rawFiles.filter((f) => f.type && f.type.startsWith('image/'));
+
+    if (validFiles.length === 0) {
+      setUploadError('Please select valid image files (JPG, PNG, WEBP).');
+      return;
+    }
+
+    setUploadError('');
+    setUploading(true);
+    setUploadCount(validFiles.length);
+
+    try {
+      const uploadPromises = validFiles.map(async (file) => {
+        try {
+          return await uploadMediaFile(file, folder);
+        } catch (err) {
+          console.error('[ImageUploadBox] upload failed for file:', file.name, err);
+          return URL.createObjectURL(file);
+        }
+      });
+
+      const uploadedUrls = await Promise.all(uploadPromises);
+      const validUrls = uploadedUrls.filter(Boolean);
+
+      if (isMultiple) {
+        emitChange([...imageList, ...validUrls]);
+      } else {
+        emitChange([validUrls[0]]);
+      }
+    } catch (err) {
+      console.error('[ImageUploadBox] batch upload failed:', err);
+      setUploadError('One or more images could not be uploaded.');
+    } finally {
+      setUploading(false);
+      setUploadCount(0);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (addMoreInputRef.current) addMoreInputRef.current.value = '';
+    }
+  };
+
+  const handleFileChange = (e) => {
+    handleFiles(e.target.files);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFiles(e.dataTransfer.files);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
+
+  const handleRemoveOne = (indexToRemove, e) => {
+    if (e) e.stopPropagation();
+    const nextList = imageList.filter((_, i) => i !== indexToRemove);
+    emitChange(nextList);
+  };
+
+  const handleRemoveAll = (e) => {
+    if (e) e.stopPropagation();
+    emitChange([]);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (addMoreInputRef.current) addMoreInputRef.current.value = '';
+  };
+
+  // ── Circle Avatar Mode (Single photo for Team Members / Admins) ──
+  if (circle) {
+    const singleUrl = imageList[0] || '';
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+        <div
+          onClick={() => !uploading && fileInputRef.current?.click()}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          className={`relative w-24 h-24 rounded-full overflow-hidden flex items-center justify-center cursor-pointer border-2 transition-all ${
+            dragActive
+              ? 'border-accent bg-accent/10 scale-105'
+              : 'border-[#d8deda] hover:border-accent bg-[#f4f7f5]'
+          }`}
+          title="Click to upload profile photo"
+        >
+          {singleUrl ? (
+            <>
+              <img src={singleUrl} alt="Preview" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                <Camera size={22} />
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center text-[#7a8c82]">
+              {uploading ? (
+                <Loader2 size={24} className="animate-spin text-accent" />
+              ) : (
+                <>
+                  <Camera size={26} className="text-accent mb-0.5" />
+                  <span className="text-[0.65rem] font-bold uppercase tracking-wider">Photo</span>
+                </>
+              )}
+            </div>
+          )}
+
+          {uploading && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white backdrop-blur-xs">
+              <Loader2 size={22} className="animate-spin text-accent" />
+            </div>
+          )}
+        </div>
+
+        {singleUrl && (
+          <button
+            type="button"
+            onClick={(e) => handleRemoveOne(0, e)}
+            className="text-[0.72rem] font-semibold text-rose-600 hover:text-rose-700 bg-none border-none cursor-pointer flex items-center gap-1 transition-colors"
+          >
+            <Trash2 size={12} />
+            <span>Remove Photo</span>
+          </button>
+        )}
+
+        {uploadError && (
+          <span className="text-[0.7rem] text-rose-500 text-center max-w-[200px]">{uploadError}</span>
+        )}
+      </div>
+    );
+  }
+
+  // ── Multi-Image / Standard Box Mode ────────────────────────────
+  const hasImages = imageList.length > 0;
+
+  return (
+    <div className="flex flex-col gap-2 w-full">
+      {/* Header with Label and Count */}
+      {label && (
+        <div className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center justify-between">
+          <span className="flex items-center gap-1.5">
+            <ImageIcon size={14} className="text-accent" />
+            <span>
+              {label}
+              {required && <span className="text-[#e53e3e]"> *</span>}
+            </span>
+          </span>
+
+          {hasImages && (
+            <div className="flex items-center gap-2">
+              <span className="text-[0.72rem] font-semibold text-emerald-600 flex items-center gap-1 normal-case bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                <CheckCircle2 size={12} />
+                <span>
+                  {imageList.length} photo{imageList.length > 1 ? 's' : ''} uploaded
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={handleRemoveAll}
+                className="text-[0.72rem] font-medium text-rose-600 hover:text-rose-700 bg-transparent border-none cursor-pointer hover:underline"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Hidden File Inputs */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple={isMultiple}
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+      <input
+        ref={addMoreInputRef}
+        type="file"
+        multiple={isMultiple}
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
+      {/* ── Empty State: Large Dropzone ── */}
+      {!hasImages && (
+        <div
+          onClick={() => !uploading && fileInputRef.current?.click()}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          className={`relative w-full ${aspectClass} rounded-[14px] border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center p-6 text-center ${
+            dragActive
+              ? 'border-accent bg-accent/10 scale-[1.01]'
+              : 'border-[#d0d7d2] hover:border-accent hover:bg-[#fafaf8] bg-[#f8faf9]'
+          }`}
+        >
+          {uploading ? (
+            <div className="flex flex-col items-center gap-2.5">
+              <Loader2 size={34} className="animate-spin text-accent" />
+              <div className="flex flex-col gap-0.5">
+                <span className="font-sans text-xs font-bold text-gray-700">
+                  Uploading {uploadCount > 1 ? `${uploadCount} photos` : 'photo'} to database…
+                </span>
+                <span className="font-sans text-[0.7rem] text-gray-500">
+                  Saving permanently to Supabase Storage
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-2.5">
+              <div className="w-13 h-13 rounded-full bg-accent/15 text-accent flex items-center justify-center transition-transform hover:scale-110">
+                <UploadCloud size={26} />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="font-sans text-[0.92rem] font-bold text-[#1f2824]">
+                  Click or drag photos to upload
+                </span>
+                <span className="font-sans text-[0.75rem] text-[#788880]">
+                  Supports multiple images simultaneously (JPG, PNG, WEBP)
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Populated State: Multi-Photo Grid with Previews & + Add More ── */}
+      {hasImages && (
+        <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {imageList.map((url, idx) => (
+              <div
+                key={`${url}-${idx}`}
+                className="relative aspect-[4/3] rounded-[10px] overflow-hidden border border-[#d8e0da] bg-[#eef3f0] group shadow-xs hover:shadow-md transition-all"
+              >
+                <img
+                  src={url}
+                  alt={`Upload ${idx + 1}`}
+                  className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
+                />
+
+                {/* Primary Photo Badge */}
+                {idx === 0 && (
+                  <span className="absolute top-1.5 left-1.5 bg-[#0b2518]/85 text-[#f5ecd7] text-[0.62rem] font-bold px-1.5 py-0.5 rounded shadow-xs uppercase tracking-wider backdrop-blur-xs">
+                    Primary
+                  </span>
+                )}
+
+                {/* Number Badge */}
+                {idx > 0 && (
+                  <span className="absolute top-1.5 left-1.5 bg-black/60 text-white text-[0.62rem] font-bold px-1.5 py-0.5 rounded shadow-xs">
+                    #{idx + 1}
+                  </span>
+                )}
+
+                {/* Remove button */}
+                <button
+                  type="button"
+                  onClick={(e) => handleRemoveOne(idx, e)}
+                  title="Remove photo"
+                  className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/65 hover:bg-rose-600 text-white flex items-center justify-center border-none cursor-pointer transition-colors shadow-xs"
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
+            ))}
+
+            {/* "+ Add More Photos" Tile */}
+            {isMultiple && (
+              <div
+                onClick={() => !uploading && addMoreInputRef.current?.click()}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                className={`aspect-[4/3] rounded-[10px] border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center p-3 text-center ${
+                  dragActive
+                    ? 'border-accent bg-accent/15 scale-[1.02]'
+                    : 'border-[#cfd8d2] hover:border-accent hover:bg-[#fafaf8] bg-[#f8faf9]'
+                }`}
+                title="Add more photos"
+              >
+                {uploading ? (
+                  <Loader2 size={22} className="animate-spin text-accent" />
+                ) : (
+                  <div className="flex flex-col items-center gap-1 text-[#556960]">
+                    <div className="w-8 h-8 rounded-full bg-accent/12 text-accent flex items-center justify-center">
+                      <Plus size={16} />
+                    </div>
+                    <span className="font-sans text-[0.75rem] font-bold text-[#1f2824]">
+                      Add More
+                    </span>
+                    <span className="font-sans text-[0.65rem] text-[#889890]">
+                      Multiple allowed
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Uploading indicator during add-more */}
+          {uploading && (
+            <div className="flex items-center gap-2 text-xs font-semibold text-accent bg-accent/10 px-3 py-2 rounded-lg">
+              <Loader2 size={14} className="animate-spin" />
+              <span>
+                Uploading {uploadCount > 1 ? `${uploadCount} photos` : 'photo'} to database storage…
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Error message */}
+      {uploadError && (
+        <span className="text-[0.72rem] text-rose-500 font-medium">{uploadError}</span>
+      )}
+    </div>
+  );
+}

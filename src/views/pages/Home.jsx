@@ -1,93 +1,139 @@
-import React, { useEffect } from 'react';
-import wtsLogo from '../../assets/images/wtslogo.png';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { ScanSearch } from 'lucide-react';
+import { SITE_ASSETS } from '../../constants/siteAssets';
 import heroBg from '../../assets/images/hero-bg.jpg';
+const wtsLogo = SITE_ASSETS.wtsLogo;
+import { getTuskers } from '../../models/TuskerModel';
 
 export default function Home() {
+  const [stats, setStats] = useState({
+    total: 323,
+    living: 183,
+    missing: 93,
+    deceased: 47,
+  });
+
   useEffect(() => {
     document.title = 'Wild Tuskers Sri Lanka | Home';
+    let active = true;
+    getTuskers()
+      .then((tuskers) => {
+        if (!active || !tuskers || tuskers.length === 0) return;
+        const total = tuskers.length;
+        const living = tuskers.filter((t) => t.livingStatus === 'Alive').length;
+        const missing = tuskers.filter((t) => t.livingStatus === 'No Recent Record').length;
+        const deceased = tuskers.filter((t) => t.livingStatus === 'Deceased').length;
+        setStats({ total, living, missing, deceased });
+      })
+      .catch((err) => console.warn('[Home] Could not load dynamic counts:', err));
+    return () => {
+      active = false;
+    };
   }, []);
 
   return (
-    <div className="relative min-h-screen lg:h-screen lg:max-h-screen text-white bg-[#0b120e] overflow-x-hidden lg:overflow-hidden flex flex-col justify-center items-center">
+    <div className="relative min-h-screen lg:h-screen lg:max-h-screen text-white bg-[#0b120e] overflow-x-hidden lg:overflow-hidden flex flex-col justify-center">
       {/* Full-screen fixed background image eliminating any white bar or gap */}
       <div
         className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat pointer-events-none"
         style={{ backgroundImage: `url(${heroBg})` }}
       >
-        {/* Reduced dark overlay for vibrant background visibility */}
+        {/* Subtle dark overlay for vibrant background visibility with right-side contrast */}
         <div className="absolute inset-0 bg-black/25" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-l from-black/85 via-black/45 lg:via-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60" />
       </div>
 
-      {/* Main Home Content fitted inside viewport */}
-      <div className="relative z-10 w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 pt-[70px] pb-4 flex flex-col items-center justify-center text-center gap-4 sm:gap-5 lg:gap-6 my-auto">
-        
-        {/* Logo */}
-        <div className="flex justify-center items-center">
-          <img
-            src={wtsLogo}
-            alt="Wild Tusker Sri Lanka"
-            className="w-full max-w-[420px] sm:max-w-[480px] md:max-w-[540px] lg:max-w-[580px] xl:max-w-[600px] h-auto object-contain drop-shadow-[0_18px_46px_rgba(0,0,0,0.8)]"
-          />
-        </div>
-
-        {/* Mission Statement */}
-        <p className="font-sans text-[0.95rem] sm:text-[1.05rem] text-[#f2f6f4] max-w-[760px] leading-[1.7] font-normal drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] m-0">
-          Wild Tuskers Sri Lanka is a dedicated team of wildlife researchers and conservationists
-          committed to identifying and protecting the rare tusked elephants of Sri Lanka,
-          guardians of one of Asia's most endangered natural treasures.
-        </p>
-
-        {/* Compact Glassy Container for Population Counts */}
-        <div className="w-full max-w-[820px] rounded-2xl bg-black/40 backdrop-blur-xl border border-white/15 px-3 py-3 sm:px-5 sm:py-3.5 shadow-[0_16px_40px_rgba(0,0,0,0.55)]">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-0 lg:divide-x lg:divide-white/10">
-            
-            {/* 1. Total Recorded */}
-            <div className="flex flex-col items-center justify-center text-center px-2 py-1 sm:px-3 sm:py-1.5">
-              <span className="font-sans text-[1.75rem] sm:text-[1.95rem] font-extrabold text-white leading-none">
-                322
-              </span>
-              <p className="font-sans text-[0.82rem] sm:text-[0.85rem] font-semibold text-[#cbd5e1] leading-tight m-0 mt-1.5">
-                Total Recorded
-              </p>
-            </div>
-
-            {/* 2. Living */}
-            <div className="flex flex-col items-center justify-center text-center px-2 py-1 sm:px-3 sm:py-1.5">
-              <span className="font-sans text-[1.75rem] sm:text-[1.95rem] font-extrabold text-white leading-none">
-                276
-              </span>
-              <p className="font-sans text-[0.82rem] sm:text-[0.85rem] font-semibold text-[#cbd5e1] leading-tight m-0 mt-1.5">
-                Living
-              </p>
-            </div>
-
-            {/* 3. Missing */}
-            <div className="flex flex-col items-center justify-center text-center px-2 py-1 sm:px-3 sm:py-1.5">
-              <span className="font-sans text-[1.75rem] sm:text-[1.95rem] font-extrabold text-white leading-none">
-                172
-              </span>
-              <p className="font-sans text-[0.82rem] sm:text-[0.85rem] font-semibold text-[#cbd5e1] leading-tight m-0 mt-1.5">
-                Missing
-              </p>
-              <p className="font-sans text-[0.68rem] sm:text-[0.7rem] text-[#94a3b8] leading-tight m-0 mt-0.5 whitespace-nowrap">
-                (no records for last two years)
-              </p>
-            </div>
-
-            {/* 4. Deceased Tuskers */}
-            <div className="flex flex-col items-center justify-center text-center px-2 py-1 sm:px-3 sm:py-1.5">
-              <span className="font-sans text-[1.75rem] sm:text-[1.95rem] font-extrabold text-white leading-none">
-                46
-              </span>
-              <p className="font-sans text-[0.82rem] sm:text-[0.85rem] font-semibold text-[#cbd5e1] leading-tight m-0 mt-1.5">
-                Deceased Tuskers
-              </p>
-            </div>
-
+      {/* Main Home Content: Right-aligned vertical stack (Logo, Mission, Population Counts, AI Box) */}
+      <div className="relative z-10 w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 pt-[70px] sm:pt-[74px] lg:pt-[76px] pb-3 sm:pb-5 flex justify-end text-left my-auto">
+        <div className="w-full max-w-[620px] flex flex-col items-center gap-2.5 sm:gap-3 lg:gap-3.5 ml-auto">
+          
+          {/* 1. Logo (Enlarged to fill space above and below) */}
+          <div className="flex justify-center items-center w-full">
+            <img
+              src={wtsLogo}
+              alt="Wild Tusker Sri Lanka"
+              className="w-full max-w-[480px] sm:max-w-[560px] md:max-w-[600px] lg:max-w-[620px] max-h-[260px] sm:max-h-[290px] lg:max-h-[330px] h-auto object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.85)]"
+            />
           </div>
-        </div>
 
+          {/* 2. Mission Statement (Enlarged and center-aligned) */}
+          <p className="font-sans text-[1rem] sm:text-[1.08rem] md:text-[1.14rem] text-[#f2f6f4] leading-[1.65] font-normal drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] text-center w-full m-0 px-1">
+            Wild Tuskers Sri Lanka is a dedicated team of wildlife researchers and conservationists
+            committed to identifying and protecting the rare tusked elephants of Sri Lanka,
+            guardians of one of Asia's most endangered natural treasures.
+          </p>
+
+          {/* 3. Compact Frosted Glass Population Counts Box */}
+          <div className="w-full rounded-2xl bg-white/15 backdrop-blur-xl border border-white/25 shadow-[0_16px_40px_rgba(0,0,0,0.45),inset_0_1px_1px_rgba(255,255,255,0.3)] overflow-hidden">
+            <div className="grid grid-cols-4 divide-x divide-white/20">
+              
+              {/* 1. Total Recorded */}
+              <div className="flex flex-col items-center justify-center text-center py-2.5 sm:py-3 px-1.5 sm:px-2 min-h-[80px] sm:min-h-[88px]">
+                <span className="font-sans text-[1.65rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
+                  {stats.total}
+                </span>
+                <p className="font-sans text-[0.6rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
+                  Total Recorded
+                </p>
+              </div>
+
+              {/* 2. Living */}
+              <div className="flex flex-col items-center justify-center text-center py-2.5 sm:py-3 px-1.5 sm:px-2 min-h-[80px] sm:min-h-[88px]">
+                <span className="font-sans text-[1.65rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
+                  {stats.living}
+                </span>
+                <p className="font-sans text-[0.6rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
+                  Living
+                </p>
+              </div>
+
+              {/* 3. Missing */}
+              <div className="flex flex-col items-center justify-center text-center py-2.5 sm:py-3 px-1.5 sm:px-2 min-h-[80px] sm:min-h-[88px]">
+                <span className="font-sans text-[1.65rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
+                  {stats.missing}
+                </span>
+                <p className="font-sans text-[0.6rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
+                  Missing
+                </p>
+              </div>
+
+              {/* 4. Deceased */}
+              <div className="flex flex-col items-center justify-center text-center py-2.5 sm:py-3 px-1.5 sm:px-2 min-h-[80px] sm:min-h-[88px]">
+                <span className="font-sans text-[1.65rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
+                  {stats.deceased}
+                </span>
+                <p className="font-sans text-[0.6rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
+                  Deceased
+                </p>
+              </div>
+
+            </div>
+          </div>
+
+          {/* 4. AI Wild Tusker Identification Box (Centered text, balanced spacing to icon and button) */}
+          <div className="w-full rounded-2xl bg-gradient-to-r from-[#0e3a24]/92 via-[#0b2b1a]/94 to-[#071d12]/96 backdrop-blur-xl border border-white/20 shadow-[0_16px_40px_rgba(0,0,0,0.45),inset_0_1px_1px_rgba(255,255,255,0.25)] px-4 sm:px-5 py-2.5 sm:py-3 flex items-center justify-between gap-3 sm:gap-4 transition-transform duration-300 hover:scale-[1.01]">
+            {/* Left: Circular Icon Badge */}
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white shadow-md flex items-center justify-center text-[#0b2b1a] shrink-0">
+              <ScanSearch size={20} strokeWidth={2.2} />
+            </div>
+
+            {/* Center: Title Text Centered with Equal Breathing Space */}
+            <span className="font-sans text-[0.88rem] sm:text-[0.98rem] md:text-[1.04rem] font-semibold text-white tracking-tight drop-shadow-sm whitespace-nowrap text-center flex-1 px-3 sm:px-4">
+              AI assisted individual wild tusker re-identification
+            </span>
+
+            {/* Right: Explore Pill Button */}
+            <Link
+              to="/ai-app"
+              className="shrink-0 py-1.5 sm:py-2 px-5 sm:px-6 rounded-full bg-white hover:bg-white/95 text-[#0b2b1a] font-bold text-[0.82rem] sm:text-[0.86rem] tracking-wide text-center shadow-[0_4px_14px_rgba(0,0,0,0.25)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.35)] transition-all no-underline inline-flex items-center justify-center cursor-pointer"
+            >
+              Explore
+            </Link>
+          </div>
+
+        </div>
       </div>
     </div>
   );

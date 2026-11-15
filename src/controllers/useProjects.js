@@ -1,16 +1,28 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { getEvents, addEvent } from '../models/ProjectModel';
+import { useAuth } from './useAuth';
 
 /* ==============================================================
    SECTION 1: PROJECTS & EVENTS TIMELINE CONTROLLER
 ============================================================== */
 export function useProjectFeed() {
-  const { upcoming, past } = useMemo(() => getEvents(), []);
-  const isAdmin = localStorage.getItem('isAdmin') === 'true';
+  const [events, setEvents] = useState({ upcoming: [], past: [] });
+  const [loading, setLoading] = useState(true);
+  const { isAdmin } = useAuth();
+
+  useEffect(() => {
+    let active = true;
+    getEvents()
+      .then(data => { if (active) setEvents(data); })
+      .catch(err => console.error(err))
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
 
   return {
-    upcomingEvents: upcoming,
-    pastEvents: past,
+    upcomingEvents: events.upcoming,
+    pastEvents: events.past,
+    loading,
     isAdmin,
   };
 }
@@ -24,7 +36,9 @@ export function useEventForm() {
     date: '',
     type: 'upcoming', // 'upcoming' or 'past'
     description: '',
-    sharedBy: ''
+    sharedBy: '',
+    image: '',
+    images: [],
   });
   const [error, setError] = useState('');
 
@@ -33,29 +47,49 @@ export function useEventForm() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const createEvent = () => {
-    const { title, date, type, description, sharedBy } = formData;
+  const handleImagesChange = (urls) => {
+    const list = Array.isArray(urls) ? urls : (urls ? [urls] : []);
+    setFormData(prev => ({
+      ...prev,
+      images: list,
+      image: list.join(', ')
+    }));
+  };
+
+  const createEvent = async () => {
+    const { title, date, type, description, sharedBy, image, images } = formData;
 
     if (!title || !date || !description || !sharedBy) {
       setError('Please fill in all required fields.');
       return false;
     }
 
-    addEvent({
-      title,
-      date,
-      description,
-      sharedBy,
-      image: null
-    }, type);
+    const finalImage = (images && images.length > 0)
+      ? images.join(', ')
+      : (image ? image : null);
+
+    try {
+      await addEvent({
+        title,
+        date,
+        description,
+        sharedBy,
+        image: finalImage,
+      }, type);
+    } catch (err) {
+      setError(`Could not save event: ${err.message}`);
+      return false;
+    }
 
     return true;
   };
 
   return {
     formData,
+    setFormData,
     error,
     handleChange,
+    handleImagesChange,
     createEvent,
   };
 }

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   MapPin,
@@ -15,24 +16,84 @@ import {
   X,
   Trash2,
   Scan,
-  ShieldCheck
+  ShieldCheck,
+  Edit3,
+  Save
 } from 'lucide-react';
-import { getUnlistedTuskerById, deleteUnlistedTusker } from '../../models/UnlistedTuskersModel';
+import { getUnlistedTuskerById, deleteUnlistedTusker, updateUnlistedTusker } from '../../models/UnlistedTuskersModel';
 import { getTuskerComparison, getTuskerEarComparison } from '../../models/TuskerModel';
 import { useAuth } from '../../controllers/useAuth';
+import { getCachedAspect, setCachedAspect, probeImageAspect } from '../../utils/photoAspectCache';
+import ImageUploadBox from '../components/ImageUploadBox';
 
 /* ── Photo Slideshow Component ───────────────────────────────── */
 function PhotoSlideshow({ photos = [], id, current, prev, next, setCurrent }) {
   const photoList = photos && photos.length > 0 ? photos : [null];
+  const currentPhoto = photoList[current];
+  const [isPortrait, setIsPortrait] = useState(() => {
+    const cached = getCachedAspect(currentPhoto);
+    return cached !== null ? cached : false;
+  });
+  const imgRef = useRef(null);
+
+  useEffect(() => {
+    if (!currentPhoto) {
+      setIsPortrait(false);
+      return;
+    }
+
+    const cached = getCachedAspect(currentPhoto);
+    if (cached !== null) {
+      setIsPortrait(cached);
+      return;
+    }
+
+    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0 && imgRef.current.naturalHeight > 0) {
+      const portrait = imgRef.current.naturalHeight > imgRef.current.naturalWidth;
+      setCachedAspect(currentPhoto, portrait);
+      setIsPortrait(portrait);
+      return;
+    }
+
+    probeImageAspect(currentPhoto, (portrait) => {
+      setIsPortrait(portrait);
+    });
+  }, [currentPhoto]);
+
+  const handleImageLoad = (e) => {
+    const { naturalWidth, naturalHeight } = e.target;
+    if (naturalWidth && naturalHeight) {
+      const portrait = naturalHeight > naturalWidth;
+      setCachedAspect(currentPhoto, portrait);
+      setIsPortrait(portrait);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-4 min-[820px]:sticky min-[820px]:top-[calc(80px+1.5rem)]">
-      <div className="relative w-full aspect-[4/3] bg-[#eef1ee] rounded-[14px] overflow-hidden flex items-center justify-center border border-[#e2e8e3]">
-        {photoList[current] ? (
+      <div
+        className={`relative w-full rounded-[14px] overflow-hidden flex items-center justify-center transition-all duration-300 shadow-sm ${
+          !currentPhoto
+            ? 'aspect-[4/3] bg-[#eef1ee] border border-[#e2e8e3]'
+            : isPortrait
+              ? 'aspect-[3/4] bg-[#eef1ee] border border-[#e2e8e3]'
+              : 'aspect-[4/3] bg-[#eef1ee] border border-[#e2e8e3]'
+        }`}
+      >
+        {currentPhoto ? (
           <img
-            src={photoList[current]}
+            ref={(el) => {
+              imgRef.current = el;
+              if (el && el.complete && el.naturalWidth > 0 && el.naturalHeight > 0) {
+                const portrait = el.naturalHeight > el.naturalWidth;
+                setCachedAspect(currentPhoto, portrait);
+                setIsPortrait((prev) => (prev !== portrait ? portrait : prev));
+              }
+            }}
+            src={currentPhoto}
             alt={`${id} photo ${current + 1}`}
-            className="w-full h-full object-cover"
+            onLoad={handleImageLoad}
+            className="w-full h-full object-cover object-center rounded-[14px]"
           />
         ) : (
           <div className="flex flex-col items-center justify-center p-6 text-center">
@@ -130,19 +191,29 @@ function formatDate(dateStr) {
 export default function UnlistedTuskerProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAdmin } = useAuth();
+  const { isAdmin, authLoading } = useAuth();
 
   const [tusker, setTusker] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [selectedComparisonImg, setSelectedComparisonImg] = useState(null);
 
   useEffect(() => {
-    const data = getUnlistedTuskerById(id);
-    setTusker(data);
-    if (data) {
-      document.title = `Wild Tuskers Sri Lanka | ${data.id}`;
-    }
-  }, [id]);
+    if (authLoading || !isAdmin) return;
+    let active = true;
+    setLoading(true);
+    getUnlistedTuskerById(id)
+      .then(data => {
+        if (!active) return;
+        setTusker(data);
+        if (data) {
+          document.title = `Wild Tuskers Sri Lanka | ${data.id}`;
+        }
+      })
+      .catch(err => console.error(err))
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [id, authLoading, isAdmin]);
 
   const prevPhoto = (count) => {
     setCurrentPhotoIndex(p => (p === 0 ? count - 1 : p - 1));
@@ -162,14 +233,68 @@ export default function UnlistedTuskerProfile() {
     return getTuskerEarComparison(tusker);
   }, [tusker]);
 
-  const handleDelete = () => {
-    if (window.confirm(`Are you sure you want to remove ${tusker.id} from Unlisted Monitoring?`)) {
-      deleteUnlistedTusker(tusker.id);
-      navigate('/unlisted');
+  // Edit Modal State
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editError, setEditError] = useState('');
+  const [editFormData, setEditFormData] = useState({
+    location: '',
+    listedDate: '',
+    recordedBy: '',
+    specialMarks: '',
+    description: '',
+    photos: []
+  });
+
+  const handleSaveEdit = async (e) => {
+    e.preventDefault();
+    if (!editFormData.location.trim()) {
+      setEditError('Please enter a location.');
+      return;
+    }
+    setSavingEdit(true);
+    setEditError('');
+    try {
+      const updated = await updateUnlistedTusker(tusker.id, {
+        location: editFormData.location.trim(),
+        listedDate: editFormData.listedDate,
+        recordedBy: editFormData.recordedBy.trim(),
+        specialMarks: editFormData.specialMarks.trim(),
+        description: editFormData.description.trim(),
+        photos: editFormData.photos || []
+      });
+      if (updated) {
+        setTusker(updated);
+      }
+      setShowEditModal(false);
+    } catch (err) {
+      console.error(err);
+      setEditError(err.message || 'Failed to update record.');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm(`Are you sure you want to delete ${tusker.id} from Unlisted Monitoring?`)) {
+      try {
+        await deleteUnlistedTusker(tusker.id);
+        navigate('/unlisted');
+      } catch (err) {
+        alert(`Delete failed: ${err.message}`);
+      }
     }
   };
 
   // Admin access protection
+  if (authLoading || (isAdmin && loading)) {
+    return (
+      <div className="w-full min-h-[70vh] pt-[calc(80px+4rem)] flex items-center justify-center font-sans text-[#888888]">
+        Loading…
+      </div>
+    );
+  }
+
   if (!isAdmin) {
     return (
       <div className="w-full max-w-[800px] mx-auto pt-[calc(80px+4rem)] pb-20 px-8 min-h-[70vh] flex flex-col items-center justify-center text-center">
@@ -218,6 +343,24 @@ export default function UnlistedTuskerProfile() {
           </button>
           
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                setEditFormData({
+                  location: tusker.location || '',
+                  listedDate: tusker.listedDate || '',
+                  recordedBy: tusker.recordedBy || '',
+                  specialMarks: tusker.specialMarks || '',
+                  description: tusker.description || '',
+                  photos: tusker.photos || []
+                });
+                setEditError('');
+                setShowEditModal(true);
+              }}
+              className="bg-primary text-white font-sans text-[0.85rem] font-semibold rounded-[8px] px-4 py-2 shadow-xs hover:bg-primary-light transition-all cursor-pointer inline-flex items-center gap-1.5 border-none"
+            >
+              <Edit3 size={14} />
+              <span>Edit Profile</span>
+            </button>
             <button
               onClick={handleDelete}
               className="bg-rose-50 hover:bg-rose-100 text-rose-700 font-sans text-[0.85rem] font-semibold rounded-[8px] px-4 py-2 border border-rose-200 transition-all cursor-pointer inline-flex items-center gap-1.5"
@@ -382,15 +525,11 @@ export default function UnlistedTuskerProfile() {
           </div>
         )}
 
-        {/* EAR COMPARISON COLLAGE (Admin Only) */}
+        {/* EAR COMPARISON COLLAGE */}
         {earComparisonList && earComparisonList.length > 0 && (
           <div className="mt-14 pt-10 border-t border-[#eeeeee]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-3">
               <div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 font-semibold text-[0.78rem] tracking-wider uppercase mb-2">
-                  <Scan size={13} />
-                  <span>Admin Biometric Identification</span>
-                </div>
                 <h2 className="font-sans text-[1.6rem] font-bold text-[#111111] m-0">
                   Ear Margin & Biometric Comparison
                 </h2>
@@ -400,9 +539,9 @@ export default function UnlistedTuskerProfile() {
               </div>
             </div>
 
-            {/* Ear Diagnostic Cards */}
+            {/* Ear Diagnostic Cards (2 boxes) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {earComparisonList.map((earItem, earIdx) => (
+              {earComparisonList.slice(0, 2).map((earItem, earIdx) => (
                 <div
                   key={earIdx}
                   className="bg-[#fcfdfd] border border-[#e5e7eb] rounded-[16px] overflow-hidden flex flex-col shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all"
@@ -472,13 +611,13 @@ export default function UnlistedTuskerProfile() {
         )}
 
         {/* Modal for enlarged comparison photo */}
-        {selectedComparisonImg && (
+        {selectedComparisonImg && createPortal(
           <div
-            className="fixed inset-0 z-[2000] bg-black/85 flex items-center justify-center p-4 backdrop-blur-xs animate-fade-in"
+            className="fixed inset-0 z-[9999] bg-black/85 flex items-center justify-center p-4 backdrop-blur-md animate-fade-in select-none"
             onClick={() => setSelectedComparisonImg(null)}
           >
             <div
-              className="relative max-w-[900px] w-full bg-[#111111] rounded-2xl overflow-hidden border border-white/10 shadow-2xl"
+              className="relative max-w-[900px] w-full bg-[#111111] rounded-2xl overflow-hidden border border-white/10 shadow-2xl my-auto"
               onClick={e => e.stopPropagation()}
             >
               <div className="p-4 bg-black/60 flex items-center justify-between text-white border-b border-white/10">
@@ -507,7 +646,130 @@ export default function UnlistedTuskerProfile() {
                 </div>
               )}
             </div>
-          </div>
+          </div>,
+          document.body
+        )}
+
+        {/* Modal for Editing Unlisted Tusker Profile */}
+        {showEditModal && createPortal(
+          <div
+            className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+            onClick={() => setShowEditModal(false)}
+          >
+            <div
+              className="bg-white rounded-[20px] max-w-[620px] w-full p-6 sm:p-7 shadow-2xl border border-[#e8e8e8] flex flex-col gap-5 relative max-h-[92vh] overflow-y-auto"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center pb-3 border-b border-[#eeeeee]">
+                <div>
+                  <h3 className="font-sans text-[1.25rem] font-bold text-[#111111] m-0">Edit Unlisted Profile</h3>
+                  <p className="font-sans text-[0.82rem] text-[#888888] m-0 mt-0.5">{tusker.id} • Active Observation</p>
+                </div>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="w-8 h-8 rounded-full border-none bg-[#f5f5f5] hover:bg-[#e8e8e8] text-[#555555] cursor-pointer flex items-center justify-center transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {editError && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg font-medium">
+                  {editError}
+                </div>
+              )}
+
+              <form onSubmit={handleSaveEdit} className="flex flex-col gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">Roaming Location *</label>
+                    <input
+                      type="text"
+                      required
+                      value={editFormData.location}
+                      onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
+                      placeholder="e.g. Yala Block 3"
+                      className="border border-[#dde6e1] rounded-xl px-3.5 py-2.5 text-sm text-[#111111] focus:outline-none focus:border-accent"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">Recorded Date</label>
+                    <input
+                      type="date"
+                      value={editFormData.listedDate}
+                      onChange={(e) => setEditFormData({ ...editFormData, listedDate: e.target.value })}
+                      className="border border-[#dde6e1] rounded-xl px-3.5 py-2.5 text-sm text-[#111111] focus:outline-none focus:border-accent"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">Recorded By</label>
+                    <input
+                      type="text"
+                      value={editFormData.recordedBy}
+                      onChange={(e) => setEditFormData({ ...editFormData, recordedBy: e.target.value })}
+                      placeholder="e.g. WTS Field Team"
+                      className="border border-[#dde6e1] rounded-xl px-3.5 py-2.5 text-sm text-[#111111] focus:outline-none focus:border-accent"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">Special Marks</label>
+                    <input
+                      type="text"
+                      value={editFormData.specialMarks}
+                      onChange={(e) => setEditFormData({ ...editFormData, specialMarks: e.target.value })}
+                      placeholder="e.g. V-shaped notch on left ear"
+                      className="border border-[#dde6e1] rounded-xl px-3.5 py-2.5 text-sm text-[#111111] focus:outline-none focus:border-accent"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">Description & Sighting Details</label>
+                  <textarea
+                    rows={3}
+                    value={editFormData.description}
+                    onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                    placeholder="Enter observation notes, tusker characteristics, behavior..."
+                    className="border border-[#dde6e1] rounded-xl px-3.5 py-2.5 text-sm text-[#111111] focus:outline-none focus:border-accent resize-y"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">Field Photos</label>
+                  <ImageUploadBox
+                    folder="unlisted"
+                    multiple={true}
+                    value={editFormData.photos || []}
+                    onChange={(urls) => setEditFormData({ ...editFormData, photos: urls })}
+                  />
+                </div>
+
+                <div className="pt-3 border-t border-[#eeeeee] flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowEditModal(false)}
+                    className="px-5 py-2.5 rounded-xl border border-[#dde6e1] text-sm font-semibold text-[#555555] hover:bg-[#f7f7f8] cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingEdit}
+                    className="px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-sm hover:bg-primary-light cursor-pointer flex items-center gap-1.5 disabled:opacity-60"
+                  >
+                    <Save size={15} />
+                    <span>{savingEdit ? 'Saving…' : 'Save Changes'}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body
         )}
 
       </div>

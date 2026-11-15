@@ -81,35 +81,56 @@ export default function OurProjects() {
             <h2 className="font-sans text-[1.15rem] font-bold text-[#111111] m-0">Past Events</h2>
           </div>
 
-          <div className="flex flex-col gap-5">
-            {pastEvents.map(event => (
-              <div key={event.id} className="flex items-start gap-4 pt-5 border-t border-[#f0f0f0] first:pt-0 first:border-t-0">
-                {/* Thumbnail */}
-                <div className="w-[130px] h-[90px] rounded-[8px] overflow-hidden shrink-0 bg-[#e8e8e8]">
-                  {event.image
-                    ? <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
-                    : <div className="w-full h-full flex items-center justify-center text-[#aaaaaa]">
+          {pastEvents.length === 0 ? (
+            <p className="font-sans text-[0.95rem] text-[#888888] m-0 py-6 text-center">
+              No past events recorded yet.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-5">
+              {pastEvents.map(event => (
+                <div key={event.id} className="flex items-start gap-4 pt-5 border-t border-[#f0f0f0] first:pt-0 first:border-t-0">
+                  {/* Thumbnail */}
+                  <div className="w-[130px] h-[90px] rounded-[8px] overflow-hidden shrink-0 bg-[#e8e8e8] relative">
+                    {event.image ? (
+                      (() => {
+                        const imgList = event.image.includes(',')
+                          ? event.image.split(',').map(s => s.trim()).filter(Boolean)
+                          : [event.image];
+                        return (
+                          <>
+                            <img src={imgList[0]} alt={event.title} className="w-full h-full object-cover" />
+                            {imgList.length > 1 && (
+                              <span className="absolute bottom-1 right-1 bg-black/75 text-white text-[0.62rem] font-bold px-1.5 py-0.5 rounded shadow-xs">
+                                +{imgList.length - 1} photos
+                              </span>
+                            )}
+                          </>
+                        );
+                      })()
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-[#aaaaaa]">
                         <Calendar size={28} strokeWidth={1.2} />
                       </div>
-                  }
-                </div>
+                    )}
+                  </div>
 
-                {/* Info */}
-                <div className="flex-1 flex flex-col gap-1">
-                  <p className="font-sans text-[0.8rem] font-semibold text-accent m-0 uppercase tracking-[0.5px]">{formatEventDate(event.date)}</p>
-                  <h3 className="font-sans text-[1.05rem] font-bold text-[#111111] m-0">{event.title}</h3>
-                  <p className="font-sans text-[0.85rem] text-[#666666] m-0 leading-6">{event.description}</p>
-                  <p className="font-sans text-[0.82rem] text-[#888888] mt-0.5">
-                    Shared by <strong>{event.sharedBy}</strong>
-                  </p>
-                </div>
+                  {/* Info */}
+                  <div className="flex-1 flex flex-col gap-1">
+                    <p className="font-sans text-[0.8rem] font-semibold text-accent m-0 uppercase tracking-[0.5px]">{formatEventDate(event.date)}</p>
+                    <h3 className="font-sans text-[1.05rem] font-bold text-[#111111] m-0">{event.title}</h3>
+                    <p className="font-sans text-[0.85rem] text-[#666666] m-0 leading-6">{event.description}</p>
+                    <p className="font-sans text-[0.82rem] text-[#888888] mt-0.5">
+                      Shared by <strong>{event.sharedBy}</strong>
+                    </p>
+                  </div>
 
-                <button className="bg-none border border-[#e0e0e0] rounded-[6px] px-2 py-1.5 text-[#888888] cursor-pointer shrink-0 hover:bg-[#f5f5f5] hover:text-[#333333] transition-colors self-center flex items-center justify-center" aria-label="More options">
-                  <ChevronRight size={18} />
-                </button>
-              </div>
-            ))}
-          </div>
+                  <button className="bg-none border border-[#e0e0e0] rounded-[6px] px-2 py-1.5 text-[#888888] cursor-pointer shrink-0 hover:bg-[#f5f5f5] hover:text-[#333333] transition-colors self-center flex items-center justify-center" aria-label="More options">
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
       </div>

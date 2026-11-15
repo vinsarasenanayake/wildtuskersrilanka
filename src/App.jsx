@@ -16,9 +16,11 @@ import FieldNotes from './views/pages/FieldNotes';
 import FieldNoteForm from './views/pages/FieldNoteForm';
 import SpecialObservations from './views/pages/SpecialObservations';
 import SpecialObservationForm from './views/pages/SpecialObservationForm';
+import Gallery from './views/pages/Gallery';
 import UnlistedMonitoring from './views/pages/UnlistedMonitoring';
 import UnlistedTuskerProfile from './views/pages/UnlistedTuskerProfile';
 import Login from './views/pages/Login';
+import AIApp from './views/pages/AIApp';
 
 /* ── Application Router ────────────────────────────────────── */
 function App() {
@@ -40,6 +42,9 @@ function App() {
           <Route path="/field-notes" element={<FieldNotes />} />
           <Route path="/add-field-note" element={<FieldNoteForm />} />
           <Route path="/observations" element={<SpecialObservations />} />
+          <Route path="/gallery" element={<Gallery />} />
+          <Route path="/ai-app" element={<AIApp />} />
+          <Route path="/ai-reidentification" element={<Navigate to="/ai-app" replace />} />
 
           {/* Unlisted Monitoring Routes (Admin Protected) */}
           <Route path="/unlisted" element={<UnlistedMonitoring />} />

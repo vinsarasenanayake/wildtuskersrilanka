@@ -2,8 +2,32 @@ import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, PlusCircle, Sparkles } from 'lucide-react';
 import { useTuskerForm } from '../../controllers/useTusker';
+import { useAuth } from '../../controllers/useAuth';
+import { LIVING_STATUSES, THREAT_LEVELS, ZONES, AGE_RANGES } from '../../models/TuskerModel';
+import ImageUploadBox from '../components/ImageUploadBox';
 
-const LOCATIONS = ['Kaudulla', 'Minneriya', 'Sinharaja', 'Udawalawe', 'Wilpattu', 'Yala'];
+/* ── Shared field styling ───────────────────────────────────── */
+const INPUT_CLASS = 'w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12 disabled:opacity-60';
+const SELECT_CLASS = INPUT_CLASS + " appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2724%27%20height%3D%2724%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%23888888%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpolyline%20points%3D%276%209%2012%2015%2018%209%27%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_12px_center] bg-[size:16px] pr-10 cursor-pointer";
+
+function Field({ label, required, wide, children }) {
+  return (
+    <div className={`flex flex-col gap-1.5 ${wide ? 'sm:col-span-2' : ''}`}>
+      <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">
+        {label}{required && <span className="text-[#e53e3e]"> *</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function SectionTitle({ children }) {
+  return (
+    <h2 className="font-sans text-[0.95rem] font-bold text-[#111111] m-0 pt-6 mt-2 border-t border-[#f0f0f0] first:border-t-0 first:pt-0 first:mt-0">
+      {children}
+    </h2>
+  );
+}
 
 export default function TuskerForm() {
   const { id } = useParams();
@@ -12,10 +36,13 @@ export default function TuskerForm() {
   const {
     formData,
     error,
+    saving,
     handleChange,
+    handlePhotosChange,
     saveProfile,
     isEditMode,
-  } = useTuskerForm(id, LOCATIONS);
+  } = useTuskerForm(id);
+  const { isAdmin, authLoading } = useAuth();
 
   useEffect(() => {
     document.title = `Wild Tuskers Sri Lanka | ${isEditMode ? 'Edit Tusker' : 'Add New Tusker'}`;
@@ -23,15 +50,14 @@ export default function TuskerForm() {
 
   useEffect(() => {
     // Admin check inside view
-    const isAdmin = localStorage.getItem('isAdmin') === 'true';
-    if (!isAdmin) {
+    if (!authLoading && !isAdmin) {
       navigate('/login');
     }
-  }, [navigate]);
+  }, [authLoading, isAdmin, navigate]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const savedId = saveProfile();
+    const savedId = await saveProfile();
     if (savedId) {
       if (isEditMode) {
         navigate(`/tuskers/${savedId.toLowerCase()}`);
@@ -62,183 +88,146 @@ export default function TuskerForm() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             {error && <div className="bg-[#fff5f5] border border-[#ffcccc] text-[#e53e3e] rounded-[8px] px-4 py-3 font-sans text-[0.85rem] font-medium">{error}</div>}
 
+            <SectionTitle>Identity</SectionTitle>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
-              {/* ID */}
-              <div className="flex flex-col gap-1.5">
-                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">
-                  Tusker ID<span className="text-[#e53e3e]"> *</span>
-                </label>
-                <input
-                  type="text"
-                  name="id"
-                  className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
-                  placeholder="e.g. T305"
-                  value={formData.id}
-                  onChange={handleChange}
-                  disabled={isEditMode}
-                />
-              </div>
-
-              {/* Name */}
-              <div className="flex flex-col gap-1.5">
-                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">
-                  Tusker Name (English)<span className="text-[#e53e3e]"> *</span>
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
-                  placeholder="e.g. Nero"
-                  value={formData.name}
-                  onChange={handleChange}
-                />
-              </div>
-
-              {/* Sinhala Name */}
-              <div className="flex flex-col gap-1.5">
-                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">
-                  Sinhala Name<span className="text-[#e53e3e]"> *</span>
-                </label>
-                <input
-                  type="text"
-                  name="sinhala"
-                  className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
-                  placeholder="e.g. නීරෝ"
-                  value={formData.sinhala}
-                  onChange={handleChange}
-                />
-              </div>
-
-              {/* Location Dropdown */}
-              <div className="flex flex-col gap-1.5">
-                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">Location</label>
-                <select
-                  name="location"
-                  className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2724%27%20height%3D%2724%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%23888888%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpolyline%20points%3D%276%209%2012%2015%2018%209%27%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_12px_center] bg-[size:16px] pr-10 cursor-pointer"
-                  value={formData.location}
-                  onChange={handleChange}
-                >
-                  {LOCATIONS.map(loc => (
-                    <option key={loc} value={loc}>{loc}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Date Calendar Picker */}
-              <div className="flex flex-col gap-1.5">
-                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">
-                  First Recorded Date<span className="text-[#e53e3e]"> *</span>
-                </label>
-                <input
-                  type="date"
-                  name="listedDate"
-                  className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
-                  value={formData.listedDate}
-                  onChange={handleChange}
-                />
-              </div>
-
-              {/* Recorded By */}
-              <div className="flex flex-col gap-1.5">
-                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">Recorded By</label>
-                <input
-                  type="text"
-                  name="recordedBy"
-                  className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
-                  placeholder="e.g. WTS Team"
-                  value={formData.recordedBy}
-                  onChange={handleChange}
-                />
-              </div>
-
-              {/* Nickname Suggested By */}
-              <div className="flex flex-col gap-1.5 sm:col-span-2">
-                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">Nickname Suggested By</label>
-                <input
-                  type="text"
-                  name="nicknameGivenBy"
-                  className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
-                  placeholder="e.g. Priyanjana Dilmith"
-                  value={formData.nicknameGivenBy || ''}
-                  onChange={handleChange}
-                />
-              </div>
+              <Field label="Tusker ID" required>
+                <input type="text" name="id" className={INPUT_CLASS} placeholder="e.g. T324" value={formData.id} onChange={handleChange} disabled={isEditMode} />
+              </Field>
+              <Field label="Tusker Name (English)" required>
+                <input type="text" name="name" className={INPUT_CLASS} placeholder="e.g. Nero" value={formData.name} onChange={handleChange} />
+              </Field>
+              <Field label="Sinhala Name">
+                <input type="text" name="sinhala" className={INPUT_CLASS} placeholder="e.g. නීරෝ" value={formData.sinhala} onChange={handleChange} />
+              </Field>
+              <Field label="Roaming Area">
+                <input type="text" name="location" className={INPUT_CLASS} placeholder="e.g. Minneriya / Kaudulla" value={formData.location} onChange={handleChange} />
+              </Field>
+              <Field label="First Recorded Date">
+                <input type="date" name="listedDate" className={INPUT_CLASS} placeholder="" value={formData.listedDate} onChange={handleChange} />
+              </Field>
+              <Field label="Recorded By">
+                <input type="text" name="recordedBy" className={INPUT_CLASS} placeholder="e.g. WTS Team" value={formData.recordedBy} onChange={handleChange} />
+              </Field>
+              <Field label="Nickname Suggested By" wide>
+                <input type="text" name="nicknameGivenBy" className={INPUT_CLASS} placeholder="e.g. Priyanjana Dilmith" value={formData.nicknameGivenBy} onChange={handleChange} />
+              </Field>
             </div>
 
-            {/* Description */}
-            <div className="flex flex-col gap-1.5 sm:col-span-2">
-              <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">Description</label>
-              <textarea
-                name="description"
-                className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12 resize-y leading-6"
-                rows="4"
-                placeholder="Describe the tusker's behaviour, usual habitat, musth cycles, and physical presence..."
-                value={formData.description}
-                onChange={handleChange}
+            <SectionTitle>Tusker Photos &amp; Field Records</SectionTitle>
+            <div className="w-full">
+              <ImageUploadBox
+                label="Profile &amp; Field Photos"
+                folder="tuskers"
+                multiple
+                value={formData.photos && formData.photos.length > 0 ? formData.photos : (formData.photo ? [formData.photo] : [])}
+                onChange={handlePhotosChange}
+                aspectClass="aspect-[16/10]"
               />
             </div>
 
+            <SectionTitle>Status &amp; Last Sighting</SectionTitle>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
-              {/* Special Marks */}
-              <div className="flex flex-col gap-1.5">
-                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">Special Marks</label>
-                <input
-                  type="text"
-                  name="specialMarks"
-                  className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
-                  placeholder="e.g. V-shaped notch on right ear"
-                  value={formData.specialMarks}
-                  onChange={handleChange}
-                />
-              </div>
-
-              {/* Special Wounds */}
-              <div className="flex flex-col gap-1.5">
-                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">Wounds</label>
-                <input
-                  type="text"
-                  name="specialWounds"
-                  className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
-                  placeholder="e.g. Healed gunshot mark"
-                  value={formData.specialWounds}
-                  onChange={handleChange}
-                />
-              </div>
-
-              {/* Risk Score */}
-              <div className="flex flex-col gap-1.5">
-                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">Risk Score</label>
-                <input
-                  type="text"
-                  name="riskScore"
-                  className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
-                  placeholder="e.g. 7.5 / 10 (High)"
-                  value={formData.riskScore || ''}
-                  onChange={handleChange}
-                />
-              </div>
-
-              {/* Risk Link */}
-              <div className="flex flex-col gap-1.5">
-                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">Risk Assessment Link</label>
-                <input
-                  type="text"
-                  name="riskLink"
-                  className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
-                  placeholder="e.g. #risk-assessment or https://..."
-                  value={formData.riskLink || ''}
-                  onChange={handleChange}
-                />
-              </div>
+              <Field label="Living Status">
+                <select name="livingStatus" className={SELECT_CLASS} value={formData.livingStatus} onChange={handleChange}>
+                  {LIVING_STATUSES.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </Field>
+              {formData.livingStatus !== 'Deceased' && (
+                <Field label="Life Threat Level">
+                  <select name="threatLevel" className={SELECT_CLASS} value={formData.threatLevel} onChange={handleChange}>
+                    <option value="">— Not set —</option>
+                    {THREAT_LEVELS.map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </Field>
+              )}
+              {formData.livingStatus === 'Deceased' && (
+                <>
+                  <Field label="Year of Death">
+                    <input type="text" name="deathYear" className={INPUT_CLASS} placeholder="e.g. 2024" value={formData.deathYear} onChange={handleChange} inputMode="numeric" />
+                  </Field>
+                  <Field label="Cause of Death">
+                    <input type="text" name="deathReason" className={INPUT_CLASS} placeholder="e.g. Electrocution" value={formData.deathReason} onChange={handleChange} />
+                  </Field>
+                </>
+              )}
+              <Field label={formData.livingStatus === 'Deceased' ? "Last Recorded Area" : "Last Seen Area"}>
+                <input type="text" name="lastSeenArea" className={INPUT_CLASS} placeholder="e.g. Galgamuwa" value={formData.lastSeenArea} onChange={handleChange} />
+              </Field>
+              <Field label={formData.livingStatus === 'Deceased' ? "Last Recorded Month" : "Last Seen (Month)"}>
+                <input type="month" name="lastSeen" className={INPUT_CLASS} placeholder="" value={formData.lastSeen} onChange={handleChange} />
+              </Field>
+              <Field label={formData.livingStatus === 'Deceased' ? "Estimated Age (at death)" : "Age Range"}>
+                <select name="ageRange" className={SELECT_CLASS} value={formData.ageRange} onChange={handleChange}>
+                  <option value="">— Not set —</option>
+                  {AGE_RANGES.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </Field>
+              {formData.livingStatus !== 'Deceased' && (
+                <Field label="Health Condition">
+                  <input type="text" name="healthCondition" className={INPUT_CLASS} placeholder="e.g. Good" value={formData.healthCondition} onChange={handleChange} />
+                </Field>
+              )}
             </div>
+
+            <SectionTitle>Region</SectionTitle>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-6">
+              <Field label="Zone">
+                <select name="zone" className={SELECT_CLASS} value={formData.zone} onChange={handleChange}>
+                  <option value="">— Not set —</option>
+                  {ZONES.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </Field>
+              <Field label="District">
+                <input type="text" name="district" className={INPUT_CLASS} placeholder="e.g. Anuradhapura" value={formData.district} onChange={handleChange} />
+              </Field>
+              <Field label="Province">
+                <input type="text" name="province" className={INPUT_CLASS} placeholder="e.g. North-Central" value={formData.province} onChange={handleChange} />
+              </Field>
+            </div>
+
+            <SectionTitle>Description &amp; Markings</SectionTitle>
+            <Field label="Description">
+              <textarea name="description" className={INPUT_CLASS + ' resize-y leading-6'} rows="4" placeholder="Describe the tusker's behaviour, usual habitat, musth cycles, and physical presence..." value={formData.description} onChange={handleChange} />
+            </Field>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
+              <Field label="Special Marks">
+                <input type="text" name="specialMarks" className={INPUT_CLASS} placeholder="e.g. V-shaped notch on right ear" value={formData.specialMarks} onChange={handleChange} />
+              </Field>
+              <Field label="Wounds">
+                <input type="text" name="specialWounds" className={INPUT_CLASS} placeholder="e.g. Healed gunshot mark" value={formData.specialWounds} onChange={handleChange} />
+              </Field>
+              {formData.livingStatus !== 'Deceased' && (
+                <>
+                  <Field label="Risk Score">
+                    <input type="text" name="riskScore" className={INPUT_CLASS} placeholder="e.g. 7.5 / 10 (High)" value={formData.riskScore} onChange={handleChange} />
+                  </Field>
+                  <Field label="Risk Assessment Link">
+                    <input
+                      type="text"
+                      name="riskLink"
+                      className={INPUT_CLASS}
+                      placeholder="#risk-assessment (default) or https://..."
+                      value={formData.riskLink}
+                      onChange={handleChange}
+                    />
+                    <p className="text-[0.75rem] text-[#777777] mt-1.5 m-0 font-normal leading-normal">
+                      Defaults to <code>#risk-assessment</code> (opens the built-in WTS Risk Assessment modal). Leave as is or enter an external URL (https://...) for a custom report.
+                    </p>
+                  </Field>
+                </>
+              )}
+            </div>
+            <Field label="Remarks">
+              <textarea name="remarks" className={INPUT_CLASS + ' resize-y leading-6'} rows="3" placeholder="e.g. Lost his right tusk due to an accident" value={formData.remarks} onChange={handleChange} />
+            </Field>
 
             <div className="flex items-center justify-end gap-4 mt-6 pt-6 border-t border-[#eeeeee]">
               <button type="button" className="bg-none border-1.5 border-[#e8e8e8] text-[#555555] font-sans text-[0.88rem] font-semibold rounded-[10px] px-6 py-3 cursor-pointer hover:bg-[#f7f7f8] hover:text-[#222222] transition-all" onClick={() => navigate(-1)}>
                 Cancel
               </button>
-              <button type="submit" className="bg-primary text-white border-none font-sans text-[0.88rem] font-semibold rounded-[10px] px-7 py-3 cursor-pointer flex items-center gap-1.5 shadow-[0_4px_14px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-primary-light hover:shadow-[0_6px_20px_rgba(11,37,24,0.25)] transition-all">
+              <button type="submit" disabled={saving} className="disabled:opacity-60 disabled:cursor-wait bg-primary text-white border-none font-sans text-[0.88rem] font-semibold rounded-[10px] px-7 py-3 cursor-pointer flex items-center gap-1.5 shadow-[0_4px_14px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-primary-light hover:shadow-[0_6px_20px_rgba(11,37,24,0.25)] transition-all">
                 <Save size={16} />
-                <span>Save Profile</span>
+                <span>{saving ? 'Saving…' : 'Save Profile'}</span>
               </button>
             </div>
           </form>

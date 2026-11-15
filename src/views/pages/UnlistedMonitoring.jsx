@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Search, MapPin, X, ChevronDown, PlusCircle, Trash2, ShieldAlert } from 'lucide-react';
 import { useUnlistedTuskers } from '../../controllers/useUnlistedTuskers';
+import ImageUploadBox from '../components/ImageUploadBox';
 
 export default function UnlistedMonitoring() {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ export default function UnlistedMonitoring() {
     clearFilters,
     focusLocation,
     isAdmin,
+    authLoading,
     addUnlistedTusker,
     deleteUnlistedTusker,
   } = useUnlistedTuskers();
@@ -32,12 +34,13 @@ export default function UnlistedMonitoring() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newFormData, setNewFormData] = useState({
     id: '',
-    location: 'Yala',
+    location: '',
     listedDate: new Date().toISOString().split('T')[0],
     recordedBy: 'WTS Field Team',
     description: '',
     specialMarks: '',
-    photoUrl: ''
+    photoUrl: '',
+    photos: []
   });
 
   /* ── Click Outside to Close Location Dropdown ── */
@@ -55,22 +58,34 @@ export default function UnlistedMonitoring() {
     document.title = 'Wild Tuskers Sri Lanka | Unlisted Monitoring';
   }, []);
 
-  const handleCreateSubmit = (e) => {
+  const handleCreateSubmit = async (e) => {
     e.preventDefault();
     if (!newFormData.location || !newFormData.description) {
       alert('Please provide at least location and description.');
       return;
     }
-    const photos = newFormData.photoUrl ? [newFormData.photoUrl] : [];
-    const created = addUnlistedTusker({
-      id: newFormData.id.trim() || undefined,
-      location: newFormData.location,
-      listedDate: newFormData.listedDate,
-      recordedBy: newFormData.recordedBy || 'WTS Field Team',
-      description: newFormData.description,
-      specialMarks: newFormData.specialMarks || 'None recorded.',
-      photos
-    });
+    const photos = (newFormData.photos && newFormData.photos.length > 0)
+      ? newFormData.photos
+      : (newFormData.photoUrl
+          ? (newFormData.photoUrl.includes(',')
+              ? newFormData.photoUrl.split(',').map(s => s.trim()).filter(Boolean)
+              : [newFormData.photoUrl])
+          : []);
+    let created;
+    try {
+      created = await addUnlistedTusker({
+        id: newFormData.id.trim() || undefined,
+        location: newFormData.location,
+        listedDate: newFormData.listedDate,
+        recordedBy: newFormData.recordedBy || 'WTS Field Team',
+        description: newFormData.description,
+        specialMarks: newFormData.specialMarks || 'None recorded.',
+        photos
+      });
+    } catch (err) {
+      alert(`Could not add unlisted tusker: ${err.message}`);
+      return;
+    }
     setShowAddModal(false);
     setNewFormData({
       id: '',
@@ -88,12 +103,20 @@ export default function UnlistedMonitoring() {
 
   const handleDelete = (id, e) => {
     e.stopPropagation();
-    if (window.confirm(`Are you sure you want to remove ${id} from Unlisted Monitoring?`)) {
+    if (window.confirm(`Are you sure you want to delete ${id} from Unlisted Monitoring?`)) {
       deleteUnlistedTusker(id);
     }
   };
 
   // Admin access guard
+  if (authLoading) {
+    return (
+      <div className="w-full min-h-[70vh] pt-[calc(80px+4rem)] flex items-center justify-center font-sans text-[#888888]">
+        Loading…
+      </div>
+    );
+  }
+
   if (!isAdmin) {
     return (
       <div className="w-full max-w-[800px] mx-auto pt-[calc(80px+4rem)] pb-20 px-8 min-h-[70vh] flex flex-col items-center justify-center text-center">
@@ -331,15 +354,14 @@ export default function UnlistedMonitoring() {
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">
                     Location *
                   </label>
-                  <select
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Yala, Galgamuwa, Minneriya"
                     value={newFormData.location}
                     onChange={e => setNewFormData({ ...newFormData, location: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent bg-white"
-                  >
-                    {['Yala', 'Minneriya', 'Wilpattu', 'Udawalawe', 'Kaudulla', 'Sinharaja'].map(loc => (
-                      <option key={loc} value={loc}>{loc}</option>
-                    ))}
-                  </select>
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent"
+                  />
                 </div>
               </div>
 
@@ -396,18 +418,17 @@ export default function UnlistedMonitoring() {
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">
-                  Photo URL (Optional)
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://example.com/unlisted-photo.jpg"
-                  value={newFormData.photoUrl}
-                  onChange={e => setNewFormData({ ...newFormData, photoUrl: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent"
-                />
-              </div>
+              <ImageUploadBox
+                label="Direct Photo Upload"
+                folder="unlisted"
+                multiple
+                value={newFormData.photos && newFormData.photos.length > 0 ? newFormData.photos : (newFormData.photoUrl ? [newFormData.photoUrl] : [])}
+                onChange={(urls) => {
+                  const list = Array.isArray(urls) ? urls : (urls ? [urls] : []);
+                  setNewFormData({ ...newFormData, photos: list, photoUrl: list[0] || '' });
+                }}
+                aspectClass="aspect-[16/10]"
+              />
 
               <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
                 <button

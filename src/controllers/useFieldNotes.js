@@ -7,27 +7,30 @@ import {
   deleteFieldNote
 } from '../models/FieldNotesModel';
 import { useAuth } from './useAuth';
+import { uploadMediaFile } from '../utils/storageUpload';
 
 /* ==============================================================
    SECTION 1: FIELD NOTES PUBLIC FEED & ADMIN REVIEW CONTROLLER
 ============================================================== */
 export function useFieldNotesFeed() {
-  const [allNotes, setAllNotes] = useState(() => getFieldNotes());
-  const { isAdmin } = useAuth();
+  const [allNotes, setAllNotes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { isAdmin, authLoading } = useAuth();
 
-  const reloadNotes = useCallback(() => {
-    setAllNotes(getFieldNotes());
-  }, []);
+  const reloadNotes = useCallback(async () => {
+    try {
+      setAllNotes(await getFieldNotes({ admin: isAdmin }));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [isAdmin]);
 
+  // Reload once auth is known (admins also see pending notes)
   useEffect(() => {
-    const handleNotesChange = () => reloadNotes();
-    window.addEventListener('fieldNotesChange', handleNotesChange);
-    window.addEventListener('storage', handleNotesChange);
-    return () => {
-      window.removeEventListener('fieldNotesChange', handleNotesChange);
-      window.removeEventListener('storage', handleNotesChange);
-    };
-  }, [reloadNotes]);
+    if (!authLoading) reloadNotes();
+  }, [authLoading, reloadNotes]);
 
   // Approved notes visible to all visitors
   const approvedNotes = useMemo(() => {
@@ -56,22 +59,21 @@ export function useFieldNotesFeed() {
     return Object.keys(notesByYear).sort((a, b) => b - a); // Descending
   }, [notesByYear]);
 
-  const handleApprove = (id) => {
-    approveFieldNote(id);
-    reloadNotes();
+  const runAndReload = async (action, id) => {
+    try {
+      await action(id);
+    } catch (err) {
+      alert(`Action failed: ${err.message}`);
+    }
+    await reloadNotes();
   };
 
-  const handleReject = (id) => {
-    rejectFieldNote(id);
-    reloadNotes();
-  };
-
-  const handleDelete = (id) => {
-    deleteFieldNote(id);
-    reloadNotes();
-  };
+  const handleApprove = (id) => runAndReload(approveFieldNote, id);
+  const handleReject = (id) => runAndReload(rejectFieldNote, id);
+  const handleDelete = (id) => runAndReload(deleteFieldNote, id);
 
   return {
+    loading,
     notes: approvedNotes,
     approvedNotes,
     pendingNotes,
@@ -101,16 +103,37 @@ export function useFieldNoteForm() {
     images: [] // array of image attachment data URLs
   });
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  // Auth resolves asynchronously; prefill author for admins once known
+  useEffect(() => {
+    if (isAdmin) {
+      setFormData(prev => (prev.author ? prev : { ...prev, author: 'Admin' }));
+    }
+  }, [isAdmin]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddImages = (newImages) => {
+  const handleAddImages = async (newFilesOrUrls) => {
+    if (!newFilesOrUrls || newFilesOrUrls.length === 0) return;
+    const items = Array.from(newFilesOrUrls);
+    const uploaded = await Promise.all(
+      items.map(async (item) => {
+        if (typeof item === 'string') return item;
+        try {
+          return await uploadMediaFile(item, 'fieldnotes');
+        } catch (err) {
+          console.warn('[useFieldNotes] upload failed, fallback to local object URL', err);
+          return URL.createObjectURL(item);
+        }
+      })
+    );
     setFormData(prev => ({
       ...prev,
-      images: [...prev.images, ...newImages]
+      images: [...prev.images, ...uploaded.filter(Boolean)]
     }));
   };
 
@@ -121,7 +144,7 @@ export function useFieldNoteForm() {
     }));
   };
 
-  const createNote = () => {
+  const createNote = async () => {
     const { title, date, time, description, images, author, authorContact } = formData;
 
     if (!author.trim()) {
@@ -154,16 +177,26 @@ export function useFieldNoteForm() {
     const finalAuthor = author.trim();
     const status = isAdmin ? 'approved' : 'pending';
 
-    const saved = addFieldNote({
-      title: title.trim(),
-      date,
-      time: time.trim(),
-      description: description.trim(),
-      images: imageArray,
-      author: finalAuthor,
-      authorContact: authorContact.trim(),
-      status
-    });
+    setError('');
+    setSubmitting(true);
+    let saved;
+    try {
+      saved = await addFieldNote({
+        title: title.trim(),
+        date,
+        time: time.trim(),
+        description: description.trim(),
+        images: imageArray,
+        author: finalAuthor,
+        authorContact: authorContact.trim(),
+        status
+      });
+    } catch (err) {
+      setError(`Could not submit your field note: ${err.message}`);
+      return null;
+    } finally {
+      setSubmitting(false);
+    }
 
     return {
       success: true,
@@ -175,6 +208,7 @@ export function useFieldNoteForm() {
   return {
     formData,
     error,
+    submitting,
     isAdmin,
     handleChange,
     handleAddImages,

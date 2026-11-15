@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, Home, Info, Database, BookOpen, Binoculars, Calendar, Shield, Radar } from 'lucide-react';
-import wtsLogo from '../../assets/images/wtslogo.png';
+import { Menu, X, LogOut, Home, Info, Database, BookOpen, Binoculars, Calendar, Shield, Camera } from 'lucide-react';
+import { SITE_ASSETS } from '../../constants/siteAssets';
+const wtsLogo = SITE_ASSETS.wtsLogo;
 import { useAuth } from '../../controllers/useAuth';
 
 // Official Facebook Brand Logo (Blue Circle with white 'f')
@@ -25,7 +26,7 @@ const navItems = [
   { name: 'Home',                 path: '/',             icon: Home },
   { name: 'About Us',             path: '/about',        icon: Info },
   { name: 'Wild Tuskers List',    path: '/tuskers',      icon: Database },
-  { name: 'Unlisted Monitoring',  path: '/unlisted',     icon: Radar },
+  { name: 'The Gallery',          path: '/gallery',      icon: Camera },
   { name: 'Field Notes',          path: '/field-notes',  icon: BookOpen },
   { name: 'Special Observations', path: '/observations', icon: Binoculars },
   { name: 'Our Projects',         path: '/projects',     icon: Calendar },
@@ -44,8 +45,8 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleLogoutClick = () => {
-    logout();
+  const handleLogoutClick = async () => {
+    await logout();
     closeMenu();
     navigate('/');
   };
@@ -53,10 +54,7 @@ export default function Navbar() {
   const isActive = (path) =>
     path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
 
-  const visibleNavItems = navItems.filter(item => {
-    if (item.path === '/unlisted' && !isAdmin) return false;
-    return true;
-  });
+  const visibleNavItems = navItems;
 
   const isHome = location.pathname === '/';
   const isScrolledState = isScrolled || !isHome;
@@ -97,6 +95,9 @@ export default function Navbar() {
                       }`}
                     />
                     <span>{item.name}</span>
+                    {active && (
+                      <span className="absolute bottom-0 left-1 right-1 h-[2px] bg-accent rounded-full transition-all duration-300" />
+                    )}
                   </Link>
                 </li>
               );
@@ -105,7 +106,11 @@ export default function Navbar() {
         </nav>
 
         {/* CTA + Mobile Toggle */}
-        <div className="flex items-center gap-3.5 xl:gap-4 ml-4 xl:ml-6 pl-4 xl:pl-6 border-l border-white/20 shrink-0">
+        <div className={`flex items-center gap-3.5 xl:gap-4 shrink-0 ${
+          isAdmin && isActive('/admin')
+            ? ''
+            : 'ml-4 xl:ml-6 pl-4 xl:pl-6 border-l border-white/20'
+        }`}>
           {!isAdmin && (
             <a
               href="https://www.facebook.com/wildtuskersrilanka/"
@@ -119,37 +124,43 @@ export default function Navbar() {
           )}
 
           {isAdmin ? (
-            <>
-              <Link
-                to="/admin"
-                className={`font-semibold text-[0.86rem] px-4 py-[0.55rem] rounded-[4px] hidden sm:inline-flex items-center gap-1.5 transition-all duration-300 ${
-                  isActive('/admin')
-                    ? 'bg-accent! text-primary! shadow-sm'
-                    : 'bg-white/15 text-white hover:bg-white/25'
-                }`}
-              >
-                <Shield size={15} />
-                <span>Admin Portal</span>
-              </Link>
-              <button
-                onClick={handleLogoutClick}
-                className="bg-primary-light text-white font-semibold text-[0.85rem] px-4 py-[0.55rem] rounded-[4px] hidden sm:inline-flex items-center gap-1 shadow-[0_4px_10px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-white/10! hover:border-white! transition-all duration-300 cursor-pointer"
-              >
-                <LogOut size={15} />
-                <span>Logout</span>
-              </button>
-            </>
+            !isActive('/admin') && (
+              <>
+                <Link
+                  to="/admin"
+                  className="font-semibold text-[0.86rem] px-4 py-[0.55rem] rounded-[4px] hidden sm:inline-flex items-center gap-1.5 transition-all duration-300 bg-white/15 text-white hover:bg-white/25"
+                >
+                  <Shield size={15} />
+                  <span>Admin Portal</span>
+                </Link>
+                <button
+                  onClick={handleLogoutClick}
+                  className="bg-primary-light text-white font-semibold text-[0.85rem] px-4 py-[0.55rem] rounded-[4px] hidden sm:inline-flex items-center gap-1 shadow-[0_4px_10px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-white/10! hover:border-white! transition-all duration-300 cursor-pointer"
+                >
+                  <LogOut size={15} />
+                  <span>Logout</span>
+                </button>
+              </>
+            )
           ) : (
             <Link
               to="/login"
-              className={`font-medium text-[0.92rem] py-2 transition-all duration-300 hidden sm:inline-flex items-center gap-1.5 ${
+              className={`hidden sm:inline-flex items-center gap-[0.45rem] xl:gap-2 font-medium text-[0.88rem] xl:text-[0.94rem] 2xl:text-[0.96rem] whitespace-nowrap relative py-2 px-1 transition-all duration-300 group ${
                 isActive('/login') || isActive('/admin')
                   ? 'opacity-100 text-accent font-semibold'
-                  : 'text-white opacity-85 hover:opacity-100 hover:text-accent'
+                  : 'text-white/85 hover:opacity-100 hover:text-accent'
               }`}
             >
-              <Shield size={15} />
+              <Shield
+                size={15}
+                className={`opacity-75 transition-transform duration-200 group-hover:-translate-y-[1px] group-hover:opacity-100 ${
+                  isActive('/login') || isActive('/admin') ? 'opacity-100 -translate-y-[1px]' : ''
+                }`}
+              />
               <span>Admin Login</span>
+              {(isActive('/login') || isActive('/admin')) && (
+                <span className="absolute bottom-0 left-1 right-1 h-[2px] bg-accent rounded-full transition-all duration-300" />
+              )}
             </Link>
           )}
 
@@ -214,6 +225,9 @@ export default function Navbar() {
                       }`}
                     />
                     <span>{item.name}</span>
+                    {active && (
+                      <span className="absolute bottom-0 left-1 right-1 h-[2px] bg-accent rounded-full transition-all duration-300" />
+                    )}
                   </Link>
                 </li>
               );
@@ -260,13 +274,4 @@ export default function Navbar() {
               onClick={closeMenu}
               className="bg-primary-light text-white font-semibold text-[1rem] py-[0.85rem] px-6 rounded-[4px] w-full flex items-center justify-center gap-2 shadow-[0_4px_10px_rgba(11,37,24,0.15)] hover:bg-primary transition-all duration-300"
             >
-              <Shield size={16} />
-              <span>Admin Login</span>
-            </Link>
-          )}
-          <p className="font-sans text-[0.75rem] text-text-muted text-center mb-0">© 2026 Wild Tusker Sri Lanka</p>
-        </div>
-      </div>
-    </header>
-  );
-}
+         

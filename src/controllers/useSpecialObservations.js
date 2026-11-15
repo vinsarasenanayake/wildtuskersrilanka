@@ -1,24 +1,32 @@
 import { useState, useMemo, useEffect } from 'react';
 import {
   getSpecialObservations,
+  getSpecialObservationById,
   addSpecialObservation,
   updateSpecialObservation,
   deleteSpecialObservation,
 } from '../models/SpecialObservationsModel';
 import { useAuth } from './useAuth';
+import { uploadMediaFile } from '../utils/storageUpload';
 
 /* ==============================================================
    SECTION 1: SPECIAL OBSERVATIONS PUBLIC FEED CONTROLLER
 ============================================================== */
 export function useSpecialObservationsFeed() {
   const [observations, setObservations] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const { isAdmin } = useAuth();
 
-  const loadObservations = () => {
-    const data = getSpecialObservations();
-    setObservations(data);
+  const loadObservations = async () => {
+    try {
+      setObservations(await getSpecialObservations());
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -57,14 +65,19 @@ export function useSpecialObservationsFeed() {
     });
   }, [observations, selectedYear, searchQuery]);
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this special observation?')) {
-      deleteSpecialObservation(id);
-      loadObservations();
+      try {
+        await deleteSpecialObservation(id);
+      } catch (err) {
+        alert(`Delete failed: ${err.message}`);
+      }
+      await loadObservations();
     }
   };
 
   return {
+    loading,
     observations: filteredObservations,
     allObservations: observations,
     availableYears,
@@ -92,28 +105,31 @@ export function useSpecialObservationForm(id) {
     date: new Date().toISOString().split('T')[0],
     location: '',
     description: '',
-    images: '',
+    images: [],
     author: isAdmin ? 'Admin' : 'WTS Researcher',
   });
 
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
 
   useEffect(() => {
-    if (isEditMode) {
-      const all = getSpecialObservations();
-      const existing = all.find(item => item.id === Number(id));
-      if (existing) {
+    if (!isEditMode) return;
+    let active = true;
+    getSpecialObservationById(id).then(existing => {
+      if (active && existing) {
         setFormData({
           title: existing.title || '',
           tuskerName: existing.tuskerName || '',
           date: existing.date || '',
           location: existing.location || '',
           description: existing.description || '',
-          images: Array.isArray(existing.images) ? existing.images.join(', ') : (existing.images || ''),
+          images: Array.isArray(existing.images) ? existing.images : [],
           author: existing.author || '',
         });
       }
-    }
+    }).catch(err => active && setError(err.message));
+    return () => { active = false; };
   }, [id, isEditMode]);
 
   const handleChange = (e) => {
@@ -121,7 +137,42 @@ export function useSpecialObservationForm(id) {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const saveObservation = () => {
+  const handleAddImages = async (files) => {
+    if (!files || files.length === 0) return;
+    setUploadingImages(true);
+    try {
+      const fileList = Array.from(files).filter((file) => file.type?.startsWith('image/'));
+      const uploadedUrls = await Promise.all(
+        fileList.map(async (file) => {
+          try {
+            return await uploadMediaFile(file, 'observations');
+          } catch (uploadErr) {
+            console.warn('[useSpecialObservations] Direct upload failed, falling back to base64 preview', uploadErr);
+            return new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onload = (ev) => resolve(ev.target.result);
+              reader.readAsDataURL(file);
+            });
+          }
+        })
+      );
+      setFormData((prev) => ({
+        ...prev,
+        images: [...(prev.images || []), ...uploadedUrls.filter(Boolean)],
+      }));
+    } finally {
+      setUploadingImages(false);
+    }
+  };
+
+  const handleRemoveImage = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      images: (prev.images || []).filter((_, i) => i !== index),
+    }));
+  };
+
+  const saveObservation = async () => {
     const { title, tuskerName, date, location, description, images, author } = formData;
 
     if (!title || !date || !description || !tuskerName) {
@@ -129,28 +180,45 @@ export function useSpecialObservationForm(id) {
       return false;
     }
 
-    const imageArray = images
-      ? images
-          .split(',')
-          .map(url => url.trim())
-          .filter(Boolean)
-      : [];
+    setSubmitting(true);
+    setError('');
 
-    const payload = {
-      title,
-      tuskerName,
-      date,
-      year: new Date(date).getFullYear().toString(),
-      location: location || 'Sri Lanka',
-      description,
-      images: imageArray,
-      author: author || 'Admin',
-    };
+    try {
+      // Ensure any fallback base64 images are uploaded to Supabase Storage before persisting
+      const resolvedImages = await Promise.all(
+        (images || []).map(async (img) => {
+          if (typeof img === 'string' && img.startsWith('data:')) {
+            try {
+              return await uploadMediaFile(img, 'observations');
+            } catch (err) {
+              console.warn('[useSpecialObservations] Base64 upload failed on save', err);
+              return img;
+            }
+          }
+          return img;
+        })
+      );
 
-    if (isEditMode) {
-      updateSpecialObservation(id, payload);
-    } else {
-      addSpecialObservation(payload);
+      const payload = {
+        title,
+        tuskerName,
+        date,
+        location: location || 'Sri Lanka',
+        description,
+        images: Array.isArray(resolvedImages) ? resolvedImages : [],
+        author: author || 'Admin',
+      };
+
+      if (isEditMode) {
+        await updateSpecialObservation(id, payload);
+      } else {
+        await addSpecialObservation(payload);
+      }
+    } catch (err) {
+      setError(`Could not save observation: ${err.message}`);
+      return false;
+    } finally {
+      setSubmitting(false);
     }
 
     return true;
@@ -158,8 +226,13 @@ export function useSpecialObservationForm(id) {
 
   return {
     formData,
+    setFormData,
     error,
+    submitting,
+    uploadingImages,
     handleChange,
+    handleAddImages,
+    handleRemoveImage,
     saveObservation,
     isEditMode,
   };

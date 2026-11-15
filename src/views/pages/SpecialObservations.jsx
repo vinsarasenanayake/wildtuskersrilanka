@@ -19,6 +19,7 @@ export default function SpecialObservations() {
   const navigate = useNavigate();
   const {
     observations,
+    allObservations = [],
     availableYears,
     selectedYear,
     setSelectedYear,
@@ -72,55 +73,59 @@ export default function SpecialObservations() {
           {canAddObservation && (
             <button
               onClick={() => navigate('/admin/add-observation')}
-              className="bg-accent text-primary font-sans text-[0.92rem] font-bold px-5 py-2.8 rounded-[8px] inline-flex items-center gap-2 shadow-[0_4px_12px_rgba(198,155,85,0.25)] hover:bg-accent-hover hover:-translate-y-0.5 transition-all duration-300 border-none cursor-pointer shrink-0"
+              className="bg-accent text-primary font-semibold text-[0.88rem] px-5 py-2.5 rounded-[6px] inline-flex items-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap"
             >
-              <PlusCircle size={17} />
+              <PlusCircle size={16} />
               <span>Add Special Observation</span>
             </button>
           )}
         </div>
 
-        {/* Controls: Year Filter Tabs & Search Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-          {/* Year Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-            <button
-              onClick={() => setSelectedYear('ALL')}
-              className={`font-sans text-[0.88rem] font-bold px-4 py-2 rounded-full transition-all cursor-pointer border-none shrink-0 ${
-                selectedYear === 'ALL'
-                  ? 'bg-primary text-white shadow-sm'
-                  : 'bg-white text-[#555555] hover:bg-[#eaeaea] hover:text-[#111111]'
-              }`}
-            >
-              All Years
-            </button>
-            {availableYears.map((year) => (
-              <button
-                key={year}
-                onClick={() => setSelectedYear(year)}
-                className={`font-sans text-[0.88rem] font-bold px-4 py-2 rounded-full transition-all cursor-pointer border-none shrink-0 ${
-                  selectedYear === year
-                    ? 'bg-primary text-white shadow-sm'
-                    : 'bg-white text-[#555555] hover:bg-[#eaeaea] hover:text-[#111111]'
-                }`}
-              >
-                {year}
-              </button>
-            ))}
-          </div>
+        {/* Controls: Year Filter Tabs & Search Bar (hidden when empty) */}
+        {allObservations.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+            {/* Year Tabs - hidden if no specific years */}
+            {availableYears.length > 0 && (
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                <button
+                  onClick={() => setSelectedYear('ALL')}
+                  className={`font-sans text-[0.88rem] font-bold px-4 py-2 rounded-full transition-all cursor-pointer border-none shrink-0 ${
+                    selectedYear === 'ALL'
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'bg-white text-[#555555] hover:bg-[#eaeaea] hover:text-[#111111]'
+                  }`}
+                >
+                  All Years
+                </button>
+                {availableYears.map((year) => (
+                  <button
+                    key={year}
+                    onClick={() => setSelectedYear(year)}
+                    className={`font-sans text-[0.88rem] font-bold px-4 py-2 rounded-full transition-all cursor-pointer border-none shrink-0 ${
+                      selectedYear === year
+                        ? 'bg-primary text-white shadow-sm'
+                        : 'bg-white text-[#555555] hover:bg-[#eaeaea] hover:text-[#111111]'
+                    }`}
+                  >
+                    {year}
+                  </button>
+                ))}
+              </div>
+            )}
 
-          {/* Search Box */}
-          <div className="relative min-w-[240px] max-w-sm">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#999999]" />
-            <input
-              type="text"
-              placeholder="Search by tusker, title, location..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white border border-[#e2e8f0] rounded-full pl-9 pr-4 py-2 text-[0.88rem] text-[#111111] placeholder:text-[#999999] outline-none focus:border-accent transition-all"
-            />
+            {/* Search Box */}
+            <div className="relative min-w-[240px] max-w-sm ml-auto">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#999999]" />
+              <input
+                type="text"
+                placeholder="Search by tusker, title, location..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-white border border-[#e2e8f0] rounded-full pl-9 pr-4 py-2 text-[0.88rem] text-[#111111] placeholder:text-[#999999] outline-none focus:border-accent transition-all"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Observations List */}
         {observations.length > 0 ? (
@@ -231,7 +236,9 @@ export default function SpecialObservations() {
             </div>
             <h3 className="font-sans text-[1.2rem] font-bold text-[#111111] m-0">No Special Observations Found</h3>
             <p className="font-sans text-[0.92rem] text-[#777777] max-w-md m-0">
-              {searchQuery
+              {allObservations.length === 0
+                ? 'No special observations have been recorded yet.'
+                : searchQuery
                 ? 'No observations match your current search query. Try clearing the search or switching year filter.'
                 : 'No observations recorded for this year yet.'}
             </p>

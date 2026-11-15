@@ -1,13 +1,24 @@
 import React, { useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, X, ChevronDown } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Search, MapPin, X, ChevronDown, ArrowRight, PlusCircle, Radar } from 'lucide-react';
 import { useTuskerList } from '../../controllers/useTusker';
+import { useAuth } from '../../controllers/useAuth';
+import { LIVING_STATUSES } from '../../models/TuskerModel';
+import StatusBadge from '../components/StatusBadge';
+import { setCachedAspect } from '../../utils/photoAspectCache';
 
 export default function WildTuskersList() {
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const {
     filtered,
     tuskers,
+    loading,
+    loadError,
+    statusFilter,
+    setStatusFilter,
+    statusCounts,
+    countInArea,
     nameQuery,
     nameSuggestions,
     showNameSugg,
@@ -51,11 +62,40 @@ export default function WildTuskersList() {
     <div className="w-full max-w-[1280px] mx-auto pt-[calc(80px+2.5rem)] pb-20 px-8 min-h-screen bg-white">
 
       {/* ── Page Header ── */}
-      <div className="text-center mb-10 pb-6 border-b border-[#eeeeee]">
-        <h1 className="font-sans text-[2.25rem] font-bold text-[#111111] mb-1.5">Wild Tuskers List</h1>
-        <p className="font-sans text-[0.95rem] text-[#777777]">
-          {tuskers.length} identified tuskers documented by the WTS team
-        </p>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 pb-6 border-b border-[#eeeeee]">
+        <div className="text-center sm:text-left">
+          <h1 className="font-sans text-[2.25rem] font-bold text-[#111111] mb-1.5">Wild Tuskers List</h1>
+          <p className="font-sans text-[0.95rem] text-[#777777] m-0">
+            {tuskers.length} identified tuskers documented by the WTS team
+          </p>
+        </div>
+        <div className="flex items-center gap-3 shrink-0 flex-wrap justify-center sm:justify-end">
+          {isAdmin && (
+            <>
+              <Link
+                to="/admin/add-tusker"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent hover:bg-accent-hover text-primary font-semibold text-[0.88rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0"
+              >
+                <PlusCircle size={16} />
+                <span>Add a New Tusker</span>
+              </Link>
+              <Link
+                to="/unlisted"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#faf5ec] hover:bg-[#f3ebd9] text-primary border border-accent/40 font-semibold text-[0.88rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0"
+              >
+                <Radar size={16} className="text-accent" />
+                <span>Unlisted Monitoring</span>
+              </Link>
+            </>
+          )}
+          <Link
+            to="/ai-app"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#16402b] hover:bg-[#1f593c] text-white font-medium text-[0.88rem] shadow-sm hover:shadow-md border border-[#2d8056]/30 transition-all duration-200 shrink-0 group no-underline"
+          >
+            <span>AI Re-Identification App</span>
+            <ArrowRight size={14} className="text-white transition-transform duration-200 group-hover:translate-x-1" />
+          </Link>
+        </div>
       </div>
 
       {/* ── Search Toolbar ── */}
@@ -68,7 +108,7 @@ export default function WildTuskersList() {
             <input
               type="text"
               className="border-none bg-transparent outline-none font-sans text-[0.9rem] text-[#111111] caret-[#111111] w-full placeholder:text-[#bbbbbb]"
-              placeholder="Search tusker name or ID…"
+              placeholder="Search tusker name, ID, or location…"
               value={nameQuery}
               onChange={e => handleNameInput(e.target.value)}
               onFocus={() => nameQuery && setShowNameSugg(true)}
@@ -110,7 +150,7 @@ export default function WildTuskersList() {
             }
           </div>
           {showLocDrop && locSuggestions.length > 0 && (
-            <ul className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white border-1.5 border-[#e8e8e8] rounded-[10px] shadow-[0_8px_24px_rgba(0,0,0,0.1)] z-[200] list-none m-0 py-1.5 overflow-hidden">
+            <ul className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white border-1.5 border-[#e8e8e8] rounded-[10px] shadow-[0_8px_24px_rgba(0,0,0,0.1)] z-[200] list-none m-0 py-1.5 max-h-[320px] overflow-y-auto">
               {locSuggestions.map(loc => (
                 <li
                   key={loc}
@@ -120,7 +160,7 @@ export default function WildTuskersList() {
                   <MapPin size={12} className="text-accent shrink-0" />
                   <span className="flex-1 text-[#111111] font-medium">{loc}</span>
                   <span className="ml-auto text-[0.78rem] text-[#aaaaaa]">
-                    {tuskers.filter(t => t.location === loc).length} tuskers
+                    {countInArea(loc)} tuskers
                   </span>
                 </li>
               ))}
@@ -130,10 +170,31 @@ export default function WildTuskersList() {
 
       </div>
 
+      {/* ── Living Status Filter ── */}
+      <div className="flex items-center gap-2 mb-5 flex-wrap">
+        {['ALL', ...LIVING_STATUSES].map(st => (
+          <button
+            key={st}
+            type="button"
+            onClick={() => setStatusFilter(st)}
+            className={`font-sans text-[0.82rem] font-semibold rounded-full px-3.5 py-1.5 border cursor-pointer transition-all ${
+              statusFilter === st
+                ? 'bg-primary text-white border-primary'
+                : 'bg-white text-[#555555] border-[#e8e8e8] hover:border-accent hover:text-accent'
+            }`}
+          >
+            {st === 'ALL' ? 'All' : st}
+            <span className={`ml-1.5 font-normal ${statusFilter === st ? 'text-white/70' : 'text-[#aaaaaa]'}`}>
+              {statusCounts[st] || 0}
+            </span>
+          </button>
+        ))}
+      </div>
+
       {/* ── Results Count ── */}
       <div className="flex items-center justify-between mb-7 font-sans text-[0.85rem] text-[#888888]">
         <span>{filtered.length} {filtered.length === 1 ? 'tusker' : 'tuskers'} found</span>
-        {(nameQuery || selectedLocation) && (
+        {(nameQuery || selectedLocation || statusFilter !== 'ALL') && (
           <button className="bg-none border-none font-sans text-[0.85rem] text-accent cursor-pointer font-medium underline p-0 hover:text-accent-hover" onClick={clearFilters}>
             Clear filters
           </button>
@@ -141,7 +202,11 @@ export default function WildTuskersList() {
       </div>
 
       {/* ── Grid ── */}
-      {filtered.length > 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center min-h-[60vh] font-sans text-[#aaaaaa]">Loading tuskers…</div>
+      ) : loadError ? (
+        <div className="flex items-center justify-center min-h-[60vh] font-sans text-[#e53e3e]">Could not load tuskers: {loadError}</div>
+      ) : filtered.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-8 min-h-[60vh] content-start">
           {filtered.map(tusker => (
             <div
@@ -150,16 +215,40 @@ export default function WildTuskersList() {
               onClick={() => navigate(`/tuskers/${tusker.id.toLowerCase()}`)}
             >
               <div className="w-full aspect-square bg-[#e8e8e8] rounded-[6px] relative overflow-hidden flex flex-col items-center justify-center gap-1 transition-opacity duration-200 group-hover:opacity-82">
-                {tusker.photos && tusker.photos.length > 0 && (
-                  <img src={tusker.photos[0]} alt={tusker.name} className="w-full h-full object-cover absolute inset-0" />
+                {tusker.livingStatus && tusker.livingStatus !== 'Alive' && (
+                  <StatusBadge
+                    status={tusker.livingStatus}
+                    deathYear={tusker.deathYear}
+                    className="absolute top-2 left-2 z-[2] text-[0.68rem] px-2 py-0.5"
+                  />
                 )}
-                <span className="font-sans text-[1rem] font-semibold text-[#999999] tracking-widest z-[1] drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{tusker.id}</span>
-                <span className="flex items-center gap-[3px] font-sans text-[0.72rem] text-[#bbbbbb] z-[1] drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"><MapPin size={10} /> {tusker.location}</span>
+                {tusker.photos && tusker.photos[0] ? (
+                  <img
+                    ref={(el) => {
+                      if (el && el.complete && el.naturalWidth > 0 && el.naturalHeight > 0) {
+                        setCachedAspect(tusker.photos[0], el.naturalHeight > el.naturalWidth);
+                      }
+                    }}
+                    src={tusker.photos[0]}
+                    alt={tusker.name}
+                    onLoad={(e) => {
+                      if (e.target.naturalWidth && e.target.naturalHeight) {
+                        setCachedAspect(tusker.photos[0], e.target.naturalHeight > e.target.naturalWidth);
+                      }
+                    }}
+                    className="w-full h-full object-cover absolute inset-0"
+                  />
+                ) : (
+                  <>
+                    <span className="font-sans text-[1rem] font-semibold text-[#999999] tracking-widest">{tusker.id}</span>
+                    <span className="flex items-center gap-[3px] font-sans text-[0.72rem] text-[#bbbbbb]"><MapPin size={10} /> {tusker.location}</span>
+                  </>
+                )}
               </div>
               <div className="flex flex-col gap-0.5">
                 <p className="font-sans text-[0.88rem] font-semibold text-[#111111] leading-[1.4] m-0">
-                  {tusker.id} – {tusker.name}{' '}
-                  <span className="font-normal text-[#444444]">({tusker.sinhala})</span>
+                  {tusker.id} – {tusker.name}
+                  {tusker.sinhala && <span className="font-normal text-[#444444]"> ({tusker.sinhala})</span>}
                 </p>
                 <p className="font-sans text-[0.8rem] text-[#999999] m-0">{tusker.location}</p>
               </div>

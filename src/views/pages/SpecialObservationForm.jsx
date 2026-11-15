@@ -1,16 +1,54 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, Binoculars, Image as ImageIcon } from 'lucide-react';
+import {
+  ArrowLeft,
+  Save,
+  Binoculars,
+  Image as ImageIcon,
+  Paperclip,
+  X,
+  Search,
+  Plus,
+  Check,
+} from 'lucide-react';
 import { useSpecialObservationForm } from '../../controllers/useSpecialObservations';
 import { getTuskers } from '../../models/TuskerModel';
+import { useAuth } from '../../controllers/useAuth';
 
 export default function SpecialObservationForm() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { formData, error, handleChange, saveObservation, isEditMode } =
-    useSpecialObservationForm(id);
+  const {
+    formData,
+    error,
+    submitting,
+    uploadingImages,
+    handleChange,
+    handleAddImages,
+    handleRemoveImage,
+    saveObservation,
+    isEditMode,
+  } = useSpecialObservationForm(id);
 
-  const tuskersList = getTuskers();
+  const fileInputRef = useRef(null);
+  const dropdownRef = useRef(null);
+
+  const { isAdmin, authLoading } = useAuth();
+  const [tuskersList, setTuskersList] = useState([]);
+
+  // Multi-tusker & comparison states
+  const [selectedTuskers, setSelectedTuskers] = useState([]);
+  const [connector, setConnector] = useState('vs'); // 'vs' (Comparison) or '&' (Together)
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const [initialSyncDone, setInitialSyncDone] = useState(false);
+
+  useEffect(() => {
+    getTuskers()
+      .then((data) => setTuskersList(data || []))
+      .catch((err) => console.error(err));
+  }, []);
 
   useEffect(() => {
     document.title = `Wild Tuskers Sri Lanka | ${isEditMode ? 'Edit' : 'Add'} Special Observation`;
@@ -18,25 +56,118 @@ export default function SpecialObservationForm() {
 
   useEffect(() => {
     // Admin protection
-    const isAdmin = localStorage.getItem('isAdmin') === 'true';
-    if (!isAdmin) {
+    if (!authLoading && !isAdmin) {
       navigate('/login');
     }
-  }, [navigate]);
+  }, [authLoading, isAdmin, navigate]);
 
-  const handleSubmit = (e) => {
+  // When editing an existing observation, match existing tuskerName to tuskers in the database
+  useEffect(() => {
+    if (initialSyncDone || !formData.tuskerName || tuskersList.length === 0) return;
+
+    const currentVal = formData.tuskerName;
+    const matched = [];
+
+    tuskersList.forEach((t) => {
+      const needleWithDash = `${t.id} - ${t.name}`.toLowerCase();
+      const needleId = `${t.id} `.toLowerCase();
+      const lower = currentVal.toLowerCase();
+      if (lower.includes(needleWithDash) || lower.startsWith(needleId)) {
+        if (!matched.some((m) => m.id === t.id)) {
+          matched.push(t);
+        }
+      }
+    });
+
+    if (matched.length > 0) {
+      setSelectedTuskers(matched);
+      if (currentVal.includes(' & ')) {
+        setConnector('&');
+      } else {
+        setConnector('vs');
+      }
+    }
+    setInitialSyncDone(true);
+  }, [formData.tuskerName, tuskersList, initialSyncDone]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const updateGeneratedName = useCallback((tuskers, conn) => {
+    if (!tuskers || tuskers.length === 0) {
+      handleChange({ target: { name: 'tuskerName', value: '' } });
+      return;
+    }
+    const tuskerNames = tuskers.map((t) => `${t.id} - ${t.name}`).join(` ${conn} `);
+    handleChange({ target: { name: 'tuskerName', value: tuskerNames } });
+  }, [handleChange]);
+
+  const handleSelectTusker = (tusker) => {
+    if (selectedTuskers.some((t) => t.id === tusker.id)) return;
+    const nextTuskers = [...selectedTuskers, tusker];
+    setSelectedTuskers(nextTuskers);
+    setSearchQuery('');
+    setIsDropdownOpen(false);
+    updateGeneratedName(nextTuskers, connector);
+  };
+
+  const handleRemoveTusker = (idToRemove) => {
+    const nextTuskers = selectedTuskers.filter((t) => t.id !== idToRemove);
+    setSelectedTuskers(nextTuskers);
+    if (nextTuskers.length > 0) {
+      updateGeneratedName(nextTuskers, connector);
+    } else {
+      handleChange({ target: { name: 'tuskerName', value: '' } });
+    }
+  };
+
+  const handleToggleConnector = (newConn) => {
+    setConnector(newConn);
+    updateGeneratedName(selectedTuskers, newConn);
+  };
+
+  const filteredTuskers = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return tuskersList.slice(0, 10);
+    }
+    const q = searchQuery.toLowerCase().trim();
+    return tuskersList
+      .filter(
+        (t) =>
+          t.id?.toLowerCase().includes(q) ||
+          t.name?.toLowerCase().includes(q) ||
+          t.location?.toLowerCase().includes(q)
+      )
+      .slice(0, 20);
+  }, [tuskersList, searchQuery]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = saveObservation();
+    const success = await saveObservation();
     if (success) {
       navigate('/observations');
     }
   };
 
-  const imagesArray = formData.images
+  const handleFileSelect = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleAddImages(e.target.files);
+      e.target.value = '';
+    }
+  };
+
+  const imagesArray = Array.isArray(formData.images)
     ? formData.images
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean)
+    : typeof formData.images === 'string' && formData.images
+    ? formData.images.split(',').map((s) => s.trim()).filter(Boolean)
     : [];
 
   return (
@@ -57,8 +188,8 @@ export default function SpecialObservationForm() {
             <h1 className="font-sans text-[1.6rem] font-bold text-[#111111] m-0">
               {isEditMode ? 'Edit Special Observation' : 'Add Special Observation'}
             </h1>
-            <p className="font-sans text-[0.88rem] text-[#777777] max-w-[480px] leading-6 m-0">
-              Record special observations of individual tuskers over the year, including behavioral milestones, musth cycles, and physical developments.
+            <p className="font-sans text-[0.88rem] text-[#777777] max-w-[520px] leading-6 m-0">
+              Record special observations of individual tuskers or side-by-side multi-tusker comparisons.
             </p>
           </div>
 
@@ -70,26 +201,141 @@ export default function SpecialObservationForm() {
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
-              {/* Tusker Name / Code */}
-              <div className="flex flex-col gap-1.5 sm:col-span-2">
-                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">
-                  Tusker Name & Code<span className="text-[#e53e3e]"> *</span>
+              {/* Tusker Subject & Comparison Selector */}
+              <div className="flex flex-col gap-2 sm:col-span-2">
+                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center gap-1.5">
+                  <Binoculars size={14} className="text-accent" />
+                  <span>
+                    Tusker Subject or Multi-Tusker Comparison<span className="text-[#e53e3e]"> *</span>
+                  </span>
                 </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    name="tuskerName"
-                    list="tuskers-datalist"
-                    className="flex-1 bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
-                    placeholder="e.g. T299 - Arya"
-                    value={formData.tuskerName}
-                    onChange={handleChange}
-                  />
-                  <datalist id="tuskers-datalist">
-                    {tuskersList.map((t) => (
-                      <option key={t.id} value={`${t.id} - ${t.name}`} />
-                    ))}
-                  </datalist>
+
+                <div className="flex flex-col gap-3">
+                  {/* Selected Tusker Chips */}
+                  {selectedTuskers.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2 p-3 bg-[#fbfcfb] border border-[#e4eae6] rounded-xl">
+                      <span className="text-[0.75rem] font-bold text-[#62776c] uppercase tracking-wider mr-1">
+                        Tuskers ({selectedTuskers.length}):
+                      </span>
+                      {selectedTuskers.map((t, idx) => (
+                        <React.Fragment key={t.id}>
+                          {idx > 0 && (
+                            <div className="inline-flex items-center rounded-lg bg-[#eef3f0] border border-[#d6e0da] p-0.5">
+                              <button
+                                type="button"
+                                onClick={() => handleToggleConnector('vs')}
+                                className={`px-2 py-0.5 text-xs font-bold rounded-md border-none cursor-pointer transition-colors ${
+                                  connector === 'vs'
+                                    ? 'bg-[#0b2518] text-white shadow-xs'
+                                    : 'bg-transparent text-[#666666] hover:text-[#111111]'
+                                }`}
+                                title="Compare tuskers (vs)"
+                              >
+                                vs
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleToggleConnector('&')}
+                                className={`px-2 py-0.5 text-xs font-bold rounded-md border-none cursor-pointer transition-colors ${
+                                  connector === '&'
+                                    ? 'bg-[#0b2518] text-white shadow-xs'
+                                    : 'bg-transparent text-[#666666] hover:text-[#111111]'
+                                }`}
+                                title="Group together (&)"
+                              >
+                                &amp;
+                              </button>
+                            </div>
+                          )}
+                          <span className="inline-flex items-center gap-1.5 bg-white border border-[#d1ded7] text-[#0b2518] px-3 py-1 rounded-full text-xs font-bold shadow-xs">
+                            <span className="font-mono text-accent">{t.id}</span>
+                            <span>{t.name}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveTusker(t.id)}
+                              className="w-4 h-4 rounded-full bg-[#f0f0f0] hover:bg-rose-100 hover:text-rose-600 text-[#777777] inline-flex items-center justify-center border-none cursor-pointer p-0 ml-0.5 transition-colors"
+                              title="Remove tusker"
+                            >
+                              <X size={10} />
+                            </button>
+                          </span>
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Search & Custom Dropdown Picker */}
+                  <div className="relative" ref={dropdownRef}>
+                    <div className="relative">
+                      <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#999999]" />
+                      <input
+                        type="text"
+                        className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] pl-10 pr-4 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#999999] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
+                        placeholder={
+                          selectedTuskers.length === 0
+                            ? "Search tusker by ID or name (e.g. T075, Kawanthissa, Missaka)..."
+                            : "+ Add another tusker to compare (e.g. T078, Missaka)..."
+                        }
+                        value={searchQuery}
+                        onFocus={() => setIsDropdownOpen(true)}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value);
+                          setIsDropdownOpen(true);
+                        }}
+                      />
+                    </div>
+
+                    {/* Dropdown Menu (Clean WTS Card) */}
+                    {isDropdownOpen && (
+                      <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-[#e5e7eb] rounded-xl shadow-2xl max-h-64 overflow-y-auto z-40 divide-y divide-gray-100">
+                        {filteredTuskers.length === 0 ? (
+                          <div className="p-4 text-center text-xs text-[#888888]">
+                            No matching tuskers found for "{searchQuery}".
+                          </div>
+                        ) : (
+                          filteredTuskers.map((tusker) => {
+                            const isSelected = selectedTuskers.some((t) => t.id === tusker.id);
+                            return (
+                              <div
+                                key={tusker.id}
+                                onClick={() => handleSelectTusker(tusker)}
+                                className={`p-3 flex items-center justify-between cursor-pointer transition-colors ${
+                                  isSelected
+                                    ? 'bg-emerald-50/60 text-emerald-900 pointer-events-none'
+                                    : 'hover:bg-[#f7faf8]'
+                                }`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                                    {tusker.id}
+                                  </span>
+                                  <div>
+                                    <span className="font-sans text-sm font-semibold text-[#111111] block">
+                                      {tusker.name}
+                                    </span>
+                                    {tusker.location && (
+                                      <span className="font-sans text-xs text-[#777777]">
+                                        {tusker.location}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                {isSelected ? (
+                                  <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                                    <Check size={14} /> Selected
+                                  </span>
+                                ) : (
+                                  <span className="text-xs font-semibold text-accent hover:underline flex items-center gap-1">
+                                    <Plus size={13} /> Add
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -101,6 +347,7 @@ export default function SpecialObservationForm() {
                 <input
                   type="date"
                   name="date"
+                  required
                   className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
                   value={formData.date}
                   onChange={handleChange}
@@ -130,6 +377,7 @@ export default function SpecialObservationForm() {
                 <input
                   type="text"
                   name="title"
+                  required
                   className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
                   placeholder="e.g. Rare Musth Encounter & Territorial Dominance"
                   value={formData.title}
@@ -144,6 +392,7 @@ export default function SpecialObservationForm() {
                 </label>
                 <textarea
                   name="description"
+                  required
                   rows="6"
                   className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12 leading-relaxed resize-y"
                   placeholder="Describe the sighting, time of day, elephant's physical condition, tusk dimensions, interactions with other elephants, health status, and unusual observations..."
@@ -152,42 +401,98 @@ export default function SpecialObservationForm() {
                 />
               </div>
 
-              {/* Images */}
-              <div className="flex flex-col gap-1.5 sm:col-span-2">
-                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center justify-between">
-                  <span>Image URLs (Comma-separated)</span>
-                  <span className="text-[0.75rem] text-[#999999] normal-case font-normal">Optional</span>
-                </label>
-                <input
-                  type="text"
-                  name="images"
-                  className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
-                  placeholder="https://example.com/photo1.jpg, https://example.com/photo2.jpg"
-                  value={formData.images}
-                  onChange={handleChange}
-                />
-                <span className="text-[0.75rem] text-[#888888]">
-                  Paste one or more direct image links separated by commas.
-                </span>
+              {/* Images Attachment Section */}
+              <div className="flex flex-col gap-2 sm:col-span-2">
+                <div className="flex items-center justify-between">
+                  <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center gap-1.5">
+                    <Paperclip size={14} className="text-accent" />
+                    <span>Photo Attachments</span>
+                  </label>
+                  {imagesArray.length > 0 && (
+                    <span className="text-[0.75rem] font-semibold text-emerald-600">
+                      {imagesArray.length} photo{imagesArray.length > 1 ? 's' : ''} attached
+                    </span>
+                  )}
+                </div>
 
-                {/* Live Preview */}
+                {/* Hidden File Input */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  multiple
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                />
+
+                {/* Attachment Dropzone & Trigger Button */}
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setDragOver(true);
+                  }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setDragOver(false);
+                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                      handleAddImages(e.dataTransfer.files);
+                    }
+                  }}
+                  className={`border-2 border-dashed ${
+                    dragOver
+                      ? 'border-accent bg-accent/10 scale-[1.01]'
+                      : 'border-[#d1d5db] hover:border-accent hover:bg-accent/5 bg-[#fafafa]'
+                  } rounded-[14px] p-6 text-center flex flex-col items-center justify-center gap-2 cursor-pointer transition-all`}
+                >
+                  <div className="w-11 h-11 rounded-full bg-accent/15 text-accent flex items-center justify-center">
+                    {uploadingImages ? (
+                      <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Paperclip size={20} />
+                    )}
+                  </div>
+                  <div>
+                    <span className="font-sans text-[0.92rem] font-bold text-[#111111]">
+                      {uploadingImages
+                        ? 'Uploading photos to database storage...'
+                        : 'Click or drag photos to upload'}
+                    </span>
+                    <span className="font-sans text-xs text-[#777777] block mt-0.5">
+                      Directly uploads images to database storage (JPG, PNG, WEBP)
+                    </span>
+                  </div>
+                </div>
+
+                {/* Live Attachment Previews with Remove Button */}
                 {imagesArray.length > 0 && (
-                  <div className="mt-3 p-3 bg-[#f8f9fa] rounded-xl border border-[#eeeeee]">
+                  <div className="mt-2 p-3 bg-[#f8f9fa] rounded-xl border border-[#eeeeee]">
                     <span className="text-[0.75rem] font-bold text-[#666666] uppercase tracking-wider block mb-2 flex items-center gap-1.5">
                       <ImageIcon size={13} />
-                      Image Previews ({imagesArray.length})
+                      Attached Photos ({imagesArray.length})
                     </span>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
                       {imagesArray.map((url, i) => (
-                        <div key={i} className="aspect-[4/3] rounded-lg overflow-hidden bg-black/5 border border-[#dddddd]">
+                        <div
+                          key={i}
+                          className="relative aspect-[4/3] rounded-lg overflow-hidden bg-black/5 border border-[#dddddd] group"
+                        >
                           <img
                             src={url}
-                            alt={`Preview ${i + 1}`}
+                            alt={`Attachment ${i + 1}`}
                             className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
                           />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(i)}
+                            className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 hover:bg-red-600 text-white flex items-center justify-center border-none cursor-pointer transition-colors shadow-xs"
+                            title="Remove attachment"
+                          >
+                            <X size={13} />
+                          </button>
                         </div>
                       ))}
                     </div>
@@ -221,10 +526,19 @@ export default function SpecialObservationForm() {
               </button>
               <button
                 type="submit"
-                className="bg-primary text-white border-none font-sans text-[0.88rem] font-semibold rounded-[10px] px-7 py-3 cursor-pointer flex items-center gap-1.5 shadow-[0_4px_14px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-primary-light hover:shadow-[0_6px_20px_rgba(11,37,24,0.25)] transition-all"
+                disabled={submitting || uploadingImages}
+                className="bg-primary text-white border-none font-sans text-[0.88rem] font-semibold rounded-[10px] px-7 py-3 cursor-pointer flex items-center gap-1.5 shadow-[0_4px_14px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-primary-light hover:shadow-[0_6px_20px_rgba(11,37,24,0.25)] transition-all disabled:opacity-50"
               >
                 <Save size={16} />
-                <span>{isEditMode ? 'Update Observation' : 'Save Observation'}</span>
+                <span>
+                  {submitting
+                    ? 'Saving & Uploading...'
+                    : uploadingImages
+                    ? 'Uploading Images...'
+                    : isEditMode
+                    ? 'Update Observation'
+                    : 'Save Observation'}
+                </span>
               </button>
             </div>
           </form>

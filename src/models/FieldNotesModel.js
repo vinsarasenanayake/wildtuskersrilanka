@@ -1,150 +1,104 @@
-/* ==============================================================
-   SECTION 1: DEFAULT FIELD NOTES SEED DATA
-============================================================== */
-const defaultFieldNotes = [
-  {
-    id: 1,
-    date: '2026-04-01',
-    title: 'Minneriya National Park - Sighting of Tusker Mahasen',
-    description: '4:00 PM: Observed Mahasen, one of the most magnificent and well-known tuskers in Sri Lanka, near the Minneriya tank during the annual gathering.\n\nHe is recognized by his large stature and impressively thick, symmetrical tusks. He calmly grazed among a large herd of elephants, undisturbed by the safari vehicles nearby.\n\n5:15 PM: Mahasen slowly moved towards the forest edge. His presence is a highlight of the gathering, but continued monitoring is essential for his protection in the wild.',
-    specialNote: 'Mahasen is an iconic Sri Lankan tusker, highly revered and easily identifiable by his distinctive tusk shape and majestic calm demeanor.',
-    images: [],
-    author: 'Admin',
-    authorContact: 'info@wildtuskers.lk',
-    status: 'approved',
-    submittedAt: '2026-04-01T16:30:00Z',
-    approvedAt: '2026-04-01T17:00:00Z'
-  },
-  {
-    id: 2,
-    date: '2025-08-14',
-    title: 'Galgamuwa Range - Sighting of Kawanthissa',
-    description: '4:15 PM: Encountered the majestic tusker known as Kawanthissa (also referred to as "Gajaba" or "Maha Atha") wandering near the edge of the Galgamuwa forest reserve.\n\nHe is estimated to be between 50 and 60 years old and stands an impressive 11 feet tall. His magnificent tusks are nearly 6 feet long, crossing slightly at the tips. He was grazing calmly near the scrubland, seemingly undisturbed by the presence of our observation vehicle at a safe distance.\n\n5:30 PM: He slowly retreated deeper into the forest cover as dusk approached. Continuous monitoring in this corridor is vital due to the high human-elephant conflict risk.',
-    specialNote: 'Kawanthissa is one of the largest and oldest living tuskers in Sri Lanka, an absolute icon of the Northwestern province.',
-    images: [],
-    author: 'Admin',
-    authorContact: 'info@wildtuskers.lk',
-    status: 'approved',
-    submittedAt: '2025-08-14T17:45:00Z',
-    approvedAt: '2025-08-14T18:00:00Z'
-  },
-  {
-    id: 3,
-    date: '2026-04-12',
-    title: 'Kaudulla National Park - Sighting of Tusker Parakrama',
-    description: '4:45 PM: Spotted solitary tusker Parakrama grazing near the northern wetland sector of Kaudulla. Observed good physical condition with prominent ear venation and distinct trunk markings. He was seen feeding on aquatic grasses and interacting peacefully with a resident herd of 14 females and calves.',
-    specialNote: 'Left tusk has a slight upward curve; visible healing scratch on right flank from scrub brush.',
-    images: [],
-    author: 'Nisal Perera (Field Observer)',
-    authorContact: 'nisal.field@gmail.com',
-    status: 'pending',
-    submittedAt: '2026-04-12T17:30:00Z'
-  }
-];
+import { supabase, fromRow, unwrap, MEDIA_BUCKET } from '../lib/supabaseClient';
 
 /* ==============================================================
-   SECTION 2: FIELD NOTES STORAGE & CRUD OPERATIONS
+   SECTION 1: ROW MAPPING
+   Seed data now lives in supabase/seed.sql.
+   Visitors can't read `author_contact` (column privilege in the
+   migration), so public queries list their columns explicitly.
 ============================================================== */
-export function getFieldNotes() {
-  const local = localStorage.getItem('wts_field_notes');
-  if (!local) {
-    localStorage.setItem('wts_field_notes', JSON.stringify(defaultFieldNotes));
-    return defaultFieldNotes;
-  }
-  
-  let notes = JSON.parse(local);
-  let modified = false;
-  
-  notes = notes.map(note => {
-    // Ensure status exists (default existing notes to approved)
-    if (!note.status) {
-      note.status = 'approved';
-      modified = true;
-    }
+const PUBLIC_COLUMNS =
+  'id, title, date, time, description, special_note, images, author, status, submitted_at, approved_at';
 
-    // Auto-update the old Wilpattu note to Mahasen if it still exists
-    if (note.id === 1 && note.title.includes('Wilpattu National Park')) {
-      modified = true;
-      const mahasenNote = defaultFieldNotes.find(n => n.id === 1);
-      return { ...mahasenNote, status: 'approved' };
-    }
-
-    if (note.images && note.images.length > 0) {
-      const originalLen = note.images.length;
-      note.images = note.images.filter(img => !img.includes('unsplash.com'));
-      if (note.images.length !== originalLen) modified = true;
-    }
-    return note;
-  });
-
-  // Seed sample pending note if not present so admin review flow can be tested
-  const hasSamplePending = notes.some(n => n.id === 3);
-  if (!hasSamplePending) {
-    const pendingSample = defaultFieldNotes.find(n => n.id === 3);
-    if (pendingSample) {
-      notes.push(pendingSample);
-      modified = true;
-    }
-  }
-
-  if (modified) {
-    saveFieldNotes(notes);
-  }
-
-  return notes;
+function mapNote(row) {
+  const n = fromRow(row);
+  n.images = n.images || [];
+  return n;
 }
 
-export function saveFieldNotes(notes) {
-  localStorage.setItem('wts_field_notes', JSON.stringify(notes));
-  window.dispatchEvent(new Event('fieldNotesChange'));
+/* ==============================================================
+   SECTION 2: IMAGE UPLOADS (Supabase Storage)
+============================================================== */
+const EXT_BY_TYPE = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif', 'image/heic': 'heic' };
+
+/** Uploads data:/blob: images to Storage; plain http(s) URLs pass through. */
+async function uploadImages(images = []) {
+  return Promise.all(images.map(async (img) => {
+    if (typeof img !== 'string' || /^https?:\/\//i.test(img)) return img;
+    const blob = await (await fetch(img)).blob();
+    const ext = EXT_BY_TYPE[blob.type] || 'jpg';
+    const path = `field-notes/${crypto.randomUUID()}.${ext}`;
+    unwrap(await supabase.storage.from(MEDIA_BUCKET).upload(path, blob, {
+      contentType: blob.type || 'image/jpeg',
+      upsert: false,
+    }));
+    return supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path).data.publicUrl;
+  }));
 }
 
-export function getApprovedFieldNotes() {
-  return getFieldNotes().filter(note => note.status === 'approved');
+/* ==============================================================
+   SECTION 3: FIELD NOTES CRUD (async, Supabase)
+============================================================== */
+
+/**
+ * Visitors get approved notes only (RLS); admins get everything,
+ * including pending notes and contributor contact details.
+ */
+export async function getFieldNotes({ admin = false } = {}) {
+  const rows = unwrap(
+    await supabase.from('field_notes')
+      .select(admin ? '*' : PUBLIC_COLUMNS)
+      .order('date', { ascending: false })
+      .order('id', { ascending: false })
+  );
+  return rows.map(mapNote);
 }
 
-export function getPendingFieldNotes() {
-  return getFieldNotes().filter(note => note.status === 'pending');
+export async function getApprovedFieldNotes() {
+  return (await getFieldNotes()).filter(note => note.status === 'approved');
 }
 
-export function addFieldNote(entry) {
-  const all = getFieldNotes();
-  const newEntry = {
-    ...entry,
-    id: Date.now(),
-    status: entry.status || 'pending',
-    submittedAt: new Date().toISOString(),
+export async function getPendingFieldNotes() {
+  return (await getFieldNotes({ admin: true })).filter(note => note.status === 'pending');
+}
+
+/**
+ * Visitors' notes are always inserted as 'pending' (enforced by RLS).
+ * Only admins may publish directly as 'approved'.
+ */
+export async function addFieldNote(entry) {
+  const status = entry.status === 'approved' ? 'approved' : 'pending';
+  const images = await uploadImages(entry.images);
+  const row = {
+    title: entry.title,
+    date: entry.date,
+    time: entry.time || null,
+    description: entry.description,
+    special_note: entry.specialNote || null,
+    images,
+    author: entry.author,
+    author_contact: entry.authorContact || null,
+    status,
+    approved_at: status === 'approved' ? new Date().toISOString() : null,
   };
-  all.unshift(newEntry);
-  saveFieldNotes(all);
-  return newEntry;
+  // No .select() here: visitors aren't allowed to read pending rows back.
+  unwrap(await supabase.from('field_notes').insert(row));
+  return { ...entry, images, status };
 }
 
-export function approveFieldNote(id) {
-  const all = getFieldNotes();
-  let found = null;
-  const updated = all.map(note => {
-    if (note.id === id) {
-      found = {
-        ...note,
-        status: 'approved',
-        approvedAt: new Date().toISOString()
-      };
-      return found;
-    }
-    return note;
-  });
-  saveFieldNotes(updated);
-  return found;
+export async function approveFieldNote(id) {
+  const saved = unwrap(
+    await supabase.from('field_notes')
+      .update({ status: 'approved', approved_at: new Date().toISOString() })
+      .eq('id', id).select().maybeSingle()
+  );
+  return saved ? mapNote(saved) : null;
 }
 
-export function rejectFieldNote(id) {
-  const all = getFieldNotes();
-  const updated = all.filter(note => note.id !== id);
-  saveFieldNotes(updated);
+export async function rejectFieldNote(id) {
+  unwrap(await supabase.from('field_notes').delete().eq('id', id));
   return true;
 }
 
-export function deleteFieldNote(id) {
+export async function deleteFieldNote(id) {
   return rejectFieldNote(id);
 }

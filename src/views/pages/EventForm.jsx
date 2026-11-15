@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, CalendarPlus } from 'lucide-react';
 import { useEventForm } from '../../controllers/useProjects';
+import { useAuth } from '../../controllers/useAuth';
+import ImageUploadBox from '../components/ImageUploadBox';
 
 export default function EventForm() {
   const navigate = useNavigate();
@@ -10,8 +12,10 @@ export default function EventForm() {
     formData,
     error,
     handleChange,
+    handleImagesChange,
     createEvent,
   } = useEventForm();
+  const { isAdmin, authLoading } = useAuth();
 
   useEffect(() => {
     document.title = 'Wild Tuskers Sri Lanka | Create Event';
@@ -19,15 +23,14 @@ export default function EventForm() {
 
   useEffect(() => {
     // Admin check inside view
-    const isAdmin = localStorage.getItem('isAdmin') === 'true';
-    if (!isAdmin) {
+    if (!authLoading && !isAdmin) {
       navigate('/login');
     }
-  }, [navigate]);
+  }, [authLoading, isAdmin, navigate]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = createEvent();
+    const success = await createEvent();
     if (success) {
       navigate('/projects');
     }
@@ -124,6 +127,18 @@ export default function EventForm() {
                 placeholder="Give details about the event, what topics will be covered, who can attend, or wrap-up notes..."
                 value={formData.description}
                 onChange={handleChange}
+              />
+            </div>
+
+            {/* Event Photo Upload */}
+            <div className="sm:col-span-2">
+              <ImageUploadBox
+                label="Event / Project Photos (Optional)"
+                folder="events"
+                multiple
+                value={formData.images && formData.images.length > 0 ? formData.images : (formData.image ? [formData.image] : [])}
+                onChange={handleImagesChange}
+                aspectClass="aspect-[16/9]"
               />
             </div>
 

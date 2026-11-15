@@ -1,162 +1,377 @@
-import React, { useEffect } from 'react';
-
-const team = [
-  {
-    name: 'Milinda Wattegedara',
-    role: 'Admin',
-    badge: null,
-    bio: null,
-    image: null,
-  },
-  {
-    name: 'Asanka Nilagaratne',
-    role: 'Admin',
-    badge: null,
-    bio: null,
-    image: null,
-  },
-  {
-    name: 'Chandika Lakmal',
-    role: 'Admin',
-    badge: null,
-    bio: null,
-    image: null,
-  },
-  {
-    name: 'Dr Isuru Upanishad',
-    role: 'Admin',
-    badge: null,
-    bio: null,
-    image: null,
-  },
-  {
-    name: 'Dushantha Silva',
-    role: 'Admin',
-    badge: null,
-    bio: null,
-    image: null,
-  },
-  {
-    name: 'Saman Halloluwa',
-    role: 'Admin',
-    badge: null,
-    bio: null,
-    image: null,
-  },
-  {
-    name: 'Lyndon Fernando',
-    role: 'Admin',
-    badge: null,
-    bio: null,
-    image: null,
-  },
-  {
-    name: 'Namal Kalagoda',
-    role: 'Admin',
-    badge: null,
-    bio: null,
-    image: null,
-  },
-  {
-    name: 'Pathum Bandara',
-    role: 'Admin',
-    badge: null,
-    bio: null,
-    image: null,
-  },
-  {
-    name: 'Priyanjana Dilmith',
-    role: 'Admin',
-    badge: null,
-    bio: null,
-    image: null,
-  },
-  {
-    name: 'Suraj Perera',
-    role: 'Admin',
-    badge: null,
-    bio: null,
-    image: null,
-  },
-  {
-    name: 'Geemal Harold',
-    role: 'Admin',
-    badge: null,
-    bio: null,
-    image: null,
-  },
-  {
-    name: 'Raveendra Siriwardana',
-    role: 'Admin',
-    badge: null,
-    bio: null,
-    image: null,
-  },
-];
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { PlusCircle, Edit2, Trash2, X, Save, Shield, ExternalLink, Loader2 } from 'lucide-react';
+import { getTeamMembers, addTeamMember, updateTeamMember, deleteTeamMember, DEFAULT_TEAM } from '../../models/TeamModel';
+import { useAuth } from '../../controllers/useAuth';
+import ImageUploadBox from '../components/ImageUploadBox';
 
 export default function AboutUs() {
+  const [team, setTeam] = useState(DEFAULT_TEAM);
+  const [loading, setLoading] = useState(true);
+  const { isAdmin } = useAuth();
+
+  // Modal states for admin management
+  const [showModal, setShowModal] = useState(false);
+  const [editingMember, setEditingMember] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    role: 'Admin',
+    facebookUrl: '',
+    image: '',
+    displayOrder: 1,
+  });
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState('');
+
+  const loadTeam = async () => {
+    try {
+      const data = await getTeamMembers();
+      if (data && data.length > 0) setTeam(data);
+    } catch (err) {
+      console.error('[AboutUs] Failed to load team:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     document.title = 'Wild Tuskers Sri Lanka | About Us';
+    loadTeam();
   }, []);
 
-  const admins = team.filter(m => m.role === 'Admin');
+  const openAddModal = () => {
+    setEditingMember(null);
+    setFormData({
+      name: '',
+      role: 'Admin',
+      facebookUrl: '',
+      image: '',
+      displayOrder: (team.length || 0) + 1,
+    });
+    setFormError('');
+    setShowModal(true);
+  };
+
+  const openEditModal = (member, e) => {
+    if (e) e.stopPropagation();
+    setEditingMember(member);
+    setFormData({
+      name: member.name || '',
+      role: member.role || 'Admin',
+      facebookUrl: member.facebookUrl || '',
+      image: member.image || '',
+      displayOrder: member.displayOrder || 1,
+    });
+    setFormError('');
+    setShowModal(true);
+  };
+
+  const handleDeleteMember = async (member, e) => {
+    if (e) e.stopPropagation();
+    if (!window.confirm(`Are you sure you want to delete "${member.name}" from the team?`)) {
+      return;
+    }
+    try {
+      if (member.id) {
+        await deleteTeamMember(member.id);
+      }
+      setTeam((prev) => prev.filter((m) => (m.id ? m.id !== member.id : m.name !== member.name)));
+    } catch (err) {
+      alert(`Could not delete team member: ${err.message}`);
+    }
+  };
+
+  const handleSaveMember = async (e) => {
+    e.preventDefault();
+    if (!formData.name.trim()) {
+      setFormError('Please enter the team member name.');
+      return;
+    }
+
+    setSaving(true);
+    setFormError('');
+    try {
+      const payload = {
+        name: formData.name.trim(),
+        role: formData.role.trim() || 'Admin',
+        facebookUrl: formData.facebookUrl.trim() || null,
+        image: formData.image || null,
+        displayOrder: Number(formData.displayOrder) || 1,
+      };
+
+      if (editingMember && editingMember.id) {
+        await updateTeamMember(editingMember.id, payload);
+      } else {
+        await addTeamMember(payload);
+      }
+      await loadTeam();
+      setShowModal(false);
+    } catch (err) {
+      setFormError(`Failed to save: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const admins = team.filter((m) => m.role === 'Admin');
 
   return (
     <div className="w-full max-w-[1200px] mx-auto pt-[calc(80px+2.5rem)] pb-24 px-8 min-h-screen bg-white">
-
       {/* Page Header */}
       <div className="text-center mb-14 pb-8">
         <h1 className="font-sans text-[2.25rem] font-bold text-[#111111] mb-3">Wild Tuskers Sri Lanka Team</h1>
         <p className="font-sans text-[0.98rem] text-[#777777] max-w-[580px] mx-auto leading-[1.7]">
-          The dedicated individuals behind Wild Tuskers Sri Lanka:
-          researchers, photographers, and conservationists united by a shared mission.
+          The dedicated individuals behind Wild Tuskers Sri Lanka: researchers, photographers, and conservationists
+          united by a shared mission.
         </p>
       </div>
 
       {/* ── Admins Section ── */}
       <section className="mb-16">
-        <h2 className="font-sans text-[1.05rem] font-bold text-[#111111] mb-8 pb-3 border-b-2 border-[#f0f0f0] flex items-center gap-2">
-          Admins <span className="font-normal text-[0.9rem] text-[#aaaaaa]">{admins.length}</span>
-        </h2>
-        <div className="grid grid-cols-2 min-[560px]:grid-cols-3 min-[760px]:grid-cols-4 min-[1000px]:grid-cols-5 gap-x-6 gap-y-10">
-          {admins.map((member) => (
-            <MemberCard key={member.name} member={member} />
-          ))}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-3 border-b-2 border-[#f0f0f0] gap-4">
+          <h2 className="font-sans text-[1.05rem] font-bold text-[#111111] flex items-center gap-2 m-0">
+            Admins <span className="font-normal text-[0.9rem] text-[#aaaaaa]">{admins.length}</span>
+          </h2>
+
+          {isAdmin && (
+            <button
+              onClick={openAddModal}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary hover:bg-primary-light text-white text-xs font-bold transition-all shadow-sm border-none cursor-pointer self-start sm:self-auto"
+            >
+              <PlusCircle size={15} />
+              <span>Add Admin / Team Member</span>
+            </button>
+          )}
         </div>
+
+        {loading && team.length === 0 ? (
+          <div className="py-12 text-center text-[#aaaaaa] font-sans">Loading team…</div>
+        ) : (
+          <div className="grid grid-cols-2 min-[560px]:grid-cols-3 min-[760px]:grid-cols-4 min-[1000px]:grid-cols-5 gap-x-6 gap-y-10">
+            {admins.map((member) => (
+              <MemberCard
+                key={member.id || member.name}
+                member={member}
+                isAdmin={isAdmin}
+                onEdit={(e) => openEditModal(member, e)}
+                onDelete={(e) => handleDeleteMember(member, e)}
+              />
+            ))}
+          </div>
+        )}
       </section>
+
+      {/* ── Add / Edit Admin Modal ── */}
+      {showModal &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-fade-in"
+            onClick={() => setShowModal(false)}
+          >
+            <div
+              className="bg-white rounded-2xl max-w-[500px] w-full p-6 sm:p-8 shadow-2xl relative my-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-accent/15 text-accent flex items-center justify-center">
+                    <Shield size={20} />
+                  </div>
+                  <div>
+                    <h3 className="font-sans text-lg font-bold text-gray-900 m-0">
+                      {editingMember ? 'Edit Admin / Team Member' : 'Add New Admin / Team Member'}
+                    </h3>
+                    <p className="font-sans text-xs text-gray-500 m-0">
+                      Changes are directly saved to database and displayed on About Us
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="text-gray-400 hover:text-gray-600 bg-none border-none cursor-pointer p-1"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {formError && (
+                <div className="mb-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg p-3 text-xs font-medium">
+                  {formError}
+                </div>
+              )}
+
+              <form onSubmit={handleSaveMember} className="flex flex-col gap-4">
+                {/* Photo Upload with ImageUploadBox (Circle Mode) */}
+                <div className="flex flex-col items-center justify-center mb-2">
+                  <ImageUploadBox
+                    circle
+                    folder="team"
+                    value={formData.image}
+                    onChange={(url) => setFormData({ ...formData, image: url })}
+                  />
+                  <span className="text-[0.72rem] text-gray-400 mt-1">Profile Photo (Optional)</span>
+                </div>
+
+                {/* Name */}
+                <div>
+                  <label className="text-xs font-bold text-gray-600 uppercase tracking-wider block mb-1">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Milinda Wattegedara"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"
+                  />
+                </div>
+
+                {/* Role & Display Order */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 uppercase tracking-wider block mb-1">
+                      Role
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Admin"
+                      value={formData.role}
+                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                      className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 uppercase tracking-wider block mb-1">
+                      Display Order
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={formData.displayOrder}
+                      onChange={(e) => setFormData({ ...formData, displayOrder: e.target.value })}
+                      className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"
+                    />
+                  </div>
+                </div>
+
+                {/* Facebook URL */}
+                <div>
+                  <label className="text-xs font-bold text-gray-600 uppercase tracking-wider block mb-1">
+                    Facebook Profile Link (Optional)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://www.facebook.com/username"
+                    value={formData.facebookUrl}
+                    onChange={(e) => setFormData({ ...formData, facebookUrl: e.target.value })}
+                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"
+                  />
+                </div>
+
+                {/* Buttons */}
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    className="px-4 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg border border-gray-300 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="px-6 py-2.5 text-xs font-bold text-white bg-primary hover:bg-primary-light rounded-lg border-none shadow-sm cursor-pointer flex items-center gap-1.5 disabled:opacity-60"
+                  >
+                    {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                    <span>{saving ? 'Saving…' : 'Save Details'}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
 
 /* ── Individual Team Member Card ─────────────────────────────── */
-function MemberCard({ member }) {
+function MemberCard({ member, isAdmin, onEdit, onDelete }) {
   const cleanName = member.name.replace(/^(Dr\.?|Prof\.?|Mr\.?|Mrs\.?|Ms\.?)\s+/i, '');
   const words = cleanName.trim().split(/\s+/);
-  const initials = words.length >= 2
-    ? (words[0][0] + words[1][0]).toUpperCase()
-    : member.name.slice(0, 2).toUpperCase();
+  const initials =
+    words.length >= 2 ? (words[0][0] + words[1][0]).toUpperCase() : member.name.slice(0, 2).toUpperCase();
+
+  const CardTag = member.facebookUrl && !isAdmin ? 'a' : 'div';
+  const cardProps =
+    member.facebookUrl && !isAdmin
+      ? {
+          href: member.facebookUrl,
+          target: '_blank',
+          rel: 'noopener noreferrer',
+          title: `View ${member.name}'s Facebook Profile`,
+        }
+      : {};
 
   return (
-    <div className="flex flex-col items-center text-center gap-3 cursor-default transition-transform duration-200 hover:-translate-y-[3px] group">
-      <div className="w-20 h-20 min-[560px]:w-[130px] min-[560px]:h-[130px] rounded-full overflow-hidden bg-primary flex items-center justify-center shrink-0 border-3 border-[#f0f0f0] transition-colors duration-200 group-hover:border-accent">
-        {member.image
-          ? <img src={member.image} className="w-full h-full object-cover" alt={member.name} />
-          : <span className="font-sans text-[1.7rem] font-bold text-accent tracking-[1px]">{initials}</span>
-        }
-      </div>
-      <div className="flex flex-col items-center gap-1.5">
-        <p className="font-sans text-[0.88rem] font-semibold text-[#111111] m-0 leading-[1.3]">{member.name}</p>
-        <div className="flex flex-wrap justify-center gap-1">
-          <span className={`inline-flex items-center font-sans text-[0.7rem] font-semibold px-[0.55rem] py-[0.18rem] rounded-full ${
-            member.role === 'Moderator'
-              ? 'bg-primary/10 text-primary border border-primary/20'
-              : 'bg-[#c69b55]/12 text-[#a07830] border border-[#c69b55]/30'
-          }`}>
-            {member.role}
-          </span>
+    <div className="relative group">
+      {/* Admin Action Buttons (Overlay) */}
+      {isAdmin && (
+        <div className="absolute top-0 right-1 z-10 flex items-center gap-1 bg-white/95 rounded-lg p-1 shadow-md border border-gray-200">
+          <button
+            type="button"
+            onClick={onEdit}
+            title="Edit details"
+            className="w-7 h-7 rounded-md bg-gray-100 hover:bg-accent hover:text-primary text-gray-700 flex items-center justify-center border-none cursor-pointer transition-colors"
+          >
+            <Edit2 size={13} />
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            title="Remove admin"
+            className="w-7 h-7 rounded-md bg-gray-100 hover:bg-rose-600 hover:text-white text-gray-700 flex items-center justify-center border-none cursor-pointer transition-colors"
+          >
+            <Trash2 size={13} />
+          </button>
         </div>
-        {member.bio && <p className="font-sans text-[0.75rem] text-[#999999] m-0 leading-[1.4]">{member.bio}</p>}
-      </div>
+      )}
+
+      <CardTag
+        {...cardProps}
+        className={`flex flex-col items-center text-center gap-3 transition-transform duration-200 no-underline ${
+          member.facebookUrl ? 'cursor-pointer hover:-translate-y-1' : 'cursor-default'
+        }`}
+      >
+        <div className="w-20 h-20 min-[560px]:w-[130px] min-[560px]:h-[130px] rounded-full overflow-hidden bg-primary flex items-center justify-center shrink-0 border-3 border-[#f0f0f0] transition-colors duration-200 group-hover:border-accent">
+          {member.image ? (
+            <img src={member.image} className="w-full h-full object-cover" alt={member.name} />
+          ) : (
+            <span className="font-sans text-[1.7rem] font-bold text-accent tracking-[1px]">{initials}</span>
+          )}
+        </div>
+
+        <div className="flex flex-col items-center gap-1.5">
+          <p className="font-sans text-[0.88rem] font-semibold text-[#111111] m-0 leading-[1.3] group-hover:text-primary transition-colors flex items-center gap-1">
+            <span>{member.name}</span>
+            {member.facebookUrl && <ExternalLink size={11} className="text-[#888888] shrink-0" />}
+          </p>
+          <div className="flex flex-wrap justify-center items-center gap-1.5">
+            <span
+              className={`inline-flex items-center font-sans text-[0.7rem] font-semibold px-[0.55rem] py-[0.18rem] rounded-full ${
+                member.role === 'Moderator'
+                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  : 'bg-[#c69b55]/12 text-[#a07830] border border-[#c69b55]/30'
+              }`}
+            >
+              {member.role}
+            </span>
+          </div>
+          {member.bio && <p className="font-sans text-[0.75rem] text-[#999999] m-0 leading-[1.4]">{member.bio}</p>}
+        </div>
+      </CardTag>
     </div>
   );
 }
