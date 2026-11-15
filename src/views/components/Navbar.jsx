@@ -274,4 +274,13 @@ export default function Navbar() {
               onClick={closeMenu}
               className="bg-primary-light text-white font-semibold text-[1rem] py-[0.85rem] px-6 rounded-[4px] w-full flex items-center justify-center gap-2 shadow-[0_4px_10px_rgba(11,37,24,0.15)] hover:bg-primary transition-all duration-300"
             >
-         
+              <Shield size={16} />
+              <span>Admin Login</span>
+            </Link>
+          )}
+          <p className="font-sans text-[0.75rem] text-text-muted text-center mb-0">© 2026 Wild Tusker Sri Lanka</p>
+        </div>
+      </div>
+    </header>
+  );
+}

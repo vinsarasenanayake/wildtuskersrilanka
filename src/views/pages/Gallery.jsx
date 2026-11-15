@@ -756,4 +756,9 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
               </button>
             </div>
           </form>
-   
+        )}
+      </div>
+    </div>
+  );
+}
+
