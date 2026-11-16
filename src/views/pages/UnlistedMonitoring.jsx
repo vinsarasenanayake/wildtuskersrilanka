@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, Link } from 'react-router-dom';
 import { Search, MapPin, X, ChevronDown, PlusCircle, Trash2, ShieldAlert } from 'lucide-react';
 import { useUnlistedTuskers } from '../../controllers/useUnlistedTuskers';
@@ -309,13 +310,13 @@ export default function UnlistedMonitoring() {
       )}
 
       {/* ── Add Unlisted Tusker Modal (Admin Creation Only) ── */}
-      {showAddModal && (
+      {showAddModal && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-xs animate-fade-in"
+          className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4 overflow-y-auto backdrop-blur-xs animate-fade-in"
           onClick={() => setShowAddModal(false)}
         >
           <div
-            className="bg-white rounded-[16px] max-w-[540px] w-full p-6 shadow-2xl border border-[#e8e8e8] flex flex-col gap-4"
+            className="bg-white rounded-[16px] max-w-[540px] w-full p-6 shadow-2xl border border-[#e8e8e8] flex flex-col gap-4 my-auto"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center pb-3 border-b border-[#eeeeee]">
@@ -447,7 +448,8 @@ export default function UnlistedMonitoring() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>

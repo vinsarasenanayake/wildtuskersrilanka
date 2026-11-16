@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
   FileText,
@@ -456,9 +457,9 @@ export default function FieldNotes() {
       </div>
 
       {/* Image Lightbox Modal */}
-      {lightboxImg && (
+      {lightboxImg && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in"
+          className="fixed inset-0 z-[9999] bg-black/85 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in"
           onClick={() => setLightboxImg(null)}
         >
           <div className="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
@@ -475,7 +476,8 @@ export default function FieldNotes() {
               onClick={(e) => e.stopPropagation()}
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>
