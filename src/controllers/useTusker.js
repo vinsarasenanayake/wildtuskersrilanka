@@ -323,6 +323,8 @@ const EMPTY_TUSKER_FORM = {
   zone: '',
   district: '',
   province: '',
+  proximateBirthYear: '',
+  birthYear: '',
   ageRange: '',
   healthCondition: '',
   threatLevel: '',
@@ -396,8 +398,11 @@ export function useTuskerForm(id) {
       ? f.photos
       : (f.photo ? (typeof f.photo === 'string' ? f.photo.split(',').map(s => s.trim()).filter(Boolean) : [f.photo]) : []);
 
+    const birthNum = f.proximateBirthYear ? Number(f.proximateBirthYear) : (f.birthYear ? Number(f.birthYear) : null);
     const payload = {
       ...f,
+      proximateBirthYear: birthNum,
+      birthYear: birthNum,
       riskLink: f.riskLink && f.riskLink.trim() ? f.riskLink.trim() : '#risk-assessment',
       deathYear: isDeceased && f.deathYear ? Number(f.deathYear) : null,
       deathReason: isDeceased ? f.deathReason : '',

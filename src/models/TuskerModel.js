@@ -11,7 +11,7 @@ const TUSKER_FIELDS = [
   'photographicComparison', 'earComparison',
   // Official registry fields
   'livingStatus', 'deathYear', 'deathReason', 'lastSeenArea', 'lastSeen',
-  'zone', 'district', 'province', 'ageRange', 'healthCondition',
+  'zone', 'district', 'province', 'ageRange', 'proximateBirthYear', 'birthYear', 'healthCondition',
   'threatLevel', 'remarks',
 ];
 
@@ -19,6 +19,24 @@ export const LIVING_STATUSES = ['Alive', 'No Recent Record', 'Deceased'];
 export const THREAT_LEVELS = ['Low', 'Medium', 'High', 'Highest'];
 export const ZONES = ['Zone 1', 'Zone 2', 'Zone 3', 'Zone 4'];
 export const AGE_RANGES = ['1-10', '10-20', '20-30', '30-40', '40-50', '50-60', '60+'];
+
+/**
+ * Calculates current estimated age or age at death based on proximate birth year.
+ * Falls back to legacy ageRange if birth year is not yet documented.
+ */
+export function calculateTuskerAge(tusker) {
+  if (!tusker) return null;
+  const birthYear = Number(tusker.proximateBirthYear || tusker.birthYear);
+  if (birthYear && !isNaN(birthYear) && birthYear > 1900) {
+    const isDeceased = tusker.livingStatus === 'Deceased';
+    const endYear = (isDeceased && tusker.deathYear && !isNaN(Number(tusker.deathYear)))
+      ? Number(tusker.deathYear)
+      : new Date().getFullYear();
+    const age = Math.max(0, endYear - birthYear);
+    return `${age} years`;
+  }
+  return tusker.ageRange ? `${tusker.ageRange} years` : null;
+}
 
 /**
  * Natural comparator for tusker IDs (e.g. 'T001' < 'T048' < 'T150').

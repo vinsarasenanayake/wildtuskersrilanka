@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, PlusCircle, Sparkles } from 'lucide-react';
 import { useTuskerForm } from '../../controllers/useTusker';
@@ -54,6 +54,17 @@ export default function TuskerForm() {
       navigate('/login');
     }
   }, [authLoading, isAdmin, navigate]);
+
+  const calculatedAge = useMemo(() => {
+    const birth = Number(formData.proximateBirthYear || formData.birthYear);
+    if (!birth || isNaN(birth) || birth < 1900) return null;
+    const isDeceased = formData.livingStatus === 'Deceased';
+    const endYear = (isDeceased && formData.deathYear && !isNaN(Number(formData.deathYear)))
+      ? Number(formData.deathYear)
+      : new Date().getFullYear();
+    const age = Math.max(0, endYear - birth);
+    return `${age} years${isDeceased ? ' (at death)' : ''}`;
+  }, [formData.proximateBirthYear, formData.birthYear, formData.livingStatus, formData.deathYear]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -156,11 +167,31 @@ export default function TuskerForm() {
               <Field label={formData.livingStatus === 'Deceased' ? "Last Recorded Month" : "Last Seen (Month)"}>
                 <input type="month" name="lastSeen" className={INPUT_CLASS} placeholder="" value={formData.lastSeen} onChange={handleChange} />
               </Field>
-              <Field label={formData.livingStatus === 'Deceased' ? "Estimated Age (at death)" : "Age Range"}>
+              <Field label="Proximate Birth Year">
+                <input
+                  type="number"
+                  name="proximateBirthYear"
+                  className={INPUT_CLASS}
+                  placeholder="e.g. 1985"
+                  value={formData.proximateBirthYear || formData.birthYear || ''}
+                  onChange={handleChange}
+                  min="1920"
+                  max={new Date().getFullYear()}
+                />
+                {calculatedAge && (
+                  <p className="text-[0.78rem] text-accent font-semibold mt-1.5 m-0">
+                    Calculated Age: ~{calculatedAge}
+                  </p>
+                )}
+              </Field>
+              <Field label={formData.livingStatus === 'Deceased' ? "Estimated Age Range (at death)" : "Age Range"}>
                 <select name="ageRange" className={SELECT_CLASS} value={formData.ageRange} onChange={handleChange}>
                   <option value="">— Not set —</option>
                   {AGE_RANGES.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
+                <p className="text-[0.72rem] text-[#888888] mt-1 m-0">
+                  Optional range if exact birth year is unknown.
+                </p>
               </Field>
               {formData.livingStatus !== 'Deceased' && (
                 <Field label="Health Condition">

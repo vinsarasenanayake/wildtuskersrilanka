@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { PlusCircle, Edit2, Trash2, X, Save, Shield, ExternalLink, Loader2 } from 'lucide-react';
-import { getTeamMembers, addTeamMember, updateTeamMember, deleteTeamMember, DEFAULT_TEAM } from '../../models/TeamModel';
+import { getTeamMembers, addTeamMember, updateTeamMember, deleteTeamMember } from '../../models/TeamModel';
 import { useAuth } from '../../controllers/useAuth';
 import ImageUploadBox from '../components/ImageUploadBox';
 
 export default function AboutUs() {
-  const [team, setTeam] = useState(DEFAULT_TEAM);
+  const [team, setTeam] = useState([]);
   const [loading, setLoading] = useState(true);
   const { isAdmin } = useAuth();
 
@@ -26,7 +26,7 @@ export default function AboutUs() {
   const loadTeam = async () => {
     try {
       const data = await getTeamMembers();
-      if (data && data.length > 0) setTeam(data);
+      setTeam(data || []);
     } catch (err) {
       console.error('[AboutUs] Failed to load team:', err);
     } finally {

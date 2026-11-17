@@ -23,6 +23,7 @@ import {
   StickyNote,
 } from 'lucide-react';
 import { useTuskerProfile } from '../../controllers/useTusker';
+import { calculateTuskerAge } from '../../models/TuskerModel';
 import StatusBadge from '../components/StatusBadge';
 import { getCachedAspect, setCachedAspect, probeImageAspect } from '../../utils/photoAspectCache';
 
@@ -413,12 +414,21 @@ export default function TuskerProfile() {
                 />
               )}
 
-              {/* Additional Official Registry Fields */}
-              {tusker.ageRange && (
+              {/* Proximate Birth Year */}
+              {(tusker.proximateBirthYear || tusker.birthYear) && (
+                <DetailRow
+                  icon={<Calendar size={16} />}
+                  label="Proximate Birth Year"
+                  value={String(tusker.proximateBirthYear || tusker.birthYear)}
+                />
+              )}
+
+              {/* Calculated Estimated Age (Derived dynamically from Proximate Birth Year, or fallback to ageRange) */}
+              {calculateTuskerAge(tusker) && (
                 <DetailRow
                   icon={<Hourglass size={16} />}
                   label={isDeceased ? "Estimated Age (at death)" : "Estimated Age"}
-                  value={`${tusker.ageRange} years`}
+                  value={calculateTuskerAge(tusker)}
                 />
               )}
 
