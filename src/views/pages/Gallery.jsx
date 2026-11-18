@@ -16,6 +16,7 @@ import {
 import { useGallery, useGallerySubmit } from '../../controllers/useGallery';
 import { getTuskers } from '../../models/TuskerModel';
 import ImageUploadBox from '../components/ImageUploadBox';
+import TuskerMultiSelect from '../components/TuskerMultiSelect';
 
 export default function Gallery() {
   const {
@@ -649,51 +650,35 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
               />
             </div>
 
-            {/* Title / Caption */}
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">
-                Caption / Title <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="title"
-                placeholder="e.g. Nero near the reservoir at dusk"
-                value={formData.title}
-                onChange={handleChange}
-                className="bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm"
+            {/* Tusker Multi-Select Dropdown with Search */}
+            <div className="w-full">
+              <TuskerMultiSelect
+                label="Tusker Name / ID"
+                placeholder="Search tusker by ID or name (e.g. T180, Skandaraja, Revatha)..."
+                value={formData.tuskerName}
+                onChange={(_list, formatted) => {
+                  handleChange({ target: { name: 'tuskerName', value: formatted } });
+                  if (!formData.location && _list && _list[0]?.location) {
+                    handleChange({ target: { name: 'location', value: _list[0].location } });
+                  }
+                }}
+                helperText="Select one or multiple tuskers featured in your photograph."
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              {/* Tusker Name/ID (optional) */}
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">
-                  Tusker Name / ID <span className="font-normal text-[#999999]">(Optional)</span>
-                </label>
-                <input
-                  type="text"
-                  name="tuskerName"
-                  placeholder="e.g. T304 - Nero"
-                  value={formData.tuskerName}
-                  onChange={handleChange}
-                  className="bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm"
-                />
-              </div>
-
-              {/* Location */}
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">
-                  Location / Sanctuary
-                </label>
-                <input
-                  type="text"
-                  name="location"
-                  placeholder="e.g. Udawalawe"
-                  value={formData.location}
-                  onChange={handleChange}
-                  className="bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm"
-                />
-              </div>
+            {/* Location */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">
+                Location / Sanctuary
+              </label>
+              <input
+                type="text"
+                name="location"
+                placeholder="e.g. Udawalawe / Minneriya"
+                value={formData.location}
+                onChange={handleChange}
+                className="bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm"
+              />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -725,21 +710,6 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
                   className="bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm"
                 />
               </div>
-            </div>
-
-            {/* Email Contact (Private) */}
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">
-                Contact Email <span className="font-normal text-[#999999]">(Private, for verification)</span>
-              </label>
-              <input
-                type="email"
-                name="photographerContact"
-                placeholder="you@example.com"
-                value={formData.photographerContact}
-                onChange={handleChange}
-                className="bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm"
-              />
             </div>
 
             {/* Admin review notice */}

@@ -16,6 +16,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { useFieldNoteForm } from '../../controllers/useFieldNotes';
+import TuskerMultiSelect from '../components/TuskerMultiSelect';
 
 export default function FieldNoteForm() {
   const navigate = useNavigate();
@@ -155,6 +156,19 @@ export default function FieldNoteForm() {
                   placeholder="e.g. Dr. Silva, Safari Guide Kamal, or Researcher"
                   value={formData.author}
                   onChange={handleChange}
+                />
+              </div>
+
+              {/* Tuskers Observed (Searchable Dropdown with Multi-Select) */}
+              <div className="w-full">
+                <TuskerMultiSelect
+                  label="Tuskers Involved / Observed"
+                  placeholder="Search tusker by ID or name (e.g. T180, Skandaraja, Revatha)..."
+                  value={formData.specialNote}
+                  onChange={(_list, formatted) => {
+                    handleChange({ target: { name: 'specialNote', value: formatted } });
+                  }}
+                  helperText="Select one or multiple tuskers observed during this field trip."
                 />
               </div>
 

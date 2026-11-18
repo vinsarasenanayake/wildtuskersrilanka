@@ -639,14 +639,12 @@ export async function submitGalleryPhoto(form) {
     status: 'pending',
   };
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('gallery_photos')
-    .insert(row)
-    .select()
-    .single();
+    .insert(row);
 
   if (error) throw error;
-  return fromRow(data);
+  return fromRow(row);
 }
 
 export async function approveGalleryPhoto(id) {

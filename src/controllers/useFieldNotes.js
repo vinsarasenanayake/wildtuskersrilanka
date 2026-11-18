@@ -100,6 +100,7 @@ export function useFieldNoteForm() {
     date: new Date().toISOString().split('T')[0],
     time: '',
     description: '',
+    specialNote: '',
     images: [] // array of image attachment data URLs
   });
   const [error, setError] = useState('');
@@ -186,9 +187,10 @@ export function useFieldNoteForm() {
         date,
         time: time.trim(),
         description: description.trim(),
+        specialNote: (formData.specialNote || '').trim(),
         images: imageArray,
         author: finalAuthor,
-        authorContact: authorContact.trim(),
+        authorContact: (authorContact || '').trim(),
         status
       });
     } catch (err) {

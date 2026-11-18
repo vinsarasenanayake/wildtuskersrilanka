@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -7,13 +7,11 @@ import {
   Image as ImageIcon,
   Paperclip,
   X,
-  Search,
-  Plus,
-  Check,
 } from 'lucide-react';
 import { useSpecialObservationForm } from '../../controllers/useSpecialObservations';
 import { getTuskers } from '../../models/TuskerModel';
 import { useAuth } from '../../controllers/useAuth';
+import TuskerMultiSelect from '../components/TuskerMultiSelect';
 
 export default function SpecialObservationForm() {
   const { id } = useParams();
@@ -31,7 +29,6 @@ export default function SpecialObservationForm() {
   } = useSpecialObservationForm(id);
 
   const fileInputRef = useRef(null);
-  const dropdownRef = useRef(null);
 
   const { isAdmin, authLoading } = useAuth();
   const [tuskersList, setTuskersList] = useState([]);
@@ -39,8 +36,6 @@ export default function SpecialObservationForm() {
   // Multi-tusker & comparison states
   const [selectedTuskers, setSelectedTuskers] = useState([]);
   const [connector, setConnector] = useState('vs'); // 'vs' (Comparison) or '&' (Together)
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [initialSyncDone, setInitialSyncDone] = useState(false);
 
@@ -90,64 +85,9 @@ export default function SpecialObservationForm() {
     setInitialSyncDone(true);
   }, [formData.tuskerName, tuskersList, initialSyncDone]);
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const updateGeneratedName = useCallback((tuskers, conn) => {
-    if (!tuskers || tuskers.length === 0) {
-      handleChange({ target: { name: 'tuskerName', value: '' } });
-      return;
-    }
-    const tuskerNames = tuskers.map((t) => `${t.id} - ${t.name}`).join(` ${conn} `);
-    handleChange({ target: { name: 'tuskerName', value: tuskerNames } });
-  }, [handleChange]);
-
-  const handleSelectTusker = (tusker) => {
-    if (selectedTuskers.some((t) => t.id === tusker.id)) return;
-    const nextTuskers = [...selectedTuskers, tusker];
-    setSelectedTuskers(nextTuskers);
-    setSearchQuery('');
-    setIsDropdownOpen(false);
-    updateGeneratedName(nextTuskers, connector);
-  };
-
-  const handleRemoveTusker = (idToRemove) => {
-    const nextTuskers = selectedTuskers.filter((t) => t.id !== idToRemove);
-    setSelectedTuskers(nextTuskers);
-    if (nextTuskers.length > 0) {
-      updateGeneratedName(nextTuskers, connector);
-    } else {
-      handleChange({ target: { name: 'tuskerName', value: '' } });
-    }
-  };
-
   const handleToggleConnector = (newConn) => {
     setConnector(newConn);
-    updateGeneratedName(selectedTuskers, newConn);
   };
-
-  const filteredTuskers = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return tuskersList.slice(0, 10);
-    }
-    const q = searchQuery.toLowerCase().trim();
-    return tuskersList
-      .filter(
-        (t) =>
-          t.id?.toLowerCase().includes(q) ||
-          t.name?.toLowerCase().includes(q) ||
-          t.location?.toLowerCase().includes(q)
-      )
-      .slice(0, 20);
-  }, [tuskersList, searchQuery]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -203,140 +143,23 @@ export default function SpecialObservationForm() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
               {/* Tusker Subject & Comparison Selector */}
               <div className="flex flex-col gap-2 sm:col-span-2">
-                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center gap-1.5">
-                  <Binoculars size={14} className="text-accent" />
-                  <span>
-                    Tusker Subject or Multi-Tusker Comparison<span className="text-[#e53e3e]"> *</span>
-                  </span>
-                </label>
-
-                <div className="flex flex-col gap-3">
-                  {/* Selected Tusker Chips */}
-                  {selectedTuskers.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-2 p-3 bg-[#fbfcfb] border border-[#e4eae6] rounded-xl">
-                      <span className="text-[0.75rem] font-bold text-[#62776c] uppercase tracking-wider mr-1">
-                        Tuskers ({selectedTuskers.length}):
-                      </span>
-                      {selectedTuskers.map((t, idx) => (
-                        <React.Fragment key={t.id}>
-                          {idx > 0 && (
-                            <div className="inline-flex items-center rounded-lg bg-[#eef3f0] border border-[#d6e0da] p-0.5">
-                              <button
-                                type="button"
-                                onClick={() => handleToggleConnector('vs')}
-                                className={`px-2 py-0.5 text-xs font-bold rounded-md border-none cursor-pointer transition-colors ${
-                                  connector === 'vs'
-                                    ? 'bg-[#0b2518] text-white shadow-xs'
-                                    : 'bg-transparent text-[#666666] hover:text-[#111111]'
-                                }`}
-                                title="Compare tuskers (vs)"
-                              >
-                                vs
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleToggleConnector('&')}
-                                className={`px-2 py-0.5 text-xs font-bold rounded-md border-none cursor-pointer transition-colors ${
-                                  connector === '&'
-                                    ? 'bg-[#0b2518] text-white shadow-xs'
-                                    : 'bg-transparent text-[#666666] hover:text-[#111111]'
-                                }`}
-                                title="Group together (&)"
-                              >
-                                &amp;
-                              </button>
-                            </div>
-                          )}
-                          <span className="inline-flex items-center gap-1.5 bg-white border border-[#d1ded7] text-[#0b2518] px-3 py-1 rounded-full text-xs font-bold shadow-xs">
-                            <span className="font-mono text-accent">{t.id}</span>
-                            <span>{t.name}</span>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveTusker(t.id)}
-                              className="w-4 h-4 rounded-full bg-[#f0f0f0] hover:bg-rose-100 hover:text-rose-600 text-[#777777] inline-flex items-center justify-center border-none cursor-pointer p-0 ml-0.5 transition-colors"
-                              title="Remove tusker"
-                            >
-                              <X size={10} />
-                            </button>
-                          </span>
-                        </React.Fragment>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Search & Custom Dropdown Picker */}
-                  <div className="relative" ref={dropdownRef}>
-                    <div className="relative">
-                      <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#999999]" />
-                      <input
-                        type="text"
-                        className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] pl-10 pr-4 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#999999] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
-                        placeholder={
-                          selectedTuskers.length === 0
-                            ? "Search tusker by ID or name (e.g. T075, Kawanthissa, Missaka)..."
-                            : "+ Add another tusker to compare (e.g. T078, Missaka)..."
-                        }
-                        value={searchQuery}
-                        onFocus={() => setIsDropdownOpen(true)}
-                        onChange={(e) => {
-                          setSearchQuery(e.target.value);
-                          setIsDropdownOpen(true);
-                        }}
-                      />
-                    </div>
-
-                    {/* Dropdown Menu (Clean WTS Card) */}
-                    {isDropdownOpen && (
-                      <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-[#e5e7eb] rounded-xl shadow-2xl max-h-64 overflow-y-auto z-40 divide-y divide-gray-100">
-                        {filteredTuskers.length === 0 ? (
-                          <div className="p-4 text-center text-xs text-[#888888]">
-                            No matching tuskers found for "{searchQuery}".
-                          </div>
-                        ) : (
-                          filteredTuskers.map((tusker) => {
-                            const isSelected = selectedTuskers.some((t) => t.id === tusker.id);
-                            return (
-                              <div
-                                key={tusker.id}
-                                onClick={() => handleSelectTusker(tusker)}
-                                className={`p-3 flex items-center justify-between cursor-pointer transition-colors ${
-                                  isSelected
-                                    ? 'bg-emerald-50/60 text-emerald-900 pointer-events-none'
-                                    : 'hover:bg-[#f7faf8]'
-                                }`}
-                              >
-                                <div className="flex items-center gap-3">
-                                  <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
-                                    {tusker.id}
-                                  </span>
-                                  <div>
-                                    <span className="font-sans text-sm font-semibold text-[#111111] block">
-                                      {tusker.name}
-                                    </span>
-                                    {tusker.location && (
-                                      <span className="font-sans text-xs text-[#777777]">
-                                        {tusker.location}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                                {isSelected ? (
-                                  <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
-                                    <Check size={14} /> Selected
-                                  </span>
-                                ) : (
-                                  <span className="text-xs font-semibold text-accent hover:underline flex items-center gap-1">
-                                    <Plus size={13} /> Add
-                                  </span>
-                                )}
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <TuskerMultiSelect
+                  label="Tusker Subject or Multi-Tusker Comparison"
+                  required
+                  allowConnector
+                  connector={connector}
+                  onConnectorChange={handleToggleConnector}
+                  value={selectedTuskers}
+                  onChange={(nextTuskers, formatted) => {
+                    setSelectedTuskers(nextTuskers);
+                    handleChange({ target: { name: 'tuskerName', value: formatted } });
+                  }}
+                  placeholder={
+                    selectedTuskers.length === 0
+                      ? "Search tusker by ID or name (e.g. T075, Kawanthissa, Missaka)..."
+                      : "+ Add another tusker to compare (e.g. T078, Missaka)..."
+                  }
+                />
               </div>
 
               {/* Date */}
