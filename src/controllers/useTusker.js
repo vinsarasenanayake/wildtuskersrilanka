@@ -65,15 +65,59 @@ export function useTuskerList() {
     return counts;
   }, [tuskers]);
 
-  const [nameQuery, setNameQuery]         = useState('');
+  const [nameQuery, setNameQuery]         = useState(() => {
+    try { return sessionStorage.getItem('wts_nameQuery') || ''; } catch { return ''; }
+  });
   const [nameSuggestions, setNameSugg]    = useState([]);
   const [showNameSugg, setShowNameSugg]   = useState(false);
 
-  const [statusFilter, setStatusFilter]   = useState('ALL');
-  const [locationQuery, setLocationQuery] = useState('');
-  const [selectedLocation, setSelectedLoc]= useState('');
+  const [statusFilter, setStatusFilter]   = useState(() => {
+    try { return sessionStorage.getItem('wts_statusFilter') || 'ALL'; } catch { return 'ALL'; }
+  });
+  const [sortOrder, setSortOrder]         = useState(() => {
+    try { return sessionStorage.getItem('wts_sortOrder') || 'ID_ASC'; } catch { return 'ID_ASC'; }
+  });
+  const [selectedLocation, setSelectedLoc]= useState(() => {
+    try { return sessionStorage.getItem('wts_selectedLoc') || ''; } catch { return ''; }
+  });
+  const [locationQuery, setLocationQuery] = useState(() => {
+    try { return sessionStorage.getItem('wts_selectedLoc') || ''; } catch { return ''; }
+  });
   const [showLocDrop, setShowLocDrop]     = useState(false);
   const [locSuggestions, setLocSugg]      = useState([]);
+
+  /* ── Persist Filter & Sort State across Navigation & Reload ── */
+  useEffect(() => {
+    try {
+      if (sortOrder) sessionStorage.setItem('wts_sortOrder', sortOrder);
+    } catch { /* ignore */ }
+  }, [sortOrder]);
+
+  useEffect(() => {
+    try {
+      if (statusFilter) sessionStorage.setItem('wts_statusFilter', statusFilter);
+    } catch { /* ignore */ }
+  }, [statusFilter]);
+
+  useEffect(() => {
+    try {
+      if (selectedLocation) {
+        sessionStorage.setItem('wts_selectedLoc', selectedLocation);
+      } else {
+        sessionStorage.removeItem('wts_selectedLoc');
+      }
+    } catch { /* ignore */ }
+  }, [selectedLocation]);
+
+  useEffect(() => {
+    try {
+      if (nameQuery) {
+        sessionStorage.setItem('wts_nameQuery', nameQuery);
+      } else {
+        sessionStorage.removeItem('wts_nameQuery');
+      }
+    } catch { /* ignore */ }
+  }, [nameQuery]);
 
   const handleNameInput = (val) => {
     setNameQuery(val);
@@ -116,6 +160,9 @@ export function useTuskerList() {
     setLocationQuery('');
     setLocSugg([]);
     setShowLocDrop(false);
+    try {
+      sessionStorage.removeItem('wts_selectedLoc');
+    } catch { /* ignore */ }
   };
 
   const clearFilters = () => {
@@ -123,6 +170,13 @@ export function useTuskerList() {
     setSelectedLoc('');
     setLocationQuery('');
     setStatusFilter('ALL');
+    setSortOrder('ID_ASC');
+    try {
+      sessionStorage.removeItem('wts_nameQuery');
+      sessionStorage.removeItem('wts_statusFilter');
+      sessionStorage.removeItem('wts_sortOrder');
+      sessionStorage.removeItem('wts_selectedLoc');
+    } catch { /* ignore */ }
   };
 
   const focusLocation = () => {
@@ -143,9 +197,18 @@ export function useTuskerList() {
     if (statusFilter !== 'ALL') {
       list = list.filter(t => t.livingStatus === statusFilter);
     }
-    list.sort((a, b) => compareTuskerId(a.id, b.id));
+    
+    if (sortOrder === 'NAME_ASC') {
+      list.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
+    } else if (sortOrder === 'NAME_DESC') {
+      list.sort((a, b) => (b.name || '').localeCompare(a.name || '', undefined, { sensitivity: 'base' }));
+    } else if (sortOrder === 'ID_DESC') {
+      list.sort((a, b) => compareTuskerId(b.id, a.id));
+    } else {
+      list.sort((a, b) => compareTuskerId(a.id, b.id));
+    }
     return list;
-  }, [nameQuery, selectedLocation, statusFilter, tuskers]);
+  }, [nameQuery, selectedLocation, statusFilter, sortOrder, tuskers]);
 
   return {
     tuskers,
@@ -154,6 +217,8 @@ export function useTuskerList() {
     statusFilter,
     setStatusFilter,
     statusCounts,
+    sortOrder,
+    setSortOrder,
     countInArea: (area) => tuskers.filter(t => tuskerRoamsIn(t, area)).length,
     nameQuery,
     nameSuggestions,

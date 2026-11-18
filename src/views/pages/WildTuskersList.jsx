@@ -1,11 +1,18 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Search, MapPin, X, ChevronDown, ArrowRight, PlusCircle, Radar } from 'lucide-react';
+import { Search, MapPin, X, ChevronDown, ArrowRight, PlusCircle, Radar, ArrowUpDown, Check } from 'lucide-react';
 import { useTuskerList } from '../../controllers/useTusker';
 import { useAuth } from '../../controllers/useAuth';
 import { LIVING_STATUSES } from '../../models/TuskerModel';
 import StatusBadge from '../components/StatusBadge';
 import { setCachedAspect } from '../../utils/photoAspectCache';
+
+const SORT_OPTIONS = [
+  { id: 'ID_ASC', label: 'Default (T-ID: Ascending)' },
+  { id: 'NAME_ASC', label: 'Name: A → Z (Ascending)' },
+  { id: 'NAME_DESC', label: 'Name: Z → A (Descending)' },
+  { id: 'ID_DESC', label: 'T-ID: Descending' },
+];
 
 export default function WildTuskersList() {
   const navigate = useNavigate();
@@ -18,6 +25,8 @@ export default function WildTuskersList() {
     statusFilter,
     setStatusFilter,
     statusCounts,
+    sortOrder,
+    setSortOrder,
     countInArea,
     nameQuery,
     nameSuggestions,
@@ -39,6 +48,8 @@ export default function WildTuskersList() {
 
   const nameRef     = useRef(null);
   const locationRef = useRef(null);
+  const sortRef     = useRef(null);
+  const [showSortDrop, setShowSortDrop] = useState(false);
 
   /* ── Click Outside to Close ────────────────── */
   useEffect(() => {
@@ -48,6 +59,9 @@ export default function WildTuskersList() {
       }
       if (locationRef.current && !locationRef.current.contains(e.target)) {
         setShowLocDrop(false);
+      }
+      if (sortRef.current && !sortRef.current.contains(e.target)) {
+        setShowSortDrop(false);
       }
     };
     document.addEventListener('mousedown', handleOutsideClick);
@@ -170,31 +184,98 @@ export default function WildTuskersList() {
 
       </div>
 
-      {/* ── Living Status Filter ── */}
-      <div className="flex items-center gap-2 mb-5 flex-wrap">
-        {['ALL', ...LIVING_STATUSES].map(st => (
-          <button
-            key={st}
-            type="button"
-            onClick={() => setStatusFilter(st)}
-            className={`font-sans text-[0.82rem] font-semibold rounded-full px-3.5 py-1.5 border cursor-pointer transition-all ${
-              statusFilter === st
-                ? 'bg-primary text-white border-primary'
-                : 'bg-white text-[#555555] border-[#e8e8e8] hover:border-accent hover:text-accent'
+      {/* ── Living Status Filter & Sort Row ── */}
+      <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
+        {/* Living Status Pills */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {['ALL', ...LIVING_STATUSES].map(st => (
+            <button
+              key={st}
+              type="button"
+              onClick={() => setStatusFilter(st)}
+              className={`font-sans text-[0.82rem] font-semibold rounded-full px-3.5 py-1.5 border cursor-pointer transition-all ${
+                statusFilter === st
+                  ? 'bg-primary text-white border-primary'
+                  : 'bg-white text-[#555555] border-[#e8e8e8] hover:border-accent hover:text-accent'
+              }`}
+            >
+              {st === 'ALL' ? 'All' : st}
+              <span className={`ml-1.5 font-normal ${statusFilter === st ? 'text-white/70' : 'text-[#aaaaaa]'}`}>
+                {statusCounts[st] || 0}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Sort Dropdown - directly below Filter by Location, matching its design */}
+        <div className="relative flex-1 min-w-[220px] max-w-[280px] max-md:max-w-full max-sm:max-w-full max-sm:w-full ml-auto" ref={sortRef}>
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setShowSortDrop(prev => !prev)}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowSortDrop(prev => !prev); } }}
+            className={`flex items-center gap-2 bg-[#f7f7f8] border-1.5 rounded-[10px] px-3.5 py-2.5 transition-all cursor-pointer select-none ${
+              showSortDrop ? 'border-accent bg-white ring-3 ring-accent/12' : 'border-[#e8e8e8] hover:border-accent/60'
             }`}
           >
-            {st === 'ALL' ? 'All' : st}
-            <span className={`ml-1.5 font-normal ${statusFilter === st ? 'text-white/70' : 'text-[#aaaaaa]'}`}>
-              {statusCounts[st] || 0}
+            <ArrowUpDown size={16} className="text-accent shrink-0" />
+            <span
+              className={`font-sans text-[0.9rem] font-normal flex-1 truncate select-none ${
+                sortOrder === 'ID_ASC' ? 'text-[#bbbbbb]' : 'text-[#111111]'
+              }`}
+            >
+              {sortOrder === 'ID_ASC' ? 'Sort by…' : (SORT_OPTIONS.find(o => o.id === sortOrder)?.label || 'Sort by…')}
             </span>
-          </button>
-        ))}
+
+            {sortOrder !== 'ID_ASC' ? (
+              <button
+                type="button"
+                className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSortOrder('ID_ASC');
+                  setShowSortDrop(false);
+                }}
+                title="Reset sorting"
+              >
+                <X size={14} />
+              </button>
+            ) : (
+              <ChevronDown
+                size={14}
+                className={`text-[#aaaaaa] shrink-0 transition-transform duration-200 pointer-events-none ${
+                  showSortDrop ? 'rotate-180 text-accent' : ''
+                }`}
+              />
+            )}
+          </div>
+
+          {showSortDrop && (
+            <ul className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white border-1.5 border-[#e8e8e8] rounded-[10px] shadow-[0_8px_24px_rgba(0,0,0,0.1)] z-[200] list-none m-0 py-1.5 overflow-hidden">
+              {SORT_OPTIONS.map(opt => (
+                <li
+                  key={opt.id}
+                  className={`flex items-center justify-between px-4 py-2.5 cursor-pointer font-sans text-[0.88rem] transition-colors hover:bg-[#faf5ec] ${
+                    sortOrder === opt.id ? 'bg-[#faf5ec] text-accent font-semibold' : 'text-[#333333]'
+                  }`}
+                  onMouseDown={() => {
+                    setSortOrder(opt.id);
+                    setShowSortDrop(false);
+                  }}
+                >
+                  <span className="truncate">{opt.label}</span>
+                  {sortOrder === opt.id && <Check size={14} className="text-accent shrink-0 ml-2" />}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
 
       {/* ── Results Count ── */}
       <div className="flex items-center justify-between mb-7 font-sans text-[0.85rem] text-[#888888]">
         <span>{filtered.length} {filtered.length === 1 ? 'tusker' : 'tuskers'} found</span>
-        {(nameQuery || selectedLocation || statusFilter !== 'ALL') && (
+        {(nameQuery || selectedLocation || statusFilter !== 'ALL' || sortOrder !== 'ID_ASC') && (
           <button className="bg-none border-none font-sans text-[0.85rem] text-accent cursor-pointer font-medium underline p-0 hover:text-accent-hover" onClick={clearFilters}>
             Clear filters
           </button>

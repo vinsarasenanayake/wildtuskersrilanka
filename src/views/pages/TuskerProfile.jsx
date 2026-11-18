@@ -21,14 +21,335 @@ import {
   Hourglass,
   Skull,
   StickyNote,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Maximize,
+  Minimize,
 } from 'lucide-react';
 import { useTuskerProfile } from '../../controllers/useTusker';
 import { calculateTuskerAge } from '../../models/TuskerModel';
 import StatusBadge from '../components/StatusBadge';
 import { getCachedAspect, setCachedAspect, probeImageAspect } from '../../utils/photoAspectCache';
 
+/* ── Fullscreen Zoom Lightbox ─────────────────────────────────── */
+function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onClose }) {
+  const [index, setIndex] = useState(initialIndex);
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const containerRef = useRef(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const changeIndex = (newIdx) => {
+    setIndex(newIdx);
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  };
+
+  const handlePrev = (e) => {
+    e?.stopPropagation();
+    if (!photos || photos.length <= 1) return;
+    changeIndex((index - 1 + photos.length) % photos.length);
+  };
+
+  const handleNext = (e) => {
+    e?.stopPropagation();
+    if (!photos || photos.length <= 1) return;
+    changeIndex((index + 1) % photos.length);
+  };
+
+  const zoomIn = (e) => {
+    e?.stopPropagation();
+    setScale((prev) => Math.min(prev + 0.5, 4));
+  };
+
+  const zoomOut = (e) => {
+    e?.stopPropagation();
+    setScale((prev) => {
+      const next = Math.max(prev - 0.5, 1);
+      if (next === 1) setPosition({ x: 0, y: 0 });
+      return next;
+    });
+  };
+
+  const resetZoom = (e) => {
+    e?.stopPropagation();
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  };
+
+  const toggleZoom = (e) => {
+    e?.stopPropagation();
+    if (scale > 1) {
+      resetZoom();
+    } else {
+      setScale(2.5);
+    }
+  };
+
+  const toggleFullscreen = async (e) => {
+    e?.stopPropagation();
+    try {
+      if (!document.fullscreenElement) {
+        if (containerRef.current?.requestFullscreen) {
+          await containerRef.current.requestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        }
+      }
+    } catch {
+      // Fullscreen might be restricted by user-agent/iframe, fallback gracefully
+    }
+  };
+
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (scale > 1) {
+          resetZoom();
+        } else {
+          onClose();
+        }
+      } else if (e.key === 'ArrowLeft') {
+        handlePrev();
+      } else if (e.key === 'ArrowRight') {
+        handleNext();
+      } else if (e.key === '+' || e.key === '=') {
+        zoomIn();
+      } else if (e.key === '-' || e.key === '_') {
+        zoomOut();
+      } else if (e.key === '0' || e.key.toLowerCase() === 'r') {
+        resetZoom();
+      } else if (e.key.toLowerCase() === 'f') {
+        toggleFullscreen();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [index, photos, scale]);
+
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
+  const handleWheel = (e) => {
+    e.preventDefault();
+    const delta = e.deltaY * -0.002;
+    setScale((prev) => {
+      const nextScale = Math.min(Math.max(prev + delta, 1), 4);
+      if (nextScale === 1) setPosition({ x: 0, y: 0 });
+      return nextScale;
+    });
+  };
+
+  const handleMouseDown = (e) => {
+    if (scale <= 1) return;
+    if (e.button !== 0) return;
+    setIsDragging(true);
+    dragStartRef.current = {
+      x: e.clientX - position.x,
+      y: e.clientY - position.y,
+    };
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging || scale <= 1) return;
+    setPosition({
+      x: e.clientX - dragStartRef.current.x,
+      y: e.clientY - dragStartRef.current.y,
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const activePhoto = photos && photos[index];
+
+  return createPortal(
+    <div
+      ref={containerRef}
+      className="fixed inset-0 z-[10000] bg-black/95 text-white flex flex-col select-none overflow-hidden animate-fade-in"
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+    >
+      {/* Top Header Bar */}
+      <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 bg-black/60 backdrop-blur-md border-b border-white/10 z-20 shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="bg-accent/20 border border-accent/40 text-accent font-mono font-bold text-xs px-2.5 py-1 rounded">
+            {tuskerId || 'WTS'}
+          </span>
+          <span className="font-sans text-sm sm:text-base font-semibold truncate text-white/90">
+            {name}
+          </span>
+          {photos && photos.length > 0 && (
+            <span className="text-xs text-white/50 bg-white/10 px-2 py-0.5 rounded-full font-medium">
+              {index + 1} of {photos.length}
+            </span>
+          )}
+        </div>
+
+        {/* Zoom & Fullscreen Toolbar */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <button
+            onClick={zoomOut}
+            disabled={scale <= 1}
+            title="Zoom out (-)"
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:hover:bg-white/10 flex items-center justify-center text-white border-none cursor-pointer transition-colors"
+          >
+            <ZoomOut size={16} />
+          </button>
+          <button
+            onClick={resetZoom}
+            title="Reset zoom (0)"
+            className="px-2 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xs font-mono text-white/90 border-none cursor-pointer transition-colors"
+          >
+            {Math.round(scale * 100)}%
+          </button>
+          <button
+            onClick={zoomIn}
+            disabled={scale >= 4}
+            title="Zoom in (+)"
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:hover:bg-white/10 flex items-center justify-center text-white border-none cursor-pointer transition-colors"
+          >
+            <ZoomIn size={16} />
+          </button>
+          <button
+            onClick={resetZoom}
+            disabled={scale === 1 && position.x === 0 && position.y === 0}
+            title="Reset position and zoom (R)"
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:hover:bg-white/10 flex items-center justify-center text-white border-none cursor-pointer transition-colors"
+          >
+            <RotateCcw size={15} />
+          </button>
+
+          <div className="w-[1px] h-5 bg-white/15 mx-1" />
+
+          <button
+            onClick={toggleFullscreen}
+            title={isFullscreen ? 'Exit fullscreen (F)' : 'Fullscreen (F)'}
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white border-none cursor-pointer transition-colors"
+          >
+            {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
+          </button>
+
+          <button
+            onClick={onClose}
+            title="Close (Esc)"
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-red-500/80 flex items-center justify-center text-white border-none cursor-pointer transition-colors ml-1"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      </div>
+
+      {/* Main Image Stage */}
+      <div
+        className="relative flex-1 flex items-center justify-center overflow-hidden cursor-default"
+        onWheel={handleWheel}
+        onClick={(e) => {
+          if (e.target === e.currentTarget && scale === 1) onClose();
+        }}
+      >
+        {/* Navigation Arrows */}
+        {photos && photos.length > 1 && (
+          <>
+            <button
+              onClick={handlePrev}
+              title="Previous photo (Left arrow)"
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-black/60 hover:bg-black/90 text-white/90 hover:text-white border border-white/20 flex items-center justify-center cursor-pointer backdrop-blur-sm transition-all hover:scale-105"
+            >
+              <ChevronLeft size={24} />
+            </button>
+            <button
+              onClick={handleNext}
+              title="Next photo (Right arrow)"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-black/60 hover:bg-black/90 text-white/90 hover:text-white border border-white/20 flex items-center justify-center cursor-pointer backdrop-blur-sm transition-all hover:scale-105"
+            >
+              <ChevronRight size={24} />
+            </button>
+          </>
+        )}
+
+        {/* Scalable & Draggable Image Canvas */}
+        {activePhoto && (
+          <div
+            className="w-full h-full flex items-center justify-center select-none"
+            style={{
+              cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
+            }}
+            onMouseDown={handleMouseDown}
+            onDoubleClick={toggleZoom}
+          >
+            <img
+              src={activePhoto}
+              alt={`${name} preview ${index + 1}`}
+              draggable={false}
+              className="max-h-[82vh] max-w-[92vw] object-contain transition-transform duration-75 select-none"
+              style={{
+                transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
+                transformOrigin: 'center center',
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Bottom Thumbnail Strip & Keyboard Hint */}
+      <div className="flex flex-col items-center gap-2 px-4 py-3 bg-black/70 backdrop-blur-md border-t border-white/10 z-20 shrink-0">
+        {photos && photos.length > 1 && (
+          <div className="flex items-center gap-2 overflow-x-auto max-w-full px-2 py-1 scrollbar-thin">
+            {photos.map((p, i) => (
+              <button
+                key={i}
+                onClick={() => changeIndex(i)}
+                className={`w-12 h-12 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer p-0 bg-black/40 ${
+                  i === index
+                    ? 'border-accent ring-2 ring-accent/60 scale-105 opacity-100'
+                    : 'border-transparent opacity-50 hover:opacity-90'
+                }`}
+                title={`Go to photo ${i + 1}`}
+              >
+                <img src={p} alt="" className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="text-[11px] text-white/40 flex items-center gap-3">
+          <span>Scroll to zoom</span>
+          <span>•</span>
+          <span>Double-click to toggle zoom</span>
+          <span>•</span>
+          <span>Drag to pan when zoomed</span>
+          <span>•</span>
+          <span>Arrow keys to navigate</span>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 /* ── Slideshow Component ─────────────────────────────────────── */
-function PhotoSlideshow({ photos, name, current, prev, next, setCurrent }) {
+function PhotoSlideshow({ photos, name, tuskerId, current, prev, next, setCurrent }) {
+  const [showLightbox, setShowLightbox] = useState(false);
   const currentPhoto = photos && photos[current];
   const [isPortrait, setIsPortrait] = useState(() => {
     const cached = getCachedAspect(currentPhoto);
@@ -72,7 +393,10 @@ function PhotoSlideshow({ photos, name, current, prev, next, setCurrent }) {
   return (
     <div className="flex flex-col gap-4 min-[820px]:sticky min-[820px]:top-[calc(80px+1.5rem)]">
       <div
-        className={`relative w-full rounded-[14px] overflow-hidden flex items-center justify-center transition-all duration-300 shadow-sm ${
+        onClick={() => {
+          if (currentPhoto) setShowLightbox(true);
+        }}
+        className={`group relative w-full rounded-[14px] overflow-hidden flex items-center justify-center transition-all duration-300 shadow-sm cursor-zoom-in ${
           !currentPhoto
             ? 'aspect-[4/3] bg-[#e8e8e8]'
             : isPortrait
@@ -93,7 +417,7 @@ function PhotoSlideshow({ photos, name, current, prev, next, setCurrent }) {
             src={currentPhoto}
             alt={`${name} photo ${current + 1}`}
             onLoad={handleImageLoad}
-            className="w-full h-full object-cover object-center rounded-[14px]"
+            className="w-full h-full object-cover object-center rounded-[14px] transition-transform duration-300 group-hover:scale-[1.02]"
           />
         ) : (
           <div className="flex flex-col items-center gap-1.5 p-8">
@@ -102,18 +426,39 @@ function PhotoSlideshow({ photos, name, current, prev, next, setCurrent }) {
           </div>
         )}
 
+        {/* Top-Right Expand Button */}
+        {currentPhoto && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowLightbox(true);
+            }}
+            title="Click to view full photo & zoom"
+            className="absolute top-3 right-3 bg-black/60 hover:bg-black/85 text-white/90 hover:text-white px-2.5 py-1.5 rounded-lg backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity z-[3] border border-white/20 flex items-center gap-1.5 text-xs font-sans shadow-md cursor-pointer"
+          >
+            <Maximize2 size={13} />
+            <span className="text-[11px] font-medium">Full View</span>
+          </button>
+        )}
+
         {photos && photos.length > 1 && (
           <>
             <button
               className="absolute top-1/2 -translate-y-1/2 bg-white/85 rounded-full w-10 h-10 flex items-center justify-center cursor-pointer text-[#333333] shadow-[0_2px_8px_rgba(0,0,0,0.12)] hover:bg-white hover:-translate-y-1/2 hover:scale-108 transition-all z-[2] left-3"
-              onClick={() => prev(photos.length)}
+              onClick={(e) => {
+                e.stopPropagation();
+                prev(photos.length);
+              }}
               aria-label="Previous photo"
             >
               <ChevronLeft size={22} />
             </button>
             <button
               className="absolute top-1/2 -translate-y-1/2 bg-white/85 rounded-full w-10 h-10 flex items-center justify-center cursor-pointer text-[#333333] shadow-[0_2px_8px_rgba(0,0,0,0.12)] hover:bg-white hover:-translate-y-1/2 hover:scale-108 transition-all z-[2] right-3"
-              onClick={() => next(photos.length)}
+              onClick={(e) => {
+                e.stopPropagation();
+                next(photos.length);
+              }}
               aria-label="Next photo"
             >
               <ChevronRight size={22} />
@@ -134,12 +479,23 @@ function PhotoSlideshow({ photos, name, current, prev, next, setCurrent }) {
           {photos.map((_, i) => (
             <button
               key={i}
-              className={`w-2 h-2 rounded-full bg-[#dddddd] transition-all hover:bg-[#bbbbbb] p-0 border-none outline-none ${i === current ? 'bg-accent! scale-130' : ''}`}
+              className={`w-2 h-2 rounded-full bg-[#dddddd] transition-all hover:bg-[#bbbbbb] p-0 border-none outline-none cursor-pointer ${i === current ? 'bg-accent! scale-130' : ''}`}
               onClick={() => setCurrent(i)}
               aria-label={`Go to photo ${i + 1}`}
             />
           ))}
         </div>
+      )}
+
+      {/* Fullscreen Zoom Lightbox Modal */}
+      {showLightbox && (
+        <TuskerPhotoZoomLightbox
+          photos={photos}
+          name={name}
+          tuskerId={tuskerId}
+          initialIndex={current}
+          onClose={() => setShowLightbox(false)}
+        />
       )}
     </div>
   );
@@ -291,6 +647,7 @@ export default function TuskerProfile() {
             <PhotoSlideshow
               photos={tusker.photos}
               name={tusker.name}
+              tuskerId={tusker.id}
               current={currentPhotoIndex}
               prev={prevPhoto}
               next={nextPhoto}

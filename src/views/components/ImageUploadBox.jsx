@@ -1,5 +1,5 @@
 import React, { useRef, useState, useMemo } from 'react';
-import { UploadCloud, Camera, Trash2, Loader2, CheckCircle2, Plus, Image as ImageIcon } from 'lucide-react';
+import { UploadCloud, Camera, Trash2, Loader2, CheckCircle2, Plus, Image as ImageIcon, GripVertical } from 'lucide-react';
 import { uploadMediaFile } from '../../utils/storageUpload';
 
 /**
@@ -31,6 +31,8 @@ export default function ImageUploadBox({
   const [uploadCount, setUploadCount] = useState(0);
   const [dragActive, setDragActive] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [draggedIndex, setDraggedIndex] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
 
   // Default to multiple=true unless circle mode or explicitly set to false
   const isMultiple = circle ? false : (multiple !== undefined ? multiple : true);
@@ -123,6 +125,8 @@ export default function ImageUploadBox({
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       handleFiles(e.dataTransfer.files);
     }
@@ -131,13 +135,74 @@ export default function ImageUploadBox({
   const handleDragOver = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setDragActive(true);
+    // Only set dragActive if dragging external files
+    if (draggedIndex === null) {
+      setDragActive(true);
+    }
   };
 
   const handleDragLeave = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
+  };
+
+  /* ── Drag & Drop Photo Reordering ───────────── */
+  const handleItemDragStart = (idx, e) => {
+    if (uploading) return;
+    setDraggedIndex(idx);
+    e.dataTransfer.effectAllowed = 'move';
+    try {
+      e.dataTransfer.setData('text/plain', idx.toString());
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleItemDragOver = (idx, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (draggedIndex === null) return;
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverIndex !== idx) {
+      setDragOverIndex(idx);
+    }
+  };
+
+  const handleItemDragLeave = (idx, e) => {
+    e.stopPropagation();
+    if (dragOverIndex === idx) {
+      setDragOverIndex(null);
+    }
+  };
+
+  const handleItemDrop = (targetIdx, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Reorder internal dragged photo
+    if (draggedIndex !== null) {
+      if (draggedIndex !== targetIdx) {
+        const nextList = [...imageList];
+        const [movedItem] = nextList.splice(draggedIndex, 1);
+        nextList.splice(targetIdx, 0, movedItem);
+        emitChange(nextList);
+      }
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    // External file drop on a tile
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFiles(e.dataTransfer.files);
+    }
+  };
+
+  const handleItemDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
   };
 
   const handleRemoveOne = (indexToRemove, e) => {
@@ -239,7 +304,11 @@ export default function ImageUploadBox({
           </span>
 
           {hasImages && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[0.68rem] font-medium text-gray-400 normal-case hidden sm:inline-flex items-center gap-1">
+                <GripVertical size={11} className="text-gray-400" />
+                <span>Drag to reorder photos</span>
+              </span>
               <span className="text-[0.72rem] font-semibold text-emerald-600 flex items-center gap-1 normal-case bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                 <CheckCircle2 size={12} />
                 <span>
@@ -323,42 +392,68 @@ export default function ImageUploadBox({
       {hasImages && (
         <div className="flex flex-col gap-3">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {imageList.map((url, idx) => (
-              <div
-                key={`${url}-${idx}`}
-                className="relative aspect-[4/3] rounded-[10px] overflow-hidden border border-[#d8e0da] bg-[#eef3f0] group shadow-xs hover:shadow-md transition-all"
-              >
-                <img
-                  src={url}
-                  alt={`Upload ${idx + 1}`}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
-                />
+            {imageList.map((url, idx) => {
+              const isBeingDragged = draggedIndex === idx;
+              const isDragTarget = dragOverIndex === idx && draggedIndex !== idx;
 
-                {/* Primary Photo Badge */}
-                {idx === 0 && (
-                  <span className="absolute top-1.5 left-1.5 bg-[#0b2518]/85 text-[#f5ecd7] text-[0.62rem] font-bold px-1.5 py-0.5 rounded shadow-xs uppercase tracking-wider backdrop-blur-xs">
-                    Primary
-                  </span>
-                )}
-
-                {/* Number Badge */}
-                {idx > 0 && (
-                  <span className="absolute top-1.5 left-1.5 bg-black/60 text-white text-[0.62rem] font-bold px-1.5 py-0.5 rounded shadow-xs">
-                    #{idx + 1}
-                  </span>
-                )}
-
-                {/* Remove button */}
-                <button
-                  type="button"
-                  onClick={(e) => handleRemoveOne(idx, e)}
-                  title="Remove photo"
-                  className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/65 hover:bg-rose-600 text-white flex items-center justify-center border-none cursor-pointer transition-colors shadow-xs"
+              return (
+                <div
+                  key={`${url}-${idx}`}
+                  draggable={!uploading}
+                  onDragStart={(e) => handleItemDragStart(idx, e)}
+                  onDragOver={(e) => handleItemDragOver(idx, e)}
+                  onDragLeave={(e) => handleItemDragLeave(idx, e)}
+                  onDrop={(e) => handleItemDrop(idx, e)}
+                  onDragEnd={handleItemDragEnd}
+                  className={`relative aspect-[4/3] rounded-[10px] overflow-hidden border bg-[#eef3f0] group transition-all duration-200 select-none ${
+                    isBeingDragged
+                      ? 'opacity-30 scale-95 border-2 border-dashed border-accent ring-2 ring-accent/30 cursor-grabbing'
+                      : isDragTarget
+                      ? 'border-accent ring-3 ring-accent scale-[1.03] shadow-lg z-10 cursor-grabbing'
+                      : 'border-[#d8e0da] shadow-xs hover:shadow-md cursor-grab active:cursor-grabbing hover:border-accent/70'
+                  }`}
+                  title="Click & drag with mouse to reorder photos"
                 >
-                  <Trash2 size={12} />
-                </button>
-              </div>
-            ))}
+                  <img
+                    src={url}
+                    alt={`Upload ${idx + 1}`}
+                    draggable={false}
+                    className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300 pointer-events-none"
+                  />
+
+                  {/* Primary Photo Badge */}
+                  {idx === 0 && (
+                    <span className="absolute top-1.5 left-1.5 bg-[#0b2518]/90 text-[#f5ecd7] text-[0.62rem] font-bold px-1.5 py-0.5 rounded shadow-xs uppercase tracking-wider backdrop-blur-xs pointer-events-none z-10 flex items-center gap-1">
+                      Primary
+                    </span>
+                  )}
+
+                  {/* Number Badge */}
+                  {idx > 0 && (
+                    <span className="absolute top-1.5 left-1.5 bg-black/60 text-white text-[0.62rem] font-bold px-1.5 py-0.5 rounded shadow-xs pointer-events-none z-10">
+                      #{idx + 1}
+                    </span>
+                  )}
+
+                  {/* Drag Grip Handle on Hover */}
+                  <span className="absolute bottom-1.5 right-1.5 bg-black/55 text-white/90 p-1 rounded backdrop-blur-xs flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-xs">
+                    <GripVertical size={13} />
+                  </span>
+
+                  {/* Remove button */}
+                  <button
+                    type="button"
+                    draggable={false}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onClick={(e) => handleRemoveOne(idx, e)}
+                    title="Remove photo"
+                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/65 hover:bg-rose-600 text-white flex items-center justify-center border-none cursor-pointer transition-colors shadow-xs z-20"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              );
+            })}
 
             {/* "+ Add More Photos" Tile */}
             {isMultiple && (
