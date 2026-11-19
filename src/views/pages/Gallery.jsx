@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import {
@@ -50,16 +50,37 @@ export default function Gallery() {
     };
   }, []);
 
-  // Prevent background scrolling when modal is open
+  // Always ensure body overflow is cleanly unlocked when Gallery unmounts
   useEffect(() => {
-    if (activePhoto) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = prev;
-      };
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    };
+  }, []);
+
+  // Browser Back button support: pressing device/browser back closes the photo modal
+  useEffect(() => {
+    if (!activePhoto) return;
+
+    window.history.pushState({ galleryModal: true }, '');
+
+    const handlePopState = () => {
+      setActivePhoto(null);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [activePhoto, setActivePhoto]);
+
+  const closePhotoModal = useCallback(() => {
+    if (window.history.state?.galleryModal) {
+      window.history.back();
+    } else {
+      setActivePhoto(null);
     }
-  }, [activePhoto]);
+  }, [setActivePhoto]);
 
   // Match photo to registered tusker
   const matchedTusker = useMemo(() => {
@@ -272,7 +293,7 @@ export default function Gallery() {
         <TuskerPhotoLightbox
           photo={activePhoto}
           tusker={matchedTusker}
-          onClose={() => setActivePhoto(null)}
+          onClose={closePhotoModal}
           isAdmin={isAdmin}
           onApprove={handleApprove}
           onDelete={handleDelete}
@@ -417,8 +438,8 @@ function TuskerPhotoLightbox({
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
     return () => {
-      document.body.style.overflow = prevOverflow;
-      document.body.style.paddingRight = prevPaddingRight;
+      document.body.style.overflow = prevOverflow === 'hidden' ? '' : (prevOverflow || '');
+      document.body.style.paddingRight = prevPaddingRight || '';
     };
   }, []);
 
@@ -567,7 +588,7 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = prevOverflow;
+      document.body.style.overflow = prevOverflow === 'hidden' ? '' : (prevOverflow || '');
     };
   }, []);
 

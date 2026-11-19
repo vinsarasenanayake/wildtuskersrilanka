@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -42,43 +42,47 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
   const containerRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const changeIndex = (newIdx) => {
+  const changeIndex = useCallback((newIdx) => {
     setIndex(newIdx);
     setScale(1);
     setPosition({ x: 0, y: 0 });
-  };
+  }, []);
 
-  const handlePrev = (e) => {
+  const handlePrev = useCallback((e) => {
     e?.stopPropagation();
     if (!photos || photos.length <= 1) return;
-    changeIndex((index - 1 + photos.length) % photos.length);
-  };
+    setIndex((prev) => (prev - 1 + photos.length) % photos.length);
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  }, [photos]);
 
-  const handleNext = (e) => {
+  const handleNext = useCallback((e) => {
     e?.stopPropagation();
     if (!photos || photos.length <= 1) return;
-    changeIndex((index + 1) % photos.length);
-  };
+    setIndex((prev) => (prev + 1) % photos.length);
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  }, [photos]);
 
-  const zoomIn = (e) => {
+  const zoomIn = useCallback((e) => {
     e?.stopPropagation();
     setScale((prev) => Math.min(prev + 0.5, 4));
-  };
+  }, []);
 
-  const zoomOut = (e) => {
+  const zoomOut = useCallback((e) => {
     e?.stopPropagation();
     setScale((prev) => {
       const next = Math.max(prev - 0.5, 1);
       if (next === 1) setPosition({ x: 0, y: 0 });
       return next;
     });
-  };
+  }, []);
 
-  const resetZoom = (e) => {
+  const resetZoom = useCallback((e) => {
     e?.stopPropagation();
     setScale(1);
     setPosition({ x: 0, y: 0 });
-  };
+  }, []);
 
   const toggleZoom = (e) => {
     e?.stopPropagation();
@@ -89,7 +93,7 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
     }
   };
 
-  const toggleFullscreen = async (e) => {
+  const toggleFullscreen = useCallback(async (e) => {
     e?.stopPropagation();
     try {
       if (!document.fullscreenElement) {
@@ -104,7 +108,7 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
     } catch {
       // Fullscreen might be restricted by user-agent/iframe, fallback gracefully
     }
-  };
+  }, []);
 
   useEffect(() => {
     const handleFsChange = () => {
@@ -138,13 +142,13 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [index, photos, scale]);
+  }, [handleNext, handlePrev, onClose, resetZoom, scale, toggleFullscreen, zoomIn, zoomOut]);
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = originalOverflow;
+      document.body.style.overflow = originalOverflow === 'hidden' ? '' : (originalOverflow || '');
     };
   }, []);
 
@@ -503,7 +507,9 @@ function PhotoSlideshow({ photos, name, tuskerId, current, prev, next, setCurren
 
 /* ── Detail Row ──────────────────────────────────────────────── */
 function DetailRow({ icon, label, value }) {
-  if (!value) return null;
+  if (!value || value === 'Not Applicable' || value === 'N/A' || (typeof value === 'string' && value.trim() === '')) {
+    return null;
+  }
 
   return (
     <div className="flex items-start gap-3.5">
@@ -579,7 +585,7 @@ export default function TuskerProfile() {
       const prevOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       return () => {
-        document.body.style.overflow = prevOverflow;
+        document.body.style.overflow = prevOverflow === 'hidden' ? '' : (prevOverflow || '');
       };
     }
   }, [selectedComparisonImg, showRiskModal]);
@@ -684,34 +690,42 @@ export default function TuskerProfile() {
 
             {/* Detail rows */}
             <div className="flex flex-col gap-4">
-              <DetailRow
-                icon={<MapPin size={16} />}
-                label="Location"
-                value={tusker.location || 'Not Applicable'}
-              />
-              <DetailRow
-                icon={<User size={16} />}
-                label="First Recorded By"
-                value={tusker.recordedBy || 'Not Applicable'}
-              />
-              <DetailRow
-                icon={<UserCheck size={16} />}
-                label="Nickname Suggested By"
-                value={tusker.nicknameGivenBy || tusker.recordedBy || 'Not Applicable'}
-              />
-              <DetailRow
-                icon={<Calendar size={16} />}
-                label="First Recorded Date"
-                value={formatDate(tusker.listedDate) || 'Not Applicable'}
-              />
+              {tusker.location && tusker.location !== 'Not Applicable' && (
+                <DetailRow
+                  icon={<MapPin size={16} />}
+                  label="Location"
+                  value={tusker.location}
+                />
+              )}
+              {tusker.recordedBy && tusker.recordedBy !== 'Not Applicable' && (
+                <DetailRow
+                  icon={<User size={16} />}
+                  label="First Recorded By"
+                  value={tusker.recordedBy}
+                />
+              )}
+              {tusker.nicknameGivenBy && tusker.nicknameGivenBy !== 'Not Applicable' && (
+                <DetailRow
+                  icon={<UserCheck size={16} />}
+                  label="Nickname Suggested By"
+                  value={tusker.nicknameGivenBy}
+                />
+              )}
+              {tusker.listedDate && tusker.listedDate !== 'Not Applicable' && formatDate(tusker.listedDate) && (
+                <DetailRow
+                  icon={<Calendar size={16} />}
+                  label="First Recorded Date"
+                  value={formatDate(tusker.listedDate)}
+                />
+              )}
               {/* Special Marks (hide if Not Applicable and no wounds) */}
-              {((tusker.specialMarks && tusker.specialMarks !== 'Not Applicable' && tusker.specialMarks !== 'None') || tusker.specialWounds || tusker.wounds) && (
+              {((tusker.specialMarks && tusker.specialMarks !== 'Not Applicable' && tusker.specialMarks !== 'None') || ((tusker.specialWounds && tusker.specialWounds !== 'None recorded.') || tusker.wounds)) && (
                 <DetailRow
                   icon={<Tag size={16} />}
                   label="Special Marks"
                   value={
                     <div className="flex flex-col gap-1">
-                      {tusker.specialMarks && tusker.specialMarks !== 'Not Applicable' && (
+                      {tusker.specialMarks && tusker.specialMarks !== 'Not Applicable' && tusker.specialMarks !== 'None' && (
                         <span>{tusker.specialMarks}</span>
                       )}
                       {((tusker.specialWounds && tusker.specialWounds !== 'None recorded.') || tusker.wounds) && (
@@ -740,15 +754,15 @@ export default function TuskerProfile() {
                 />
               )}
 
-              {/* Risk Score (Only for living / actively monitored tuskers) */}
-              {!isDeceased && (tusker.riskScore || tusker.riskLink) && (
+              {/* Risk Score (Only for living / actively monitored tuskers with an actual recorded score) */}
+              {!isDeceased && tusker.riskScore && tusker.riskScore !== 'Not Applicable' && tusker.riskScore !== 'None' && (
                 <DetailRow
                   icon={<ShieldAlert size={16} />}
                   label="Risk Score"
                   value={
                     <div className="flex items-center gap-2.5 flex-wrap">
                       <span className="font-sans text-[0.92rem] font-bold text-[#111111]">
-                        {tusker.riskScore || 'Not Applicable'}
+                        {tusker.riskScore}
                       </span>
                       {(tusker.riskLink || tusker.riskScore) && (
                         <a
@@ -822,7 +836,7 @@ export default function TuskerProfile() {
                 <DetailRow
                   icon={<MapIcon size={16} />}
                   label="Region"
-                  value={[tusker.zone, tusker.district, tusker.province].filter(Boolean).join(' · ')}
+                  value={[tusker.zone, tusker.district, tusker.province].filter(v => v && v !== 'Not Applicable' && v !== 'N/A').join(' · ')}
                 />
               )}
               {tusker.remarks && (

@@ -9,10 +9,10 @@ import { setCachedAspect } from '../../utils/photoAspectCache';
 import { thumbUrl } from '../../utils/storageUpload';
 
 const SORT_OPTIONS = [
-  { id: 'ID_ASC', label: 'Default (T-ID: Ascending)' },
+  { id: 'ID_DESC', label: 'Default (T-ID: Descending)' },
   { id: 'NAME_ASC', label: 'Name: A → Z (Ascending)' },
   { id: 'NAME_DESC', label: 'Name: Z → A (Descending)' },
-  { id: 'ID_DESC', label: 'T-ID: Descending' },
+  { id: 'ID_ASC', label: 'T-ID: Ascending' },
 ];
 
 export default function WildTuskersList() {
@@ -222,19 +222,19 @@ export default function WildTuskersList() {
             <ArrowUpDown size={16} className="text-accent shrink-0" />
             <span
               className={`font-sans text-[0.9rem] font-normal flex-1 truncate select-none ${
-                sortOrder === 'ID_ASC' ? 'text-[#bbbbbb]' : 'text-[#111111]'
+                sortOrder === 'ID_DESC' ? 'text-[#bbbbbb]' : 'text-[#111111]'
               }`}
             >
-              {sortOrder === 'ID_ASC' ? 'Sort by…' : (SORT_OPTIONS.find(o => o.id === sortOrder)?.label || 'Sort by…')}
+              {sortOrder === 'ID_DESC' ? 'Sort by…' : (SORT_OPTIONS.find(o => o.id === sortOrder)?.label || 'Sort by…')}
             </span>
 
-            {sortOrder !== 'ID_ASC' ? (
+            {sortOrder !== 'ID_DESC' ? (
               <button
                 type="button"
                 className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setSortOrder('ID_ASC');
+                  setSortOrder('ID_DESC');
                   setShowSortDrop(false);
                 }}
                 title="Reset sorting"
@@ -276,7 +276,7 @@ export default function WildTuskersList() {
       {/* ── Results Count ── */}
       <div className="flex items-center justify-between mb-7 font-sans text-[0.85rem] text-[#888888]">
         <span>{filtered.length} {filtered.length === 1 ? 'tusker' : 'tuskers'} found</span>
-        {(nameQuery || selectedLocation || statusFilter !== 'ALL' || sortOrder !== 'ID_ASC') && (
+        {(nameQuery || selectedLocation || statusFilter !== 'ALL' || sortOrder !== 'ID_DESC') && (
           <button className="bg-none border-none font-sans text-[0.85rem] text-accent cursor-pointer font-medium underline p-0 hover:text-accent-hover" onClick={clearFilters}>
             Clear filters
           </button>

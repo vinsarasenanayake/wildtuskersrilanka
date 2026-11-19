@@ -75,7 +75,12 @@ export function useTuskerList() {
     try { return sessionStorage.getItem('wts_statusFilter') || 'ALL'; } catch { return 'ALL'; }
   });
   const [sortOrder, setSortOrder]         = useState(() => {
-    try { return sessionStorage.getItem('wts_sortOrder') || 'ID_ASC'; } catch { return 'ID_ASC'; }
+    try {
+      sessionStorage.removeItem('wts_sortOrder');
+      return sessionStorage.getItem('wts_sortOrder_v2') || 'ID_DESC';
+    } catch {
+      return 'ID_DESC';
+    }
   });
   const [selectedLocation, setSelectedLoc]= useState(() => {
     try { return sessionStorage.getItem('wts_selectedLoc') || ''; } catch { return ''; }
@@ -89,7 +94,7 @@ export function useTuskerList() {
   /* ── Persist Filter & Sort State across Navigation & Reload ── */
   useEffect(() => {
     try {
-      if (sortOrder) sessionStorage.setItem('wts_sortOrder', sortOrder);
+      if (sortOrder) sessionStorage.setItem('wts_sortOrder_v2', sortOrder);
     } catch { /* ignore */ }
   }, [sortOrder]);
 
@@ -170,11 +175,12 @@ export function useTuskerList() {
     setSelectedLoc('');
     setLocationQuery('');
     setStatusFilter('ALL');
-    setSortOrder('ID_ASC');
+    setSortOrder('ID_DESC');
     try {
       sessionStorage.removeItem('wts_nameQuery');
       sessionStorage.removeItem('wts_statusFilter');
       sessionStorage.removeItem('wts_sortOrder');
+      sessionStorage.removeItem('wts_sortOrder_v2');
       sessionStorage.removeItem('wts_selectedLoc');
     } catch { /* ignore */ }
   };
@@ -202,10 +208,11 @@ export function useTuskerList() {
       list.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
     } else if (sortOrder === 'NAME_DESC') {
       list.sort((a, b) => (b.name || '').localeCompare(a.name || '', undefined, { sensitivity: 'base' }));
-    } else if (sortOrder === 'ID_DESC') {
-      list.sort((a, b) => compareTuskerId(b.id, a.id));
-    } else {
+    } else if (sortOrder === 'ID_ASC') {
       list.sort((a, b) => compareTuskerId(a.id, b.id));
+    } else {
+      // Default: ID_DESC (descending, latest / highest T-number first: T328, T327, ...)
+      list.sort((a, b) => compareTuskerId(b.id, a.id));
     }
     return list;
   }, [nameQuery, selectedLocation, statusFilter, sortOrder, tuskers]);

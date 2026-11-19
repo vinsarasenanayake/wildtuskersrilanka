@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 
 /* ── Components & Views ────────────────────────────────────── */
@@ -26,6 +26,14 @@ import AIApp from './views/pages/AIApp';
 function App() {
   const location = useLocation();
   const showNavbar = location.pathname !== '/login';
+
+  // Automatically ensure body overflow and padding are never locked across page transitions
+  useEffect(() => {
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+    document.documentElement.style.overflow = '';
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   return (
     <>
