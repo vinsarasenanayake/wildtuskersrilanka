@@ -19,6 +19,7 @@ import { getTuskers } from '../../models/TuskerModel';
 import ImageUploadBox from '../components/ImageUploadBox';
 import TuskerMultiSelect from '../components/TuskerMultiSelect';
 import EditGalleryPhotoModal from '../components/EditGalleryPhotoModal';
+import Footer from '../components/Footer';
 
 export default function Gallery() {
   const {
@@ -318,6 +319,8 @@ function normalizeTuskerName(str) {
           </div>
         )}
 
+        {/* ── Footer Attribution ── */}
+        <Footer />
       </div>
 
       {/* ── Tusker Profile & Photo Lightbox Modal (Centered, Side-by-Side, No Scroll) ── */}

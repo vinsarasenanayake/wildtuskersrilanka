@@ -4,6 +4,7 @@ import { PlusCircle, Edit2, Trash2, X, Save, Shield, ExternalLink, Loader2 } fro
 import { getTeamMembers, addTeamMember, updateTeamMember, deleteTeamMember } from '../../models/TeamModel';
 import { useAuth } from '../../controllers/useAuth';
 import ImageUploadBox from '../components/ImageUploadBox';
+import Footer from '../components/Footer';
 
 export default function AboutUs() {
   const [team, setTeam] = useState([]);
@@ -160,6 +161,9 @@ export default function AboutUs() {
           </div>
         )}
       </section>
+
+      {/* ── Footer Attribution ── */}
+      <Footer />
 
       {/* ── Add / Edit Admin Modal ── */}
       {showModal &&

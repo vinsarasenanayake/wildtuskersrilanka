@@ -5,6 +5,7 @@ import { useTuskerList } from '../../controllers/useTusker';
 import { useAuth } from '../../controllers/useAuth';
 import { LIVING_STATUSES } from '../../models/TuskerModel';
 import StatusBadge from '../components/StatusBadge';
+import Footer from '../components/Footer';
 import { setCachedAspect } from '../../utils/photoAspectCache';
 import { thumbUrl } from '../../utils/storageUpload';
 
@@ -348,6 +349,8 @@ export default function WildTuskersList() {
           </button>
         </div>
       )}
+      {/* ── Footer Attribution ── */}
+      <Footer />
     </div>
   );
 }
