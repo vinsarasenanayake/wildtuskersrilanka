@@ -17,7 +17,6 @@ import { useGallery, useGallerySubmit } from '../../controllers/useGallery';
 import { getTuskers } from '../../models/TuskerModel';
 import ImageUploadBox from '../components/ImageUploadBox';
 import TuskerMultiSelect from '../components/TuskerMultiSelect';
-import { thumbUrl } from '../../utils/storageUpload';
 
 export default function Gallery() {
   const {
@@ -161,17 +160,15 @@ export default function Gallery() {
             <div className="flex items-center gap-2 p-1 bg-white border border-[#e2e6e4] rounded-[10px]">
               <button
                 onClick={() => setFilter('ALL')}
-                className={`font-sans text-[0.82rem] font-semibold px-4 py-1.5 rounded-[8px] transition-all cursor-pointer border-none ${
-                  filter === 'ALL' ? 'bg-primary text-white shadow-xs' : 'bg-transparent text-[#666666] hover:text-[#111111]'
-                }`}
+                className={`font-sans text-[0.82rem] font-semibold px-4 py-1.5 rounded-[8px] transition-all cursor-pointer border-none ${filter === 'ALL' ? 'bg-primary text-white shadow-xs' : 'bg-transparent text-[#666666] hover:text-[#111111]'
+                  }`}
               >
                 Approved ({allApproved.length})
               </button>
               <button
                 onClick={() => setFilter('PENDING')}
-                className={`font-sans text-[0.82rem] font-semibold px-4 py-1.5 rounded-[8px] transition-all cursor-pointer border-none flex items-center gap-1.5 ${
-                  filter === 'PENDING' ? 'bg-[#c69b55] text-white shadow-xs' : 'bg-transparent text-[#666666] hover:text-[#111111]'
-                }`}
+                className={`font-sans text-[0.82rem] font-semibold px-4 py-1.5 rounded-[8px] transition-all cursor-pointer border-none flex items-center gap-1.5 ${filter === 'PENDING' ? 'bg-[#c69b55] text-white shadow-xs' : 'bg-transparent text-[#666666] hover:text-[#111111]'
+                  }`}
               >
                 <Clock size={13} />
                 <span>Pending Review</span>
@@ -211,11 +208,10 @@ export default function Gallery() {
               >
                 {/* Edge-to-edge photo filling entire card */}
                 <img
-                  src={thumbUrl(item.imageUrl)}
+                  src={item.imageUrl}
                   alt={item.title}
                   className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                   loading="lazy"
-                  decoding="async"
                 />
 
                 {/* Subtle Hover Gradient Overlay with details */}
@@ -377,8 +373,6 @@ function CoverflowCarousel({ items, onSelectPhoto, getTuskerDisplayName }) {
                 alt={item.title}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 draggable={false}
-                loading="lazy"
-                decoding="async"
               />
 
               {/* Bottom Gradient Overlay (Reveals on Hover) */}
@@ -482,7 +476,7 @@ function TuskerPhotoLightbox({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="bg-gradient-to-r from-black/85 via-[#0b1c14]/90 to-black/85 backdrop-blur-xl border border-white/15 rounded-2xl px-5 sm:px-7 py-3.5 sm:py-4 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-          
+
           {/* Left: T-Number & Name of Tusker */}
           <div className="flex flex-col gap-0.5 min-w-0">
             <h2 className="font-serif text-lg sm:text-[1.35rem] font-bold text-white tracking-wide m-0 truncate drop-shadow-sm">
@@ -742,8 +736,8 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
                   {submitting
                     ? 'Submitting…'
                     : formData.images && formData.images.length > 1
-                    ? `Submit ${formData.images.length} Photos`
-                    : 'Submit Photo'}
+                      ? `Submit ${formData.images.length} Photos`
+                      : 'Submit Photo'}
                 </span>
               </button>
             </div>

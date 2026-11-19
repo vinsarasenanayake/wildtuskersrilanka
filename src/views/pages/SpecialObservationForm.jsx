@@ -107,8 +107,8 @@ export default function SpecialObservationForm() {
   const imagesArray = Array.isArray(formData.images)
     ? formData.images
     : typeof formData.images === 'string' && formData.images
-    ? formData.images.split(',').map((s) => s.trim()).filter(Boolean)
-    : [];
+      ? formData.images.split(',').map((s) => s.trim()).filter(Boolean)
+      : [];
 
   return (
     <div className="w-full min-h-screen bg-white pt-[calc(80px+2rem)] pb-20">
@@ -265,11 +265,10 @@ export default function SpecialObservationForm() {
                       handleAddImages(e.dataTransfer.files);
                     }
                   }}
-                  className={`border-2 border-dashed ${
-                    dragOver
-                      ? 'border-accent bg-accent/10 scale-[1.01]'
-                      : 'border-[#d1d5db] hover:border-accent hover:bg-accent/5 bg-[#fafafa]'
-                  } rounded-[14px] p-6 text-center flex flex-col items-center justify-center gap-2 cursor-pointer transition-all`}
+                  className={`border-2 border-dashed ${dragOver
+                    ? 'border-accent bg-accent/10 scale-[1.01]'
+                    : 'border-[#d1d5db] hover:border-accent hover:bg-accent/5 bg-[#fafafa]'
+                    } rounded-[14px] p-6 text-center flex flex-col items-center justify-center gap-2 cursor-pointer transition-all`}
                 >
                   <div className="w-11 h-11 rounded-full bg-accent/15 text-accent flex items-center justify-center">
                     {uploadingImages ? (
@@ -357,10 +356,10 @@ export default function SpecialObservationForm() {
                   {submitting
                     ? 'Saving & Uploading...'
                     : uploadingImages
-                    ? 'Uploading Images...'
-                    : isEditMode
-                    ? 'Update Observation'
-                    : 'Save Observation'}
+                      ? 'Uploading Images...'
+                      : isEditMode
+                        ? 'Update Observation'
+                        : 'Save Observation'}
                 </span>
               </button>
             </div>
