@@ -12,7 +12,7 @@ export const DEFAULT_GALLERY = [
     location: 'Kaudulla',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Abaya_Kawdulla.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Abaya_Kawdulla.webp',
     status: 'approved',
   },
   {
@@ -22,7 +22,7 @@ export const DEFAULT_GALLERY = [
     location: 'Mannakkatiya',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Agbo_Mannakkatiya.JPG',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Agbo_Mannakkatiya.webp',
     status: 'approved',
   },
   {
@@ -32,7 +32,7 @@ export const DEFAULT_GALLERY = [
     location: 'Mankkatiya',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Ananda_Mankkatiya.JPG',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Ananda_Mankkatiya.webp',
     status: 'approved',
   },
   {
@@ -42,7 +42,7 @@ export const DEFAULT_GALLERY = [
     location: 'Udawalawa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Aravinda.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Aravinda.webp',
     status: 'approved',
   },
   {
@@ -52,7 +52,7 @@ export const DEFAULT_GALLERY = [
     location: 'Yala',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Arjuna_Yala.JPG',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Arjuna_Yala.webp',
     status: 'approved',
   },
   {
@@ -62,7 +62,7 @@ export const DEFAULT_GALLERY = [
     location: 'Mahaviachciya',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Arrita_Mahaviachciya.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Arrita_Mahaviachciya.webp',
     status: 'approved',
   },
   {
@@ -72,7 +72,7 @@ export const DEFAULT_GALLERY = [
     location: 'Minneriya',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Asela1_Minneriya.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Asela1_Minneriya.webp',
     status: 'approved',
   },
   {
@@ -82,7 +82,7 @@ export const DEFAULT_GALLERY = [
     location: 'Kalawewa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Asela2_Kalawewa.JPG',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Asela2_Kalawewa.webp',
     status: 'approved',
   },
   {
@@ -92,7 +92,7 @@ export const DEFAULT_GALLERY = [
     location: 'Minneriya',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Ashoka_Minneriya.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Ashoka_Minneriya.webp',
     status: 'approved',
   },
   {
@@ -102,7 +102,7 @@ export const DEFAULT_GALLERY = [
     location: 'Kalawewa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Barana_Kalawewa.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Barana_Kalawewa.webp',
     status: 'approved',
   },
   {
@@ -112,7 +112,7 @@ export const DEFAULT_GALLERY = [
     location: 'Galgamuwa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Chandi_Galgamuwa.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Chandi_Galgamuwa.webp',
     status: 'approved',
   },
   {
@@ -122,7 +122,7 @@ export const DEFAULT_GALLERY = [
     location: 'Yala 5',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Chethiya_Yala_5.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Chethiya_Yala_5.webp',
     status: 'approved',
   },
   {
@@ -132,7 +132,7 @@ export const DEFAULT_GALLERY = [
     location: 'Kalawewa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Dappula_Kalawewa.JPG',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Dappula_Kalawewa.webp',
     status: 'approved',
   },
   {
@@ -142,7 +142,7 @@ export const DEFAULT_GALLERY = [
     location: 'Kalawewa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Deega1_Kalawewa.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Deega1_Kalawewa.webp',
     status: 'approved',
   },
   {
@@ -152,7 +152,7 @@ export const DEFAULT_GALLERY = [
     location: 'Kalawewa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Deega2_Kalawewa.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Deega2_Kalawewa.webp',
     status: 'approved',
   },
   {
@@ -162,7 +162,7 @@ export const DEFAULT_GALLERY = [
     location: 'Mahaviachciya',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Deegabaya_Mahaviachciya.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Deegabaya_Mahaviachciya.webp',
     status: 'approved',
   },
   {
@@ -172,7 +172,7 @@ export const DEFAULT_GALLERY = [
     location: 'YanOya',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Gajabahu_YanOya.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Gajabahu_YanOya.webp',
     status: 'approved',
   },
   {
@@ -182,7 +182,7 @@ export const DEFAULT_GALLERY = [
     location: 'Galgamuwa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Galagamuwa_Puttuwa_Galgamuwa.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Galagamuwa_Puttuwa_Galgamuwa.webp',
     status: 'approved',
   },
   {
@@ -192,7 +192,7 @@ export const DEFAULT_GALLERY = [
     location: 'Yala',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Gamunu_Yala.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Gamunu_Yala.webp',
     status: 'approved',
   },
   {
@@ -202,7 +202,7 @@ export const DEFAULT_GALLERY = [
     location: 'Kumana',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Kalinga_Kumana.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Kalinga_Kumana.webp',
     status: 'approved',
   },
   {
@@ -212,7 +212,7 @@ export const DEFAULT_GALLERY = [
     location: 'Wilpattu',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Kali_Wilpattu.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Kali_Wilpattu.webp',
     status: 'approved',
   },
   {
@@ -222,7 +222,7 @@ export const DEFAULT_GALLERY = [
     location: 'Bundala',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Kashayapa_Bundala.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Kashayapa_Bundala.webp',
     status: 'approved',
   },
   {
@@ -232,7 +232,7 @@ export const DEFAULT_GALLERY = [
     location: 'Yala',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Kashyapa_Yala.JPG',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Kashyapa_Yala.webp',
     status: 'approved',
   },
   {
@@ -242,7 +242,7 @@ export const DEFAULT_GALLERY = [
     location: 'galgamuwa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Kavantissa_galgamuwa.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Kavantissa_galgamuwa.webp',
     status: 'approved',
   },
   {
@@ -252,7 +252,7 @@ export const DEFAULT_GALLERY = [
     location: 'Kawdulla',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Koliya_Kawdulla.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Koliya_Kawdulla.webp',
     status: 'approved',
   },
   {
@@ -262,7 +262,7 @@ export const DEFAULT_GALLERY = [
     location: 'Huruluwewa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Lankeshwara_Huruluwewa.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Lankeshwara_Huruluwewa.webp',
     status: 'approved',
   },
   {
@@ -272,7 +272,7 @@ export const DEFAULT_GALLERY = [
     location: 'Yala',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Lokeshwara_Yala.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Lokeshwara_Yala.webp',
     status: 'approved',
   },
   {
@@ -282,7 +282,7 @@ export const DEFAULT_GALLERY = [
     location: 'Lunugamwehera',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Mahasena_Lunugamwehera.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Mahasena_Lunugamwehera.webp',
     status: 'approved',
   },
   {
@@ -292,7 +292,7 @@ export const DEFAULT_GALLERY = [
     location: 'Minneriya',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Mahasen_Minneriya.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Mahasen_Minneriya.webp',
     status: 'approved',
   },
   {
@@ -302,7 +302,7 @@ export const DEFAULT_GALLERY = [
     location: 'Kalawewa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Mangala_Kalawewa.JPG',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Mangala_Kalawewa.webp',
     status: 'approved',
   },
   {
@@ -312,7 +312,7 @@ export const DEFAULT_GALLERY = [
     location: 'Maruoya',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Migara_Maruoya.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Migara_Maruoya.webp',
     status: 'approved',
   },
   {
@@ -322,7 +322,7 @@ export const DEFAULT_GALLERY = [
     location: 'Galgamuwa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Missaka_Galgamuwa2.JPG',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Missaka_Galgamuwa2.webp',
     status: 'approved',
   },
   {
@@ -332,7 +332,7 @@ export const DEFAULT_GALLERY = [
     location: 'Manakkatiya',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Mithra_Manakkatiya.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Mithra_Manakkatiya.webp',
     status: 'approved',
   },
   {
@@ -342,7 +342,7 @@ export const DEFAULT_GALLERY = [
     location: 'Udawalawe',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Mugalan_Udawalawe.JPG',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Mugalan_Udawalawe.webp',
     status: 'approved',
   },
   {
@@ -352,7 +352,7 @@ export const DEFAULT_GALLERY = [
     location: 'Yala',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Nalaka_Yala.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Nalaka_Yala.webp',
     status: 'approved',
   },
   {
@@ -362,7 +362,7 @@ export const DEFAULT_GALLERY = [
     location: 'Yala',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Nandamithra_Yala.JPG',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Nandamithra_Yala.webp',
     status: 'approved',
   },
   {
@@ -372,7 +372,7 @@ export const DEFAULT_GALLERY = [
     location: 'Kalawewa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Neela_Kalawewa.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Neela_Kalawewa.webp',
     status: 'approved',
   },
   {
@@ -382,7 +382,7 @@ export const DEFAULT_GALLERY = [
     location: 'Galgamuwa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Panduka_Galgamuwa.JPG',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Panduka_Galgamuwa.webp',
     status: 'approved',
   },
   {
@@ -392,7 +392,7 @@ export const DEFAULT_GALLERY = [
     location: 'Yala',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Parinda_Yala.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Parinda_Yala.webp',
     status: 'approved',
   },
   {
@@ -402,7 +402,7 @@ export const DEFAULT_GALLERY = [
     location: 'Yala',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Podi_Dananjaya_Yala.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Podi_Dananjaya_Yala.webp',
     status: 'approved',
   },
   {
@@ -412,7 +412,7 @@ export const DEFAULT_GALLERY = [
     location: 'Galgamuwa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Ragu_Galgamuwa.JPG',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Ragu_Galgamuwa.webp',
     status: 'approved',
   },
   {
@@ -422,7 +422,7 @@ export const DEFAULT_GALLERY = [
     location: 'Galgamuwa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Rathaka_Galgamuwa.JPG',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Rathaka_Galgamuwa.webp',
     status: 'approved',
   },
   {
@@ -432,7 +432,7 @@ export const DEFAULT_GALLERY = [
     location: 'Galgamuwa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Ratta_Galgamuwa.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Ratta_Galgamuwa.webp',
     status: 'approved',
   },
   {
@@ -442,7 +442,7 @@ export const DEFAULT_GALLERY = [
     location: 'Kalawewa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Rewatha_Kalawewa.JPG',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Rewatha_Kalawewa.webp',
     status: 'approved',
   },
   {
@@ -452,7 +452,7 @@ export const DEFAULT_GALLERY = [
     location: 'Yala',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Sando_Yala.JPG',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Sando_Yala.webp',
     status: 'approved',
   },
   {
@@ -462,7 +462,7 @@ export const DEFAULT_GALLERY = [
     location: 'Kawdulla',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Sapumal_Kawdulla.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Sapumal_Kawdulla.webp',
     status: 'approved',
   },
   {
@@ -472,7 +472,7 @@ export const DEFAULT_GALLERY = [
     location: 'Mahawilachchiya',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Soorya_Mahawilachchiya.JPG',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Soorya_Mahawilachchiya.webp',
     status: 'approved',
   },
   {
@@ -482,7 +482,7 @@ export const DEFAULT_GALLERY = [
     location: 'Minneriya',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Sumedha_Minneriya.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Sumedha_Minneriya.webp',
     status: 'approved',
   },
   {
@@ -492,7 +492,7 @@ export const DEFAULT_GALLERY = [
     location: 'Galgamuwa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Theekke_Raja_Galgamuwa.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Theekke_Raja_Galgamuwa.webp',
     status: 'approved',
   },
   {
@@ -502,7 +502,7 @@ export const DEFAULT_GALLERY = [
     location: 'Lunugamwehera',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Tissa_Lunugamwehera.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Tissa_Lunugamwehera.webp',
     status: 'approved',
   },
   {
@@ -512,7 +512,7 @@ export const DEFAULT_GALLERY = [
     location: 'Minneriya',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Unicorn_Minneriya.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Unicorn_Minneriya.webp',
     status: 'approved',
   },
   {
@@ -522,7 +522,7 @@ export const DEFAULT_GALLERY = [
     location: 'Karuwalagaswewa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Walaganba_Karuwalagaswewa.jpeg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Walaganba_Karuwalagaswewa.webp',
     status: 'approved',
   },
   {
@@ -532,7 +532,7 @@ export const DEFAULT_GALLERY = [
     location: 'Kalawewa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Wijaya_Kalawewa.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Wijaya_Kalawewa.webp',
     status: 'approved',
   },
   {
@@ -542,7 +542,7 @@ export const DEFAULT_GALLERY = [
     location: 'WIlpattu',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Wijaya_WIlpattu.jpg',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Wijaya_WIlpattu.webp',
     status: 'approved',
   },
   {
@@ -552,7 +552,7 @@ export const DEFAULT_GALLERY = [
     location: 'Kalawewa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
-    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/gallery/Yasa_Kalawewa.JPG',
+    imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Yasa_Kalawewa.webp',
     status: 'approved',
   },
 ];

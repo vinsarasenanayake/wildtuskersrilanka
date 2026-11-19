@@ -2,7 +2,6 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { AwsClient } from 'aws4fetch';
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -29,7 +28,8 @@ export function requireEnv(...names) {
 
 export const encodeKey = (key) => key.split('/').map(encodeURIComponent).join('/');
 
-export function r2FromEnv(env = process.env) {
+export async function r2FromEnv(env = process.env) {
+  const { AwsClient } = await import('aws4fetch');
   const endpoint = (env.R2_ENDPOINT || `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`).replace(/\/+$/, '');
   const client = new AwsClient({ accessKeyId: env.R2_ACCESS_KEY_ID, secretAccessKey: env.R2_SECRET_ACCESS_KEY, service: 's3', region: 'auto' });
   return {

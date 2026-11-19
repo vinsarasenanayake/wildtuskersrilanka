@@ -137,6 +137,6 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const storage = supabase.storage.from(SUPABASE_BUCKET);
   const task = process.argv.includes('--cleanup')
     ? cleanup({ storage })
-    : run({ storage, r2: r2FromEnv(), db: dbFromSupabase(supabase), supabaseUrl: process.env.VITE_SUPABASE_URL.replace(/\/+$/, ''), srcDir: join(ROOT, 'src'), apply: process.argv.includes('--apply') });
+    : run({ storage, r2: await r2FromEnv(), db: dbFromSupabase(supabase), supabaseUrl: process.env.VITE_SUPABASE_URL.replace(/\/+$/, ''), srcDir: join(ROOT, 'src'), apply: process.argv.includes('--apply') });
   task.catch(err => { console.error(err); process.exit(1); });
 }
