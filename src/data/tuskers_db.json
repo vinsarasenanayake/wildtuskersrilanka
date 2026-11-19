@@ -1613,5 +1613,30 @@
     "id": "T323",
     "name": "Meghadutha",
     "location": "Athimale"
+  },
+  {
+    "id": "T324",
+    "name": "Dhanuraja",
+    "location": "Butthala / Wellawaya / Okkampitiya"
+  },
+  {
+    "id": "T325",
+    "name": "Veerabahu",
+    "location": "Butthala / Wellawaya / Okkampitiya"
+  },
+  {
+    "id": "T326",
+    "name": "Chandragiri",
+    "location": "Butthala / Wellawaya / Handapanagala"
+  },
+  {
+    "id": "T327",
+    "name": "Sahas",
+    "location": "Butthala / Wellawaya / Lunugamvehera"
+  },
+  {
+    "id": "T328",
+    "name": "Prabash",
+    "location": "Maha Kanadarawa / Mihinthale / Rambawa"
   }
 ]

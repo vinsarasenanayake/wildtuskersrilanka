@@ -10,8 +10,8 @@ import { getTuskers } from '../../models/TuskerModel';
 
 export default function Home() {
   const [stats, setStats] = useState({
-    total: 323,
-    living: 183,
+    total: 328,
+    living: 188,
     missing: 93,
     deceased: 47,
   });

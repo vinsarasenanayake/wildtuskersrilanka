@@ -328,7 +328,12 @@ insert into public.tuskers (id, name, location, living_status, death_year, death
   ('T320', 'Kalasena', 'Tabbowa / Karuwalagaswewa / Eluwankulama', 'Alive', null, null, 'Eluwankulama', 'Zone 3', 'Puttalam', 'North-Western', '2026-09-01', '10-20', 'Good', 'Low', null),
   ('T321', 'Girikanda', 'Ritigala / Palugaswewa', 'Alive', null, null, 'Ritigala', 'Zone 4', 'Anuradhapura', 'North-Central', '2026-09-01', '20-30', 'Good', 'Low', null),
   ('T322', 'Theja', 'Udawalawa', 'Alive', null, null, 'Udawalawa', 'Zone 1', 'Rathnapura', 'Sabaragamuwa', '2026-09-01', '20-30', 'Good', 'Low', null),
-  ('T323', 'Meghadutha', 'Athimale', 'Alive', null, null, 'Athimale', 'Zone 1', 'Monaragala', 'Uva', '2026-10-01', '30-40', 'Good', 'Low', null)
+  ('T323', 'Meghadutha', 'Athimale', 'Alive', null, null, 'Athimale', 'Zone 1', 'Monaragala', 'Uva', '2026-10-01', '30-40', 'Good', 'Low', null),
+  ('T324', 'Dhanuraja', 'Butthala / Wellawaya / Okkampitiya', 'Alive', null, null, 'Buttala', 'Zone 1', 'Monaragala', 'Uva', '2026-11-01', '20-30', 'Good', 'Low', null),
+  ('T325', 'Veerabahu', 'Butthala / Wellawaya / Okkampitiya', 'Alive', null, null, 'Buttala', 'Zone 1', 'Monaragala', 'Uva', '2026-11-01', '20-30', 'Good', 'Low', null),
+  ('T326', 'Chandragiri', 'Butthala / Wellawaya / Handapanagala', 'Alive', null, null, 'Buttala', 'Zone 1', 'Monaragala', 'Uva', '2026-11-01', '30-40', 'Good', 'Low', null),
+  ('T327', 'Sahas', 'Butthala / Wellawaya / Lunugamvehera', 'Alive', null, null, 'Buttala', 'Zone 1', 'Monaragala', 'Uva', '2026-11-01', '20-30', 'Good', 'Low', null),
+  ('T328', 'Prabash', 'Maha Kanadarawa / Mihinthale / Rambawa', 'Alive', null, null, 'Maha kanadarawa', 'Zone 3', 'Anuradhapura', 'North - Central', '2026-10-01', '10-20', 'Good', 'Low', null)
 on conflict (id) do update set
   name = excluded.name,
   location = excluded.location,
