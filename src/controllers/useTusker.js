@@ -65,16 +65,16 @@ export function useTuskerList() {
     return counts;
   }, [tuskers]);
 
-  const [nameQuery, setNameQuery]         = useState(() => {
+  const [nameQuery, setNameQuery] = useState(() => {
     try { return sessionStorage.getItem('wts_nameQuery') || ''; } catch { return ''; }
   });
-  const [nameSuggestions, setNameSugg]    = useState([]);
-  const [showNameSugg, setShowNameSugg]   = useState(false);
+  const [nameSuggestions, setNameSugg] = useState([]);
+  const [showNameSugg, setShowNameSugg] = useState(false);
 
-  const [statusFilter, setStatusFilter]   = useState(() => {
+  const [statusFilter, setStatusFilter] = useState(() => {
     try { return sessionStorage.getItem('wts_statusFilter') || 'ALL'; } catch { return 'ALL'; }
   });
-  const [sortOrder, setSortOrder]         = useState(() => {
+  const [sortOrder, setSortOrder] = useState(() => {
     try {
       sessionStorage.removeItem('wts_sortOrder');
       return sessionStorage.getItem('wts_sortOrder_v2') || 'ID_DESC';
@@ -82,14 +82,14 @@ export function useTuskerList() {
       return 'ID_DESC';
     }
   });
-  const [selectedLocation, setSelectedLoc]= useState(() => {
+  const [selectedLocation, setSelectedLoc] = useState(() => {
     try { return sessionStorage.getItem('wts_selectedLoc') || ''; } catch { return ''; }
   });
   const [locationQuery, setLocationQuery] = useState(() => {
     try { return sessionStorage.getItem('wts_selectedLoc') || ''; } catch { return ''; }
   });
-  const [showLocDrop, setShowLocDrop]     = useState(false);
-  const [locSuggestions, setLocSugg]      = useState([]);
+  const [showLocDrop, setShowLocDrop] = useState(false);
+  const [locSuggestions, setLocSugg] = useState([]);
 
   /* ── Persist Filter & Sort State across Navigation & Reload ── */
   useEffect(() => {
@@ -203,7 +203,7 @@ export function useTuskerList() {
     if (statusFilter !== 'ALL') {
       list = list.filter(t => t.livingStatus === statusFilter);
     }
-    
+
     if (sortOrder === 'NAME_ASC') {
       list.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
     } else if (sortOrder === 'NAME_DESC') {
@@ -397,7 +397,7 @@ export function useSightingForm(tuskerId) {
         remarks: (remarks || '').trim(),
       };
       const serializedNote = JSON.stringify(sightingDetails);
-      const observer = (author || (isAdmin ? 'WTS Admin' : 'WTS Researcher')).trim();
+      const observer = (author || 'WTS Admin').trim();
 
       // 1. Add sighting row(s) to tusker_sightings
       await Promise.all(

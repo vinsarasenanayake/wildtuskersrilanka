@@ -327,11 +327,10 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
               <button
                 key={i}
                 onClick={() => changeIndex(i)}
-                className={`w-12 h-12 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer p-0 bg-black/40 ${
-                  i === index
-                    ? 'border-accent ring-2 ring-accent/60 scale-105 opacity-100'
-                    : 'border-transparent opacity-50 hover:opacity-90'
-                }`}
+                className={`w-12 h-12 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer p-0 bg-black/40 ${i === index
+                  ? 'border-accent ring-2 ring-accent/60 scale-105 opacity-100'
+                  : 'border-transparent opacity-50 hover:opacity-90'
+                  }`}
                 title={`Go to photo ${i + 1}`}
               >
                 <img src={p} alt="" className="w-full h-full object-cover" />
@@ -403,13 +402,12 @@ function PhotoSlideshow({ photos, name, tuskerId, current, prev, next, setCurren
         onClick={() => {
           if (currentPhoto) setShowLightbox(true);
         }}
-        className={`group relative w-full rounded-[14px] overflow-hidden flex items-center justify-center transition-all duration-300 shadow-sm cursor-zoom-in ${
-          !currentPhoto
-            ? 'aspect-[4/3] bg-[#e8e8e8]'
-            : isPortrait
-              ? 'aspect-[3/4] bg-[#e8e8e8]'
-              : 'aspect-[4/3] bg-[#e8e8e8]'
-        }`}
+        className={`group relative w-full rounded-[14px] overflow-hidden flex items-center justify-center transition-all duration-300 shadow-sm cursor-zoom-in ${!currentPhoto
+          ? 'aspect-[4/3] bg-[#e8e8e8]'
+          : isPortrait
+            ? 'aspect-[3/4] bg-[#e8e8e8]'
+            : 'aspect-[4/3] bg-[#e8e8e8]'
+          }`}
       >
         {currentPhoto ? (
           <img
@@ -904,9 +902,8 @@ export default function TuskerProfile() {
                   {/* Photo Card */}
                   <div
                     onClick={() => item.photo && setSelectedComparisonImg(item)}
-                    className={`relative w-full aspect-[4/3] bg-[#eef1ee] overflow-hidden flex items-center justify-center ${
-                      item.photo ? 'cursor-pointer group' : ''
-                    }`}
+                    className={`relative w-full aspect-[4/3] bg-[#eef1ee] overflow-hidden flex items-center justify-center ${item.photo ? 'cursor-pointer group' : ''
+                      }`}
                   >
                     {item.photo ? (
                       <>
@@ -982,9 +979,8 @@ export default function TuskerProfile() {
                   {/* Ear Photo Card */}
                   <div
                     onClick={() => item.photo && setSelectedComparisonImg({ ...item, isEar: true })}
-                    className={`relative w-full aspect-[4/3] bg-[#eef3f0] overflow-hidden flex items-center justify-center ${
-                      item.photo ? 'cursor-pointer group' : ''
-                    }`}
+                    className={`relative w-full aspect-[4/3] bg-[#eef3f0] overflow-hidden flex items-center justify-center ${item.photo ? 'cursor-pointer group' : ''
+                      }`}
                   >
                     {item.photo ? (
                       <>

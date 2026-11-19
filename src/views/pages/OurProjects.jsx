@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjectFeed } from '../../controllers/useProjects';
-import { Calendar, ChevronRight } from 'lucide-react';
+import { Calendar, ChevronRight, PlusCircle } from 'lucide-react';
 
 function formatEventDate(dateStr) {
   if (!dateStr) return '';
@@ -35,8 +35,12 @@ export default function OurProjects() {
             <h2 className="font-sans text-[1.15rem] font-bold text-[#111111] m-0">Upcoming Events</h2>
             {isAdmin && (
               <div className="flex gap-2.5">
-                <button className="px-4 py-2 bg-accent border-none rounded-[6px] font-sans text-[0.88rem] font-semibold text-white cursor-pointer hover:opacity-88 transition-opacity" onClick={() => navigate('/admin/create-event')}>
-                  + Create Event
+                <button
+                  className="bg-accent text-primary font-semibold text-[0.88rem] px-5 py-2.5 rounded-[6px] inline-flex items-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap shadow-sm"
+                  onClick={() => navigate('/admin/create-event')}
+                >
+                  <PlusCircle size={16} />
+                  <span>Create Project / Event</span>
                 </button>
               </div>
             )}

@@ -267,7 +267,7 @@ function normalizeTuskerName(str) {
                   )}
                   {/* Photographer & Location */}
                   <p className="font-sans text-xs text-white/80 m-0 flex items-center justify-between">
-                    <span>By {item.photographer}</span>
+                    <span>By {item.photographer === 'WTS Research Team' || item.photographer === 'WTS Team' ? 'WTS Admin' : (item.photographer || 'WTS Admin')}</span>
                     {item.location && <span className="text-white/60">{item.location}</span>}
                   </p>
                 </div>
@@ -279,10 +279,10 @@ function normalizeTuskerName(str) {
                   </span>
                 )}
 
-                {/* Admin Quick Actions */}
+                {/* Admin Quick Actions (Positioned top-right so bottom location/name details are never obstructed) */}
                 {isAdmin && (
                   <div
-                    className="absolute bottom-3 right-3 flex items-center gap-1.5 z-20 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-3 right-3 flex items-center gap-1.5 z-20 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
@@ -290,7 +290,7 @@ function normalizeTuskerName(str) {
                         e.stopPropagation();
                         setEditingPhoto(item);
                       }}
-                      className="bg-amber-600/90 hover:bg-amber-600 text-white text-xs p-1 rounded-md border-none cursor-pointer shadow-sm"
+                      className="bg-amber-600/90 hover:bg-amber-600 text-white text-xs p-1.5 rounded-md border-none cursor-pointer shadow-md transition-transform hover:scale-105"
                       title="Edit Photo Details"
                     >
                       <Pencil size={13} />
@@ -298,7 +298,7 @@ function normalizeTuskerName(str) {
                     {item.status === 'pending' && (
                       <button
                         onClick={() => handleApprove(item.id)}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-2 py-1 rounded-md border-none cursor-pointer flex items-center gap-1 shadow-sm"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-2 py-1.5 rounded-md border-none cursor-pointer flex items-center gap-1 shadow-md transition-transform hover:scale-105"
                         title="Approve Photo"
                       >
                         <CheckCircle2 size={12} />
@@ -306,7 +306,7 @@ function normalizeTuskerName(str) {
                     )}
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="bg-red-600/90 hover:bg-red-700 text-white text-xs p-1 rounded-md border-none cursor-pointer shadow-sm"
+                      className="bg-red-600/90 hover:bg-red-700 text-white text-xs p-1.5 rounded-md border-none cursor-pointer shadow-md transition-transform hover:scale-105"
                       title="Delete Photo"
                     >
                       <Trash2 size={13} />
@@ -450,7 +450,7 @@ function CoverflowCarousel({ items, onSelectPhoto, getTuskerDisplayName }) {
                   </span>
                 )}
                 <p className="font-sans text-xs sm:text-sm text-white/80 mt-1 m-0 flex items-center justify-between">
-                  <span>By {item.photographer}</span>
+                  <span>By {item.photographer === 'WTS Research Team' || item.photographer === 'WTS Team' ? 'WTS Admin' : (item.photographer || 'WTS Admin')}</span>
                   {item.location && <span className="text-white/60">{item.location}</span>}
                 </p>
               </div>
@@ -526,7 +526,9 @@ function TuskerPhotoLightbox({
     : (photo.tuskerName || photo.title || 'Wild Tusker');
 
   const locationTaken = photo.location || tusker?.location || 'Sri Lanka';
-  const photographerName = photo.photographer || 'WTS Research Team';
+  const photographerName = photo.photographer === 'WTS Research Team' || photo.photographer === 'WTS Team'
+    ? 'WTS Admin'
+    : (photo.photographer || 'WTS Admin');
 
   return createPortal(
     <div

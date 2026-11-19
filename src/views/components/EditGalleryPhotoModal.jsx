@@ -294,7 +294,7 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 rounded-lg font-sans text-xs font-semibold text-white bg-accent hover:bg-accent/90 transition-colors border-none cursor-pointer flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                  className="px-5 py-2 rounded-lg font-sans text-xs font-semibold text-primary bg-accent hover:bg-accent-hover transition-colors border-none cursor-pointer flex items-center gap-1.5 shadow-sm disabled:opacity-50"
                 >
                   <Save size={14} />
                   <span>{saving ? 'Saving Changes...' : 'Save Changes'}</span>
