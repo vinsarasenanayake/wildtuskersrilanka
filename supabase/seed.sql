@@ -375,5 +375,28 @@ update public.tuskers set photos = array['/tuskers/skandaraja.jpg'] where id = '
 update public.tuskers set photos = array['/tuskers/wasaba.jpg'] where id = 'T041';
 update public.tuskers set photos = array['/tuskers/wasala.jpg'] where id = 'T177';
 
+
+-- Additional Details for T320 - T328
+update public.tuskers set recorded_by = 'Binura Warnakulasooriya', nickname_given_by = 'Binura Warnakulasooriya', listed_date = '2026-01-01' where id = 'T328';
+update public.tuskers set recorded_by = 'Maduranga Bandara', nickname_given_by = 'Maduranga Bandara', listed_date = '2022-01-01', description = 'Meaning "Courage" in Sinhala, Sahas is a fearless and resilient wild tusker who commands the wilderness with quiet strength and dignity.' where id = 'T327';
+update public.tuskers set recorded_by = 'Maduranga Bandara', nickname_given_by = 'Maduranga Bandara', listed_date = '2026-01-01', description = 'The name Chandragiri is a majestic compound derived from Sanskrit/Sinhala classical roots:
+
+Chandra (චන්ද්‍ර): Moonlight / Moon (Handapana)
+Giri (ගිරි): Mountain / Massive Rock (Gala)
+
+Literally translating to "Moonlit Mountain," the name carries a dual significance. It honors the tusker''s regional home of Handapanagala while serving as a metaphor for his massive, rock-like physical stature and calm, commanding presence.' where id = 'T326';
+update public.tuskers set recorded_by = 'Maduranga Bandara', nickname_given_by = 'Maduranga Bandara', description = 'Name Meaning: "Heroic Arm" (A title of fearless kings and generals)
+
+Named after Buttala and Okkampitiya, the historic staging grounds of Ruhuna''s ancient armies this tusker embodies the fearless dignity, strength, and warrior spirit of Sri Lanka''s legendary military commanders.' where id = 'T325';
+update public.tuskers set recorded_by = 'Maduranga Bandara', nickname_given_by = 'Maduranga Bandara', description = 'Name Meaning: "King of Archers"
+
+Named after Buttala - the historic military camp of King Dutugemunu’s elite archers, this tusker embodies the sharp focus, composure, and power of a legendary archer.' where id = 'T324';
+update public.tuskers set recorded_by = 'Niklesh Mahanama', nickname_given_by = 'Niklesh Mahanama', listed_date = '2026-01-01' where id = 'T323';
+update public.tuskers set recorded_by = 'Saranga Deva de Alwis, Danuja Palihawadana, Dakshina Palihawadana', nickname_given_by = 'Saranga Deva de Alwis, Danuja Palihawadana, Dakshina Palihawadana', listed_date = '2026-01-01', description = 'Named this tusker as "Theja" in honor of Major Athula Theja Kulathilaka, a brave war hero who sacrificed his life for the country on July 20, 1996, during the battle of Mullaitivu, refusing to abandon his comrades.' where id = 'T322';
+update public.tuskers set recorded_by = 'Nijal Buddika, Yushantha Dimunge, VinsaraV Senanayaka, Kumara Senanayake and Suraj Perera', nickname_given_by = 'Nijal Buddika, Yushantha Dimunge, VinsaraV Senanayaka, Kumara Senanayake and Suraj Perera', listed_date = '2026-01-01', description = 'Girikaṇḍasiva is a prominent historical and mythological figure from ancient Sri Lankan history. He was an ancient prince, a provincial chieftain, and the uncle and father-in-law of King Pandukabhaya (437–367 BCE), the ruler who founded the Anuradhapura Kingdom. The name is derived from a combination of three Sanskrit/Pali words which means "The Auspicious One of the Mountain Ridge" or "Siva of the Mountain Province."' where id = 'T321';
+update public.tuskers set recorded_by = 'Afzal Ahamed', nickname_given_by = 'Afzal Ahamed', listed_date = '2026-01-01', description = 'Kālasena was an ancient Yakkha chieftain (senpathi) who ruled Sirīsavatthu, a powerful proto-historic stronghold located in northwestern Sri Lanka within the region now encompassing Wilpattu and Kudiramalai Point.
+
+According to the Mahāvamsa (Chapter 7), Kālasena served as the supreme chief/general (senpathi) of the Yakkha clan in Sirīsavatthu. He was betrothed to Princess Polamitta from the neighboring Yakkha kingdom of Lanka-pura.' where id = 'T320';
+
 -- End of seed data. Tables unlisted_tuskers, field_notes, events, and special_observations start empty for real data.
 

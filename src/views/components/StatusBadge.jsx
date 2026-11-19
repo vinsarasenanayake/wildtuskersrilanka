@@ -4,7 +4,7 @@ import React from 'react';
 const STATUS_STYLES = {
   'Alive':            'bg-[#e8f5ec] text-[#1f7a3d] border-[#bfe3cb]',
   'No Recent Record': 'bg-[#fff6e5] text-[#9a6200] border-[#f3dca9]',
-  'Deceased':         'bg-[#f1f1f1] text-[#666666] border-[#dddddd]',
+  'Deceased':         'bg-[#fee2e2] text-[#b91c1c] border-[#fca5a5]',
 };
 
 export default function StatusBadge({ status, deathYear, className = '' }) {

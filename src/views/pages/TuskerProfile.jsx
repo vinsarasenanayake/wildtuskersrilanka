@@ -545,6 +545,10 @@ function formatDate(dateStr) {
     const year = parts[0];
     const monthIndex = parseInt(parts[1], 10) - 1;
     const day = parseInt(parts[2], 10);
+    // If entered as Jan 1 (standard database default when only year is documented):
+    if (parts[1] === '01' && parts[2] === '01') {
+      return year;
+    }
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     if (monthIndex >= 0 && monthIndex < 12) {
       return `${day} ${months[monthIndex]} ${year}`;
@@ -613,6 +617,11 @@ export default function TuskerProfile() {
   }
 
   const isDeceased = tusker.livingStatus === 'Deceased';
+  const hasRecordedBy = Boolean(tusker.recordedBy && tusker.recordedBy !== 'Not Applicable' && tusker.recordedBy.trim());
+  const hasNicknameBy = Boolean(tusker.nicknameGivenBy && tusker.nicknameGivenBy !== 'Not Applicable' && tusker.nicknameGivenBy.trim());
+  const isRecordedAndNamedSame = hasRecordedBy && hasNicknameBy && (
+    tusker.recordedBy.trim().toLowerCase() === tusker.nicknameGivenBy.trim().toLowerCase()
+  );
 
   return (
     <div className="w-full min-h-screen bg-white pt-[calc(80px+2rem)] pb-20">
@@ -683,7 +692,7 @@ export default function TuskerProfile() {
 
             {/* Description */}
             {tusker.description && (
-              <p className="font-sans text-[0.95rem] leading-[1.75] text-[#444444] m-0">{tusker.description}</p>
+              <p className="font-sans text-[0.95rem] leading-[1.75] text-[#444444] m-0 whitespace-pre-line">{tusker.description}</p>
             )}
 
             <div className="h-px bg-[#f0f0f0]" />
@@ -697,14 +706,21 @@ export default function TuskerProfile() {
                   value={tusker.location}
                 />
               )}
-              {tusker.recordedBy && tusker.recordedBy !== 'Not Applicable' && (
+              {isRecordedAndNamedSame && (
+                <DetailRow
+                  icon={<UserCheck size={16} />}
+                  label="First Recorded and Named By"
+                  value={tusker.recordedBy}
+                />
+              )}
+              {!isRecordedAndNamedSame && hasRecordedBy && (
                 <DetailRow
                   icon={<User size={16} />}
                   label="First Recorded By"
                   value={tusker.recordedBy}
                 />
               )}
-              {tusker.nicknameGivenBy && tusker.nicknameGivenBy !== 'Not Applicable' && (
+              {!isRecordedAndNamedSame && hasNicknameBy && (
                 <DetailRow
                   icon={<UserCheck size={16} />}
                   label="Nickname Suggested By"
@@ -714,7 +730,7 @@ export default function TuskerProfile() {
               {tusker.listedDate && tusker.listedDate !== 'Not Applicable' && formatDate(tusker.listedDate) && (
                 <DetailRow
                   icon={<Calendar size={16} />}
-                  label="First Recorded Date"
+                  label={/^\d{4}$/.test(formatDate(tusker.listedDate)) ? "First Recorded Year" : "First Recorded Date"}
                   value={formatDate(tusker.listedDate)}
                 />
               )}

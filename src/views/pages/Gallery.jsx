@@ -175,15 +175,17 @@ function normalizeTuskerName(str) {
             </h1>
           </div>
 
-          <div className="flex items-center gap-3 self-start md:self-end">
-            <button
-              onClick={() => setShowSubmitModal(true)}
-              className="bg-accent text-primary font-semibold text-[0.88rem] px-5 py-2.5 rounded-[6px] inline-flex items-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap"
-            >
-              <PlusCircle size={16} />
-              <span>Submit a Photo</span>
-            </button>
-          </div>
+          {!isAdmin && (
+            <div className="flex items-center gap-3 self-start md:self-end">
+              <button
+                onClick={() => setShowSubmitModal(true)}
+                className="bg-accent text-primary font-semibold text-[0.88rem] px-5 py-2.5 rounded-[6px] inline-flex items-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap"
+              >
+                <PlusCircle size={16} />
+                <span>Submit a Photo</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* ── Coverflow Carousel Slideshow (Reference UI Image 2) ── */}

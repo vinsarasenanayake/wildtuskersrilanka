@@ -1778,54 +1778,86 @@
     "id": "T320",
     "name": "Kalasena",
     "location": "Tabbowa / Karuwalagaswewa / Eluwankulama",
-    "sinhala": "කාලසේන"
+    "sinhala": "කාලසේන",
+    "recordedBy": "Afzal Ahamed",
+    "nicknameGivenBy": "Afzal Ahamed",
+    "listedDate": "2026",
+    "description": "Kālasena was an ancient Yakkha chieftain (senpathi) who ruled Sirīsavatthu, a powerful proto-historic stronghold located in northwestern Sri Lanka within the region now encompassing Wilpattu and Kudiramalai Point.\n\nAccording to the Mahāvamsa (Chapter 7), Kālasena served as the supreme chief/general (senpathi) of the Yakkha clan in Sirīsavatthu. He was betrothed to Princess Polamitta from the neighboring Yakkha kingdom of Lanka-pura."
   },
   {
     "id": "T321",
     "name": "Girikanda",
     "location": "Ritigala / Palugaswewa",
-    "sinhala": "ගිරිකණ්ඩ"
+    "sinhala": "ගිරිකණ්ඩ",
+    "recordedBy": "Nijal Buddika, Yushantha Dimunge, VinsaraV Senanayaka, Kumara Senanayake and Suraj Perera",
+    "nicknameGivenBy": "Nijal Buddika, Yushantha Dimunge, VinsaraV Senanayaka, Kumara Senanayake and Suraj Perera",
+    "listedDate": "2026",
+    "description": "Girikaṇḍasiva is a prominent historical and mythological figure from ancient Sri Lankan history. He was an ancient prince, a provincial chieftain, and the uncle and father-in-law of King Pandukabhaya (437–367 BCE), the ruler who founded the Anuradhapura Kingdom. The name is derived from a combination of three Sanskrit/Pali words which means \"The Auspicious One of the Mountain Ridge\" or \"Siva of the Mountain Province.\""
   },
   {
     "id": "T322",
     "name": "Theja",
     "location": "Udawalawa",
-    "sinhala": "තේජ"
+    "sinhala": "තේජ",
+    "recordedBy": "Saranga Deva de Alwis, Danuja Palihawadana, Dakshina Palihawadana",
+    "nicknameGivenBy": "Saranga Deva de Alwis, Danuja Palihawadana, Dakshina Palihawadana",
+    "listedDate": "2026",
+    "description": "Named this tusker as \"Theja\" in honor of Major Athula Theja Kulathilaka, a brave war hero who sacrificed his life for the country on July 20, 1996, during the battle of Mullaitivu, refusing to abandon his comrades."
   },
   {
     "id": "T323",
     "name": "Meghadutha",
     "location": "Athimale",
-    "sinhala": "මේඝදූත"
+    "sinhala": "මේඝදූත",
+    "recordedBy": "Niklesh Mahanama",
+    "nicknameGivenBy": "Niklesh Mahanama",
+    "listedDate": "2026"
   },
   {
     "id": "T324",
     "name": "Dhanuraja",
     "location": "Butthala / Wellawaya / Okkampitiya",
-    "sinhala": "ධනුරාජ"
+    "sinhala": "ධනුරාජ",
+    "recordedBy": "Maduranga Bandara",
+    "nicknameGivenBy": "Maduranga Bandara",
+    "description": "Name Meaning: \"King of Archers\"\n\nNamed after Buttala - the historic military camp of King Dutugemunu’s elite archers, this tusker embodies the sharp focus, composure, and power of a legendary archer."
   },
   {
     "id": "T325",
     "name": "Veerabahu",
     "location": "Butthala / Wellawaya / Okkampitiya",
-    "sinhala": "වීරබාහු"
+    "sinhala": "වීරබාහු",
+    "recordedBy": "Maduranga Bandara",
+    "nicknameGivenBy": "Maduranga Bandara",
+    "description": "Name Meaning: \"Heroic Arm\" (A title of fearless kings and generals)\n\nNamed after Buttala and Okkampitiya, the historic staging grounds of Ruhuna's ancient armies this tusker embodies the fearless dignity, strength, and warrior spirit of Sri Lanka's legendary military commanders."
   },
   {
     "id": "T326",
     "name": "Chandragiri",
     "location": "Butthala / Wellawaya / Handapanagala",
-    "sinhala": "චන්ද්‍රගිරි"
+    "sinhala": "චන්ද්‍රගිරි",
+    "recordedBy": "Maduranga Bandara",
+    "nicknameGivenBy": "Maduranga Bandara",
+    "listedDate": "2026",
+    "description": "The name Chandragiri is a majestic compound derived from Sanskrit/Sinhala classical roots:\n\nChandra (චන්ද්‍ර): Moonlight / Moon (Handapana)\nGiri (ගිරි): Mountain / Massive Rock (Gala)\n\nLiterally translating to \"Moonlit Mountain,\" the name carries a dual significance. It honors the tusker's regional home of Handapanagala while serving as a metaphor for his massive, rock-like physical stature and calm, commanding presence."
   },
   {
     "id": "T327",
     "name": "Sahas",
     "location": "Butthala / Wellawaya / Lunugamvehera",
-    "sinhala": "සහස්"
+    "sinhala": "සහස්",
+    "recordedBy": "Maduranga Bandara",
+    "nicknameGivenBy": "Maduranga Bandara",
+    "listedDate": "2022",
+    "description": "Meaning \"Courage\" in Sinhala, Sahas is a fearless and resilient wild tusker who commands the wilderness with quiet strength and dignity."
   },
   {
     "id": "T328",
     "name": "Prabash",
     "location": "Maha Kanadarawa / Mihinthale / Rambawa",
-    "sinhala": "ප්‍රභාෂ්"
+    "sinhala": "ප්‍රභාෂ්",
+    "recordedBy": "Binura Warnakulasooriya",
+    "nicknameGivenBy": "Binura Warnakulasooriya",
+    "listedDate": "2026"
   }
 ]
