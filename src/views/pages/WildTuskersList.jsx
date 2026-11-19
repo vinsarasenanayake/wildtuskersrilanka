@@ -6,6 +6,7 @@ import { useAuth } from '../../controllers/useAuth';
 import { LIVING_STATUSES } from '../../models/TuskerModel';
 import StatusBadge from '../components/StatusBadge';
 import { setCachedAspect } from '../../utils/photoAspectCache';
+import { thumbUrl } from '../../utils/storageUpload';
 
 const SORT_OPTIONS = [
   { id: 'ID_ASC', label: 'Default (T-ID: Ascending)' },
@@ -310,8 +311,10 @@ export default function WildTuskersList() {
                         setCachedAspect(tusker.photos[0], el.naturalHeight > el.naturalWidth);
                       }
                     }}
-                    src={tusker.photos[0]}
+                    src={thumbUrl(tusker.photos[0])}
                     alt={tusker.name}
+                    loading="lazy"
+                    decoding="async"
                     onLoad={(e) => {
                       if (e.target.naturalWidth && e.target.naturalHeight) {
                         setCachedAspect(tusker.photos[0], e.target.naturalHeight > e.target.naturalWidth);

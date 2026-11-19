@@ -1,4 +1,5 @@
-import { supabase, fromRow, toRow, unwrap, MEDIA_BUCKET } from '../lib/supabaseClient';
+import { supabase, fromRow, toRow, unwrap } from '../lib/supabaseClient';
+import { uploadMediaFile } from '../utils/storageUpload';
 
 /* ==============================================================
    SECTION 1: ROW MAPPING
@@ -15,37 +16,21 @@ function mapObservation(row) {
   return o;
 }
 
-const EXT_BY_TYPE = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-  'image/gif': 'gif',
-  'image/heic': 'heic',
-};
-
-/** Uploads base64/blob/data images to Storage; plain http(s) URLs pass through. */
+/** Uploads data:/blob: images (R2 via uploadMediaFile); plain http(s) URLs pass through. */
 async function uploadImages(images = []) {
   if (!images || images.length === 0) return [];
-  return Promise.all(
+  const urls = await Promise.all(
     images.map(async (img) => {
       if (typeof img !== 'string' || /^https?:\/\//i.test(img)) return img;
       try {
-        const blob = await (await fetch(img)).blob();
-        const ext = EXT_BY_TYPE[blob.type] || 'jpg';
-        const path = `special-observations/${crypto.randomUUID()}.${ext}`;
-        unwrap(
-          await supabase.storage.from(MEDIA_BUCKET).upload(path, blob, {
-            contentType: blob.type || 'image/jpeg',
-            upsert: false,
-          })
-        );
-        return supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path).data.publicUrl;
+        return await uploadMediaFile(img, 'observations');
       } catch (err) {
         console.error('[SpecialObservationsModel] Upload error:', err);
-        return img;
+        return null;
       }
     })
   );
+  return urls.filter(Boolean);
 }
 
 /* ==============================================================

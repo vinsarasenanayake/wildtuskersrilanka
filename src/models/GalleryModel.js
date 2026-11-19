@@ -1,4 +1,5 @@
-import { supabase, fromRow, unwrap, MEDIA_BUCKET } from '../lib/supabaseClient';
+import { supabase, fromRow } from '../lib/supabaseClient';
+import { uploadMediaFile } from '../utils/storageUpload';
 
 /* ==============================================================
    SECTION 1: STARTER SEED PHOTOS (Fallback if table is empty)
@@ -559,35 +560,14 @@ export const DEFAULT_GALLERY = [
 /* ==============================================================
    SECTION 2: IMAGE UPLOAD HELPER (Supabase Storage)
 ============================================================== */
-const EXT_BY_TYPE = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-  'image/gif': 'gif',
-  'image/heic': 'heic',
-};
-
 async function uploadGalleryImage(img) {
   if (!img) return null;
   if (typeof img === 'string' && /^https?:\/\//i.test(img)) return img;
-
   try {
-    const blob = await (await fetch(img)).blob();
-    const ext = EXT_BY_TYPE[blob.type] || 'jpg';
-    const path = `gallery/${crypto.randomUUID()}.${ext}`;
-
-    unwrap(
-      await supabase.storage.from(MEDIA_BUCKET).upload(path, blob, {
-        contentType: blob.type || 'image/jpeg',
-        upsert: false,
-      })
-    );
-
-    return supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path).data.publicUrl;
+    return await uploadMediaFile(img, 'gallery');
   } catch (err) {
-    console.error('[GalleryModel] Failed to upload image to storage:', err);
-    // If it's a valid data URL or URL, return as-is
-    return typeof img === 'string' ? img : null;
+    console.error('[GalleryModel] Failed to upload image:', err);
+    return null; // never store raw image data in the database
   }
 }
 

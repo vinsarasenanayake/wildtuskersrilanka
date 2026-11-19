@@ -17,6 +17,7 @@ import { useGallery, useGallerySubmit } from '../../controllers/useGallery';
 import { getTuskers } from '../../models/TuskerModel';
 import ImageUploadBox from '../components/ImageUploadBox';
 import TuskerMultiSelect from '../components/TuskerMultiSelect';
+import { thumbUrl } from '../../utils/storageUpload';
 
 export default function Gallery() {
   const {
@@ -210,10 +211,11 @@ export default function Gallery() {
               >
                 {/* Edge-to-edge photo filling entire card */}
                 <img
-                  src={item.imageUrl}
+                  src={thumbUrl(item.imageUrl)}
                   alt={item.title}
                   className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                   loading="lazy"
+                  decoding="async"
                 />
 
                 {/* Subtle Hover Gradient Overlay with details */}
@@ -375,6 +377,8 @@ function CoverflowCarousel({ items, onSelectPhoto, getTuskerDisplayName }) {
                 alt={item.title}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 draggable={false}
+                loading="lazy"
+                decoding="async"
               />
 
               {/* Bottom Gradient Overlay (Reveals on Hover) */}

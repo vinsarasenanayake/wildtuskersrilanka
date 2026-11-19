@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ScanSearch } from 'lucide-react';
 import { SITE_ASSETS } from '../../constants/siteAssets';
-import heroBg from '../../assets/images/hero-bg.jpg';
+import hero960 from '../../assets/images/hero-bg-960.webp';
+import hero1600 from '../../assets/images/hero-bg-1600.webp';
+import hero2400 from '../../assets/images/hero-bg-2400.webp';
 const wtsLogo = SITE_ASSETS.wtsLogo;
 import { getTuskers } from '../../models/TuskerModel';
 
@@ -35,10 +37,17 @@ export default function Home() {
   return (
     <div className="relative min-h-screen lg:h-screen lg:max-h-screen text-white bg-[#0b120e] overflow-x-hidden lg:overflow-hidden flex flex-col justify-center">
       {/* Full-screen fixed background image eliminating any white bar or gap */}
-      <div
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat pointer-events-none"
-        style={{ backgroundImage: `url(${heroBg})` }}
-      >
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        {/* Responsive hero: each screen downloads only the size it needs (~60–330 KB instead of 1 MB) */}
+        <img
+          src={hero1600}
+          srcSet={`${hero960} 960w, ${hero1600} 1600w, ${hero2400} 2400w`}
+          sizes="(orientation: portrait) 150vh, 100vw"
+          alt=""
+          fetchPriority="high"
+          decoding="async"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
         {/* Subtle dark overlay for vibrant background visibility with right-side contrast */}
         <div className="absolute inset-0 bg-black/25" />
         <div className="absolute inset-0 bg-gradient-to-l from-black/85 via-black/45 lg:via-black/30 to-transparent" />

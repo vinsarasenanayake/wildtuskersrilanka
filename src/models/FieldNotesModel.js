@@ -1,4 +1,5 @@
-import { supabase, fromRow, unwrap, MEDIA_BUCKET } from '../lib/supabaseClient';
+import { supabase, fromRow, unwrap } from '../lib/supabaseClient';
+import { uploadMediaFile } from '../utils/storageUpload';
 
 /* ==============================================================
    SECTION 1: ROW MAPPING
@@ -18,21 +19,11 @@ function mapNote(row) {
 /* ==============================================================
    SECTION 2: IMAGE UPLOADS (Supabase Storage)
 ============================================================== */
-const EXT_BY_TYPE = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif', 'image/heic': 'heic' };
-
-/** Uploads data:/blob: images to Storage; plain http(s) URLs pass through. */
+/** Uploads data:/blob: images (R2 via uploadMediaFile); plain http(s) URLs pass through. */
 async function uploadImages(images = []) {
-  return Promise.all(images.map(async (img) => {
-    if (typeof img !== 'string' || /^https?:\/\//i.test(img)) return img;
-    const blob = await (await fetch(img)).blob();
-    const ext = EXT_BY_TYPE[blob.type] || 'jpg';
-    const path = `field-notes/${crypto.randomUUID()}.${ext}`;
-    unwrap(await supabase.storage.from(MEDIA_BUCKET).upload(path, blob, {
-      contentType: blob.type || 'image/jpeg',
-      upsert: false,
-    }));
-    return supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path).data.publicUrl;
-  }));
+  return Promise.all(images.map(img =>
+    typeof img !== 'string' || /^https?:\/\//i.test(img) ? img : uploadMediaFile(img, 'fieldnotes')
+  ));
 }
 
 /* ==============================================================
