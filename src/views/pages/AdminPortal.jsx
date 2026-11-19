@@ -10,11 +10,12 @@ import { getUnlistedTuskers, deleteUnlistedTusker, addUnlistedTusker } from '../
 import { getSpecialObservations, deleteSpecialObservation } from '../../models/SpecialObservationsModel';
 import { getEvents, deleteEvent } from '../../models/ProjectModel';
 import { getFieldNotes, approveFieldNote, rejectFieldNote } from '../../models/FieldNotesModel';
-import { getGalleryPhotos, approveGalleryPhoto, rejectGalleryPhoto, deleteGalleryPhoto } from '../../models/GalleryModel';
+import { getGalleryPhotos, approveGalleryPhoto, rejectGalleryPhoto, deleteGalleryPhoto, updateGalleryPhoto } from '../../models/GalleryModel';
 import { getTeamMembers, addTeamMember, updateTeamMember, deleteTeamMember } from '../../models/TeamModel';
 import { useAuth } from '../../controllers/useAuth';
 import StatusBadge from '../components/StatusBadge';
 import ImageUploadBox from '../components/ImageUploadBox';
+import EditGalleryPhotoModal from '../components/EditGalleryPhotoModal';
 
 /* ==============================================================
    CENTRAL ADMINISTRATIVE CONSOLE COMPONENT
@@ -34,6 +35,7 @@ export default function AdminPortal() {
   const [events, setEvents] = useState({ upcoming: [], past: [] });
   const [fieldNotes, setFieldNotes] = useState({ approved: [], pending: [] });
   const [galleryPhotos, setGalleryPhotos] = useState([]);
+  const [editingGalleryPhoto, setEditingGalleryPhoto] = useState(null);
   const [teamMembers, setTeamMembers] = useState([]);
 
   // Team Admin Modal state
@@ -1175,6 +1177,13 @@ export default function AdminPortal() {
                           </div>
                           <div className="flex items-center justify-end gap-2 pt-3 mt-3 border-t border-[#f0f0f0]">
                             <button
+                              onClick={() => setEditingGalleryPhoto(photo)}
+                              className="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold text-xs border border-amber-200 cursor-pointer flex items-center gap-1 transition-colors"
+                              title="Edit photo details (T-number, name, location)"
+                            >
+                              <Edit3 size={13} /> Edit
+                            </button>
+                            <button
                               onClick={() => handleApprovePhoto(photo.id)}
                               className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs border-none cursor-pointer flex items-center gap-1"
                             >
@@ -1251,6 +1260,13 @@ export default function AdminPortal() {
                           </td>
                           <td className="py-3 px-4 text-right">
                             <div className="inline-flex items-center gap-1.5 justify-end">
+                              <button
+                                onClick={() => setEditingGalleryPhoto(item)}
+                                className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 transition-all border-none bg-transparent cursor-pointer"
+                                title="Edit photo details"
+                              >
+                                <Edit3 size={16} />
+                              </button>
                               {item.status === 'pending' && (
                                 <button
                                   onClick={() => handleApprovePhoto(item.id)}
@@ -1682,6 +1698,22 @@ export default function AdminPortal() {
           </div>,
           document.body
         )}
+
+      {/* Admin Edit Gallery Photo Modal */}
+      {editingGalleryPhoto && (
+        <EditGalleryPhotoModal
+          photo={editingGalleryPhoto}
+          onClose={() => setEditingGalleryPhoto(null)}
+          onSave={async (id, updates) => {
+            await updateGalleryPhoto(id, updates);
+            setEditingGalleryPhoto(null);
+            setNotification('Gallery photo details updated successfully.');
+            // Reload gallery photos list
+            const raw = await getGalleryPhotos({ admin: true });
+            setGalleryPhotos(Array.isArray(raw) ? raw : []);
+          }}
+        />
+      )}
     </div>
   );
 }

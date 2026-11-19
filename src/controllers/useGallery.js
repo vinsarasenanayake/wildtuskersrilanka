@@ -5,6 +5,7 @@ import {
   approveGalleryPhoto,
   rejectGalleryPhoto,
   deleteGalleryPhoto,
+  updateGalleryPhoto,
 } from '../models/GalleryModel';
 import { useAuth } from './useAuth';
 import { uploadMediaFile } from '../utils/storageUpload';
@@ -71,6 +72,17 @@ export function useGallery() {
     }
   };
 
+  const handleUpdate = async (id, updates) => {
+    const updated = await updateGalleryPhoto(id, updates);
+    setPhotos((prev) =>
+      prev.map((p) => (Number(p.id) === Number(id) ? { ...p, ...updated } : p))
+    );
+    if (activePhoto && Number(activePhoto.id) === Number(id)) {
+      setActivePhoto((prev) => (prev ? { ...prev, ...updated } : prev));
+    }
+    return updated;
+  };
+
   return {
     photos: filteredPhotos,
     allApproved: approvedPhotos,
@@ -89,6 +101,7 @@ export function useGallery() {
     handleApprove,
     handleReject,
     handleDelete,
+    handleUpdate,
   };
 }
 

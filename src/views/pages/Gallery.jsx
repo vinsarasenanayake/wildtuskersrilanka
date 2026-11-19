@@ -12,11 +12,13 @@ import {
   ShieldCheck,
   PlusCircle,
   ExternalLink,
+  Pencil,
 } from 'lucide-react';
 import { useGallery, useGallerySubmit } from '../../controllers/useGallery';
 import { getTuskers } from '../../models/TuskerModel';
 import ImageUploadBox from '../components/ImageUploadBox';
 import TuskerMultiSelect from '../components/TuskerMultiSelect';
+import EditGalleryPhotoModal from '../components/EditGalleryPhotoModal';
 
 export default function Gallery() {
   const {
@@ -34,9 +36,11 @@ export default function Gallery() {
     reloadPhotos,
     handleApprove,
     handleDelete,
+    handleUpdate,
   } = useGallery();
 
   const [tuskers, setTuskers] = useState([]);
+  const [editingPhoto, setEditingPhoto] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -117,8 +121,12 @@ function normalizeTuskerName(str) {
   const getTuskerDisplayName = (item) => {
     if (!item) return null;
     const nameStr = typeof item.tuskerName === 'string' ? item.tuskerName : '';
+    const titleStr = typeof item.title === 'string' ? item.title : '';
     if (nameStr && /\bT\d{2,4}\b/i.test(nameStr)) {
       return nameStr;
+    }
+    if (titleStr && /\bT\d{2,4}\b/i.test(titleStr)) {
+      return titleStr;
     }
     if (tuskers && tuskers.length > 0) {
       const photoId = String(item.tuskerId || '').toLowerCase().trim();
@@ -275,6 +283,16 @@ function normalizeTuskerName(str) {
                     className="absolute bottom-3 right-3 flex items-center gap-1.5 z-20 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={(e) => e.stopPropagation()}
                   >
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingPhoto(item);
+                      }}
+                      className="bg-amber-600/90 hover:bg-amber-600 text-white text-xs p-1 rounded-md border-none cursor-pointer shadow-sm"
+                      title="Edit Photo Details"
+                    >
+                      <Pencil size={13} />
+                    </button>
                     {item.status === 'pending' && (
                       <button
                         onClick={() => handleApprove(item.id)}
@@ -305,10 +323,24 @@ function normalizeTuskerName(str) {
         <TuskerPhotoLightbox
           photo={activePhoto}
           tusker={matchedTusker}
+          tuskers={tuskers}
           onClose={() => setActivePhoto(null)}
           isAdmin={isAdmin}
           onApprove={handleApprove}
           onDelete={handleDelete}
+          onEdit={(p) => setEditingPhoto(p)}
+        />
+      )}
+
+      {/* ── Admin Edit Photo Modal ── */}
+      {editingPhoto && (
+        <EditGalleryPhotoModal
+          photo={editingPhoto}
+          onClose={() => setEditingPhoto(null)}
+          onSave={async (id, updates) => {
+            await handleUpdate(id, updates);
+            setEditingPhoto(null);
+          }}
         />
       )}
 
@@ -435,10 +467,12 @@ function CoverflowCarousel({ items, onSelectPhoto, getTuskerDisplayName }) {
 function TuskerPhotoLightbox({
   photo,
   tusker,
+  tuskers = [],
   onClose,
   isAdmin,
   onApprove,
   onDelete,
+  onEdit,
 }) {
   // Prevent background scrolling while modal is open
   useEffect(() => {
@@ -464,10 +498,28 @@ function TuskerPhotoLightbox({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
+  // Match all tuskers if multiple are featured in this photograph
+  const allMatchedTuskers = useMemo(() => {
+    if (!tuskers || !tuskers.length || !photo) return tusker ? [tusker] : [];
+    const text = `${photo?.tuskerName || ''} ${photo?.title || ''}`;
+    const ids = Array.from(text.matchAll(/\b(T\d{2,4})\b/gi)).map((m) => m[1].toUpperCase());
+    const uniqueIds = Array.from(new Set(ids));
+    const list = uniqueIds
+      .map((id) => tuskers.find((t) => t.id.toUpperCase() === id))
+      .filter(Boolean);
+    return list.length > 0 ? list : (tusker ? [tusker] : []);
+  }, [tuskers, photo, tusker]);
+
   if (!photo) return null;
 
-  // Resolve T-Number and Name
-  const tuskerDisplayName = tusker
+  // Resolve T-Number and Name (supports multi-tusker lists with commas and &)
+  const hasMultiple =
+    (photo.tuskerName && (photo.tuskerName.includes('&') || photo.tuskerName.includes(','))) ||
+    (photo.title && (photo.title.includes('&') || photo.title.includes(',')));
+
+  const tuskerDisplayName = hasMultiple
+    ? (photo.tuskerName || photo.title)
+    : tusker
     ? `${tusker.id} - ${tusker.name}`
     : (photo.tuskerName || photo.title || 'Wild Tusker');
 
@@ -536,6 +588,16 @@ function TuskerPhotoLightbox({
           <div className="flex items-center gap-2.5 shrink-0">
             {isAdmin && (
               <>
+                {onEdit && (
+                  <button
+                    onClick={() => onEdit(photo)}
+                    className="bg-amber-600 hover:bg-amber-700 text-white font-sans text-xs font-semibold py-2 px-3 rounded-lg border-none cursor-pointer flex items-center gap-1.5 shadow-sm transition-colors"
+                    title="Edit photo details"
+                  >
+                    <Pencil size={13} />
+                    <span>Edit</span>
+                  </button>
+                )}
                 {photo.status === 'pending' && onApprove && (
                   <button
                     onClick={() => {
@@ -564,15 +626,16 @@ function TuskerPhotoLightbox({
               </>
             )}
 
-            {tusker && (
+            {allMatchedTuskers.map((t) => (
               <Link
-                to={`/tuskers/${tusker.id.toLowerCase()}`}
-                className="bg-white/10 hover:bg-white/20 text-[#f5ecd7] hover:text-white font-sans text-xs font-semibold py-2 px-3.5 rounded-lg border border-white/20 transition-all flex items-center gap-1.5 no-underline shadow-xs"
+                key={t.id}
+                to={`/tuskers/${t.id.toLowerCase()}`}
+                className="bg-white/10 hover:bg-white/20 text-[#f5ecd7] hover:text-white font-sans text-xs font-semibold py-2 px-3.5 rounded-lg border border-white/20 transition-all flex items-center gap-1.5 no-underline shadow-xs shrink-0"
               >
-                <span>Tusker Profile</span>
+                <span>{allMatchedTuskers.length > 1 ? `${t.id} Profile` : 'Tusker Profile'}</span>
                 <ExternalLink size={12} />
               </Link>
-            )}
+            ))}
           </div>
 
         </div>

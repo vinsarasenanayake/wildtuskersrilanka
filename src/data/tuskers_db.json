@@ -56,17 +56,17 @@
   },
   {
     "id": "T012",
-    "name": "Gamunu",
+    "name": "Gemunu",
     "location": "Yala"
   },
   {
     "id": "T013",
-    "name": "Parakum",
+    "name": "Perakum",
     "location": "Yala"
   },
   {
     "id": "T014",
-    "name": "Ravana",
+    "name": "Rawana",
     "location": "Yala"
   },
   {
@@ -81,7 +81,7 @@
   },
   {
     "id": "T017",
-    "name": "Podi Dananjaya",
+    "name": "Podi Dhananjaya",
     "location": "Yala"
   },
   {
@@ -91,7 +91,7 @@
   },
   {
     "id": "T019",
-    "name": "Dala Kura",
+    "name": "Dala Koora",
     "location": "Yala"
   },
   {
@@ -171,7 +171,7 @@
   },
   {
     "id": "T035",
-    "name": "Kashyapa (Bundala)",
+    "name": "Kashyapa",
     "location": "Bundala / Weerawila"
   },
   {
@@ -181,7 +181,7 @@
   },
   {
     "id": "T037",
-    "name": "Mahasen",
+    "name": "Mahasen / Enigma",
     "location": "Minneriya / Somawathiya / Kaudulla"
   },
   {
@@ -191,7 +191,7 @@
   },
   {
     "id": "T039",
-    "name": "Unicorn",
+    "name": "Single Tusker (Unicorn)",
     "location": "Minneriya / Kaudulla"
   },
   {
@@ -226,17 +226,19 @@
   },
   {
     "id": "T046",
-    "name": "Walimba",
-    "location": "Nuwaragala / Maha Oya"
+    "name": "Sadeesha / Walimba",
+    "location": "Nuwaragala / Maha Oya",
+    "sinhala": "සදීෂ / වාලිම්භ"
   },
   {
     "id": "T047",
     "name": "Sapumal",
-    "location": "Minneriya / Kaudulla"
+    "location": "Minneriya / Kaudulla",
+    "sinhala": "සපුමල්"
   },
   {
     "id": "T048",
-    "name": "Abhaya",
+    "name": "Abaya",
     "location": "Minneriya / Kaudulla"
   },
   {
@@ -276,7 +278,7 @@
   },
   {
     "id": "T056",
-    "name": "Revatha",
+    "name": "Rewatha",
     "location": "Kala Wewa"
   },
   {
@@ -307,12 +309,14 @@
   {
     "id": "T062",
     "name": "Esala 1",
-    "location": "Kala Wewa / Mannankattiya"
+    "location": "Kala Wewa / Mannankattiya",
+    "sinhala": "ඇසල 1"
   },
   {
     "id": "T063",
     "name": "Esala 2",
-    "location": "Kala Wewa / Mannankattiya"
+    "location": "Kala Wewa / Mannankattiya",
+    "sinhala": "ඇසල 2"
   },
   {
     "id": "T064",
@@ -326,17 +330,17 @@
   },
   {
     "id": "T066",
-    "name": "Gotabhaya",
+    "name": "Gotabaya",
     "location": "Kala Wewa / Galgamuwa"
   },
   {
     "id": "T067",
-    "name": "Dharshana",
+    "name": "Darshana",
     "location": "Kala Wewa / Galgamuwa"
   },
   {
     "id": "T068",
-    "name": "Mihindu",
+    "name": "Mihidu",
     "location": "Kala Wewa / Galgamuwa"
   },
   {
@@ -351,8 +355,9 @@
   },
   {
     "id": "T071",
-    "name": "Panduwas",
-    "location": "Kala Wewa / Galgamuwa"
+    "name": "Chandu",
+    "location": "Kala Wewa / Galgamuwa",
+    "sinhala": "චන්දු"
   },
   {
     "id": "T072",
@@ -366,12 +371,12 @@
   },
   {
     "id": "T074",
-    "name": "Puttuwa",
+    "name": "Galgamuwa Puttuwa",
     "location": "Galgamuwa"
   },
   {
     "id": "T075",
-    "name": "Kawanthissa",
+    "name": "Kawantissa / Gajaba",
     "location": "Galgamuwa"
   },
   {
@@ -426,7 +431,7 @@
   },
   {
     "id": "T086",
-    "name": "Bhathiya",
+    "name": "Bathiya",
     "location": "Galgamuwa"
   },
   {
@@ -446,7 +451,7 @@
   },
   {
     "id": "T090",
-    "name": "Sidu (Upan Koraya)",
+    "name": "Sidu / Upan Koraya",
     "location": "Galgamuwa"
   },
   {
@@ -516,7 +521,7 @@
   },
   {
     "id": "T104",
-    "name": "Hambegamuwa Raja",
+    "name": "Rawana / Hambegamuwe Raja",
     "location": "Udawalawa"
   },
   {
@@ -576,7 +581,7 @@
   },
   {
     "id": "T116",
-    "name": "Bullet",
+    "name": "Bullet / Senadhi",
     "location": "Udawalawa"
   },
   {
@@ -611,7 +616,7 @@
   },
   {
     "id": "T123",
-    "name": "Gemunu",
+    "name": "Gamunu",
     "location": "Wilpattu / Eluwankulam / Pomparippu"
   },
   {
@@ -621,7 +626,7 @@
   },
   {
     "id": "T125",
-    "name": "Kukulkatuwa Single Tusker",
+    "name": "kukulkatuwa Single tusker",
     "location": "Wilpattu / Maha Wilachchiya"
   },
   {
@@ -631,7 +636,7 @@
   },
   {
     "id": "T127",
-    "name": "Abhayanaga",
+    "name": "Abayanaga",
     "location": "Galgamuwa"
   },
   {
@@ -712,7 +717,8 @@
   {
     "id": "T143",
     "name": "Binara",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale"
+    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
+    "sinhala": "බිනර"
   },
   {
     "id": "T144",
@@ -721,113 +727,135 @@
   },
   {
     "id": "T145",
-    "name": "Kalladi Dala kota",
-    "location": "Nawagathegama / Karuwalgaswewa / Puttalam / Tabbowa"
+    "name": "Kalladi dala kota",
+    "location": "Nawagathegama / Karuwalgaswewa / Puttalam / Tabbowa",
+    "sinhala": "කල්අඩි දළ කොටා"
   },
   {
     "id": "T146",
     "name": "Hemal",
-    "location": "Wasgamuwa / Anganmadiila"
+    "location": "Wasgamuwa / Anganmadiila",
+    "sinhala": "හේමාල්"
   },
   {
     "id": "T147",
     "name": "Aloka",
-    "location": "Wasgamuwa / Anganmadiila"
+    "location": "Wasgamuwa / Anganmadiila",
+    "sinhala": "ආලෝක"
   },
   {
     "id": "T148",
     "name": "Wijaya",
-    "location": "Wasgamuwa / Anganmadiila"
+    "location": "Wasgamuwa / Anganmadiila",
+    "sinhala": "විජය"
   },
   {
     "id": "T149",
     "name": "Chula",
-    "location": "Maduru oya / Ampara / Toppigala / Chenkaladi"
+    "location": "Maduru oya / Ampara / Toppigala / Chenkaladi",
+    "sinhala": "චුල"
   },
   {
     "id": "T150",
-    "name": "Adithya",
-    "location": "Maduru oya / Ampara / Toppigala / Chenkaladi"
+    "name": "Aditya",
+    "location": "Maduru oya / Ampara / Toppigala / Chenkaladi",
+    "sinhala": "ආදිත්‍ය"
   },
   {
     "id": "T151",
     "name": "Migara",
-    "location": "Maduru oya / Ampara / Toppigala / Chenkaladi"
+    "location": "Maduru oya / Ampara / Toppigala / Chenkaladi",
+    "sinhala": "මිගාර"
   },
   {
     "id": "T152",
     "name": "Maha",
-    "location": "Maduru oya / Ampara / Toppigala / Chenkaladi"
+    "location": "Maduru oya / Ampara / Toppigala / Chenkaladi",
+    "sinhala": "මහ"
   },
   {
     "id": "T153",
     "name": "Yassala",
-    "location": "Padaviya / Gomarankadawala"
+    "location": "Padaviya / Gomarankadawala",
+    "sinhala": "යස්සාල"
   },
   {
     "id": "T154",
     "name": "Sumitta",
-    "location": "Wilpattu / Eluwankulam / Karuwagaswewa / Tabbowa / Puttalam"
+    "location": "Wilpattu / Eluwankulam / Karuwagaswewa / Tabbowa / Puttalam",
+    "sinhala": "සුමිත්ත"
   },
   {
     "id": "T155",
     "name": "Khali",
-    "location": "Wilpattu / Mahawilachchiya / Silavathurai / Mullikulam"
+    "location": "Wilpattu / Mahawilachchiya / Silavathurai / Mullikulam",
+    "sinhala": "කාලි"
   },
   {
     "id": "T156",
     "name": "Hendrick",
-    "location": "Kala Wewa / Galgamuwa / Thirappane"
+    "location": "Kala Wewa / Galgamuwa / Thirappane",
+    "sinhala": "හෙන්ද්‍රික්"
   },
   {
     "id": "T157",
     "name": "Pankaja",
-    "location": "Kala Wewa / Galgamuwa / Thirappane"
+    "location": "Kala Wewa / Galgamuwa / Thirappane",
+    "sinhala": "පංකජ"
   },
   {
     "id": "T158",
     "name": "Kumudu",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale"
+    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
+    "sinhala": "කුමුදු"
   },
   {
     "id": "T159",
     "name": "Kiran",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale"
+    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
+    "sinhala": "කිරාන්"
   },
   {
     "id": "T160",
     "name": "Dharshana",
-    "location": "Minneriya / Kaudulla / Eco park / Polonnaruwa"
+    "location": "Minneriya / Kaudulla / Eco park / Polonnaruwa",
+    "sinhala": "දර්ශන"
   },
   {
     "id": "T161",
     "name": "Ashoka",
-    "location": "Minneriya / Kaudulla / Eco park / Polonnaruwa"
+    "location": "Minneriya / Kaudulla / Eco park / Polonnaruwa",
+    "sinhala": "අශෝක"
   },
   {
     "id": "T162",
     "name": "Parinda",
-    "location": "Yala / Yala Block 3,5"
+    "location": "Yala / Yala Block 3,5",
+    "sinhala": "පාරින්ද"
   },
   {
     "id": "T163",
     "name": "Mahaseewa",
-    "location": "Kumana / Panama / Ampara"
+    "location": "Kumana / Panama / Ampara",
+    "sinhala": "මහාසීව"
   },
   {
     "id": "T164",
-    "name": "Parakrama (Siyabalangamuwa)",
-    "location": "Galgamuwa"
+    "name": "Siyabalangamuwa Tusker",
+    "location": "Galgamuwa",
+    "sinhala": "සියබලංගමුව ඇතා"
   },
   {
     "id": "T165",
-    "name": "Mahkanadarawa Tusker",
-    "location": "Mahakanadarawa"
+    "name": "Mahakanadarawa Tusker",
+    "location": "Mahakanadarawa",
+    "sinhala": "මහකනදරාච ඇත්දළයා"
   },
   {
     "id": "T166",
     "name": "Walagamba",
-    "location": "Kala wewa"
+    "location": "Kala wewa",
+    "sinhala": "වලගම්බා"
   },
   {
     "id": "T167",
@@ -837,806 +865,967 @@
   {
     "id": "T168",
     "name": "Podi Arjuna",
-    "location": "Yala / Kumana"
+    "location": "Yala / Kumana",
+    "sinhala": "පොඩි අර්ජුන"
   },
   {
     "id": "T169",
     "name": "Pabbatha",
-    "location": "Yala"
+    "location": "Yala",
+    "sinhala": "පබ්බත"
   },
   {
     "id": "T170",
     "name": "Dananjaya",
-    "location": "Yala"
+    "location": "Yala",
+    "sinhala": "ධනංජය"
   },
   {
     "id": "T171",
     "name": "Kelum",
-    "location": "Udawalawa"
+    "location": "Udawalawa",
+    "sinhala": "කැලුම්"
   },
   {
     "id": "T172",
     "name": "Sunanda",
-    "location": "Galgamuwa"
+    "location": "Galgamuwa",
+    "sinhala": "සුනන්ද"
   },
   {
     "id": "T173",
     "name": "Devra",
-    "location": "Yala"
+    "location": "Yala",
+    "sinhala": "දෙව්ර"
   },
   {
     "id": "T174",
     "name": "Weera",
-    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam"
+    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam",
+    "sinhala": "වීරා"
   },
   {
     "id": "T175",
     "name": "Indraneela",
-    "location": "Padaviya / Yan Oya"
+    "location": "Padaviya / Yan Oya",
+    "sinhala": "ඉන්ද්‍රනීල"
   },
   {
     "id": "T176",
-    "name": "Bhathikabhaya",
-    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala"
+    "name": "Bhathikabaya",
+    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala",
+    "sinhala": "භාතිකබය"
   },
   {
     "id": "T177",
     "name": "Wasala",
-    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala"
+    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala",
+    "sinhala": "වාසල"
   },
   {
     "id": "T178",
-    "name": "Bindula (Maheshakya)",
-    "location": "Kabithigollewa"
+    "name": "Maheshakya / Bindula",
+    "location": "Kabithigollewa",
+    "sinhala": "මහේශාක්‍ය / බින්දුල"
   },
   {
     "id": "T179",
     "name": "Vihanga",
-    "location": "Yala / Lunugamvehera"
+    "location": "Yala / Lunugamvehera",
+    "sinhala": "විහඟ"
   },
   {
     "id": "T180",
     "name": "Skandaraja",
-    "location": "Yala / Buttala"
+    "location": "Yala / Buttala",
+    "sinhala": "ස්කන්ධරාජා"
   },
   {
     "id": "T181",
     "name": "Manula",
-    "location": "Bundala / Hambanthota / Mattala"
+    "location": "Bundala / Hambanthota / Mattala",
+    "sinhala": "මනුල"
   },
   {
     "id": "T182",
     "name": "Mugalan",
-    "location": "Yala / Lunugamvehera"
+    "location": "Yala / Lunugamvehera",
+    "sinhala": "මුගලන්"
   },
   {
     "id": "T183",
     "name": "Diksanda",
-    "location": "Mahakanadarawa / Thirappane"
+    "location": "Mahakanadarawa / Thirappane",
+    "sinhala": "දික්සඳ"
   },
   {
     "id": "T184",
     "name": "Mahasena",
-    "location": "Yala / Lunugamvehera"
+    "location": "Yala / Lunugamvehera",
+    "sinhala": "මහසේන"
   },
   {
     "id": "T185",
-    "name": "Deeghabaya",
-    "location": "Wilpattu / Mahawilachchiya / Silavathurai / Mullikulam"
+    "name": "Deegabhaya",
+    "location": "Wilpattu / Mahawilachchiya / Silavathurai / Mullikulam",
+    "sinhala": "දීඝාභය"
   },
   {
     "id": "T186",
     "name": "Sagara",
-    "location": "Galgamuwa"
+    "location": "Galgamuwa",
+    "sinhala": "සාගර"
   },
   {
     "id": "T187",
     "name": "Nissanka",
-    "location": "Yala / Lunugamvehera / Wellawaya"
+    "location": "Yala / Lunugamvehera / Wellawaya",
+    "sinhala": "නිස්සංක"
   },
   {
     "id": "T188",
     "name": "Kanchadeva",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale"
+    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
+    "sinhala": "කන්චදේව"
   },
   {
     "id": "T189",
     "name": "Koliya",
-    "location": "Minneriya / Kaudulla / Eco park"
+    "location": "Minneriya / Kaudulla / Eco park",
+    "sinhala": "කෝලිය"
   },
   {
     "id": "T190",
     "name": "Chulla",
-    "location": "Galgamuwa"
+    "location": "Galgamuwa",
+    "sinhala": "චුල්ල"
   },
   {
     "id": "T191",
     "name": "Sanju",
-    "location": "Galgamuwa"
+    "location": "Galgamuwa",
+    "sinhala": "සංජු"
   },
   {
     "id": "T192",
     "name": "Gamunu",
-    "location": "Bundala / Hambanthota / Mattala"
+    "location": "Bundala / Hambanthota / Mattala",
+    "sinhala": "ගැමුණු"
   },
   {
     "id": "T193",
     "name": "Nanda",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale"
+    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
+    "sinhala": "නන්ද"
   },
   {
     "id": "T194",
     "name": "Rukmal",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale"
+    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
+    "sinhala": "රුක්මල්"
   },
   {
     "id": "T195",
     "name": "Gotaimbara",
-    "location": "Yala / Lunugamvehera"
+    "location": "Yala / Lunugamvehera",
+    "sinhala": "ගෝඨයිම්බර"
   },
   {
     "id": "T196",
-    "name": "Asela",
-    "location": "Minneriya / Kaudulla / Eco park"
+    "name": "Asela / Megawarna",
+    "location": "Minneriya / Kaudulla / Eco park",
+    "sinhala": "අසේල / මේඝවර්ණ"
   },
   {
     "id": "T197",
     "name": "Mihindu",
-    "location": "Minneriya / Kaudulla / Eco park"
+    "location": "Minneriya / Kaudulla / Eco park",
+    "sinhala": "මිහිඳු"
   },
   {
     "id": "T198",
-    "name": "Akhil",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale"
+    "name": "Akil",
+    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
+    "sinhala": "අකිල්"
   },
   {
     "id": "T199",
-    "name": "Vinayage",
-    "location": "Ampara / Thoppigala / Chenkaladi / Baticoloa"
+    "name": "Vinayaga",
+    "location": "Ampara / Thoppigala / Chenkaladi / Baticoloa",
+    "sinhala": "விநாயகர்"
   },
   {
     "id": "T200",
     "name": "Ganesha",
-    "location": "Ampara / Thoppigala / Chenkaladi / Baticoloa"
+    "location": "Ampara / Thoppigala / Chenkaladi / Baticoloa",
+    "sinhala": "கணேஷா"
   },
   {
     "id": "T201",
     "name": "Iddi",
-    "location": "Yala / Lunugamvehera"
+    "location": "Yala / Lunugamvehera",
+    "sinhala": "ඉද්දි"
   },
   {
     "id": "T202",
     "name": "Kanaka",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale"
+    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
+    "sinhala": "කනක"
   },
   {
     "id": "T203",
     "name": "Chandra",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale"
+    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
+    "sinhala": "චන්ද්‍ර"
   },
   {
     "id": "T204",
     "name": "Kadawara",
-    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam"
+    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam",
+    "sinhala": "කඩවර"
   },
   {
     "id": "T205",
     "name": "Bushana",
-    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam"
+    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam",
+    "sinhala": "භූෂණ"
   },
   {
     "id": "T206",
     "name": "Hasthi",
-    "location": "Kabithigollewa"
+    "location": "Kabithigollewa",
+    "sinhala": "හස්ති"
   },
   {
     "id": "T207",
     "name": "Buwaneka",
-    "location": "Kabithigollewa"
+    "location": "Kabithigollewa",
+    "sinhala": "බුවනෙක"
   },
   {
     "id": "T208",
     "name": "Dulitha",
-    "location": "Yala / Bundala"
+    "location": "Yala / Bundala",
+    "sinhala": "දුලිත"
   },
   {
     "id": "T209",
     "name": "Maheshakya",
-    "location": "Kumana"
+    "location": "Kumana",
+    "sinhala": "මහේශාක්‍ය"
   },
   {
     "id": "T210",
     "name": "Vibhitha",
-    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala"
+    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala",
+    "sinhala": "විභීත"
   },
   {
     "id": "T211",
-    "name": "Rakka",
-    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala"
+    "name": "Rakkha",
+    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala",
+    "sinhala": "රක්ඛ"
   },
   {
     "id": "T212",
     "name": "Subahu",
-    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala"
+    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala",
+    "sinhala": "සුබාහු"
   },
   {
     "id": "T213",
     "name": "Rakkhitha",
-    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala"
+    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala",
+    "sinhala": "රක්ඛිත"
   },
   {
     "id": "T214",
-    "name": "Ravideva",
-    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala"
+    "name": "Ravidewa",
+    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala",
+    "sinhala": "රවිදේව"
   },
   {
     "id": "T215",
     "name": "Bhusura",
-    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala"
+    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala",
+    "sinhala": "භූසුර"
   },
   {
     "id": "T216",
     "name": "Nagaragiri",
-    "location": "Maduru Oya"
+    "location": "Maduru Oya",
+    "sinhala": "නගරගිරී"
   },
   {
     "id": "T217",
     "name": "Jayabahu",
-    "location": "Kala Wewa / Galgamuwa / Thirappane"
+    "location": "Kala Wewa / Galgamuwa / Thirappane",
+    "sinhala": "ජයබාහු"
   },
   {
     "id": "T218",
     "name": "Migara",
-    "location": "Yala"
+    "location": "Yala",
+    "sinhala": "මිගාර"
   },
   {
     "id": "T219",
     "name": "Walagamba",
-    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam"
+    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam",
+    "sinhala": "වලගම්බා"
   },
   {
     "id": "T220",
     "name": "Mahathissa",
-    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam"
+    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam",
+    "sinhala": "මහාතිස්ස"
   },
   {
     "id": "T221",
     "name": "Saman",
-    "location": "Yala"
+    "location": "Yala",
+    "sinhala": "සමන්"
   },
   {
     "id": "T222",
     "name": "Hudanchi",
-    "location": "Kumana"
+    "location": "Kumana",
+    "sinhala": "හුඩංචි"
   },
   {
     "id": "T223",
     "name": "Nishan",
-    "location": "Yala"
+    "location": "Yala",
+    "sinhala": "නිශාන්"
   },
   {
     "id": "T224",
     "name": "Janith",
-    "location": "Yala"
+    "location": "Yala",
+    "sinhala": "ජනිත්"
   },
   {
     "id": "T225",
     "name": "Mansoor",
-    "location": "Kumana"
+    "location": "Kumana",
+    "sinhala": "මන්සූර්"
   },
   {
     "id": "T226",
     "name": "Luhul",
-    "location": "Lunugamvehera"
+    "location": "Lunugamvehera",
+    "sinhala": "ලුහුල්"
   },
   {
     "id": "T227",
     "name": "Shantha",
-    "location": "Yala"
+    "location": "Yala",
+    "sinhala": "ශාන්ත"
   },
   {
     "id": "T228",
     "name": "Vijitha",
-    "location": "Udawalawa"
+    "location": "Udawalawa",
+    "sinhala": "විජිත"
   },
   {
     "id": "T229",
     "name": "Gamini",
-    "location": "Ampara / Bundangala"
+    "location": "Ampara / Bundangala",
+    "sinhala": "ගාමිණී"
   },
   {
     "id": "T230",
     "name": "Barana",
-    "location": "Kanadarawa / Willacchiya / Kebithigollewa"
+    "location": "Kanadarawa / Willacchiya / Kebithigollewa",
+    "sinhala": "බරණ"
   },
   {
     "id": "T231",
     "name": "Luwara",
-    "location": "Yala / Lunugamvehera"
+    "location": "Yala / Lunugamvehera",
+    "sinhala": "ලුවර"
   },
   {
     "id": "T232",
-    "name": "Gajbahu",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya"
+    "name": "Gajabahu",
+    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "sinhala": "ගජබාහු"
   },
   {
     "id": "T233",
     "name": "Gamendra",
-    "location": "Ampara / Thoppigala / Chenkaladi / Baticoloa"
+    "location": "Ampara / Thoppigala / Chenkaladi / Baticoloa",
+    "sinhala": "ගාමේන්ද්‍ර"
   },
   {
     "id": "T234",
     "name": "Maithree",
-    "location": "Polonnaruwa / Minneriya / Kaudulla"
+    "location": "Polonnaruwa / Minneriya / Kaudulla",
+    "sinhala": "මෛත්‍රී"
   },
   {
     "id": "T235",
-    "name": "Deeghayu",
-    "location": "Ampara / Thoppigala / Chenkaladi / Baticoloa"
+    "name": "Deegayu",
+    "location": "Ampara / Thoppigala / Chenkaladi / Baticoloa",
+    "sinhala": "දීඝායු"
   },
   {
     "id": "T236",
     "name": "Therapuththa",
-    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam"
+    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam",
+    "sinhala": "ථෙරපුත්ත"
   },
   {
     "id": "T237",
     "name": "Sinhabahu",
-    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam"
+    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam",
+    "sinhala": "සිංහබාහු"
   },
   {
     "id": "T238",
     "name": "Mitta",
-    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam"
+    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam",
+    "sinhala": "මිත්ත"
   },
   {
     "id": "T239",
     "name": "Madduma",
-    "location": "Yala Block 3,5 / Buttala"
+    "location": "Yala Block 3,5 / Buttala",
+    "sinhala": "මැද්දුම"
   },
   {
     "id": "T240",
     "name": "Jeeva",
-    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam"
+    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam",
+    "sinhala": "ජීව"
   },
   {
     "id": "T241",
     "name": "Nimala",
-    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam"
+    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam",
+    "sinhala": "නිමල"
   },
   {
     "id": "T242",
     "name": "Deeghabaya",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya"
+    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "sinhala": "දීඝාභය"
   },
   {
     "id": "T243",
     "name": "Megha",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya"
+    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "sinhala": "මේඝ"
   },
   {
     "id": "T244",
     "name": "Mahosha",
-    "location": "Kala wewa / Mahakanadarawa / Thirappane"
+    "location": "Kala wewa / Mahakanadarawa / Thirappane",
+    "sinhala": "මහෝෂ"
   },
   {
     "id": "T245",
-    "name": "Dhakshina",
-    "location": "Yala / Lunugamvehera"
+    "name": "Dakshina",
+    "location": "Yala / Lunugamvehera",
+    "sinhala": "දක්ෂිණ"
   },
   {
     "id": "T246",
     "name": "Kavan",
-    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam"
+    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam",
+    "sinhala": "කාවන්"
   },
   {
     "id": "T247",
     "name": "Walagamba 2",
-    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam"
+    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam",
+    "sinhala": "වලගම්බා 2"
   },
   {
     "id": "T248",
     "name": "Jayabahu",
-    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam"
+    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam",
+    "sinhala": "ජයබාහු"
   },
   {
     "id": "T249",
     "name": "Saddha",
-    "location": "Yala Block 3,5 / Buttala"
+    "location": "Yala Block 3,5 / Buttala",
+    "sinhala": "සද්ධා"
   },
   {
     "id": "T250",
-    "name": "Viru",
-    "location": "Wilpattu / Mahawilachchiya / Silavathurai / Mullikulam"
+    "name": "Viruu",
+    "location": "Wilpattu / Mahawilachchiya / Silavathurai / Mullikulam",
+    "sinhala": "වීරු"
   },
   {
     "id": "T251",
-    "name": "Aggabhodi",
-    "location": "Yala Block 3,5 / Buttala"
+    "name": "AgghaBodhi",
+    "location": "Yala Block 3,5 / Buttala",
+    "sinhala": "අග්ගබෝධි"
   },
   {
     "id": "T252",
     "name": "Kapila",
-    "location": "Lunugamvehera"
+    "location": "Lunugamvehera",
+    "sinhala": "කපිල"
   },
   {
     "id": "T253",
-    "name": "Kabhir",
-    "location": "Manampitiya / Polonnaruwa"
+    "name": "Kabir",
+    "location": "Manampitiya / Polonnaruwa",
+    "sinhala": "කබීර්"
   },
   {
     "id": "T254",
     "name": "Parami",
-    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam"
+    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam",
+    "sinhala": "පාරමී"
   },
   {
     "id": "T255",
     "name": "Thiru",
-    "location": "Trincomalee / Naval Headworks Sanctuary"
+    "location": "Trincomalee / Naval Headworks Sanctuary",
+    "sinhala": "තිරු"
   },
   {
     "id": "T256",
-    "name": "Reveatha 2",
-    "location": "Saagama / Deegawapi"
+    "name": "Revatha 2",
+    "location": "Saagama / Deegawapi",
+    "sinhala": "දෙවන රේවත"
   },
   {
     "id": "T257",
     "name": "Devendra",
-    "location": "Medawachchiya / Mahakanadarawa"
+    "location": "Medawachchiya / Mahakanadarawa",
+    "sinhala": "දේවේන්ද්‍ර"
   },
   {
     "id": "T258",
     "name": "Devaka",
-    "location": "Padaviya / Yan Oya"
+    "location": "Padaviya / Yan Oya",
+    "sinhala": "දේවක"
   },
   {
     "id": "T259",
     "name": "Vimukthi",
-    "location": "Yala / Lunugamvehera"
+    "location": "Yala / Lunugamvehera",
+    "sinhala": "විමුක්ති"
   },
   {
     "id": "T260",
     "name": "Nath",
-    "location": "Galgamuwa"
+    "location": "Galgamuwa",
+    "sinhala": "නාත්"
   },
   {
     "id": "T261",
     "name": "Kenul",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya"
+    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "sinhala": "කෙනුල්"
   },
   {
     "id": "T262",
     "name": "Vessagiri",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya"
+    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "sinhala": "වෙස්සගිරී"
   },
   {
     "id": "T263",
     "name": "Rajinda",
-    "location": "Kumana / Panama / Shasthrawela"
+    "location": "Kumana / Panama / Shasthrawela",
+    "sinhala": "රජීන්ද"
   },
   {
     "id": "T264",
     "name": "Eka Dantha",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya"
+    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "sinhala": "ඒක දන්ත"
   },
   {
     "id": "T265",
     "name": "Kovida",
-    "location": "Minneriya / Kaudulla / Eco park"
+    "location": "Minneriya / Kaudulla / Eco park",
+    "sinhala": "කෝවිද"
   },
   {
     "id": "T266",
     "name": "Asthika",
-    "location": "Galgamuwa"
+    "location": "Galgamuwa",
+    "sinhala": "අස්තික"
   },
   {
     "id": "T267",
     "name": "Mahi",
-    "location": "Wilpattu / Maha Wilachchiya"
+    "location": "Wilpattu / Maha Wilachchiya",
+    "sinhala": "මහී"
   },
   {
     "id": "T268",
     "name": "Dathiya",
-    "location": "Minneriya / Kaudulla / Eco park"
+    "location": "Minneriya / Kaudulla / Eco park",
+    "sinhala": "දාඨිය"
   },
   {
     "id": "T269",
-    "name": "Sankadhathu",
-    "location": "Wilpattu / Pomparippu / Silavathura"
+    "name": "Sankadathu",
+    "location": "Wilpattu / Pomparippu / Silavathura",
+    "sinhala": "සංඛදතු"
   },
   {
     "id": "T270",
     "name": "Neelagiri",
-    "location": "Lahugala / Sengamuwa / Pothuvil"
+    "location": "Lahugala / Sengamuwa / Pothuvil",
+    "sinhala": "නීලගිරි"
   },
   {
     "id": "T271",
     "name": "Shiva",
-    "location": "Minneriya / Kaudulla / Eco park"
+    "location": "Minneriya / Kaudulla / Eco park",
+    "sinhala": "ශිව"
   },
   {
     "id": "T272",
     "name": "Vibhishana",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya"
+    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "sinhala": "විභීෂණ"
   },
   {
     "id": "T273",
     "name": "Ravinath",
-    "location": "Tabbowa / Karuwalagaswewa"
+    "location": "Tabbowa / Karuwalagaswewa",
+    "sinhala": "රවිනාත්"
   },
   {
     "id": "T274",
     "name": "Chula Naga",
-    "location": "Maduru Oya / Aralaganwila"
+    "location": "Maduru Oya / Aralaganwila",
+    "sinhala": "චුල නාග"
   },
   {
     "id": "T275",
     "name": "Buddhi",
-    "location": "Minneriya / Kaudulla / Eco park"
+    "location": "Minneriya / Kaudulla / Eco park",
+    "sinhala": "බුද්ධි"
   },
   {
     "id": "T276",
     "name": "Ranadheera",
-    "location": "Wilpattu / Pomparippu / Silavathura"
+    "location": "Wilpattu / Pomparippu / Silavathura",
+    "sinhala": "රණධීර"
   },
   {
     "id": "T277",
     "name": "Rakhitha",
-    "location": "Thirappane / Nachchaduwa"
+    "location": "Thirappane / Nachchaduwa",
+    "sinhala": "රඛිත"
   },
   {
     "id": "T278",
     "name": "Swasthika",
-    "location": "Tabbowa / Pomparippu / Eluwankulama"
+    "location": "Tabbowa / Pomparippu / Eluwankulama",
+    "sinhala": "ස්වස්තික"
   },
   {
     "id": "T279",
     "name": "Anuraja",
-    "location": "Tabbowa / Pomparippu / Eluwankulama"
+    "location": "Tabbowa / Pomparippu / Eluwankulama",
+    "sinhala": "අනුරජ"
   },
   {
     "id": "T280",
     "name": "Thulaththana",
-    "location": "Tabbowa / Pomparippu / Eluwankulama"
+    "location": "Tabbowa / Pomparippu / Eluwankulama",
+    "sinhala": "ථුලත්තන"
   },
   {
     "id": "T281",
     "name": "Harshana",
-    "location": "Wasgamuwa / Anganmadiila"
+    "location": "Wasgamuwa / Anganmadiila",
+    "sinhala": "හර්ශණ"
   },
   {
     "id": "T282",
     "name": "Ilanaga",
-    "location": "Wasgamuwa / Anganmadiila"
+    "location": "Wasgamuwa / Anganmadiila",
+    "sinhala": "ඉලනාග"
   },
   {
     "id": "T283",
     "name": "Kuwera",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya"
+    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "sinhala": "කුවේර"
   },
   {
     "id": "T284",
-    "name": "Devasurendra",
-    "location": "Nuwaragala / Maha Oya"
+    "name": "Dewasurendra",
+    "location": "Nuwaragala / Maha Oya",
+    "sinhala": "දේවසුරේන්ද්‍ර"
   },
   {
     "id": "T285",
     "name": "Jayampathi",
-    "location": "Nuwaragala / Maha Oya"
+    "location": "Nuwaragala / Maha Oya",
+    "sinhala": "ජයම්පති"
   },
   {
     "id": "T286",
     "name": "Vibodhi",
-    "location": "Thirappane / Nachchaduwa"
+    "location": "Thirappane / Nachchaduwa",
+    "sinhala": "විබෝධි"
   },
   {
     "id": "T287",
     "name": "Vanniyan",
-    "location": "Vedithalathiv / Madu"
+    "location": "Vedithalathiv / Madu",
+    "sinhala": "වන්නියාන්"
   },
   {
     "id": "T288",
     "name": "Sesara",
-    "location": "Tabbowa / Pomparippu / Eluwankulama"
+    "location": "Tabbowa / Pomparippu / Eluwankulama",
+    "sinhala": "සේසර"
   },
   {
     "id": "T289",
     "name": "Prathapa",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya"
+    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "sinhala": "ප්‍රතාප"
   },
   {
     "id": "T290",
     "name": "Kaniraja",
-    "location": "Tabbowa / Pomparippu / Eluwankulama"
+    "location": "Tabbowa / Pomparippu / Eluwankulama",
+    "sinhala": "කනිරාජ"
   },
   {
     "id": "T291",
     "name": "Shakya",
-    "location": "Mahakanadara / Wilachchiya / Mihintale"
+    "location": "Mahakanadara / Wilachchiya / Mihintale",
+    "sinhala": "ශාක්‍ය"
   },
   {
     "id": "T292",
     "name": "Giriba",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya"
+    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "sinhala": "ගිරිබා"
   },
   {
     "id": "T293",
     "name": "Veedhiya",
-    "location": "Mannankattiya / Mihinthale / Mahakanadara / Thirappane"
+    "location": "Mannankattiya / Mihinthale / Mahakanadara / Thirappane",
+    "sinhala": "වීදිය"
   },
   {
     "id": "T294",
     "name": "Dandanatha",
-    "location": "Tabbowa / Pomparippu / Eluwankulama"
+    "location": "Tabbowa / Pomparippu / Eluwankulama",
+    "sinhala": "දණ්ඩනාථ"
   },
   {
     "id": "T295",
     "name": "Lankeshwara",
-    "location": "Mannankattiya / Mihinthale / Mahakanadara / Thirappane"
+    "location": "Mannankattiya / Mihinthale / Mahakanadara / Thirappane",
+    "sinhala": "ලංකේශ්වර"
   },
   {
     "id": "T296",
     "name": "Sandagiri",
-    "location": "Mannankattiya / Mihinthale / Mahakanadara / Thirappane"
+    "location": "Mannankattiya / Mihinthale / Mahakanadara / Thirappane",
+    "sinhala": "සඳගිරි"
   },
   {
     "id": "T297",
     "name": "Arya",
-    "location": "Wilpattu / Eluwankulama / Pomparippu / Silavathura"
+    "location": "Wilpattu / Eluwankulama / Pomparippu / Silavathura",
+    "sinhala": "ආර්ය"
   },
   {
     "id": "T298",
     "name": "Madulu",
-    "location": "Galoya / Iginiyagala"
+    "location": "Galoya / Iginiyagala",
+    "sinhala": "මවුලු"
   },
   {
     "id": "T299",
     "name": "Vishnu",
-    "location": "Wilpattu / Kukulkatuwa"
+    "location": "Wilpattu / Kukulkatuwa",
+    "sinhala": "විෂ්ණු"
   },
   {
     "id": "T300",
     "name": "Werambha",
-    "location": "Kahatagasdigiliya / Horowpathana"
+    "location": "Kahatagasdigiliya / Horowpathana",
+    "sinhala": "වේරම්භ"
   },
   {
     "id": "T301",
     "name": "Prahastha",
-    "location": "Pothana / Eluwankulama / Willpatthu / Thabbowa"
+    "location": "Pothana / Eluwankulama / Willpatthu / Thabbowa",
+    "sinhala": "ප්‍රහස්ථ"
   },
   {
     "id": "T302",
     "name": "Pulina",
-    "location": "Minneriya / Kaudulla"
+    "location": "Minneriya / Kaudulla",
+    "sinhala": "පුලින"
   },
   {
     "id": "T303",
-    "name": "Rudraja",
-    "location": "Horowpathana / Kahatagasdigiliya / Kabithigollewa"
+    "name": "Rudhraja",
+    "location": "Horowpathana / Kahatagasdigiliya / Kabithigollewa",
+    "sinhala": "රුද්‍රජ"
   },
   {
     "id": "T304",
     "name": "Nero",
-    "location": "Galgamuwa"
+    "location": "Galgamuwa",
+    "sinhala": "නී‍රෝ"
   },
   {
     "id": "T305",
-    "name": "Mahasona (Dheera)",
-    "location": "Galenbindunuwewa"
+    "name": "Dheera / Mahasona",
+    "location": "Galenbindunuwewa",
+    "sinhala": "ධීර / මහාසෝණ"
   },
   {
     "id": "T306",
     "name": "Dheera",
-    "location": "Galgamuwa"
+    "location": "Galgamuwa",
+    "sinhala": "ධීර"
   },
   {
     "id": "T307",
     "name": "Girikula",
-    "location": "Udawalawa / Mawara"
+    "location": "Udawalawa / Mawara",
+    "sinhala": "ගිරිකුල"
   },
   {
     "id": "T308",
-    "name": "Dumarakka",
-    "location": "Galenbindunuwewa"
+    "name": "Dhumarakka",
+    "location": "Galenbindunuwewa",
+    "sinhala": "ධූමරක්ඛ"
   },
   {
     "id": "T309",
     "name": "Jagadvijaya",
-    "location": "Eluwankulama / Thabbowa / Karuwalagaswewa"
+    "location": "Eluwankulama / Thabbowa / Karuwalagaswewa",
+    "sinhala": "ජගද්විජය"
   },
   {
     "id": "T310",
     "name": "Bulatha",
-    "location": "Galenbindunuwewa / Mihinthale"
+    "location": "Galenbindunuwewa / Mihinthale",
+    "sinhala": "බුලතා"
   },
   {
     "id": "T311",
     "name": "Suriya",
-    "location": "Galgamuwa"
+    "location": "Galgamuwa",
+    "sinhala": "සූරිය"
   },
   {
     "id": "T312",
     "name": "Kambili",
-    "location": "Kabithigollewa / Kahatagasdigiliya"
+    "location": "Kabithigollewa / Kahatagasdigiliya",
+    "sinhala": "කම්බිලි"
   },
   {
     "id": "T313",
     "name": "Dasakantha",
-    "location": "Kabithigollewa / Kahatagasdigiliya"
+    "location": "Kabithigollewa / Kahatagasdigiliya",
+    "sinhala": "දශකන්ථ"
   },
   {
     "id": "T314",
     "name": "Parumuka",
-    "location": "Anamaduwa / Tabbowa"
+    "location": "Anamaduwa / Tabbowa",
+    "sinhala": "පරුමුක"
   },
   {
     "id": "T315",
-    "name": "Dappula/Dala Kota",
-    "location": "Lunugamvehera"
+    "name": "Dappula / Dala Kota",
+    "location": "Lunugamvehera",
+    "sinhala": "දප්පුල / දළ කොටා"
   },
   {
     "id": "T316",
     "name": "Rangha",
-    "location": "Galenbindunuwewa / Mihinthale"
+    "location": "Galenbindunuwewa / Mihinthale",
+    "sinhala": "රංග"
   },
   {
     "id": "T317",
     "name": "Sakkha",
-    "location": "Horowpathana / Gomarankadawala"
+    "location": "Horowpathana / Gomarankadawala",
+    "sinhala": "සක්ඛ"
   },
   {
     "id": "T318",
     "name": "Dharanindra",
-    "location": "Suriyapura / Kaudulla"
+    "location": "Suriyapura / Kaudulla",
+    "sinhala": "ධරණීන්ද්‍ර"
   },
   {
     "id": "T319",
     "name": "Chaddantha",
-    "location": "Tabbowa / Karuwalagaswewa / Eluwankulama"
+    "location": "Tabbowa / Karuwalagaswewa / Eluwankulama",
+    "sinhala": "චද්දන්ත"
   },
   {
     "id": "T320",
     "name": "Kalasena",
-    "location": "Tabbowa / Karuwalagaswewa / Eluwankulama"
+    "location": "Tabbowa / Karuwalagaswewa / Eluwankulama",
+    "sinhala": "කාලසේන"
   },
   {
     "id": "T321",
     "name": "Girikanda",
-    "location": "Ritigala / Palugaswewa"
+    "location": "Ritigala / Palugaswewa",
+    "sinhala": "ගිරිකණ්ඩ"
   },
   {
     "id": "T322",
     "name": "Theja",
-    "location": "Udawalawa"
+    "location": "Udawalawa",
+    "sinhala": "තේජ"
   },
   {
     "id": "T323",
     "name": "Meghadutha",
-    "location": "Athimale"
+    "location": "Athimale",
+    "sinhala": "මේඝදූත"
   },
   {
     "id": "T324",
     "name": "Dhanuraja",
-    "location": "Butthala / Wellawaya / Okkampitiya"
+    "location": "Butthala / Wellawaya / Okkampitiya",
+    "sinhala": "ධනුරාජ"
   },
   {
     "id": "T325",
     "name": "Veerabahu",
-    "location": "Butthala / Wellawaya / Okkampitiya"
+    "location": "Butthala / Wellawaya / Okkampitiya",
+    "sinhala": "වීරබාහු"
   },
   {
     "id": "T326",
     "name": "Chandragiri",
-    "location": "Butthala / Wellawaya / Handapanagala"
+    "location": "Butthala / Wellawaya / Handapanagala",
+    "sinhala": "චන්ද්‍රගිරි"
   },
   {
     "id": "T327",
     "name": "Sahas",
-    "location": "Butthala / Wellawaya / Lunugamvehera"
+    "location": "Butthala / Wellawaya / Lunugamvehera",
+    "sinhala": "සහස්"
   },
   {
     "id": "T328",
     "name": "Prabash",
-    "location": "Maha Kanadarawa / Mihinthale / Rambawa"
+    "location": "Maha Kanadarawa / Mihinthale / Rambawa",
+    "sinhala": "ප්‍රභාෂ්"
   }
 ]

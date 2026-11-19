@@ -1,4 +1,4 @@
-import { supabase, fromRow } from '../lib/supabaseClient';
+import { supabase, fromRow, toRow } from '../lib/supabaseClient';
 import { uploadMediaFile } from '../utils/storageUpload';
 
 /* ==============================================================
@@ -147,8 +147,8 @@ export const DEFAULT_GALLERY = [
   },
   {
     id: 15,
-    title: 'T059 - Deega 1',
-    tuskerName: 'T059 - Deega 1',
+    title: 'T060 - Deega 2',
+    tuskerName: 'T060 - Deega 2',
     location: 'Kalawewa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
@@ -167,9 +167,9 @@ export const DEFAULT_GALLERY = [
   },
   {
     id: 17,
-    title: 'T107 - Gajaba',
-    tuskerName: 'T107 - Gajaba',
-    location: 'YanOya',
+    title: 'T107 - Gajabahu',
+    tuskerName: 'T107 - Gajabahu',
+    location: 'Yan Oya',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
     imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Gajabahu_YanOya.webp',
@@ -237,9 +237,9 @@ export const DEFAULT_GALLERY = [
   },
   {
     id: 24,
-    title: 'T246 - Kavan',
-    tuskerName: 'T246 - Kavan',
-    location: 'galgamuwa',
+    title: 'T075 - Kawanthissa',
+    tuskerName: 'T075 - Kawanthissa',
+    location: 'Galgamuwa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
     imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Kavantissa_galgamuwa.webp',
@@ -277,8 +277,8 @@ export const DEFAULT_GALLERY = [
   },
   {
     id: 28,
-    title: 'T005 - Mahasen',
-    tuskerName: 'T005 - Mahasen',
+    title: 'T184 - Mahasena',
+    tuskerName: 'T184 - Mahasena',
     location: 'Lunugamwehera',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
@@ -287,8 +287,8 @@ export const DEFAULT_GALLERY = [
   },
   {
     id: 29,
-    title: 'T005 - Mahasen',
-    tuskerName: 'T005 - Mahasen',
+    title: 'T037 - Mahasen',
+    tuskerName: 'T037 - Mahasen',
     location: 'Minneriya',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
@@ -327,9 +327,9 @@ export const DEFAULT_GALLERY = [
   },
   {
     id: 33,
-    title: 'T010 - Nandimithra',
-    tuskerName: 'T010 - Nandimithra',
-    location: 'Manakkatiya',
+    title: 'T103 - Mithra',
+    tuskerName: 'T103 - Mithra',
+    location: 'Kala Wewa',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
     imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Mithra_Manakkatiya.webp',
@@ -357,8 +357,8 @@ export const DEFAULT_GALLERY = [
   },
   {
     id: 36,
-    title: 'T103 - Mithra',
-    tuskerName: 'T103 - Mithra',
+    title: 'T010 - Nandimithra',
+    tuskerName: 'T010 - Nandimithra',
     location: 'Yala',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
@@ -537,9 +537,9 @@ export const DEFAULT_GALLERY = [
   },
   {
     id: 54,
-    title: 'T072 - Wijaya',
-    tuskerName: 'T072 - Wijaya',
-    location: 'WIlpattu',
+    title: 'T119 - Wijaya',
+    tuskerName: 'T119 - Wijaya',
+    location: 'Wilpattu',
     date: '2026-11-15',
     photographer: 'WTS Research Team',
     imageUrl: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/Wijaya_WIlpattu.webp',
@@ -660,4 +660,20 @@ export async function deleteGalleryPhoto(id) {
   if (error) throw error;
   return true;
 }
+
+export async function updateGalleryPhoto(id, updates) {
+  const allowed = ['title', 'tuskerName', 'location', 'date', 'photographer', 'photographerContact', 'status'];
+  const row = toRow(updates, allowed);
+
+  const { data, error } = await supabase
+    .from('gallery_photos')
+    .update(row)
+    .eq('id', Number(id))
+    .select()
+    .single();
+
+  if (error) throw error;
+  return fromRow(data);
+}
+
 
