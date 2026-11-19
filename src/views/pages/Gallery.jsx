@@ -58,6 +58,20 @@ export default function Gallery() {
     };
   }, []);
 
+// Loose phonetic normalizer for Sri Lankan tusker names to handle transliteration variations (v/w, th/t, gh/g, etc.)
+function normalizeTuskerName(str) {
+  return String(str || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+    .replace(/w/g, 'v')
+    .replace(/gh/g, 'g')
+    .replace(/th/g, 't')
+    .replace(/tt/g, 't')
+    .replace(/rr/g, 'r')
+    .replace(/ee/g, 'e')
+    .replace(/nb/g, 'mb');
+}
+
   // Match photo to registered tusker
   const matchedTusker = useMemo(() => {
     if (!activePhoto || !tuskers.length) return null;
@@ -86,6 +100,16 @@ export default function Gallery() {
       }
     }
 
+    // 4. Phonetic / Transliteration match (e.g. Rewatha -> Revatha, Deegabaya -> Deeghabaya, etc.)
+    const normTarget = normalizeTuskerName(`${photoTuskerName} ${photoTitle}`);
+    if (normTarget) {
+      const found = tuskers.find((t) => {
+        const normName = normalizeTuskerName(t.name);
+        return normName && (normTarget.includes(normName) || normName.includes(normTarget));
+      });
+      if (found) return found;
+    }
+
     return null;
   }, [activePhoto, tuskers]);
 
@@ -110,6 +134,18 @@ export default function Gallery() {
       });
       if (found) {
         return `${found.id} - ${found.name}`;
+      }
+
+      // Phonetic fallback
+      const normTarget = normalizeTuskerName(`${photoName} ${photoTitle}`);
+      if (normTarget) {
+        const pFound = tuskers.find((t) => {
+          const normName = normalizeTuskerName(t.name);
+          return normName && (normTarget.includes(normName) || normName.includes(normTarget));
+        });
+        if (pFound) {
+          return `${pFound.id} - ${pFound.name}`;
+        }
       }
     }
     return nameStr || null;
