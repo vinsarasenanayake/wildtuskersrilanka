@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import {
@@ -57,30 +57,6 @@ export default function Gallery() {
       document.body.style.paddingRight = '';
     };
   }, []);
-
-  // Browser Back button support: pressing device/browser back closes the photo modal
-  useEffect(() => {
-    if (!activePhoto) return;
-
-    window.history.pushState({ galleryModal: true }, '');
-
-    const handlePopState = () => {
-      setActivePhoto(null);
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, [activePhoto, setActivePhoto]);
-
-  const closePhotoModal = useCallback(() => {
-    if (window.history.state?.galleryModal) {
-      window.history.back();
-    } else {
-      setActivePhoto(null);
-    }
-  }, [setActivePhoto]);
 
   // Match photo to registered tusker
   const matchedTusker = useMemo(() => {
@@ -293,7 +269,7 @@ export default function Gallery() {
         <TuskerPhotoLightbox
           photo={activePhoto}
           tusker={matchedTusker}
-          onClose={closePhotoModal}
+          onClose={() => setActivePhoto(null)}
           isAdmin={isAdmin}
           onApprove={handleApprove}
           onDelete={handleDelete}
