@@ -113,11 +113,11 @@ export default function Navbar() {
         }`}>
           {!isAdmin && (
             <a
-              href="https://www.facebook.com/wildtuskersrilanka/"
+              href="https://www.facebook.com/groups/785810441596309/"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center opacity-85 hover:opacity-100 hover:scale-110 transition-all duration-200 cursor-pointer mr-1"
-              title="Follow us on Facebook"
+              title="Wild Tuskers Sri Lanka Facebook Group"
             >
               <Facebook size={26} />
             </a>
@@ -239,11 +239,11 @@ export default function Navbar() {
           {!isAdmin && (
             <div className="flex justify-center mb-1">
               <a
-                href="https://www.facebook.com/wildtuskersrilanka/"
+                href="https://www.facebook.com/groups/785810441596309/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center opacity-90 hover:opacity-100 hover:scale-110 transition-all duration-200 cursor-pointer"
-                title="Follow us on Facebook"
+                title="Wild Tuskers Sri Lanka Facebook Group"
               >
                 <Facebook size={30} />
               </a>
