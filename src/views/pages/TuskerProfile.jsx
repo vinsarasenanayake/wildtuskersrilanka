@@ -26,9 +26,12 @@ import {
   RotateCcw,
   Maximize,
   Minimize,
+  Lock,
+  Plus,
+  Shield,
 } from 'lucide-react';
 import { useTuskerProfile } from '../../controllers/useTusker';
-import { calculateTuskerAge } from '../../models/TuskerModel';
+import { calculateTuskerAge, parseSightingDetails } from '../../models/TuskerModel';
 import StatusBadge from '../components/StatusBadge';
 import { getCachedAspect, setCachedAspect, probeImageAspect } from '../../utils/photoAspectCache';
 
@@ -535,6 +538,7 @@ const THREAT_STYLES = {
   Low: 'bg-[#e8f5ec] text-[#1f7a3d]',
   Medium: 'bg-[#fff6e5] text-[#9a6200]',
   High: 'bg-[#fdecea] text-[#c0392b]',
+  Critical: 'bg-[#c0392b] text-white',
   Highest: 'bg-[#c0392b] text-white',
 };
 
@@ -577,6 +581,7 @@ export default function TuskerProfile() {
 
   const [showRiskModal, setShowRiskModal] = useState(false);
   const [selectedComparisonImg, setSelectedComparisonImg] = useState(null);
+  const [previewModalPhoto, setPreviewModalPhoto] = useState(null);
 
   useEffect(() => {
     if (tusker) {
@@ -585,14 +590,14 @@ export default function TuskerProfile() {
   }, [tusker]);
 
   useEffect(() => {
-    if (selectedComparisonImg || showRiskModal) {
+    if (selectedComparisonImg || showRiskModal || previewModalPhoto) {
       const prevOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       return () => {
         document.body.style.overflow = prevOverflow === 'hidden' ? '' : (prevOverflow || '');
       };
     }
-  }, [selectedComparisonImg, showRiskModal]);
+  }, [selectedComparisonImg, showRiskModal, previewModalPhoto]);
 
   if (loading) {
     return (
@@ -1020,27 +1025,347 @@ export default function TuskerProfile() {
           </div>
         )}
 
-        {/* BOTTOM - Sightings / Community Contributions */}
+        {/* ── ADMIN ONLY: Sightings & Observation Records History Table ── */}
+        {isAdmin && (
+          <div className="mt-16 pt-10 border-t border-[#e2e8e0]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[0.72rem] font-bold bg-[#0b2518] text-[#c69b55] uppercase tracking-wider">
+                    <Lock size={12} /> Admin Only View
+                  </span>
+                  <span className="font-sans text-xs font-semibold text-[#888888]">
+                    {(tusker.sightings?.length || 0) + 1} Total Records
+                  </span>
+                </div>
+                <h2 className="font-sans text-[1.45rem] font-bold text-[#111111] m-0">
+                  Sightings &amp; Observation Records History
+                </h2>
+                <p className="font-sans text-[0.82rem] text-[#666666] m-0 mt-1 max-w-2xl">
+                  Chronological registry of every recorded observation. Row 1 permanently preserves the original baseline registration data, followed by all subsequent logged field sightings.
+                </p>
+              </div>
+
+              <button
+                onClick={() => navigate(`/tuskers/${tusker.id.toLowerCase()}/add-sighting`)}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[10px] bg-accent hover:bg-accent-hover text-primary font-sans text-[0.85rem] font-bold transition-all shadow-sm hover:shadow shrink-0 cursor-pointer border-none"
+              >
+                <Plus size={16} />
+                <span>Add Sighting Record</span>
+              </button>
+            </div>
+
+            {/* Table Container */}
+            <div className="w-full overflow-x-auto bg-white border border-[#e5e7eb] rounded-[14px] shadow-sm">
+              <table className="w-full text-left border-collapse min-w-[1020px]">
+                <thead>
+                  <tr className="bg-[#f8f9fa] border-b border-[#e5e7eb] text-[0.74rem] uppercase font-bold tracking-[0.6px] text-[#555555]">
+                    <th className="py-3.5 px-4 w-[130px]">Record #</th>
+                    <th className="py-3.5 px-4 w-[115px]">Date / Year</th>
+                    <th className="py-3.5 px-4 w-[170px]">Observer / Recorder</th>
+                    <th className="py-3.5 px-4 w-[160px]">Location / Area</th>
+                    <th className="py-3.5 px-4 w-[120px]">Health</th>
+                    <th className="py-3.5 px-4 w-[110px]">Life Threat</th>
+                    <th className="py-3.5 px-4 w-[190px]">Special Marks &amp; Wounds</th>
+                    <th className="py-3.5 px-4">Notes / Remarks</th>
+                    <th className="py-3.5 px-4 w-[90px] text-center">Photo</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#edf0f2] font-sans text-[0.84rem] text-[#222222]">
+                  {/* Row 1: Baseline Registration (Permanently Preserved) */}
+                  <tr className="bg-[#fafaf6] hover:bg-[#f4f5ee] transition-colors">
+                    <td className="py-3.5 px-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.72rem] font-bold bg-[#0b2518] text-[#c69b55] w-fit">
+                          <Shield size={11} /> Row 1
+                        </span>
+                        <span className="text-[0.72rem] font-bold text-[#0b2518] uppercase tracking-wide">
+                          1st Record
+                        </span>
+                      </div>
+                    </td>
+
+                    <td className="py-3.5 px-4 font-semibold text-[#111111]">
+                      {formatDate(tusker.listedDate) || tusker.listedDate || 'Initial'}
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      <div className="font-bold text-[#111111] flex items-center gap-1.5">
+                        <User size={13} className="text-accent shrink-0" />
+                        <span>{tusker.recordedBy || 'WTS Admin'}</span>
+                      </div>
+                      {tusker.nicknameGivenBy && tusker.nicknameGivenBy !== tusker.recordedBy && (
+                        <div className="text-[0.72rem] text-[#777777] mt-0.5">
+                          Named by: {tusker.nicknameGivenBy}
+                        </div>
+                      )}
+                    </td>
+
+                    <td className="py-3.5 px-4 text-[#333333]">
+                      <div className="flex items-center gap-1">
+                        <MapPin size={13} className="text-accent shrink-0" />
+                        <span>{tusker.location || '—'}</span>
+                      </div>
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.74rem] font-semibold bg-[#e8f5ec] text-[#1f7a3d]">
+                        <HeartPulse size={11} /> {tusker.healthCondition || 'Good'}
+                      </span>
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      {tusker.threatLevel ? (
+                        <span className={`inline-block px-2 py-0.5 rounded text-[0.72rem] font-bold ${THREAT_STYLES[tusker.threatLevel] || 'bg-gray-100 text-gray-700'}`}>
+                          {tusker.threatLevel}
+                        </span>
+                      ) : (
+                        <span className="text-[#999999]">—</span>
+                      )}
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      <div
+                        className="line-clamp-2 max-w-[220px] text-[#444444] text-[0.8rem]"
+                        title={[tusker.specialMarks, tusker.specialWounds].filter(m => m && m !== 'Not Applicable' && m !== 'None').join('; ')}
+                      >
+                        {[tusker.specialMarks, tusker.specialWounds].filter(m => m && m !== 'Not Applicable' && m !== 'None' && m !== 'None recorded.').join('; ') || 'None recorded'}
+                      </div>
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      <div
+                        className="line-clamp-2 max-w-[320px] text-[#444444] text-[0.8rem]"
+                        title={tusker.remarks || tusker.description}
+                      >
+                        {tusker.remarks || tusker.description || 'Initial registry documentation.'}
+                      </div>
+                    </td>
+
+                    <td className="py-3.5 px-4 text-center">
+                      {tusker.photos?.[0] ? (
+                        <button
+                          type="button"
+                          onClick={() => setPreviewModalPhoto({
+                            url: tusker.photos[0],
+                            title: `${tusker.name} (${tusker.id}) - Baseline Registration Photo`,
+                            date: formatDate(tusker.listedDate) || tusker.listedDate || 'Initial Registry',
+                            author: tusker.recordedBy || 'WTS Admin',
+                            location: tusker.location || '',
+                            healthCondition: tusker.healthCondition || 'Good',
+                            threatLevel: tusker.threatLevel || '',
+                            note: tusker.remarks || tusker.description || 'Baseline registration photograph'
+                          })}
+                          className="group relative w-12 h-12 rounded-[8px] overflow-hidden border border-[#d5d5d5] bg-black/5 mx-auto block cursor-pointer transition-transform hover:scale-105 p-0"
+                          title="Click to view full image"
+                        >
+                          <img src={tusker.photos[0]} alt="Baseline" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                            <Eye size={14} />
+                          </div>
+                        </button>
+                      ) : (
+                        <span className="text-[#aaaaaa] text-xs">—</span>
+                      )}
+                    </td>
+                  </tr>
+
+                  {/* Subsequent Sighting Rows (Row 2, Row 3...) */}
+                  {(tusker.sightings || []).map((sighting, idx) => {
+                    const details = parseSightingDetails(sighting);
+                    const rowNum = idx + 2;
+                    const sightingNum = idx + 1;
+                    const noteDisplay = details.note || (!sighting.note?.trim().startsWith('{') ? sighting.note : '') || details.remarks || '—';
+
+                    return (
+                      <tr key={sighting.id || idx} className="hover:bg-[#f9fafb] transition-colors">
+                        <td className="py-3.5 px-4">
+                          <div className="flex flex-col gap-1">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.72rem] font-bold bg-[#faf5ec] text-accent border border-accent/25 w-fit">
+                              <Camera size={11} /> Row {rowNum}
+                            </span>
+                            <span className="text-[0.72rem] font-semibold text-[#666666]">
+                              Sighting #{sightingNum}
+                            </span>
+                          </div>
+                        </td>
+
+                        <td className="py-3.5 px-4 font-medium text-[#111111]">
+                          {formatDate(sighting.captureDate) || sighting.captureDate || '—'}
+                        </td>
+
+                        <td className="py-3.5 px-4">
+                          <div className="font-semibold text-[#111111] flex items-center gap-1.5">
+                            <UserCheck size={13} className="text-accent shrink-0" />
+                            <span>{sighting.author || 'WTS Admin'}</span>
+                          </div>
+                        </td>
+
+                        <td className="py-3.5 px-4 text-[#333333]">
+                          {details.location ? (
+                            <div className="flex items-center gap-1">
+                              <MapPin size={13} className="text-accent shrink-0" />
+                              <span>{details.location}</span>
+                            </div>
+                          ) : (
+                            <span className="text-[#999999]">—</span>
+                          )}
+                        </td>
+
+                        <td className="py-3.5 px-4">
+                          {details.healthCondition ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.74rem] font-semibold bg-[#e8f5ec] text-[#1f7a3d]">
+                              <HeartPulse size={11} /> {details.healthCondition}
+                            </span>
+                          ) : (
+                            <span className="text-[#999999]">—</span>
+                          )}
+                        </td>
+
+                        <td className="py-3.5 px-4">
+                          {details.threatLevel ? (
+                            <span className={`inline-block px-2 py-0.5 rounded text-[0.72rem] font-bold ${THREAT_STYLES[details.threatLevel] || 'bg-gray-100 text-gray-700'}`}>
+                              {details.threatLevel}
+                            </span>
+                          ) : (
+                            <span className="text-[#999999]">—</span>
+                          )}
+                        </td>
+
+                        <td className="py-3.5 px-4">
+                          <div
+                            className="line-clamp-2 max-w-[220px] text-[#444444] text-[0.8rem]"
+                            title={[details.specialMarks, details.specialWounds].filter(Boolean).join('; ')}
+                          >
+                            {[details.specialMarks, details.specialWounds].filter(Boolean).join('; ') || '—'}
+                          </div>
+                        </td>
+
+                        <td className="py-3.5 px-4">
+                          <div className="line-clamp-2 max-w-[320px] text-[#444444] text-[0.8rem]" title={noteDisplay}>
+                            {noteDisplay}
+                          </div>
+                        </td>
+
+                        <td className="py-3.5 px-4 text-center">
+                          {sighting.imageUrl ? (
+                            <button
+                              type="button"
+                              onClick={() => setPreviewModalPhoto({
+                                url: sighting.imageUrl,
+                                title: `${tusker.name} (${tusker.id}) - Sighting #${sightingNum}`,
+                                date: formatDate(sighting.captureDate) || sighting.captureDate || '—',
+                                author: sighting.author || 'WTS Admin',
+                                location: details.location || '',
+                                healthCondition: details.healthCondition || '',
+                                threatLevel: details.threatLevel || '',
+                                note: noteDisplay !== '—' ? noteDisplay : ''
+                              })}
+                              className="group relative w-12 h-12 rounded-[8px] overflow-hidden border border-[#d5d5d5] bg-black/5 mx-auto block cursor-pointer transition-transform hover:scale-105 p-0"
+                              title="Click to view full image"
+                            >
+                              <img src={sighting.imageUrl} alt={`Sighting ${sightingNum}`} className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                <Eye size={14} />
+                              </div>
+                            </button>
+                          ) : (
+                            <span className="text-[#aaaaaa] text-xs">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+
+                  {/* Empty state when no sightings exist yet */}
+                  {(!tusker.sightings || tusker.sightings.length === 0) && (
+                    <tr>
+                      <td colSpan="9" className="py-6 px-4 text-center text-[#777777] bg-[#fafafa]">
+                        <div className="flex flex-col items-center justify-center gap-1.5">
+                          <Camera size={20} className="text-[#aaaaaa]" />
+                          <span className="font-medium text-[0.85rem]">No subsequent sightings recorded yet.</span>
+                          <span className="text-[0.78rem] text-[#999999]">
+                            The baseline registration is currently the sole verified historical record. Use "Add Sighting Record" to log new field observations.
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* BOTTOM - Sightings / Community Contributions (Visible to Public and Admin) */}
         {tusker.sightings && tusker.sightings.length > 0 && (
           <div className="mt-16 pt-10 border-t border-[#eeeeee]">
-            <h2 className="font-sans text-[1.5rem] font-bold text-[#111111] mb-6">Recorded Sightings & Community Photos</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-sans text-[1.5rem] font-bold text-[#111111] m-0">Recorded Sightings &amp; Community Photos</h2>
+              <span className="font-sans text-xs font-semibold text-[#888888]">{tusker.sightings.length} {tusker.sightings.length === 1 ? 'Sighting' : 'Sightings'}</span>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {tusker.sightings.map(sighting => (
-                <div key={sighting.id} className="bg-[#f9faf8] border border-[#eaeaea] rounded-[12px] overflow-hidden flex flex-col">
-                  <div className="w-full aspect-[4/3] bg-black/5">
-                    <img src={sighting.imageUrl} alt={`Sighting on ${sighting.captureDate}`} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="p-5 flex flex-col gap-2">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="font-sans text-[0.85rem] font-semibold text-[#888888]">{formatDate(sighting.captureDate)}</span>
-                      <span className="font-sans text-[0.75rem] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-[4px]">{sighting.author}</span>
+              {tusker.sightings.map((sighting, idx) => {
+                const details = parseSightingDetails(sighting);
+                const publicNote = details.note || (!sighting.note?.trim().startsWith('{') ? sighting.note : '') || details.remarks;
+                return (
+                  <div key={sighting.id || idx} className="bg-[#f9faf8] border border-[#eaeaea] rounded-[12px] overflow-hidden flex flex-col hover:border-accent/30 transition-all">
+                    <div
+                      className="w-full aspect-[4/3] bg-black/5 relative group cursor-pointer"
+                      onClick={() => setPreviewModalPhoto({
+                        url: sighting.imageUrl,
+                        title: `${tusker.name} (${tusker.id}) - Sighting Photo`,
+                        date: formatDate(sighting.captureDate) || sighting.captureDate,
+                        author: sighting.author || 'WTS Community',
+                        location: details.location || '',
+                        healthCondition: details.healthCondition || '',
+                        threatLevel: details.threatLevel || '',
+                        note: publicNote || ''
+                      })}
+                    >
+                      <img src={sighting.imageUrl} alt={`Sighting on ${sighting.captureDate}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-1.5 font-sans text-xs font-semibold">
+                        <Maximize2 size={16} />
+                        <span>View Photo</span>
+                      </div>
                     </div>
-                    {sighting.note && (
-                      <p className="font-sans text-[0.9rem] text-[#333333] leading-[1.6] m-0">{sighting.note}</p>
-                    )}
+                    <div className="p-5 flex flex-col gap-2.5 flex-1 justify-between">
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex justify-between items-center">
+                          <span className="font-sans text-[0.85rem] font-semibold text-[#888888] flex items-center gap-1">
+                            <Calendar size={13} />
+                            {formatDate(sighting.captureDate)}
+                          </span>
+                          <span className="font-sans text-[0.75rem] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-[4px]">{sighting.author}</span>
+                        </div>
+                        {details.location && (
+                          <div className="font-sans text-[0.8rem] text-[#666666] flex items-center gap-1">
+                            <MapPin size={12} className="text-accent" />
+                            <span>{details.location}</span>
+                          </div>
+                        )}
+                        {publicNote && (
+                          <p className="font-sans text-[0.88rem] text-[#333333] leading-[1.6] m-0 line-clamp-3">{publicNote}</p>
+                        )}
+                      </div>
+                      {(details.healthCondition || details.threatLevel) && (
+                        <div className="flex items-center gap-2 pt-2 border-t border-[#f0f0f0] text-xs">
+                          {details.healthCondition && (
+                            <span className="bg-[#e8f5ec] text-[#1f7a3d] font-semibold px-2 py-0.5 rounded-[4px]">
+                              Health: {details.healthCondition}
+                            </span>
+                          )}
+                          {details.threatLevel && (
+                            <span className={`font-bold px-2 py-0.5 rounded-[4px] ${THREAT_STYLES[details.threatLevel] || ''}`}>
+                              {details.threatLevel} Threat
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -1146,6 +1471,77 @@ export default function TuskerProfile() {
               <p className="font-sans text-sm text-gray-800 leading-relaxed m-0 font-medium">
                 {selectedComparisonImg.changeSentence}
               </p>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Sighting / Observation Photo Lightbox Modal */}
+      {previewModalPhoto && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-fade-in select-none"
+          onClick={() => setPreviewModalPhoto(null)}
+        >
+          <div
+            className="relative max-w-3xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col my-auto border border-white/20"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="p-4 bg-white border-b border-gray-100 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <span className="bg-[#0b2518] text-[#c69b55] font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1">
+                  <Calendar size={12} />
+                  {previewModalPhoto.date}
+                </span>
+                <span className="font-sans text-sm font-bold text-gray-800">
+                  {previewModalPhoto.title}
+                </span>
+              </div>
+              <button
+                onClick={() => setPreviewModalPhoto(null)}
+                className="text-gray-400 hover:text-gray-700 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center border-none cursor-pointer transition-colors p-0"
+                aria-label="Close image preview"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="w-full bg-[#0a0f0d] flex items-center justify-center min-h-[260px] max-h-[64vh] overflow-hidden shrink-0">
+              <img
+                src={previewModalPhoto.url}
+                alt={previewModalPhoto.title}
+                className="w-full h-full max-h-[64vh] object-contain"
+              />
+            </div>
+
+            <div className="p-4 sm:p-5 bg-gray-50 border-t border-gray-100 flex flex-col gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-600">
+                <span className="font-semibold flex items-center gap-1">
+                  <User size={13} className="text-accent" />
+                  <span>Recorded / Sighted By: <strong className="text-gray-900">{previewModalPhoto.author}</strong></span>
+                </span>
+                {previewModalPhoto.location && (
+                  <span className="flex items-center gap-1 text-gray-600">
+                    <MapPin size={13} className="text-accent" />
+                    <span>Location: <strong className="text-gray-900">{previewModalPhoto.location}</strong></span>
+                  </span>
+                )}
+                {previewModalPhoto.healthCondition && (
+                  <span className="bg-[#e8f5ec] text-[#1f7a3d] font-semibold px-2 py-0.5 rounded">
+                    Health: {previewModalPhoto.healthCondition}
+                  </span>
+                )}
+                {previewModalPhoto.threatLevel && (
+                  <span className={`font-bold px-2 py-0.5 rounded ${THREAT_STYLES[previewModalPhoto.threatLevel] || ''}`}>
+                    {previewModalPhoto.threatLevel}
+                  </span>
+                )}
+              </div>
+              {previewModalPhoto.note && (
+                <p className="font-sans text-[0.88rem] text-gray-800 leading-relaxed m-0 font-medium pt-1 border-t border-gray-200/60">
+                  {previewModalPhoto.note}
+                </p>
+              )}
             </div>
           </div>
         </div>,

@@ -57,7 +57,7 @@ export default function AdminPortal() {
     id: '',
     location: '',
     listedDate: new Date().toISOString().split('T')[0],
-    recordedBy: 'WTS Field Team',
+    recordedBy: 'WTS Admin',
     description: '',
     specialMarks: '',
     photoUrl: '',
@@ -277,7 +277,7 @@ export default function AdminPortal() {
         id: '',
         location: '',
         listedDate: new Date().toISOString().split('T')[0],
-        recordedBy: 'WTS Field Team',
+        recordedBy: 'WTS Admin',
         description: '',
         specialMarks: '',
         photoUrl: '',
@@ -981,7 +981,7 @@ export default function AdminPortal() {
                             </span>
                           </td>
                           <td className="py-3 px-4 font-semibold text-[#182620]">{e.title}</td>
-                          <td className="py-3 px-4 text-xs text-[#5a6c63]">{e.sharedBy || 'WTS Team'}</td>
+                          <td className="py-3 px-4 text-xs text-[#5a6c63]">{e.sharedBy || 'WTS Admin'}</td>
                           <td className="py-3 px-4 text-right">
                             <div className="inline-flex items-center gap-1.5 justify-end">
                               <Link
@@ -1469,7 +1469,7 @@ export default function AdminPortal() {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Milinda Wattegedara"
+                    placeholder="e.g. WTS Admin"
                     value={teamFormData.name}
                     onChange={(e) => setTeamFormData({ ...teamFormData, name: e.target.value })}
                     className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"
@@ -1484,7 +1484,7 @@ export default function AdminPortal() {
                     </label>
                     <input
                       type="text"
-                      placeholder="Admin"
+                      placeholder="e.g. WTS Admin"
                       value={teamFormData.role}
                       onChange={(e) => setTeamFormData({ ...teamFormData, role: e.target.value })}
                       className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"
@@ -1628,7 +1628,7 @@ export default function AdminPortal() {
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. WTS Field Team"
+                      placeholder="e.g. WTS Admin"
                       value={unlistedFormData.recordedBy}
                       onChange={(e) => setUnlistedFormData({ ...unlistedFormData, recordedBy: e.target.value })}
                       className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"

@@ -750,7 +750,7 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
             <div className="w-full">
               <TuskerMultiSelect
                 label="Tusker Name / ID"
-                placeholder="Search tusker by ID or name (e.g. T180, Skandaraja, Revatha)..."
+                placeholder="Search tusker by ID or name (e.g. T001, Panama Puttuwa)..."
                 value={formData.tuskerName}
                 onChange={(_list, formatted) => {
                   handleChange({ target: { name: 'tuskerName', value: formatted } });
@@ -786,7 +786,7 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
                 <input
                   type="text"
                   name="photographer"
-                  placeholder="Your full name"
+                  placeholder="Enter your name"
                   value={formData.photographer}
                   onChange={handleChange}
                   className="bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm"

@@ -412,7 +412,7 @@ export default function UnlistedTuskerProfile() {
               <DetailRow
                 icon={<User size={16} />}
                 label="First Recorded By"
-                value={tusker.recordedBy || 'WTS Field Team'}
+                value={tusker.recordedBy || 'WTS Admin'}
               />
               {/* Nickname Suggested By: Always 'Unlisted' as requested */}
               <DetailRow
@@ -711,7 +711,7 @@ export default function UnlistedTuskerProfile() {
                       type="text"
                       value={editFormData.recordedBy}
                       onChange={(e) => setEditFormData({ ...editFormData, recordedBy: e.target.value })}
-                      placeholder="e.g. WTS Field Team"
+                      placeholder="e.g. WTS Admin"
                       className="border border-[#dde6e1] rounded-xl px-3.5 py-2.5 text-sm text-[#111111] focus:outline-none focus:border-accent"
                     />
                   </div>

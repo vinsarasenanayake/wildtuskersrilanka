@@ -94,7 +94,7 @@ export function useFieldNotesFeed() {
 export function useFieldNoteForm() {
   const { isAdmin } = useAuth();
   const [formData, setFormData] = useState({
-    author: isAdmin ? 'Admin' : '',
+    author: isAdmin ? 'WTS Admin' : '',
     authorContact: '',
     title: '',
     date: new Date().toISOString().split('T')[0],
@@ -109,7 +109,7 @@ export function useFieldNoteForm() {
   // Auth resolves asynchronously; prefill author for admins once known
   useEffect(() => {
     if (isAdmin) {
-      setFormData(prev => (prev.author ? prev : { ...prev, author: 'Admin' }));
+      setFormData(prev => (prev.author ? prev : { ...prev, author: 'WTS Admin' }));
     }
   }, [isAdmin]);
 

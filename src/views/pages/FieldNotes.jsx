@@ -372,7 +372,7 @@ export default function FieldNotes() {
                           <div className="flex items-center gap-3 mt-1 font-sans text-xs text-gray-500">
                             <span>Date: <strong>{note.date}{note.time ? ` at ${note.time}` : ''}</strong></span>
                             <span>•</span>
-                            <span>Recorded by: <strong className="text-gray-700">{note.author || 'Admin'}</strong></span>
+                            <span>Recorded by: <strong className="text-gray-700">{note.author || 'WTS Admin'}</strong></span>
                           </div>
                         </div>
                       </div>

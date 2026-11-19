@@ -37,7 +37,7 @@ export default function UnlistedMonitoring() {
     id: '',
     location: '',
     listedDate: new Date().toISOString().split('T')[0],
-    recordedBy: 'WTS Field Team',
+    recordedBy: 'WTS Admin',
     description: '',
     specialMarks: '',
     photoUrl: '',
@@ -78,7 +78,7 @@ export default function UnlistedMonitoring() {
         id: newFormData.id.trim() || undefined,
         location: newFormData.location,
         listedDate: newFormData.listedDate,
-        recordedBy: newFormData.recordedBy || 'WTS Field Team',
+        recordedBy: newFormData.recordedBy || 'WTS Admin',
         description: newFormData.description,
         specialMarks: newFormData.specialMarks || 'None recorded.',
         photos
@@ -92,7 +92,7 @@ export default function UnlistedMonitoring() {
       id: '',
       location: 'Yala',
       listedDate: new Date().toISOString().split('T')[0],
-      recordedBy: 'WTS Field Team',
+      recordedBy: 'WTS Admin',
       description: '',
       specialMarks: '',
       photoUrl: ''
@@ -384,7 +384,7 @@ export default function UnlistedMonitoring() {
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. WTS Team / Ranger"
+                    placeholder="e.g. WTS Admin"
                     value={newFormData.recordedBy}
                     onChange={e => setNewFormData({ ...newFormData, recordedBy: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent"

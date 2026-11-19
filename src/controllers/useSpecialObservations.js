@@ -106,7 +106,7 @@ export function useSpecialObservationForm(id) {
     location: '',
     description: '',
     images: [],
-    author: isAdmin ? 'Admin' : 'WTS Researcher',
+    author: isAdmin ? 'WTS Admin' : 'WTS Researcher',
   });
 
   const [error, setError] = useState('');
@@ -206,7 +206,7 @@ export function useSpecialObservationForm(id) {
         location: location || 'Sri Lanka',
         description,
         images: Array.isArray(resolvedImages) ? resolvedImages : [],
-        author: author || 'Admin',
+        author: author || 'WTS Admin',
       };
 
       if (isEditMode) {

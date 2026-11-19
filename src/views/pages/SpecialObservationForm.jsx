@@ -156,8 +156,8 @@ export default function SpecialObservationForm() {
                   }}
                   placeholder={
                     selectedTuskers.length === 0
-                      ? "Search tusker by ID or name (e.g. T075, Kawanthissa, Missaka)..."
-                      : "+ Add another tusker to compare (e.g. T078, Missaka)..."
+                      ? "Search tusker by ID or name (e.g. T001, Panama Puttuwa)..."
+                      : "+ Add another tusker to compare (e.g. T001, Panama Puttuwa)..."
                   }
                 />
               </div>
@@ -331,7 +331,7 @@ export default function SpecialObservationForm() {
                   type="text"
                   name="author"
                   className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
-                  placeholder="e.g. Priyanjana Dilmith (WTS Research Team)"
+                  placeholder="e.g. WTS Admin"
                   value={formData.author}
                   onChange={handleChange}
                 />

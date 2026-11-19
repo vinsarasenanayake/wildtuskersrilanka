@@ -305,14 +305,48 @@ export function useTuskerProfile(id) {
    SECTION 3: ADD SIGHTING / PHOTO FORM CONTROLLER
 ============================================================== */
 export function useSightingForm(tuskerId) {
+  const { isAdmin } = useAuth();
   const [formData, setFormData] = useState({
     imageUrl: '',
     imageUrls: [],
-    captureDate: '',
-    note: ''
+    captureDate: new Date().toISOString().split('T')[0],
+    author: isAdmin ? 'WTS Admin' : 'WTS Researcher',
+    note: '',
+    lastSeenArea: '',
+    healthCondition: 'Good',
+    threatLevel: '',
+    specialMarks: '',
+    specialWounds: '',
+    remarks: '',
   });
+  const [initialTusker, setInitialTusker] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { isAdmin } = useAuth();
+
+  // Prefill with tusker's current data so admin can review and update
+  useEffect(() => {
+    let active = true;
+    if (tuskerId) {
+      getTuskerById(tuskerId)
+        .then(t => {
+          if (active && t) {
+            setInitialTusker(t);
+            setFormData(prev => ({
+              ...prev,
+              lastSeenArea: prev.lastSeenArea || t.lastSeenArea || t.location || '',
+              healthCondition: prev.healthCondition || t.healthCondition || 'Good',
+              threatLevel: prev.threatLevel || t.threatLevel || '',
+              specialMarks: prev.specialMarks || t.specialMarks || '',
+              specialWounds: prev.specialWounds || t.specialWounds || '',
+              remarks: prev.remarks || t.remarks || '',
+            }));
+          }
+        })
+        .catch(err => console.error(err))
+        .finally(() => { if (active) setLoading(false); });
+    }
+    return () => { active = false; };
+  }, [tuskerId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -329,7 +363,20 @@ export function useSightingForm(tuskerId) {
   };
 
   const submitSighting = async () => {
-    const { imageUrl, imageUrls, captureDate, note } = formData;
+    const {
+      imageUrl,
+      imageUrls,
+      captureDate,
+      note,
+      author,
+      lastSeenArea,
+      healthCondition,
+      threatLevel,
+      specialMarks,
+      specialWounds,
+      remarks,
+    } = formData;
+
     const finalUrls = (imageUrls && imageUrls.length > 0)
       ? imageUrls
       : (imageUrl ? (imageUrl.includes(',') ? imageUrl.split(',').map(s => s.trim()).filter(Boolean) : [imageUrl]) : []);
@@ -340,16 +387,59 @@ export function useSightingForm(tuskerId) {
     }
 
     try {
+      const sightingDetails = {
+        note: (note || '').trim(),
+        location: (lastSeenArea || '').trim(),
+        healthCondition: healthCondition || '',
+        threatLevel: threatLevel || '',
+        specialMarks: (specialMarks || '').trim(),
+        specialWounds: (specialWounds || '').trim(),
+        remarks: (remarks || '').trim(),
+      };
+      const serializedNote = JSON.stringify(sightingDetails);
+      const observer = (author || (isAdmin ? 'WTS Admin' : 'WTS Researcher')).trim();
+
+      // 1. Add sighting row(s) to tusker_sightings
       await Promise.all(
         finalUrls.map(url =>
           addSightingToTusker(tuskerId, {
             imageUrl: url,
             captureDate,
-            note,
-            author: isAdmin ? 'Admin' : 'Researcher'
+            note: serializedNote,
+            author: observer,
           })
         )
       );
+
+      // 2. Update tusker's current profile state (for both admin and public)
+      // Note: First Recorded By, First Recorded Date, and Nickname By are NEVER modified here!
+      const profileUpdates = {};
+      if (lastSeenArea && lastSeenArea.trim()) {
+        profileUpdates.lastSeenArea = lastSeenArea.trim();
+      }
+      if (captureDate) {
+        // Update last seen to YYYY-MM
+        profileUpdates.lastSeen = captureDate.slice(0, 7);
+      }
+      if (healthCondition) {
+        profileUpdates.healthCondition = healthCondition;
+      }
+      if (threatLevel) {
+        profileUpdates.threatLevel = threatLevel;
+      }
+      if (specialMarks && specialMarks.trim()) {
+        profileUpdates.specialMarks = specialMarks.trim();
+      }
+      if (specialWounds && specialWounds.trim()) {
+        profileUpdates.specialWounds = specialWounds.trim();
+      }
+      if (remarks && remarks.trim()) {
+        profileUpdates.remarks = remarks.trim();
+      }
+
+      if (Object.keys(profileUpdates).length > 0) {
+        await updateTusker(tuskerId, profileUpdates);
+      }
     } catch (err) {
       setError(`Could not save sighting: ${err.message}`);
       return false;
@@ -361,6 +451,8 @@ export function useSightingForm(tuskerId) {
   return {
     formData,
     setFormData,
+    initialTusker,
+    loading,
     error,
     handleChange,
     handleImagesChange,

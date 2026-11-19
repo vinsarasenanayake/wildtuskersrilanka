@@ -153,7 +153,7 @@ export default function FieldNoteForm() {
                   name="author"
                   required
                   className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15"
-                  placeholder="e.g. Dr. Silva, Safari Guide Kamal, or Researcher"
+                  placeholder="Enter your name"
                   value={formData.author}
                   onChange={handleChange}
                 />
@@ -163,7 +163,7 @@ export default function FieldNoteForm() {
               <div className="w-full">
                 <TuskerMultiSelect
                   label="Tuskers Involved / Observed"
-                  placeholder="Search tusker by ID or name (e.g. T180, Skandaraja, Revatha)..."
+                  placeholder="Search tusker by ID or name (e.g. T001, Panama Puttuwa)..."
                   value={formData.specialNote}
                   onChange={(_list, formatted) => {
                     handleChange({ target: { name: 'specialNote', value: formatted } });

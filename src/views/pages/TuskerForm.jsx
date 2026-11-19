@@ -102,25 +102,25 @@ export default function TuskerForm() {
             <SectionTitle>Identity</SectionTitle>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
               <Field label="Tusker ID" required>
-                <input type="text" name="id" className={INPUT_CLASS} placeholder="e.g. T324" value={formData.id} onChange={handleChange} disabled={isEditMode} />
+                <input type="text" name="id" className={INPUT_CLASS} placeholder="e.g. T001" value={formData.id} onChange={handleChange} disabled={isEditMode} />
               </Field>
               <Field label="Tusker Name (English)" required>
-                <input type="text" name="name" className={INPUT_CLASS} placeholder="e.g. Nero" value={formData.name} onChange={handleChange} />
+                <input type="text" name="name" className={INPUT_CLASS} placeholder="e.g. Panama Puttuwa" value={formData.name} onChange={handleChange} />
               </Field>
               <Field label="Sinhala Name">
-                <input type="text" name="sinhala" className={INPUT_CLASS} placeholder="e.g. නීරෝ" value={formData.sinhala} onChange={handleChange} />
+                <input type="text" name="sinhala" className={INPUT_CLASS} placeholder="e.g. පානම පුට්ටුව" value={formData.sinhala} onChange={handleChange} />
               </Field>
               <Field label="Roaming Area">
-                <input type="text" name="location" className={INPUT_CLASS} placeholder="e.g. Minneriya / Kaudulla" value={formData.location} onChange={handleChange} />
+                <input type="text" name="location" className={INPUT_CLASS} placeholder="e.g. Kumana / Panama" value={formData.location} onChange={handleChange} />
               </Field>
               <Field label="First Recorded Date">
                 <input type="date" name="listedDate" className={INPUT_CLASS} placeholder="" value={formData.listedDate} onChange={handleChange} />
               </Field>
               <Field label="Recorded By">
-                <input type="text" name="recordedBy" className={INPUT_CLASS} placeholder="e.g. WTS Team" value={formData.recordedBy} onChange={handleChange} />
+                <input type="text" name="recordedBy" className={INPUT_CLASS} placeholder="e.g. WTS Admin" value={formData.recordedBy} onChange={handleChange} />
               </Field>
               <Field label="Nickname Suggested By" wide>
-                <input type="text" name="nicknameGivenBy" className={INPUT_CLASS} placeholder="e.g. Priyanjana Dilmith" value={formData.nicknameGivenBy} onChange={handleChange} />
+                <input type="text" name="nicknameGivenBy" className={INPUT_CLASS} placeholder="e.g. WTS Admin" value={formData.nicknameGivenBy} onChange={handleChange} />
               </Field>
             </div>
 

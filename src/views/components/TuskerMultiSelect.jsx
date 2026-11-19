@@ -20,7 +20,7 @@ export default function TuskerMultiSelect({
   value,
   onChange,
   label = 'Tusker Name / ID',
-  placeholder = 'Search tusker by ID or name (e.g. T180, Skandaraja, Revatha)...',
+  placeholder = 'Search tusker by ID or name (e.g. T001, Panama Puttuwa)...',
   required = false,
   allowConnector = false,
   connector = 'vs',

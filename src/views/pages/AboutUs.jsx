@@ -221,7 +221,7 @@ export default function AboutUs() {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Milinda Wattegedara"
+                    placeholder="e.g. WTS Admin"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"
@@ -236,7 +236,7 @@ export default function AboutUs() {
                     </label>
                     <input
                       type="text"
-                      placeholder="Admin"
+                      placeholder="e.g. WTS Admin"
                       value={formData.role}
                       onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                       className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"

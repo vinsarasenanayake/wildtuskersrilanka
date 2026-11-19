@@ -16,7 +16,7 @@ const TUSKER_FIELDS = [
 ];
 
 export const LIVING_STATUSES = ['Alive', 'No Recent Record', 'Deceased'];
-export const THREAT_LEVELS = ['Low', 'Medium', 'High', 'Highest'];
+export const THREAT_LEVELS = ['Low', 'Medium', 'High', 'Critical'];
 export const ZONES = ['Zone 1', 'Zone 2', 'Zone 3', 'Zone 4'];
 export const AGE_RANGES = ['1-10', '10-20', '20-30', '30-40', '40-50', '50-60', '60+'];
 
@@ -69,6 +69,7 @@ function mapTusker(row) {
   const t = fromRow(row);
   t.photos = t.photos || [];
   t.earPhotos = t.earPhotos || [];
+  if (t.threatLevel === 'Highest') t.threatLevel = 'Critical';
   // No invented defaults: missing values stay empty and the UI hides them.
   if (!t.photographicComparison) delete t.photographicComparison;
   if (!t.earComparison) delete t.earComparison;
@@ -76,6 +77,37 @@ function mapTusker(row) {
     .map(fromRow)
     .sort((a, b) => a.id - b.id);
   return t;
+}
+
+export function parseSightingDetails(sighting) {
+  if (!sighting) {
+    return { note: '', location: '', healthCondition: '', threatLevel: '', specialMarks: '', specialWounds: '', remarks: '' };
+  }
+  if (sighting.note && typeof sighting.note === 'string' && sighting.note.trim().startsWith('{')) {
+    try {
+      const parsed = JSON.parse(sighting.note);
+      return {
+        note: parsed.note || '',
+        location: parsed.location || '',
+        healthCondition: parsed.healthCondition || '',
+        threatLevel: parsed.threatLevel || '',
+        specialMarks: parsed.specialMarks || '',
+        specialWounds: parsed.specialWounds || '',
+        remarks: parsed.remarks || '',
+      };
+    } catch {
+      // fallback to plain note
+    }
+  }
+  return {
+    note: sighting.note || '',
+    location: '',
+    healthCondition: '',
+    threatLevel: '',
+    specialMarks: '',
+    specialWounds: '',
+    remarks: '',
+  };
 }
 
 /* ==============================================================
@@ -104,12 +136,16 @@ export async function tuskerExists(id) {
 }
 
 export async function addTusker(tusker) {
-  const row = toRow({ ...tusker, id: tusker.id.toUpperCase().trim() }, TUSKER_FIELDS);
+  const payload = { ...tusker, id: tusker.id.toUpperCase().trim() };
+  if (payload.threatLevel === 'Critical') payload.threatLevel = 'Highest';
+  const row = toRow(payload, TUSKER_FIELDS);
   unwrap(await supabase.from('tuskers').insert(row));
 }
 
 export async function updateTusker(id, updated) {
-  const row = toRow(updated, TUSKER_FIELDS.filter(f => f !== 'id'));
+  const payload = { ...updated };
+  if (payload.threatLevel === 'Critical') payload.threatLevel = 'Highest';
+  const row = toRow(payload, TUSKER_FIELDS.filter(f => f !== 'id'));
   unwrap(await supabase.from('tuskers').update(row).eq('id', id.toUpperCase()));
 }
 

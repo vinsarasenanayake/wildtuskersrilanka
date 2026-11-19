@@ -172,7 +172,7 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
               <div className="w-full">
                 <TuskerMultiSelect
                   label="Select Registered Tusker(s)"
-                  placeholder="Search by T-Number or name (e.g. T022, T103, Mithra)..."
+                  placeholder="Search by T-Number or name (e.g. T001, Panama Puttuwa)..."
                   value={formData.tuskerName}
                   onChange={(_list, formatted) => {
                     setFormData((prev) => ({
@@ -257,7 +257,7 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
                     name="photographer"
                     value={formData.photographer}
                     onChange={handleChange}
-                    placeholder="e.g. WTS Research Team"
+                    placeholder="e.g. WTS Admin"
                     className="bg-white border border-gray-300 rounded-lg px-3.5 py-2 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
                     required
                   />
