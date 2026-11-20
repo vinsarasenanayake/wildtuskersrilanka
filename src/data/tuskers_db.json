@@ -1754,25 +1754,40 @@
     "id": "T316",
     "name": "Rangha",
     "location": "Galenbindunuwewa / Mihinthale",
-    "sinhala": "රංග"
+    "sinhala": "රංග",
+    "recordedBy": "Binura Hasaranga",
+    "nicknameGivenBy": "Binura Hasaranga",
+    "listedDate": "2025"
   },
   {
     "id": "T317",
     "name": "Sakkha",
     "location": "Horowpathana / Gomarankadawala",
-    "sinhala": "සක්ඛ"
+    "sinhala": "සක්ඛ",
+    "recordedBy": "Kushan Sameera and Sanjaya Madhushan",
+    "nicknameGivenBy": "Kushan Sameera and Sanjaya Madhushan",
+    "listedDate": "2026",
+    "description": "In Remembrance of Sakkha Senevi.\n\nSakka Senevi, also referred to as Sakkha Senevi or Seneviratna Sakka, was a prominent military commander and general who served under King Kassapa V during the Anuradhapura period of Sri Lankan history.\n\nKing Kassapa V is generally placed in the early 10th century, although his reign is dated differently in various chronological traditions. Sakka Senevi is remembered as one of the notable military figures associated with this era, reflecting the important role played by military commanders in the political and territorial affairs of ancient Sri Lanka."
   },
   {
     "id": "T318",
     "name": "Dharanindra",
     "location": "Suriyapura / Kaudulla",
-    "sinhala": "ධරණීන්ද්‍ර"
+    "sinhala": "ධරණීන්ද්‍ර",
+    "recordedBy": "Niklesh Mahanama",
+    "nicknameGivenBy": "Niklesh Mahanama",
+    "listedDate": "2026",
+    "description": "Derived from the ancient Sanskrit-rooted expression Dharanī (the Earth) and Indra (lord, ruler, or supreme one), Dharanindra can be interpreted as \"Lord of the Earth.\""
   },
   {
     "id": "T319",
     "name": "Chaddantha",
     "location": "Tabbowa / Karuwalagaswewa / Eluwankulama",
-    "sinhala": "චද්දන්ත"
+    "sinhala": "චද්දන්ත",
+    "recordedBy": "Nijal Buddika / Yushantha Dimunge / Chandika Dimunge",
+    "nicknameGivenBy": "Nijal Buddika / Yushantha Dimunge / Chandika Dimunge",
+    "listedDate": "2025",
+    "description": "The name Chaddantha is inspired by the Chaddanta Jātaka, one of the famous Buddhist birth stories in which the Buddha, in a previous life, was born as Chaddanta, a majestic tusker king who led a herd of 8,000 elephants and lived near a golden cave.\n\nThe name Chaddanta means \"Six-Tusked\", derived from the Pali words Chakka, meaning \"six,\" and Danta, meaning \"tooth\" or \"tusk.\" In Buddhist tradition, Chaddanta is portrayed as a legendary, pure-white elephant, symbolizing supreme power, spiritual purity, dignity, and royal majesty."
   },
   {
     "id": "T320",
