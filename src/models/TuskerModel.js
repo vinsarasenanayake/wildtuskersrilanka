@@ -149,7 +149,7 @@ function mapTusker(row) {
 
 export function parseSightingDetails(sighting) {
   if (!sighting) {
-    return { note: '', location: '', healthCondition: '', threatLevel: '', specialMarks: '', specialWounds: '', remarks: '', coords: null };
+    return { note: '', location: '', healthCondition: '', threatLevel: '', specialMarks: '', specialWounds: '', remarks: '', coords: null, images: [] };
   }
   if (sighting.note && typeof sighting.note === 'string' && sighting.note.trim().startsWith('{')) {
     try {
@@ -161,6 +161,14 @@ export function parseSightingDetails(sighting) {
           ? { lat: Number(parsed.lat), lng: Number(parsed.lng) }
           : null;
 
+      const images = Array.isArray(parsed.images)
+        ? parsed.images.filter(Boolean)
+        : Array.isArray(parsed.imageUrls)
+        ? parsed.imageUrls.filter(Boolean)
+        : sighting.imageUrl
+        ? (typeof sighting.imageUrl === 'string' ? sighting.imageUrl.split(',').map((s) => s.trim()).filter(Boolean) : [sighting.imageUrl])
+        : [];
+
       return {
         note: parsed.note || '',
         location: parsed.location || '',
@@ -170,6 +178,7 @@ export function parseSightingDetails(sighting) {
         specialWounds: parsed.specialWounds || '',
         remarks: parsed.remarks || '',
         coords,
+        images,
       };
     } catch {
       // fallback to plain note
@@ -184,6 +193,9 @@ export function parseSightingDetails(sighting) {
     specialWounds: '',
     remarks: '',
     coords: null,
+    images: sighting.imageUrl
+      ? (typeof sighting.imageUrl === 'string' ? sighting.imageUrl.split(',').map((s) => s.trim()).filter(Boolean) : [sighting.imageUrl])
+      : [],
   };
 }
 
@@ -265,8 +277,8 @@ export async function deleteSighting(sightingId) {
 export function getTuskerComparison(tusker) {
   if (!tusker) return [];
 
-  // Return existing custom comparison if fully defined with 3 items
-  if (Array.isArray(tusker.photographicComparison) && tusker.photographicComparison.length === 3) {
+  // Return existing custom comparison if defined
+  if (Array.isArray(tusker.photographicComparison) && tusker.photographicComparison.length > 0) {
     return tusker.photographicComparison;
   }
 
@@ -351,9 +363,9 @@ export function getTuskerComparison(tusker) {
 export function getTuskerEarComparison(tusker) {
   if (!tusker) return [];
 
-  // Return custom ear comparison if explicitly provided (keep top 2)
-  if (Array.isArray(tusker.earComparison) && tusker.earComparison.length >= 2) {
-    return tusker.earComparison.slice(0, 2);
+  // Return custom ear comparison if explicitly provided
+  if (Array.isArray(tusker.earComparison) && tusker.earComparison.length > 0) {
+    return tusker.earComparison;
   }
 
   // Derive chronological years

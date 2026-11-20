@@ -65,6 +65,12 @@ export const SRI_LANKA_WILDLIFE_LOCATIONS = [
   { name: 'Hurulu Eco Park', type: 'Eco Park / Forest Reserve', region: 'Habarana, North Central', lat: 8.0500, lng: 80.7800 },
 
   // ── Tanks (Wewa), Lakes & Small Wildlife Reservoirs ──
+  { name: 'Pomparippu', type: 'Wildlife Basin / Habitat', region: 'Wilpattu South Border, Puttalam', lat: 8.3167, lng: 79.8500 },
+  { name: 'Pomparippu Basin', type: 'River Basin / Wildlife Habitat', region: 'Kala Oya Basin, Puttalam', lat: 8.3167, lng: 79.8500 },
+  { name: 'Gangewadiya', type: 'Estuary & Elephant Corridor', region: 'Wilpattu South Border, Puttalam', lat: 8.3183, lng: 79.8333 },
+  { name: 'Dutch Bay', type: 'Coastal & Mangrove Habitat', region: 'Kalpitiya Peninsula, Puttalam', lat: 8.3300, lng: 79.7900 },
+  { name: 'Karativu', type: 'Coastal Wildlife Fringe', region: 'Puttalam District', lat: 8.2833, lng: 79.8167 },
+  { name: 'Kala Oya Basin', type: 'River & Wildlife Corridor', region: 'Wilpattu South, Puttalam', lat: 8.3000, lng: 79.8500 },
   { name: 'Eluwankulama Tank', type: 'Reservoir / Tank', region: 'Wilpattu South Border, Puttalam', lat: 8.2750, lng: 79.8667 },
   { name: 'Eluwankulama Wewa', type: 'Reservoir / Tank', region: 'Wilpattu South Border, Puttalam', lat: 8.2750, lng: 79.8667 },
   { name: 'Eluwankulama', type: 'Wildlife Roaming Area', region: 'Puttalam District', lat: 8.2750, lng: 79.8667 },
@@ -595,6 +601,16 @@ export async function resolveLocationCoordinatesAsync(locationName) {
       }
     } catch (pErr) {
       console.warn('Photon geocoding lookup failed for:', primaryName, pErr);
+    }
+  }
+
+  // 3. Word token fallback: check if any significant word matches a known Sri Lanka location
+  const tokens = primaryName.split(/\s+/).filter((t) => t.length >= 4);
+  for (const token of tokens) {
+    const matched = getLocationCoordinates(token);
+    if (matched) {
+      cacheLocationCoordinates(primaryName, matched);
+      return matched;
     }
   }
 

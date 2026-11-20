@@ -84,12 +84,14 @@ export default function ImageUploadBox({
       return;
     }
 
+    const filesToUpload = isMultiple ? validFiles : validFiles.slice(0, 1);
+
     setUploadError('');
     setUploading(true);
-    setUploadCount(validFiles.length);
+    setUploadCount(filesToUpload.length);
 
     try {
-      const uploadPromises = validFiles.map(async (file) => {
+      const uploadPromises = filesToUpload.map(async (file) => {
         try {
           return await uploadMediaFile(file, folder);
         } catch (err) {
@@ -305,14 +307,18 @@ export default function ImageUploadBox({
 
           {hasImages && (
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[0.68rem] font-medium text-gray-400 normal-case hidden sm:inline-flex items-center gap-1">
-                <GripVertical size={11} className="text-gray-400" />
-                <span>Drag to reorder photos</span>
-              </span>
+              {isMultiple && imageList.length > 1 && (
+                <span className="text-[0.68rem] font-medium text-gray-400 normal-case hidden sm:inline-flex items-center gap-1">
+                  <GripVertical size={11} className="text-gray-400" />
+                  <span>Drag to reorder photos</span>
+                </span>
+              )}
               <span className="text-[0.72rem] font-semibold text-emerald-600 flex items-center gap-1 normal-case bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                 <CheckCircle2 size={12} />
                 <span>
-                  {imageList.length} photo{imageList.length > 1 ? 's' : ''} uploaded
+                  {isMultiple
+                    ? `${imageList.length} photo${imageList.length > 1 ? 's' : ''} uploaded`
+                    : '1 photo selected'}
                 </span>
               </span>
               <button
@@ -320,7 +326,7 @@ export default function ImageUploadBox({
                 onClick={handleRemoveAll}
                 className="text-[0.72rem] font-medium text-rose-600 hover:text-rose-700 bg-transparent border-none cursor-pointer hover:underline"
               >
-                Clear all
+                {isMultiple ? 'Clear all' : 'Remove'}
               </button>
             </div>
           )}
@@ -377,10 +383,12 @@ export default function ImageUploadBox({
               </div>
               <div className="flex flex-col gap-1">
                 <span className="font-sans text-[0.92rem] font-bold text-[#1f2824]">
-                  Click or drag photos to upload
+                  {isMultiple ? 'Click or drag photos to upload' : 'Click or drag photo to upload'}
                 </span>
                 <span className="font-sans text-[0.75rem] text-[#788880]">
-                  Supports multiple images simultaneously (JPG, PNG, WEBP)
+                  {isMultiple
+                    ? 'Supports multiple images simultaneously (JPG, PNG, WEBP)'
+                    : 'Single image upload (JPG, PNG, WEBP)'}
                 </span>
               </div>
             </div>
@@ -388,8 +396,46 @@ export default function ImageUploadBox({
         </div>
       )}
 
-      {/* ── Populated State: Multi-Photo Grid with Previews & + Add More ── */}
-      {hasImages && (
+      {/* ── Populated State: Single Photo vs Multi-Photo Grid ── */}
+      {hasImages && !isMultiple && (
+        <div className="flex flex-col items-center gap-2.5">
+          <div className={`relative ${aspectClass} rounded-[14px] overflow-hidden border border-[#d8e0da] shadow-sm bg-[#eef3f0] group max-w-[280px] w-full mx-auto`}>
+            <img
+              src={imageList[0]}
+              alt="Uploaded photo"
+              className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300 pointer-events-none"
+            />
+            <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
+              <button
+                type="button"
+                onClick={() => !uploading && fileInputRef.current?.click()}
+                className="px-3 py-1.5 rounded-[8px] bg-white text-[#111111] font-sans text-xs font-semibold shadow-md flex items-center gap-1.5 cursor-pointer border-none hover:bg-gray-100 transition-all"
+              >
+                <UploadCloud size={13} />
+                <span>Replace</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleRemoveAll}
+                className="w-7 h-7 rounded-[8px] bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center cursor-pointer border-none shadow-md transition-colors"
+                title="Remove photo"
+              >
+                <Trash2 size={13} />
+              </button>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => !uploading && fileInputRef.current?.click()}
+            className="text-[0.76rem] font-semibold text-accent hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
+          >
+            <UploadCloud size={14} />
+            <span>Click to replace photo</span>
+          </button>
+        </div>
+      )}
+
+      {hasImages && isMultiple && (
         <div className="flex flex-col gap-3">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {imageList.map((url, idx) => {

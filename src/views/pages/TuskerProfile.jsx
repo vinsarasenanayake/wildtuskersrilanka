@@ -32,12 +32,17 @@ import {
   MoreVertical,
   Edit,
   Trash2,
+  Loader2,
+  AlertCircle,
+  Sliders,
 } from 'lucide-react';
 import { useTuskerProfile } from '../../controllers/useTusker';
-import { calculateTuskerAge, parseSightingDetails, updateSighting, deleteSighting } from '../../models/TuskerModel';
+import { calculateTuskerAge, parseSightingDetails, updateSighting, deleteSighting, updateTusker } from '../../models/TuskerModel';
 import StatusBadge from '../components/StatusBadge';
 import TuskerSightingsMap from '../components/TuskerSightingsMap';
 import EditSightingModal from '../components/EditSightingModal';
+import ImageUploadBox from '../components/ImageUploadBox';
+import LocationSearchInput from '../components/LocationSearchInput';
 import { getCachedAspect, setCachedAspect, probeImageAspect } from '../../utils/photoAspectCache';
 
 /* ── Fullscreen Zoom Lightbox ─────────────────────────────────── */
@@ -47,6 +52,7 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
+  const hasDraggedRef = useRef(false);
   const containerRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -174,6 +180,7 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
     if (scale <= 1) return;
     if (e.button !== 0) return;
     setIsDragging(true);
+    hasDraggedRef.current = false;
     dragStartRef.current = {
       x: e.clientX - position.x,
       y: e.clientY - position.y,
@@ -182,9 +189,14 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
 
   const handleMouseMove = (e) => {
     if (!isDragging || scale <= 1) return;
+    const newX = e.clientX - dragStartRef.current.x;
+    const newY = e.clientY - dragStartRef.current.y;
+    if (Math.abs(newX - position.x) > 3 || Math.abs(newY - position.y) > 3) {
+      hasDraggedRef.current = true;
+    }
     setPosition({
-      x: e.clientX - dragStartRef.current.x,
-      y: e.clientY - dragStartRef.current.y,
+      x: newX,
+      y: newY,
     });
   };
 
@@ -308,7 +320,28 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
               cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
             }}
             onMouseDown={handleMouseDown}
-            onDoubleClick={toggleZoom}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                if (scale === 1) {
+                  onClose();
+                } else {
+                  resetZoom();
+                }
+                return;
+              }
+              e.stopPropagation();
+              if (hasDraggedRef.current) {
+                hasDraggedRef.current = false;
+                return;
+              }
+              if (scale === 1) {
+                setScale(2.5);
+              }
+            }}
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              toggleZoom(e);
+            }}
           >
             <img
               src={activePhoto}
@@ -400,6 +433,30 @@ function PhotoSlideshow({ photos, name, tuskerId, current, prev, next, setCurren
       setIsPortrait(portrait);
     }
   };
+
+  // Keyboard arrow keys navigation for profile photo slideshow
+  useEffect(() => {
+    if (!photos || photos.length <= 1) return;
+
+    const handleKeyDown = (e) => {
+      const tag = document.activeElement?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || document.activeElement?.isContentEditable) {
+        return;
+      }
+      if (showLightbox) return;
+
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prev(photos.length);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        next(photos.length);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [photos, showLightbox, prev, next]);
 
   return (
     <div className="flex flex-col gap-4 min-[820px]:sticky min-[820px]:top-[calc(80px+1.5rem)]">
@@ -564,6 +621,1263 @@ function formatDate(dateStr) {
   return dateStr;
 }
 
+/* ── Baseline Year Calculation Helper ────────────────────────── */
+function getTuskerBaselineYear(tusker, comparisons = []) {
+  if (Array.isArray(comparisons) && comparisons.length > 0) {
+    const compYears = comparisons
+      .map((c) => parseInt(c.year, 10))
+      .filter((y) => !isNaN(y) && y > 1900);
+    if (compYears.length > 0) return Math.min(...compYears);
+  }
+  if (Array.isArray(tusker?.photographicComparison) && tusker.photographicComparison.length > 0) {
+    const pYears = tusker.photographicComparison
+      .map((c) => parseInt(c.year, 10))
+      .filter((y) => !isNaN(y) && y > 1900);
+    if (pYears.length > 0) return Math.min(...pYears);
+  }
+  if (Array.isArray(tusker?.earComparison) && tusker.earComparison.length > 0) {
+    const eYears = tusker.earComparison
+      .map((c) => parseInt(c.year, 10))
+      .filter((y) => !isNaN(y) && y > 1900);
+    if (eYears.length > 0) return Math.min(...eYears);
+  }
+  if (tusker?.listedDate) {
+    const parsed = new Date(tusker.listedDate).getFullYear();
+    if (!isNaN(parsed) && parsed > 1900) return parsed;
+  }
+  if (Array.isArray(tusker?.sightings) && tusker.sightings.length > 0) {
+    const sYears = tusker.sightings
+      .map((s) => (s.captureDate ? new Date(s.captureDate).getFullYear() : null))
+      .filter((y) => !isNaN(y) && y > 1900);
+    if (sYears.length > 0) return Math.min(...sYears);
+  }
+  return 2017;
+}
+
+/* ── Admin Comparison Form Modal ────────────────────────────── */
+function ComparisonFormModal({
+  isOpen,
+  type = 'photographic',
+  initialData = null,
+  isEditing = false,
+  tusker,
+  onClose,
+  onSave,
+  isSaving = false,
+  error = '',
+}) {
+  const [activeType, setActiveType] = useState(type);
+  const [photo, setPhoto] = useState(initialData?.photo || '');
+  const [year, setYear] = useState(initialData?.year || new Date().getFullYear().toString());
+  const [stage, setStage] = useState(initialData?.stage || '');
+  const [location, setLocation] = useState(initialData?.location || tusker?.lastSeenArea || tusker?.location || '');
+  const [changeSentence, setChangeSentence] = useState(initialData?.changeSentence || '');
+  const [hasChange, setHasChange] = useState(Boolean(initialData?.hasChange));
+  const [changeType, setChangeType] = useState(initialData?.changeType || 'Tusk Growth');
+  const [earSide, setEarSide] = useState(initialData?.earSide || 'Right Ear');
+  const [formErr, setFormErr] = useState('');
+
+  const calculateAutoStage = useCallback((inputYear, compType) => {
+    const parsed = parseInt(inputYear, 10);
+    if (isNaN(parsed) || parsed < 1900) return '';
+    const baseline = getTuskerBaselineYear(
+      tusker,
+      compType === 'photographic' ? tusker?.photographicComparison : tusker?.earComparison
+    );
+    if (!baseline) return compType === 'photographic' ? 'First Recorded Photo' : 'Initial Ear Baseline';
+    const diff = parsed - baseline;
+    if (diff > 0) {
+      return `${diff}-Year Progression`;
+    }
+    return compType === 'photographic' ? 'First Recorded Photo' : 'Initial Ear Baseline';
+  }, [tusker]);
+
+  useEffect(() => {
+    if (initialData) {
+      setPhoto(initialData.photo || '');
+      setYear(initialData.year || new Date().getFullYear().toString());
+      setStage(initialData.stage || '');
+      setLocation(initialData.location || tusker?.lastSeenArea || tusker?.location || '');
+      setChangeSentence(initialData.changeSentence || '');
+      setHasChange(Boolean(initialData.hasChange));
+      setChangeType(initialData.changeType || 'Tusk Growth');
+      setEarSide(initialData.earSide || 'Right Ear');
+    } else {
+      const defaultYear = new Date().getFullYear().toString();
+      const currentType = type || 'photographic';
+      setPhoto('');
+      setYear(defaultYear);
+      setStage(calculateAutoStage(defaultYear, currentType));
+      setLocation(tusker?.lastSeenArea || tusker?.location || '');
+      setChangeSentence('');
+      setHasChange(false);
+      setChangeType('Tusk Growth');
+      setEarSide('Right Ear');
+    }
+    setActiveType(type || 'photographic');
+    setFormErr('');
+  }, [initialData, type, isOpen, tusker, calculateAutoStage]);
+
+  const handleYearChange = (newYear) => {
+    setYear(newYear);
+    const autoStage = calculateAutoStage(newYear, activeType);
+    if (autoStage) {
+      setStage(autoStage);
+    }
+  };
+
+  const handleTypeToggle = (newType) => {
+    setActiveType(newType);
+    if (!isEditing) {
+      const autoStage = calculateAutoStage(year, newType);
+      if (autoStage) {
+        setStage(autoStage);
+      }
+    }
+  };
+
+  if (!isOpen) return null;
+
+  const photoPresets = [
+    'First Recorded Photo',
+    'Recent Assessment',
+  ];
+
+  const earPresets = [
+    'Right Pinna Baseline',
+    'Left Pinna Baseline',
+    'Ear Margin Progression',
+    'Venation & Notch Check',
+    'Bilateral Assessment',
+  ];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setFormErr('');
+
+    if (!photo) {
+      setFormErr('Please upload or select a comparison photo.');
+      return;
+    }
+    if (!year || !year.trim()) {
+      setFormErr('Please enter the observation year.');
+      return;
+    }
+    if (!stage || !stage.trim()) {
+      setFormErr('Please provide a title or stage name.');
+      return;
+    }
+    if (!changeSentence || !changeSentence.trim()) {
+      setFormErr('Please provide a description or morphological note.');
+      return;
+    }
+
+    const payload = {
+      photo,
+      year: year.trim(),
+      stage: stage.trim(),
+      location: location.trim(),
+      changeSentence: changeSentence.trim(),
+    };
+
+    if (activeType === 'photographic') {
+      payload.hasChange = hasChange;
+      if (hasChange) {
+        payload.changeType = changeType;
+      }
+    } else {
+      payload.earSide = earSide;
+    }
+
+    onSave(payload, activeType);
+  };
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[10000] bg-black/65 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-fade-in"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-[20px] max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-[#e5e7eb] flex flex-col gap-5 relative my-auto max-h-[92vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between pb-4 border-b border-[#eeeeee]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-[12px] bg-[#0b2518] text-[#c69b55] flex items-center justify-center shadow-xs">
+              <Camera size={20} />
+            </div>
+            <div>
+              <h3 className="font-sans text-[1.2rem] font-bold text-[#111111] m-0">
+                {isEditing ? 'Edit' : 'Add'} {activeType === 'photographic' ? 'Photographic Comparison' : 'Ear Biometric Comparison'}
+              </h3>
+              <p className="font-sans text-[0.8rem] text-[#777777] m-0 mt-0.5">
+                {tusker ? `${tusker.name} (${tusker.id})` : 'Tusker'} • Sequential Progression Comparison
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 rounded-full border-none bg-[#f4f4f4] hover:bg-[#e8e8e8] text-[#555555] cursor-pointer flex items-center justify-center transition-colors p-0"
+            aria-label="Close"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Type Toggle (when adding new) */}
+        {!isEditing && (
+          <div className="flex items-center bg-[#f4f5f4] p-1 rounded-[12px] gap-1">
+            <button
+              type="button"
+              onClick={() => handleTypeToggle('photographic')}
+              className={`flex-1 py-2 px-3 rounded-[9px] text-[0.82rem] font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 ${
+                activeType === 'photographic'
+                  ? 'bg-white text-[#0b2518] shadow-xs'
+                  : 'bg-transparent text-[#666666] hover:text-[#111111]'
+              }`}
+            >
+              <Camera size={14} className={activeType === 'photographic' ? 'text-accent' : ''} />
+              <span>Photographic Progression</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTypeToggle('ear')}
+              className={`flex-1 py-2 px-3 rounded-[9px] text-[0.82rem] font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 ${
+                activeType === 'ear'
+                  ? 'bg-white text-[#0b2518] shadow-xs'
+                  : 'bg-transparent text-[#666666] hover:text-[#111111]'
+              }`}
+            >
+              <Sliders size={14} className={activeType === 'ear' ? 'text-accent' : ''} />
+              <span>Ear Biometric Comparison</span>
+            </button>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {/* Photo Upload */}
+          <div>
+            <ImageUploadBox
+              folder="comparisons"
+              value={photo ? [photo] : []}
+              onChange={(urls) => setPhoto(Array.isArray(urls) ? (urls[0] || '') : (urls || ''))}
+              multiple={false}
+              label={activeType === 'photographic' ? 'Progression Photo *' : 'Ear Venation / Crop Photo *'}
+              aspectClass="aspect-[4/3] max-w-[280px] mx-auto"
+            />
+          </div>
+
+          {/* Year & Stage */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            <div className="sm:col-span-1">
+              <label className="block font-sans text-[0.76rem] font-bold text-[#444444] uppercase tracking-wider mb-1.5">
+                Year *
+              </label>
+              <input
+                type="text"
+                value={year}
+                onChange={(e) => handleYearChange(e.target.value)}
+                placeholder="e.g. 2024"
+                className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#d5d5d5] bg-white font-sans text-sm text-[#111111] focus:outline-none focus:border-accent"
+                required
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block font-sans text-[0.76rem] font-bold text-[#444444] uppercase tracking-wider mb-1.5">
+                Stage *
+              </label>
+              <input
+                type="text"
+                value={stage}
+                onChange={(e) => setStage(e.target.value)}
+                placeholder={activeType === 'photographic' ? 'e.g. 5-Year Progression, First Recorded Photo...' : 'e.g. Right Pinna Baseline, Margin Progression...'}
+                className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#d5d5d5] bg-white font-sans text-sm text-[#111111] focus:outline-none focus:border-accent"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Quick preset suggestions for stage */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[0.72rem] text-[#888888] font-medium mr-1">Suggestions:</span>
+            {(activeType === 'photographic' ? photoPresets : earPresets).map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => setStage(preset)}
+                className={`text-[0.72rem] px-2.5 py-1 rounded-full border transition-colors cursor-pointer ${
+                  stage === preset
+                    ? 'bg-[#0b2518] text-[#c69b55] border-[#0b2518] font-semibold'
+                    : 'bg-[#fafafa] text-[#555555] border-[#e0e0e0] hover:border-[#999999]'
+                }`}
+              >
+                {preset}
+              </button>
+            ))}
+          </div>
+
+          {/* Location Picker */}
+          <div>
+            <label className="block font-sans text-[0.76rem] font-bold text-[#444444] uppercase tracking-wider mb-1.5">
+              Observation Location
+            </label>
+            <LocationSearchInput
+              value={location}
+              onChange={(e, val) => setLocation(val || '')}
+              placeholder="Search & select location (e.g. Pomparippu, Wilpattu, Yala)..."
+            />
+          </div>
+
+          {/* Type-Specific Fields */}
+          {activeType === 'photographic' ? (
+            <div className="p-3.5 bg-[#fcfaf7] border border-[#f0e6d2] rounded-[12px] flex flex-col gap-3">
+              <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={hasChange}
+                  onChange={(e) => setHasChange(e.target.checked)}
+                  className="w-4 h-4 rounded text-accent accent-accent cursor-pointer"
+                />
+                <span className="font-sans text-[0.84rem] font-bold text-[#333333]">
+                  Documented Morphological Change (e.g. tusk breakage, ear tear, healing wound)
+                </span>
+              </label>
+
+              {hasChange && (
+                <div className="pt-2 border-t border-[#f0e6d2]">
+                  <label className="block font-sans text-[0.74rem] font-bold text-[#666666] uppercase tracking-wider mb-1.5">
+                    Morphological Change Category
+                  </label>
+                  <select
+                    value={changeType}
+                    onChange={(e) => setChangeType(e.target.value)}
+                    className="w-full px-3 py-2 rounded-[8px] border border-[#d5d5d5] bg-white font-sans text-sm text-[#111111] focus:outline-none focus:border-accent"
+                  >
+                    <option value="Tusk Growth">Tusk Growth & Ivory Elongation</option>
+                    <option value="Tusk Breakage">Tusk Breakage / Tip Fracture</option>
+                    <option value="Ear Tear / Notch">Ear Tear / Margin Notch</option>
+                    <option value="Injury & Healing">Injury & Tissue Healing</option>
+                    <option value="Cranial / Muscle Mass">Cranial Girth & Muscle Mass</option>
+                    <option value="Depigmentation">Depigmentation & Skin Markings</option>
+                    <option value="Other">Other Morphological Trait</option>
+                  </select>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="p-3.5 bg-[#f7faf8] border border-[#dce8e0] rounded-[12px]">
+              <label className="block font-sans text-[0.74rem] font-bold text-[#44554c] uppercase tracking-wider mb-1.5">
+                Ear Biometric Side
+              </label>
+              <select
+                value={earSide}
+                onChange={(e) => setEarSide(e.target.value)}
+                className="w-full px-3 py-2 rounded-[8px] border border-[#d5d5d5] bg-white font-sans text-sm text-[#111111] focus:outline-none focus:border-accent"
+              >
+                <option value="Right Ear">Right Ear (Right Pinna)</option>
+                <option value="Left Ear">Left Ear (Left Pinna)</option>
+                <option value="Both Ears">Both Ears (Bilateral Comparison)</option>
+              </select>
+            </div>
+          )}
+
+          {/* Description / Morphological Notes */}
+          <div>
+            <label className="block font-sans text-[0.76rem] font-bold text-[#444444] uppercase tracking-wider mb-1.5">
+              Description &amp; Morphological Notes *
+            </label>
+            <textarea
+              rows={3}
+              value={changeSentence}
+              onChange={(e) => setChangeSentence(e.target.value)}
+              placeholder={
+                activeType === 'photographic'
+                  ? 'Describe physical changes, tusk curvature/symmetry, facial cranial development, body condition, or healed markings observed over this timeframe...'
+                  : 'Detail pinna edge contours, tears, notches, hole punctures, and unique vascular venation patterns for individual ID...'
+              }
+              className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#d5d5d5] bg-white font-sans text-sm text-[#111111] focus:outline-none focus:border-accent leading-relaxed resize-y"
+              required
+            />
+          </div>
+
+          {/* Errors */}
+          {(formErr || error) && (
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-[10px] flex items-center gap-2">
+              <AlertCircle size={15} className="shrink-0" />
+              <span>{formErr || error}</span>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#eeeeee]">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSaving}
+              className="px-4 py-2.5 rounded-[10px] bg-[#f4f4f4] hover:bg-[#eaeaea] text-[#555555] font-sans text-sm font-semibold border-none cursor-pointer transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="px-5 py-2.5 rounded-[10px] bg-[#0b2518] hover:bg-[#133824] text-white font-sans text-sm font-semibold border-none cursor-pointer transition-all shadow-xs flex items-center gap-2 disabled:opacity-60"
+            >
+              {isSaving && <Loader2 size={16} className="animate-spin text-[#c69b55]" />}
+              <span>{isSaving ? 'Saving...' : isEditing ? 'Update' : 'Save'}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+/* ── Comparison Photo Zoom & Fullscreen Lightbox ─────────────── */
+function ComparisonPhotoLightbox({
+  item,
+  items = [],
+  tusker,
+  onClose,
+  onSelect,
+}) {
+  const currentIndex = items.findIndex(
+    (i) => i.year === item.year && i.stage === item.stage && i.photo === item.photo
+  );
+  const activeIdx = currentIndex >= 0 ? currentIndex : 0;
+  const activeItem = items[activeIdx] || item;
+
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const hasDraggedRef = useRef(false);
+  const containerRef = useRef(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Fullscreen support
+  const toggleFullscreen = useCallback(async (e) => {
+    e?.stopPropagation();
+    try {
+      if (!document.fullscreenElement) {
+        if (containerRef.current?.requestFullscreen) {
+          await containerRef.current.requestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, []);
+
+  const changeItem = useCallback((newIdx) => {
+    if (!items || items.length === 0) return;
+    const clamped = (newIdx + items.length) % items.length;
+    onSelect({ ...items[clamped], isEar: item.isEar });
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  }, [items, item.isEar, onSelect]);
+
+  const handlePrev = useCallback((e) => {
+    e?.stopPropagation();
+    changeItem(activeIdx - 1);
+  }, [activeIdx, changeItem]);
+
+  const handleNext = useCallback((e) => {
+    e?.stopPropagation();
+    changeItem(activeIdx + 1);
+  }, [activeIdx, changeItem]);
+
+  const zoomIn = useCallback((e) => {
+    e?.stopPropagation();
+    setScale((prev) => Math.min(prev + 0.5, 4));
+  }, []);
+
+  const zoomOut = useCallback((e) => {
+    e?.stopPropagation();
+    setScale((prev) => {
+      const next = Math.max(prev - 0.5, 1);
+      if (next === 1) setPosition({ x: 0, y: 0 });
+      return next;
+    });
+  }, []);
+
+  const resetZoom = useCallback((e) => {
+    e?.stopPropagation();
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  }, []);
+
+  const toggleZoom = (e) => {
+    e?.stopPropagation();
+    if (scale > 1) {
+      resetZoom();
+    } else {
+      setScale(2.5);
+    }
+  };
+
+  const handleWheel = (e) => {
+    e.preventDefault();
+    const delta = e.deltaY * -0.002;
+    setScale((prev) => {
+      const nextScale = Math.min(Math.max(prev + delta, 1), 4);
+      if (nextScale === 1) setPosition({ x: 0, y: 0 });
+      return nextScale;
+    });
+  };
+
+  const handleMouseDown = (e) => {
+    if (scale <= 1) return;
+    if (e.button !== 0) return;
+    setIsDragging(true);
+    hasDraggedRef.current = false;
+    dragStartRef.current = {
+      x: e.clientX - position.x,
+      y: e.clientY - position.y,
+    };
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging || scale <= 1) return;
+    const newX = e.clientX - dragStartRef.current.x;
+    const newY = e.clientY - dragStartRef.current.y;
+    if (Math.abs(newX - position.x) > 3 || Math.abs(newY - position.y) > 3) {
+      hasDraggedRef.current = true;
+    }
+    setPosition({
+      x: newX,
+      y: newY,
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Keyboard controls
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (scale > 1) {
+          resetZoom();
+        } else {
+          onClose();
+        }
+      } else if (e.key === 'ArrowLeft') {
+        if (items && items.length > 1) handlePrev();
+      } else if (e.key === 'ArrowRight') {
+        if (items && items.length > 1) handleNext();
+      } else if (e.key === '+' || e.key === '=') {
+        zoomIn();
+      } else if (e.key === '-' || e.key === '_') {
+        zoomOut();
+      } else if (e.key === '0' || e.key.toLowerCase() === 'r') {
+        resetZoom();
+      } else if (e.key.toLowerCase() === 'f') {
+        toggleFullscreen();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleNext, handlePrev, items, onClose, resetZoom, scale, toggleFullscreen, zoomIn, zoomOut]);
+
+  // Prevent background scrolling
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow === 'hidden' ? '' : (originalOverflow || '');
+    };
+  }, []);
+
+  return createPortal(
+    <div
+      ref={containerRef}
+      className="fixed inset-0 z-[10000] bg-black/95 text-white flex flex-col justify-between select-none overflow-hidden animate-fade-in p-3 sm:p-5"
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+    >
+      {/* ── Top Header Toolbar ── */}
+      <div
+        className="w-full flex items-center justify-between z-50 px-2 sm:px-4 shrink-0"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <span className="bg-accent/20 border border-accent/40 text-accent font-mono font-bold text-xs px-2.5 py-1 rounded">
+            {tusker?.id || 'WTS'}
+          </span>
+          <span className="font-sans text-sm sm:text-base font-semibold truncate text-white/90">
+            {tusker?.name || 'Wild Tusker'}
+          </span>
+          <span className="text-white/40">•</span>
+          <span className="text-xs sm:text-sm text-white/70 font-medium truncate">
+            {activeItem.stage}
+          </span>
+          {items && items.length > 1 && (
+            <span className="text-xs text-white/50 bg-white/10 px-2.5 py-0.5 rounded-full font-medium ml-1">
+              {activeIdx + 1} / {items.length}
+            </span>
+          )}
+        </div>
+
+        {/* Toolbar: Zoom Out, %, Zoom In, Reset, Fullscreen, Close */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <button
+            onClick={zoomOut}
+            disabled={scale <= 1}
+            title="Zoom out (-)"
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:hover:bg-white/10 flex items-center justify-center text-white border-none cursor-pointer transition-colors"
+          >
+            <ZoomOut size={16} />
+          </button>
+          <button
+            onClick={resetZoom}
+            title="Reset zoom (0)"
+            className="px-2 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xs font-mono text-white/90 border-none cursor-pointer transition-colors"
+          >
+            {Math.round(scale * 100)}%
+          </button>
+          <button
+            onClick={zoomIn}
+            disabled={scale >= 4}
+            title="Zoom in (+)"
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:hover:bg-white/10 flex items-center justify-center text-white border-none cursor-pointer transition-colors"
+          >
+            <ZoomIn size={16} />
+          </button>
+          <button
+            onClick={resetZoom}
+            disabled={scale === 1 && position.x === 0 && position.y === 0}
+            title="Reset position and zoom (R)"
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:hover:bg-white/10 flex items-center justify-center text-white border-none cursor-pointer transition-colors"
+          >
+            <RotateCcw size={15} />
+          </button>
+
+          <div className="w-[1px] h-5 bg-white/15 mx-1" />
+
+          <button
+            onClick={toggleFullscreen}
+            title={isFullscreen ? 'Exit fullscreen (F)' : 'Fullscreen (F)'}
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white border-none cursor-pointer transition-colors"
+          >
+            {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
+          </button>
+
+          <button
+            onClick={onClose}
+            title="Close (Esc)"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-red-500/80 text-white flex items-center justify-center border border-white/20 cursor-pointer transition-all ml-1"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      </div>
+
+      {/* ── Main Stage: Zoomable, Draggable Photo Canvas ── */}
+      <div
+        className="relative flex-1 w-full flex items-center justify-center min-h-0 my-auto py-2 overflow-hidden cursor-default"
+        onWheel={handleWheel}
+        onClick={(e) => {
+          if (e.target === e.currentTarget && scale === 1) onClose();
+        }}
+      >
+        {/* Navigation Arrows */}
+        {items && items.length > 1 && (
+          <>
+            <button
+              onClick={handlePrev}
+              title="Previous record (Left arrow)"
+              className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-black/60 hover:bg-black/90 text-white/90 hover:text-white border border-white/20 flex items-center justify-center cursor-pointer backdrop-blur-sm transition-all hover:scale-105"
+            >
+              <ChevronLeft size={24} />
+            </button>
+            <button
+              onClick={handleNext}
+              title="Next record (Right arrow)"
+              className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-black/60 hover:bg-black/90 text-white/90 hover:text-white border border-white/20 flex items-center justify-center cursor-pointer backdrop-blur-sm transition-all hover:scale-105"
+            >
+              <ChevronRight size={24} />
+            </button>
+          </>
+        )}
+
+        {/* Scalable & Draggable Image Canvas */}
+        {activeItem.photo && (
+          <div
+            className="w-full h-full flex items-center justify-center select-none"
+            style={{
+              cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
+            }}
+            onMouseDown={handleMouseDown}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                if (scale === 1) {
+                  onClose();
+                } else {
+                  resetZoom();
+                }
+                return;
+              }
+              e.stopPropagation();
+              if (hasDraggedRef.current) {
+                hasDraggedRef.current = false;
+                return;
+              }
+              if (scale === 1) {
+                setScale(2.5);
+              }
+            }}
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              toggleZoom(e);
+            }}
+          >
+            <img
+              src={activeItem.photo}
+              alt={`${tusker?.name || 'Tusker'} ${activeItem.year}`}
+              draggable={false}
+              className="max-h-[70vh] sm:max-h-[74vh] max-w-[92vw] w-auto h-auto object-contain rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10 select-none transition-transform duration-75"
+              style={{
+                transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
+                transformOrigin: 'center center',
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* ── Bottom Floating Frosted Bar (Matching Gallery Page) ── */}
+      <div
+        className="w-full max-w-[920px] mx-auto z-50 mt-1"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="bg-gradient-to-r from-black/85 via-[#0b1c14]/90 to-black/85 backdrop-blur-xl border border-white/15 rounded-2xl px-5 sm:px-7 py-3.5 sm:py-4 shadow-2xl flex flex-col gap-2.5 text-left">
+          {/* Top Row: Name, Stage, Year, Location, Badges */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h2 className="font-serif text-base sm:text-lg font-bold text-white tracking-wide m-0">
+                {tusker?.name} ({tusker?.id})
+              </h2>
+              <span className="text-[#c69b55] font-sans text-xs sm:text-sm font-semibold">
+                • {activeItem.stage}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="bg-[#0b2518] text-[#c69b55] border border-[#c69b55]/40 font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1.5 shadow-xs">
+                <Calendar size={12} />
+                <span>{activeItem.year}</span>
+              </span>
+
+              {activeItem.location && (
+                <span className="text-xs text-[#d4ded8] bg-white/10 px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/10">
+                  <MapPin size={12} className="text-accent" />
+                  <span>{activeItem.location}</span>
+                </span>
+              )}
+
+              {activeItem.hasChange && activeItem.changeType && (
+                <span className="text-xs font-bold uppercase tracking-wider text-[#996515] bg-[#faf5ec] px-2.5 py-0.5 rounded-full border border-[#f0e6d2]">
+                  {activeItem.changeType}
+                </span>
+              )}
+
+              {activeItem.earSide && (
+                <span className="text-xs font-bold text-[#0b2518] bg-[#c69b55] px-2.5 py-0.5 rounded-full">
+                  {activeItem.earSide}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Description Sentence */}
+          {activeItem.changeSentence && (
+            <p className="font-sans text-[0.85rem] sm:text-sm text-[#d4ded8] leading-relaxed m-0 font-medium">
+              {activeItem.changeSentence}
+            </p>
+          )}
+
+          {/* Milestone Thumbnails Strip (if > 1) */}
+          {items && items.length > 1 && (
+            <div className="flex items-center justify-between gap-3 pt-2 border-t border-white/10">
+              <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-thin">
+                {items.map((it, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => changeItem(idx)}
+                    className={`h-11 px-2.5 rounded-lg flex items-center gap-2 border transition-all cursor-pointer bg-black/40 text-left ${
+                      idx === activeIdx
+                        ? 'border-accent ring-2 ring-accent/60 bg-white/15'
+                        : 'border-white/15 opacity-60 hover:opacity-100 hover:border-white/40'
+                    }`}
+                  >
+                    {it.photo && (
+                      <img src={it.photo} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+                    )}
+                    <div className="flex flex-col min-w-0 pr-1">
+                      <span className="text-[11px] font-bold text-white truncate max-w-[110px]">
+                        {it.year}
+                      </span>
+                      <span className="text-[10px] text-white/70 truncate max-w-[110px]">
+                        {it.stage}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="text-[11px] text-white/40 hidden md:flex items-center gap-2 shrink-0">
+                <span>Scroll / Double-click to zoom</span>
+                <span>•</span>
+                <span>Drag to pan</span>
+                <span>•</span>
+                <span>Arrow keys ◀ ▶</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+/* ── Sighting Photo Zoom & Fullscreen Lightbox ───────────────── */
+function SightingPhotoLightbox({
+  photo,
+  tusker,
+  onClose,
+  onSelectIndex,
+}) {
+  const images = useMemo(() => {
+    return photo.images && photo.images.length > 0
+      ? photo.images
+      : photo.url
+      ? [photo.url]
+      : [];
+  }, [photo.images, photo.url]);
+  const activeIdx = photo.activeIdx !== undefined ? photo.activeIdx : 0;
+  const activeUrl = images[activeIdx] || photo.url;
+
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const hasDraggedRef = useRef(false);
+  const containerRef = useRef(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullscreen = useCallback(async (e) => {
+    e?.stopPropagation();
+    try {
+      if (!document.fullscreenElement) {
+        if (containerRef.current?.requestFullscreen) {
+          await containerRef.current.requestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, []);
+
+  const changeIndex = useCallback((newIdx) => {
+    if (!images || images.length === 0) return;
+    const clamped = (newIdx + images.length) % images.length;
+    onSelectIndex(clamped);
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  }, [images, onSelectIndex]);
+
+  const handlePrev = useCallback((e) => {
+    e?.stopPropagation();
+    changeIndex(activeIdx - 1);
+  }, [activeIdx, changeIndex]);
+
+  const handleNext = useCallback((e) => {
+    e?.stopPropagation();
+    changeIndex(activeIdx + 1);
+  }, [activeIdx, changeIndex]);
+
+  const zoomIn = useCallback((e) => {
+    e?.stopPropagation();
+    setScale((prev) => Math.min(prev + 0.5, 4));
+  }, []);
+
+  const zoomOut = useCallback((e) => {
+    e?.stopPropagation();
+    setScale((prev) => {
+      const next = Math.max(prev - 0.5, 1);
+      if (next === 1) setPosition({ x: 0, y: 0 });
+      return next;
+    });
+  }, []);
+
+  const resetZoom = useCallback((e) => {
+    e?.stopPropagation();
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  }, []);
+
+  const toggleZoom = (e) => {
+    e?.stopPropagation();
+    if (scale > 1) {
+      resetZoom();
+    } else {
+      setScale(2.5);
+    }
+  };
+
+  const handleWheel = (e) => {
+    e.preventDefault();
+    const delta = e.deltaY * -0.002;
+    setScale((prev) => {
+      const nextScale = Math.min(Math.max(prev + delta, 1), 4);
+      if (nextScale === 1) setPosition({ x: 0, y: 0 });
+      return nextScale;
+    });
+  };
+
+  const handleMouseDown = (e) => {
+    if (scale <= 1) return;
+    if (e.button !== 0) return;
+    setIsDragging(true);
+    hasDraggedRef.current = false;
+    dragStartRef.current = {
+      x: e.clientX - position.x,
+      y: e.clientY - position.y,
+    };
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging || scale <= 1) return;
+    const newX = e.clientX - dragStartRef.current.x;
+    const newY = e.clientY - dragStartRef.current.y;
+    if (Math.abs(newX - position.x) > 3 || Math.abs(newY - position.y) > 3) {
+      hasDraggedRef.current = true;
+    }
+    setPosition({
+      x: newX,
+      y: newY,
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Keyboard controls
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (scale > 1) {
+          resetZoom();
+        } else {
+          onClose();
+        }
+      } else if (e.key === 'ArrowLeft') {
+        if (images && images.length > 1) handlePrev();
+      } else if (e.key === 'ArrowRight') {
+        if (images && images.length > 1) handleNext();
+      } else if (e.key === '+' || e.key === '=') {
+        zoomIn();
+      } else if (e.key === '-' || e.key === '_') {
+        zoomOut();
+      } else if (e.key === '0' || e.key.toLowerCase() === 'r') {
+        resetZoom();
+      } else if (e.key.toLowerCase() === 'f') {
+        toggleFullscreen();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleNext, handlePrev, images, onClose, resetZoom, scale, toggleFullscreen, zoomIn, zoomOut]);
+
+  // Prevent background scrolling
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow === 'hidden' ? '' : (originalOverflow || '');
+    };
+  }, []);
+
+  return createPortal(
+    <div
+      ref={containerRef}
+      className="fixed inset-0 z-[10000] bg-black/95 text-white flex flex-col justify-between select-none overflow-hidden animate-fade-in p-3 sm:p-5"
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+    >
+      {/* ── Top Header Toolbar ── */}
+      <div
+        className="w-full flex items-center justify-between z-50 px-2 sm:px-4 shrink-0"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <span className="bg-accent/20 border border-accent/40 text-accent font-mono font-bold text-xs px-2.5 py-1 rounded">
+            {tusker?.id || 'WTS'}
+          </span>
+          <span className="font-sans text-sm sm:text-base font-semibold truncate text-white/90">
+            {photo.title || tusker?.name}
+          </span>
+          {images && images.length > 1 && (
+            <span className="text-xs text-white/50 bg-white/10 px-2.5 py-0.5 rounded-full font-medium ml-1">
+              {activeIdx + 1} / {images.length}
+            </span>
+          )}
+        </div>
+
+        {/* Toolbar: Zoom Out, %, Zoom In, Reset, Fullscreen, Close */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <button
+            onClick={zoomOut}
+            disabled={scale <= 1}
+            title="Zoom out (-)"
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:hover:bg-white/10 flex items-center justify-center text-white border-none cursor-pointer transition-colors"
+          >
+            <ZoomOut size={16} />
+          </button>
+          <button
+            onClick={resetZoom}
+            title="Reset zoom (0)"
+            className="px-2 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xs font-mono text-white/90 border-none cursor-pointer transition-colors"
+          >
+            {Math.round(scale * 100)}%
+          </button>
+          <button
+            onClick={zoomIn}
+            disabled={scale >= 4}
+            title="Zoom in (+)"
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:hover:bg-white/10 flex items-center justify-center text-white border-none cursor-pointer transition-colors"
+          >
+            <ZoomIn size={16} />
+          </button>
+          <button
+            onClick={resetZoom}
+            disabled={scale === 1 && position.x === 0 && position.y === 0}
+            title="Reset position and zoom (R)"
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:hover:bg-white/10 flex items-center justify-center text-white border-none cursor-pointer transition-colors"
+          >
+            <RotateCcw size={15} />
+          </button>
+
+          <div className="w-[1px] h-5 bg-white/15 mx-1" />
+
+          <button
+            onClick={toggleFullscreen}
+            title={isFullscreen ? 'Exit fullscreen (F)' : 'Fullscreen (F)'}
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white border-none cursor-pointer transition-colors"
+          >
+            {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
+          </button>
+
+          <button
+            onClick={onClose}
+            title="Close (Esc)"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-red-500/80 text-white flex items-center justify-center border border-white/20 cursor-pointer transition-all ml-1"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      </div>
+
+      {/* ── Main Stage: Zoomable, Draggable Photo Canvas ── */}
+      <div
+        className="relative flex-1 w-full flex items-center justify-center min-h-0 my-auto py-2 overflow-hidden cursor-default"
+        onWheel={handleWheel}
+        onClick={(e) => {
+          if (e.target === e.currentTarget && scale === 1) onClose();
+        }}
+      >
+        {/* Navigation Arrows */}
+        {images && images.length > 1 && (
+          <>
+            <button
+              onClick={handlePrev}
+              title="Previous photo (Left arrow)"
+              className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-black/60 hover:bg-black/90 text-white/90 hover:text-white border border-white/20 flex items-center justify-center cursor-pointer backdrop-blur-sm transition-all hover:scale-105"
+            >
+              <ChevronLeft size={24} />
+            </button>
+            <button
+              onClick={handleNext}
+              title="Next photo (Right arrow)"
+              className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-black/60 hover:bg-black/90 text-white/90 hover:text-white border border-white/20 flex items-center justify-center cursor-pointer backdrop-blur-sm transition-all hover:scale-105"
+            >
+              <ChevronRight size={24} />
+            </button>
+          </>
+        )}
+
+        {/* Scalable & Draggable Image Canvas */}
+        {activeUrl && (
+          <div
+            className="w-full h-full flex items-center justify-center select-none"
+            style={{
+              cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
+            }}
+            onMouseDown={handleMouseDown}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                if (scale === 1) {
+                  onClose();
+                } else {
+                  resetZoom();
+                }
+                return;
+              }
+              e.stopPropagation();
+              if (hasDraggedRef.current) {
+                hasDraggedRef.current = false;
+                return;
+              }
+              if (scale === 1) {
+                setScale(2.5);
+              }
+            }}
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              toggleZoom(e);
+            }}
+          >
+            <img
+              src={activeUrl}
+              alt={photo.title || 'Sighting'}
+              draggable={false}
+              className="max-h-[70vh] sm:max-h-[74vh] max-w-[92vw] w-auto h-auto object-contain rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10 select-none transition-transform duration-75"
+              style={{
+                transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
+                transformOrigin: 'center center',
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* ── Bottom Floating Frosted Bar (Matching Gallery Page) ── */}
+      <div
+        className="w-full max-w-[920px] mx-auto z-50 mt-1"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="bg-gradient-to-r from-black/85 via-[#0b1c14]/90 to-black/85 backdrop-blur-xl border border-white/15 rounded-2xl px-5 sm:px-7 py-3.5 sm:py-4 shadow-2xl flex flex-col gap-2 text-left">
+          {/* Top Row: Title, Date, Location, Health, Threat */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h2 className="font-serif text-base sm:text-lg font-bold text-white tracking-wide m-0">
+                {photo.title || `${tusker?.name} (${tusker?.id})`}
+              </h2>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap text-xs">
+              {photo.date && (
+                <span className="bg-[#0b2518] text-[#c69b55] border border-[#c69b55]/40 font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-xs">
+                  <Calendar size={12} />
+                  <span>{photo.date}</span>
+                </span>
+              )}
+
+              {photo.location && (
+                <span className="text-xs text-[#d4ded8] bg-white/10 px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/10">
+                  <MapPin size={12} className="text-accent" />
+                  <span>{photo.location}</span>
+                </span>
+              )}
+
+              {photo.healthCondition && (
+                <span className="bg-emerald-950/80 text-emerald-300 border border-emerald-600/40 font-bold px-2.5 py-0.5 rounded-full">
+                  Health: {photo.healthCondition}
+                </span>
+              )}
+
+              {photo.threatLevel && (
+                <span className="bg-amber-950/80 text-amber-300 border border-amber-600/40 font-bold px-2.5 py-0.5 rounded-full">
+                  Threat: {photo.threatLevel}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Sighting Details & Notes */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#b8c7be] font-sans">
+            <span className="flex items-center gap-1">
+              <UserCheck size={13} className="text-accent" />
+              <span>Recorded By: <strong className="text-white font-semibold">{photo.author || 'WTS Admin'}</strong></span>
+            </span>
+          </div>
+
+          {photo.note && (
+            <p className="font-sans text-[0.85rem] sm:text-sm text-[#d4ded8] leading-relaxed m-0 font-medium pt-1 border-t border-white/10">
+              {photo.note}
+            </p>
+          )}
+
+          {/* Thumbnails strip for multiple images */}
+          {images && images.length > 1 && (
+            <div className="flex items-center justify-between gap-3 pt-2 border-t border-white/10">
+              <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-thin">
+                {images.map((imgUrl, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => changeIndex(idx)}
+                    className={`w-11 h-11 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer p-0 bg-black/40 ${
+                      idx === activeIdx
+                        ? 'border-accent ring-2 ring-accent/60 scale-105 opacity-100'
+                        : 'border-white/15 opacity-60 hover:opacity-100 hover:border-white/40'
+                    }`}
+                  >
+                    <img src={imgUrl} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+
+              <div className="text-[11px] text-white/40 hidden md:flex items-center gap-2 shrink-0">
+                <span>Scroll / Double-click to zoom</span>
+                <span>•</span>
+                <span>Drag to pan</span>
+                <span>•</span>
+                <span>Arrow keys ◀ ▶</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 /* ── Main Profile Page ───────────────────────────────────────── */
 export default function TuskerProfile() {
   const { id } = useParams();
@@ -594,6 +1908,76 @@ export default function TuskerProfile() {
   const [deletingSighting, setDeletingSighting] = useState(null); // { sighting, sightingNum, rowNum }
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Comparison Management State (Photographic & Ear Biometric)
+  const [comparisonModal, setComparisonModal] = useState(null); // { type: 'photographic' | 'ear', item?: object, index?: number }
+  const [deletingComparison, setDeletingComparison] = useState(null); // { type: 'photographic' | 'ear', index: number, item: object }
+  const [isSavingComparison, setIsSavingComparison] = useState(false);
+  const [comparisonSaveError, setComparisonSaveError] = useState('');
+
+  const handleSaveComparison = async (formData, formType) => {
+    setIsSavingComparison(true);
+    setComparisonSaveError('');
+    try {
+      if (formType === 'photographic') {
+        const currentList = Array.isArray(tusker.photographicComparison)
+          ? [...tusker.photographicComparison]
+          : [];
+        if (comparisonModal?.index !== undefined && comparisonModal.index >= 0) {
+          currentList[comparisonModal.index] = formData;
+        } else {
+          currentList.push(formData);
+        }
+        currentList.sort((a, b) => (parseInt(a.year, 10) || 0) - (parseInt(b.year, 10) || 0));
+        await updateTusker(tusker.id, { photographicComparison: currentList });
+      } else {
+        const currentList = Array.isArray(tusker.earComparison)
+          ? [...tusker.earComparison]
+          : [];
+        if (comparisonModal?.index !== undefined && comparisonModal.index >= 0) {
+          currentList[comparisonModal.index] = formData;
+        } else {
+          currentList.push(formData);
+        }
+        currentList.sort((a, b) => (parseInt(a.year, 10) || 0) - (parseInt(b.year, 10) || 0));
+        await updateTusker(tusker.id, { earComparison: currentList });
+      }
+
+      await reloadTusker();
+      setComparisonModal(null);
+    } catch (err) {
+      console.error('Failed to save comparison milestone:', err);
+      setComparisonSaveError(err.message || 'Failed to save comparison item.');
+    } finally {
+      setIsSavingComparison(false);
+    }
+  };
+
+  const handleConfirmDeleteComparison = async () => {
+    if (!deletingComparison) return;
+    setIsSavingComparison(true);
+    try {
+      if (deletingComparison.type === 'photographic') {
+        const currentList = Array.isArray(tusker.photographicComparison)
+          ? [...tusker.photographicComparison]
+          : [];
+        currentList.splice(deletingComparison.index, 1);
+        await updateTusker(tusker.id, { photographicComparison: currentList });
+      } else {
+        const currentList = Array.isArray(tusker.earComparison)
+          ? [...tusker.earComparison]
+          : [];
+        currentList.splice(deletingComparison.index, 1);
+        await updateTusker(tusker.id, { earComparison: currentList });
+      }
+      await reloadTusker();
+      setDeletingComparison(null);
+    } catch (err) {
+      console.error('Failed to delete comparison milestone:', err);
+    } finally {
+      setIsSavingComparison(false);
+    }
+  };
+
   // Close active dropdown menu on outside click or window scroll
   useEffect(() => {
     if (!activeMenu) return;
@@ -609,6 +1993,29 @@ export default function TuskerProfile() {
 
   const handleSaveEditedSighting = async (sightingId, updatedPayload) => {
     await updateSighting(sightingId, updatedPayload);
+
+    // If this is the latest sighting, synchronize the tusker profile status
+    const allSightings = tusker?.sightings || [];
+    const isLatest = allSightings.length > 0 && allSightings[allSightings.length - 1].id === sightingId;
+    if (isLatest && updatedPayload.note && tusker?.id) {
+      try {
+        const parsed = JSON.parse(updatedPayload.note);
+        const updates = {};
+        if (parsed.location !== undefined) updates.lastSeenArea = parsed.location;
+        if (parsed.healthCondition !== undefined) updates.healthCondition = parsed.healthCondition;
+        if (parsed.threatLevel !== undefined) updates.threatLevel = parsed.threatLevel;
+        if (parsed.specialMarks !== undefined) updates.specialMarks = parsed.specialMarks;
+        if (parsed.specialWounds !== undefined) updates.specialWounds = parsed.specialWounds;
+        if (parsed.remarks !== undefined || parsed.note !== undefined) updates.remarks = parsed.remarks || parsed.note;
+        if (updatedPayload.captureDate) updates.lastSeen = `${updatedPayload.captureDate.slice(0, 7)}-01`;
+        if (Object.keys(updates).length > 0) {
+          await updateTusker(tusker.id, updates);
+        }
+      } catch {
+        /* ignore parsing errors */
+      }
+    }
+
     if (reloadTusker) {
       await reloadTusker();
     } else if (setTusker) {
@@ -628,7 +2035,54 @@ export default function TuskerProfile() {
     if (!deletingSighting?.sighting?.id) return;
     try {
       setIsDeleting(true);
-      await deleteSighting(deletingSighting.sighting.id);
+      const sightingId = deletingSighting.sighting.id;
+      await deleteSighting(sightingId);
+
+      // Recompute profile status based on remaining sightings
+      const remainingSightings = (tusker?.sightings || []).filter(
+        (s) => s.id !== sightingId
+      );
+
+      let profileRollback = {};
+      if (remainingSightings.length > 0) {
+        // Rollback to the latest remaining sighting observation
+        const latestSighting = remainingSightings[remainingSightings.length - 1];
+        const latestDetails = parseSightingDetails(latestSighting);
+        profileRollback = {
+          lastSeenArea: latestDetails.location || tusker?.location || '',
+          healthCondition: latestDetails.healthCondition || 'Good',
+          threatLevel: latestDetails.threatLevel || '',
+          specialMarks: latestDetails.specialMarks || '',
+          specialWounds: latestDetails.specialWounds || '',
+          remarks: latestDetails.remarks || latestDetails.note || '',
+        };
+        if (latestSighting.captureDate) {
+          profileRollback.lastSeen = `${latestSighting.captureDate.slice(0, 7)}-01`;
+        }
+      } else {
+        // All subsequent field sightings deleted: restore original baseline tusker data
+        profileRollback = {
+          lastSeenArea: tusker?.location || '',
+          healthCondition: 'Good',
+          threatLevel: '',
+          specialMarks: '',
+          specialWounds: '',
+          remarks: '',
+        };
+        if (tusker?.firstRecordedDate) {
+          profileRollback.lastSeen = `${tusker.firstRecordedDate.slice(0, 7)}-01`;
+        }
+      }
+
+      // Persist the rollback update to the database
+      if (tusker?.id && Object.keys(profileRollback).length > 0) {
+        try {
+          await updateTusker(tusker.id, profileRollback);
+        } catch (updateErr) {
+          console.warn('Could not update tusker profile after deleting sighting:', updateErr);
+        }
+      }
+
       if (reloadTusker) {
         await reloadTusker();
       } else if (setTusker) {
@@ -636,9 +2090,8 @@ export default function TuskerProfile() {
           if (!prev) return prev;
           return {
             ...prev,
-            sightings: (prev.sightings || []).filter(
-              (s) => s.id !== deletingSighting.sighting.id
-            ),
+            ...profileRollback,
+            sightings: remainingSightings,
           };
         });
       }
@@ -731,34 +2184,72 @@ export default function TuskerProfile() {
     }
   }, [tusker]);
 
-  // Combine baseline tusker photos with subsequent sighting photos at the end
+  // Combine baseline tusker photos with ALL subsequent sighting photos at the end
   const allProfilePhotos = useMemo(() => {
     const basePhotos = Array.isArray(tusker?.photos)
       ? [...tusker.photos]
       : (tusker?.photo ? [tusker.photo] : []);
     const sightingPhotos = [];
+
     (tusker?.sightings || []).forEach((s) => {
-      const urls = Array.isArray(s.imageUrl)
-        ? s.imageUrl
-        : (typeof s.imageUrl === 'string' && s.imageUrl.trim() ? s.imageUrl.split(',').map((u) => u.trim()) : []);
-      urls.forEach((url) => {
-        if (url && typeof url === 'string' && url.length > 0 && !basePhotos.includes(url) && !sightingPhotos.includes(url)) {
+      const details = parseSightingDetails(s);
+      const list = [];
+
+      // 1. All images from details.images
+      if (Array.isArray(details.images) && details.images.length > 0) {
+        details.images.forEach((u) => {
+          if (u && typeof u === 'string' && u.trim().length > 0) list.push(u.trim());
+        });
+      }
+
+      // 2. All images from s.imageUrl (string or comma-separated)
+      if (s.imageUrl) {
+        if (Array.isArray(s.imageUrl)) {
+          s.imageUrl.forEach((u) => {
+            if (u && typeof u === 'string' && u.trim().length > 0) list.push(u.trim());
+          });
+        } else if (typeof s.imageUrl === 'string') {
+          s.imageUrl.split(',').forEach((u) => {
+            const trimmed = u.trim();
+            if (trimmed) list.push(trimmed);
+          });
+        }
+      }
+
+      // 3. Fallback to raw note JSON
+      if (s.note && typeof s.note === 'string' && s.note.trim().startsWith('{')) {
+        try {
+          const parsed = JSON.parse(s.note);
+          const rawImgs = Array.isArray(parsed.images)
+            ? parsed.images
+            : (Array.isArray(parsed.imageUrls) ? parsed.imageUrls : []);
+          rawImgs.forEach((u) => {
+            if (u && typeof u === 'string' && u.trim().length > 0) list.push(u.trim());
+          });
+        } catch {
+          /* ignore */
+        }
+      }
+
+      list.forEach((url) => {
+        if (url && !basePhotos.includes(url) && !sightingPhotos.includes(url)) {
           sightingPhotos.push(url);
         }
       });
     });
+
     return [...basePhotos, ...sightingPhotos];
   }, [tusker?.photos, tusker?.photo, tusker?.sightings]);
 
   useEffect(() => {
-    if (selectedComparisonImg || showRiskModal || previewModalPhoto) {
+    if (selectedComparisonImg || showRiskModal || previewModalPhoto || comparisonModal || deletingComparison) {
       const prevOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       return () => {
         document.body.style.overflow = prevOverflow === 'hidden' ? '' : (prevOverflow || '');
       };
     }
-  }, [selectedComparisonImg, showRiskModal, previewModalPhoto]);
+  }, [selectedComparisonImg, showRiskModal, previewModalPhoto, comparisonModal, deletingComparison]);
 
   if (loading) {
     return (
@@ -1044,8 +2535,8 @@ export default function TuskerProfile() {
               </p>
             </div>
 
-            {/* 3x1 Collage in One Horizontal Row - All 3 boxes identical */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Responsive Collage */}
+            <div className={`grid grid-cols-1 ${comparisonList.length === 1 ? 'max-w-md mx-auto' : comparisonList.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-6`}>
               {comparisonList.map((item, index) => (
                 <div
                   key={index}
@@ -1053,10 +2544,18 @@ export default function TuskerProfile() {
                 >
                   {/* Top Stage & Year Header */}
                   <div className="px-4 py-3 bg-white border-b border-[#f0f0f0] flex items-center justify-between">
-                    <span className="font-sans text-[0.82rem] font-bold text-[#555555]">
-                      {item.stage || `Stage ${index + 1}`}
-                    </span>
-                    <span className="text-[#111111] font-sans text-[0.84rem] font-extrabold flex items-center gap-1.5">
+                    <div className="flex flex-col min-w-0 pr-2">
+                      <span className="font-sans text-[0.82rem] font-bold text-[#555555] truncate">
+                        {item.stage || `Stage ${index + 1}`}
+                      </span>
+                      {item.location && (
+                        <span className="font-sans text-[0.72rem] text-[#888888] flex items-center gap-1 mt-0.5 truncate">
+                          <MapPin size={10} className="text-accent shrink-0" />
+                          <span>{item.location}</span>
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[#111111] font-sans text-[0.84rem] font-extrabold flex items-center gap-1.5 shrink-0">
                       <Calendar size={13} />
                       <span>{item.year}</span>
                     </span>
@@ -1100,6 +2599,13 @@ export default function TuskerProfile() {
                     <p className="font-sans text-[0.88rem] text-[#2c3330] leading-[1.65] m-0 font-medium">
                       {item.changeSentence}
                     </p>
+                    {item.hasChange && item.changeType && (
+                      <div className="mt-3 pt-2.5 border-t border-[#f2f2f2]">
+                        <span className="inline-block text-[0.7rem] font-bold uppercase tracking-wider text-[#996515] bg-[#faf5ec] px-2 py-0.5 rounded-full border border-[#f0e6d2]">
+                          {item.changeType}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -1113,7 +2619,7 @@ export default function TuskerProfile() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-3">
               <div>
                 <h2 className="font-sans text-[1.6rem] font-bold text-[#111111] m-0 flex items-center gap-2">
-                  <span>Ear Biometric & Venation Comparison</span>
+                  <span>Ear Biometric &amp; Venation Comparison</span>
                 </h2>
                 <p className="font-sans text-[0.9rem] text-[#666666] mt-1.5 mb-0 max-w-[780px] leading-relaxed">
                   Identification panel comparing pinna edge contours, tears, V-notches, and vascular branching across monitoring intervals.
@@ -1121,22 +2627,37 @@ export default function TuskerProfile() {
               </div>
             </div>
 
-            {/* 2-Column Horizontal Collage of Ears */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {earComparisonList.slice(0, 2).map((item, index) => (
+            {/* Responsive Collage of Ears */}
+            <div className={`grid grid-cols-1 ${earComparisonList.length === 1 ? 'max-w-md mx-auto' : 'md:grid-cols-2'} gap-6`}>
+              {earComparisonList.map((item, index) => (
                 <div
                   key={index}
                   className="bg-white border border-[#e0e5e2] rounded-[16px] overflow-hidden flex flex-col shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
                 >
                   {/* Top Stage & Year Header */}
                   <div className="px-4 py-3 bg-[#fafbf9] border-b border-[#eeeeee] flex items-center justify-between">
-                    <span className="font-sans text-[0.82rem] font-bold text-[#44554c]">
-                      {item.stage || `Stage ${index + 1}`}
-                    </span>
-                    <span className="text-[#111111] font-sans text-[0.84rem] font-extrabold flex items-center gap-1.5">
-                      <Calendar size={13} />
-                      <span>{item.year}</span>
-                    </span>
+                    <div className="flex flex-col min-w-0 pr-2">
+                      <span className="font-sans text-[0.82rem] font-bold text-[#44554c] truncate">
+                        {item.stage || (item.earSide ? `${item.earSide} Record` : `Stage ${index + 1}`)}
+                      </span>
+                      {item.location && (
+                        <span className="font-sans text-[0.72rem] text-[#77887e] flex items-center gap-1 mt-0.5 truncate">
+                          <MapPin size={10} className="text-accent shrink-0" />
+                          <span>{item.location}</span>
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {item.earSide && (
+                        <span className="bg-[#0b2518]/10 text-[#0b2518] text-[0.7rem] font-bold px-2 py-0.5 rounded-full">
+                          {item.earSide}
+                        </span>
+                      )}
+                      <span className="text-[#111111] font-sans text-[0.84rem] font-extrabold flex items-center gap-1.5">
+                        <Calendar size={13} />
+                        <span>{item.year}</span>
+                      </span>
+                    </div>
                   </div>
 
                   {/* Ear Photo Card */}
@@ -1163,16 +2684,16 @@ export default function TuskerProfile() {
                           <Camera size={22} className="opacity-70" />
                         </div>
                         <span className="font-sans text-xs font-bold text-[#1f3327] uppercase tracking-wider mb-1">
-                          {tusker.id} : Ear Biometrics
+                          {tusker.id} • Ear Biometrics
                         </span>
                         <span className="font-sans text-[0.78rem] text-[#55695d] max-w-[200px] leading-tight">
-                          {item.stage} Record
+                          {item.stage || 'Ear'} Record
                         </span>
                       </div>
                     )}
                   </div>
 
-                  {/* Sentence Below the Photo */}
+                  {/* Sentence Below the Ear Photo */}
                   <div className="p-4 flex-1 flex flex-col justify-between bg-white">
                     <p className="font-sans text-[0.88rem] text-[#2c3330] leading-[1.65] m-0 font-medium">
                       {item.changeSentence}
@@ -1411,30 +2932,51 @@ export default function TuskerProfile() {
                         </td>
 
                         <td className="py-3.5 px-4 text-center">
-                          {sighting.imageUrl ? (
-                            <button
-                              type="button"
-                              onClick={() => setPreviewModalPhoto({
-                                url: sighting.imageUrl,
-                                title: `${tusker.name} (${tusker.id}) - Sighting #${sightingNum}`,
-                                date: formatDate(sighting.captureDate) || sighting.captureDate || '—',
-                                author: sighting.author || 'WTS Admin',
-                                location: details.location || '',
-                                healthCondition: details.healthCondition || '',
-                                threatLevel: details.threatLevel || '',
-                                note: noteDisplay !== '—' ? noteDisplay : ''
-                              })}
-                              className="group relative w-12 h-12 rounded-[8px] overflow-hidden border border-[#d5d5d5] bg-black/5 mx-auto block cursor-pointer transition-transform hover:scale-105 p-0"
-                              title="Click to view full image"
-                            >
-                              <img src={sighting.imageUrl} alt={`Sighting ${sightingNum}`} className="w-full h-full object-cover" />
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                                <Eye size={14} />
-                              </div>
-                            </button>
-                          ) : (
-                            <span className="text-[#aaaaaa] text-xs">—</span>
-                          )}
+                          {(() => {
+                            const allSightingImages = (details.images && details.images.length > 0)
+                              ? details.images
+                              : (sighting.imageUrl
+                                ? (typeof sighting.imageUrl === 'string' ? sighting.imageUrl.split(',').map((u) => u.trim()).filter(Boolean) : [sighting.imageUrl])
+                                : []);
+                            const primaryPhoto = allSightingImages[0] || null;
+
+                            return primaryPhoto ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPreviewModalPhoto({
+                                    url: primaryPhoto,
+                                    images: allSightingImages,
+                                    title: `${tusker.name} (${tusker.id}) - Sighting #${sightingNum}`,
+                                    date: formatDate(sighting.captureDate) || sighting.captureDate || '—',
+                                    author: sighting.author || 'WTS Admin',
+                                    location: details.location || '',
+                                    healthCondition: details.healthCondition || '',
+                                    threatLevel: details.threatLevel || '',
+                                    note: noteDisplay !== '—' ? noteDisplay : ''
+                                  });
+                                }}
+                                className="group relative w-12 h-12 rounded-[8px] overflow-hidden border border-[#d5d5d5] bg-black/5 mx-auto block cursor-pointer transition-transform hover:scale-105 p-0"
+                                title="Click to view primary image"
+                              >
+                                <img
+                                  src={primaryPhoto}
+                                  alt={`Sighting ${sightingNum}`}
+                                  className="w-full h-full object-cover"
+                                />
+                                {allSightingImages.length > 1 && (
+                                  <span className="absolute bottom-1 right-1 bg-black/80 text-[#c69b55] text-[9px] font-bold px-1 rounded shadow-xs">
+                                    +{allSightingImages.length - 1}
+                                  </span>
+                                )}
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                  <Eye size={14} />
+                                </div>
+                              </button>
+                            ) : (
+                              <span className="text-[#aaaaaa] text-xs">—</span>
+                            );
+                          })()}
                         </td>
 
                         <td className="py-3.5 px-4 text-center">
@@ -1490,6 +3032,248 @@ export default function TuskerProfile() {
               tusker={tusker}
               onPreviewPhoto={setPreviewModalPhoto}
             />
+
+            {/* Photographic & Ear Biometric Comparisons Management (Admin View) */}
+            <div className="mt-10 pt-8 border-t border-[#e8e8e8]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                  <h3 className="font-sans text-[1.25rem] font-bold text-[#111111] m-0 flex items-center gap-2">
+                    <Camera size={20} className="text-accent" />
+                    <span>Photographic &amp; Ear Biometric Comparisons</span>
+                  </h3>
+                  <p className="font-sans text-[0.82rem] text-[#666666] mt-1 mb-0 leading-relaxed max-w-[680px]">
+                    Manage sequential multi-year photographic progressions and ear venation biometrics over the years. Added records are immediately reflected in the public comparison collage above.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setComparisonModal({
+                        type: 'photographic',
+                        item: null,
+                        index: -1,
+                      });
+                    }}
+                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-[10px] bg-[#0b2518] hover:bg-[#133824] text-white text-[0.82rem] font-semibold transition-all shadow-xs cursor-pointer border-none w-full sm:w-[195px] text-center"
+                  >
+                    <Plus size={15} className="text-[#c69b55]" />
+                    <span>Add Photo Comparison</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setComparisonModal({
+                        type: 'ear',
+                        item: null,
+                        index: -1,
+                      });
+                    }}
+                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-[10px] bg-white border border-[#d5d5d5] hover:border-[#111111] hover:bg-[#fbfbfb] text-[#111111] text-[0.82rem] font-semibold transition-all shadow-xs cursor-pointer w-full sm:w-[195px] text-center"
+                  >
+                    <Plus size={15} className="text-accent" />
+                    <span>Add Ear Comparison</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Grid with 2 columns: Photographic progression & Ear biometrics */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* 1. Photographic Comparisons Column */}
+                <div className="bg-[#fafbfb] border border-[#e5e7eb] rounded-[16px] p-5 flex flex-col gap-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-[#ededed]">
+                    <div className="flex items-center gap-2">
+                      <Camera size={16} className="text-accent" />
+                      <span className="font-sans text-[0.92rem] font-bold text-[#111111]">
+                        Photographic Progression
+                      </span>
+                    </div>
+                    <span className="text-[0.72rem] font-bold px-2 py-0.5 rounded-full bg-white border border-[#d5d5d5] text-[#555555]">
+                      {Array.isArray(tusker.photographicComparison) ? tusker.photographicComparison.length : 0} records
+                    </span>
+                  </div>
+
+                  {Array.isArray(tusker.photographicComparison) && tusker.photographicComparison.length > 0 ? (
+                    <div className="flex flex-col gap-3">
+                      {tusker.photographicComparison.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-white border border-[#e8e8e8] rounded-[12px] p-3.5 flex gap-3.5 shadow-xs hover:border-[#cccccc] transition-colors"
+                        >
+                          <div
+                            onClick={() => item.photo && setSelectedComparisonImg(item)}
+                            className={`w-20 h-20 rounded-[8px] bg-[#f0f0f0] overflow-hidden shrink-0 border border-[#e0e0e0] flex items-center justify-center ${item.photo ? 'cursor-pointer group relative' : ''}`}
+                          >
+                            {item.photo ? (
+                              <>
+                                <img src={item.photo} alt={item.stage} className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                  <Eye size={14} />
+                                </div>
+                              </>
+                            ) : (
+                              <Camera size={18} className="text-[#999999]" />
+                            )}
+                          </div>
+
+                          <div className="flex-1 min-w-0 flex flex-col justify-between">
+                            <div>
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="font-sans text-[0.85rem] font-bold text-[#111111] truncate">
+                                  {item.stage || `Stage ${idx + 1}`}
+                                </span>
+                                <span className="bg-[#0b2518] text-[#c69b55] text-[0.7rem] font-bold px-2 py-0.5 rounded-full shrink-0">
+                                  {item.year}
+                                </span>
+                              </div>
+                              {item.location && (
+                                <span className="text-[0.72rem] text-[#777777] flex items-center gap-1 mt-0.5 truncate">
+                                  <MapPin size={10} className="text-accent shrink-0" />
+                                  <span>{item.location}</span>
+                                </span>
+                              )}
+                              {item.hasChange && item.changeType && (
+                                <span className="inline-block text-[0.68rem] font-bold uppercase tracking-wider text-[#996515] bg-[#faf5ec] px-1.5 py-0.5 rounded border border-[#f0e6d2] mt-1">
+                                  {item.changeType}
+                                </span>
+                              )}
+                              <p className="font-sans text-[0.78rem] text-[#444444] line-clamp-2 mt-1 mb-0 leading-snug">
+                                {item.changeSentence}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[#f2f2f2] justify-end">
+                              <button
+                                type="button"
+                                onClick={() => setComparisonModal({ type: 'photographic', item, index: idx })}
+                                className="inline-flex items-center gap-1 text-[0.72rem] font-medium text-[#444444] hover:text-[#111111] px-2 py-1 rounded bg-[#f5f5f5] hover:bg-[#ebebeb] border-none cursor-pointer transition-colors"
+                              >
+                                <Edit size={12} />
+                                <span>Edit</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setDeletingComparison({ type: 'photographic', index: idx, item })}
+                                className="inline-flex items-center gap-1 text-[0.72rem] font-medium text-red-600 hover:text-red-700 px-2 py-1 rounded bg-red-50 hover:bg-red-100 border-none cursor-pointer transition-colors"
+                              >
+                                <Trash2 size={12} />
+                                <span>Delete</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-8 px-4 text-center border border-dashed border-[#d8d8d8] rounded-[12px] bg-white">
+                      <Camera size={24} className="mx-auto text-[#bbbbbb] mb-1.5" />
+                      <p className="font-sans text-[0.82rem] font-bold text-[#555555] m-0">No photographic comparisons added yet</p>
+                      <p className="font-sans text-[0.75rem] text-[#888888] m-0 mt-0.5 max-w-[280px] mx-auto">
+                        Track multi-year tusk and physical changes by clicking "+ Add Photo Comparison".
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. Ear Biometric Comparisons Column */}
+                <div className="bg-[#fafbfb] border border-[#e5e7eb] rounded-[16px] p-5 flex flex-col gap-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-[#ededed]">
+                    <div className="flex items-center gap-2">
+                      <Sliders size={16} className="text-accent" />
+                      <span className="font-sans text-[0.92rem] font-bold text-[#111111]">
+                        Ear Biometric Records
+                      </span>
+                    </div>
+                    <span className="text-[0.72rem] font-bold px-2 py-0.5 rounded-full bg-white border border-[#d5d5d5] text-[#555555]">
+                      {Array.isArray(tusker.earComparison) ? tusker.earComparison.length : 0} records
+                    </span>
+                  </div>
+
+                  {Array.isArray(tusker.earComparison) && tusker.earComparison.length > 0 ? (
+                    <div className="flex flex-col gap-3">
+                      {tusker.earComparison.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-white border border-[#e8e8e8] rounded-[12px] p-3.5 flex gap-3.5 shadow-xs hover:border-[#cccccc] transition-colors"
+                        >
+                          <div
+                            onClick={() => item.photo && setSelectedComparisonImg({ ...item, isEar: true })}
+                            className={`w-20 h-20 rounded-[8px] bg-[#f0f0f0] overflow-hidden shrink-0 border border-[#e0e0e0] flex items-center justify-center ${item.photo ? 'cursor-pointer group relative' : ''}`}
+                          >
+                            {item.photo ? (
+                              <>
+                                <img src={item.photo} alt={item.stage} className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                  <Eye size={14} />
+                                </div>
+                              </>
+                            ) : (
+                              <Camera size={18} className="text-[#999999]" />
+                            )}
+                          </div>
+
+                          <div className="flex-1 min-w-0 flex flex-col justify-between">
+                            <div>
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="font-sans text-[0.85rem] font-bold text-[#111111] truncate">
+                                  {item.stage || (item.earSide ? `${item.earSide} Record` : `Record ${idx + 1}`)}
+                                </span>
+                                <span className="bg-[#0b2518] text-[#c69b55] text-[0.7rem] font-bold px-2 py-0.5 rounded-full shrink-0">
+                                  {item.year}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                {item.earSide && (
+                                  <span className="text-[0.68rem] font-semibold text-[#0b2518] bg-[#0b2518]/10 px-1.5 py-0.2 rounded">
+                                    {item.earSide}
+                                  </span>
+                                )}
+                                {item.location && (
+                                  <span className="text-[0.72rem] text-[#777777] flex items-center gap-1 truncate">
+                                    <MapPin size={10} className="text-accent shrink-0" />
+                                    <span>{item.location}</span>
+                                  </span>
+                                )}
+                              </div>
+                              <p className="font-sans text-[0.78rem] text-[#444444] line-clamp-2 mt-1 mb-0 leading-snug">
+                                {item.changeSentence}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[#f2f2f2] justify-end">
+                              <button
+                                type="button"
+                                onClick={() => setComparisonModal({ type: 'ear', item, index: idx })}
+                                className="inline-flex items-center gap-1 text-[0.72rem] font-medium text-[#444444] hover:text-[#111111] px-2 py-1 rounded bg-[#f5f5f5] hover:bg-[#ebebeb] border-none cursor-pointer transition-colors"
+                              >
+                                <Edit size={12} />
+                                <span>Edit</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setDeletingComparison({ type: 'ear', index: idx, item })}
+                                className="inline-flex items-center gap-1 text-[0.72rem] font-medium text-red-600 hover:text-red-700 px-2 py-1 rounded bg-red-50 hover:bg-red-100 border-none cursor-pointer transition-colors"
+                              >
+                                <Trash2 size={12} />
+                                <span>Delete</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-8 px-4 text-center border border-dashed border-[#d8d8d8] rounded-[12px] bg-white">
+                      <Sliders size={24} className="mx-auto text-[#bbbbbb] mb-1.5" />
+                      <p className="font-sans text-[0.82rem] font-bold text-[#555555] m-0">No ear biometric records added yet</p>
+                      <p className="font-sans text-[0.75rem] text-[#888888] m-0 mt-0.5 max-w-[280px] mx-auto">
+                        Document pinna contours, notches, and vascular branching by clicking "+ Add Ear Comparison".
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -1553,122 +3337,85 @@ export default function TuskerProfile() {
         document.body
       )}
 
-      {/* Comparison Image Lightbox Modal */}
-      {selectedComparisonImg && createPortal(
+            {/* Gallery-Style Comparison Photo Lightbox with Zoom & Fullscreen */}
+      {selectedComparisonImg && (
+        <ComparisonPhotoLightbox
+          item={selectedComparisonImg}
+          items={selectedComparisonImg.isEar ? earComparisonList : comparisonList}
+          tusker={tusker}
+          onClose={() => setSelectedComparisonImg(null)}
+          onSelect={(newItem) => setSelectedComparisonImg(newItem)}
+        />
+      )}
+
+      {/* Admin Comparison Form Modal */}
+      {comparisonModal && (
+        <ComparisonFormModal
+          isOpen={Boolean(comparisonModal)}
+          type={comparisonModal.type || 'photographic'}
+          initialData={comparisonModal.item}
+          isEditing={comparisonModal.index !== undefined && comparisonModal.index >= 0}
+          tusker={tusker}
+          onClose={() => setComparisonModal(null)}
+          onSave={handleSaveComparison}
+          isSaving={isSavingComparison}
+          error={comparisonSaveError}
+        />
+      )}
+
+      {/* Delete Comparison Milestone Confirmation Modal */}
+      {deletingComparison && createPortal(
         <div
-          className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-fade-in select-none"
-          onClick={() => setSelectedComparisonImg(null)}
+          className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => !isSavingComparison && setDeletingComparison(null)}
         >
           <div
-            className="relative max-w-3xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col my-auto border border-white/20"
-            onClick={e => e.stopPropagation()}
+            className="bg-white rounded-[16px] max-w-[420px] w-full p-6 shadow-2xl border border-[#e8e8e8] flex flex-col gap-4 relative my-auto"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 bg-white border-b border-gray-100 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2.5">
-                <span className="bg-[#0b2518] text-[#c69b55] font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1">
-                  <Calendar size={12} />
-                  {selectedComparisonImg.year}
-                </span>
-                <span className="font-sans text-sm font-bold text-gray-800">
-                  {tusker.name} ({tusker.id}) : {selectedComparisonImg.stage}
-                </span>
-              </div>
-              <button
-                onClick={() => setSelectedComparisonImg(null)}
-                className="text-gray-400 hover:text-gray-700 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center border-none cursor-pointer transition-colors p-0"
-                aria-label="Close image preview"
-              >
-                <X size={20} />
-              </button>
+            <div className="w-11 h-11 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto">
+              <Trash2 size={22} />
             </div>
-
-            <div className="w-full bg-[#0a0f0d] flex items-center justify-center min-h-[260px] max-h-[62vh] overflow-hidden shrink-0">
-              <img
-                src={selectedComparisonImg.photo}
-                alt={`${tusker.name} ${selectedComparisonImg.year}`}
-                className="w-full h-full max-h-[62vh] object-contain"
-              />
-            </div>
-
-            <div className="p-5 bg-gray-50 border-t border-gray-100">
-              <p className="font-sans text-sm text-gray-800 leading-relaxed m-0 font-medium">
-                {selectedComparisonImg.changeSentence}
+            <div className="text-center">
+              <h3 className="font-sans text-[1.1rem] font-bold text-[#111111] m-0">
+                Delete Comparison Record?
+              </h3>
+              <p className="font-sans text-[0.84rem] text-[#666666] mt-2 mb-0 leading-relaxed">
+                Are you sure you want to delete this {deletingComparison.type === 'photographic' ? 'photographic progression' : 'ear biometric'} record ({deletingComparison.item?.year} • {deletingComparison.item?.stage})? This action cannot be undone.
               </p>
+            </div>
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeletingComparison(null)}
+                disabled={isSavingComparison}
+                className="flex-1 py-2.5 px-4 rounded-[10px] bg-[#f4f4f4] hover:bg-[#eaeaea] text-[#555555] font-sans text-sm font-semibold border-none cursor-pointer transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteComparison}
+                disabled={isSavingComparison}
+                className="flex-1 py-2.5 px-4 rounded-[10px] bg-red-600 hover:bg-red-700 text-white font-sans text-sm font-semibold border-none cursor-pointer transition-colors flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-60"
+              >
+                {isSavingComparison && <Loader2 size={16} className="animate-spin" />}
+                <span>{isSavingComparison ? 'Deleting...' : 'Delete'}</span>
+              </button>
             </div>
           </div>
         </div>,
         document.body
       )}
 
-      {/* Sighting / Observation Photo Lightbox Modal */}
-      {previewModalPhoto && createPortal(
-        <div
-          className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-fade-in select-none"
-          onClick={() => setPreviewModalPhoto(null)}
-        >
-          <div
-            className="relative max-w-3xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col my-auto border border-white/20"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="p-4 bg-white border-b border-gray-100 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <span className="bg-[#0b2518] text-[#c69b55] font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1">
-                  <Calendar size={12} />
-                  {previewModalPhoto.date}
-                </span>
-                <span className="font-sans text-sm font-bold text-gray-800">
-                  {previewModalPhoto.title}
-                </span>
-              </div>
-              <button
-                onClick={() => setPreviewModalPhoto(null)}
-                className="text-gray-400 hover:text-gray-700 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center border-none cursor-pointer transition-colors p-0"
-                aria-label="Close image preview"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="w-full bg-[#0a0f0d] flex items-center justify-center min-h-[260px] max-h-[64vh] overflow-hidden shrink-0">
-              <img
-                src={previewModalPhoto.url}
-                alt={previewModalPhoto.title}
-                className="w-full h-full max-h-[64vh] object-contain"
-              />
-            </div>
-
-            <div className="p-4 sm:p-5 bg-gray-50 border-t border-gray-100 flex flex-col gap-2">
-              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-600">
-                <span className="font-semibold flex items-center gap-1">
-                  <User size={13} className="text-accent" />
-                  <span>Recorded / Sighted By: <strong className="text-gray-900">{previewModalPhoto.author}</strong></span>
-                </span>
-                {previewModalPhoto.location && (
-                  <span className="flex items-center gap-1 text-gray-600">
-                    <MapPin size={13} className="text-accent" />
-                    <span>Location: <strong className="text-gray-900">{previewModalPhoto.location}</strong></span>
-                  </span>
-                )}
-                {previewModalPhoto.healthCondition && (
-                  <span className="bg-[#e8f5ec] text-[#1f7a3d] font-semibold px-2 py-0.5 rounded">
-                    Health: {previewModalPhoto.healthCondition}
-                  </span>
-                )}
-                {previewModalPhoto.threatLevel && (
-                  <span className={`font-bold px-2 py-0.5 rounded ${THREAT_STYLES[previewModalPhoto.threatLevel] || ''}`}>
-                    {previewModalPhoto.threatLevel}
-                  </span>
-                )}
-              </div>
-              {previewModalPhoto.note && (
-                <p className="font-sans text-[0.88rem] text-gray-800 leading-relaxed m-0 font-medium pt-1 border-t border-gray-200/60">
-                  {previewModalPhoto.note}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>,
-        document.body
+            {/* Gallery-Style Sighting / Observation Photo Lightbox with Zoom & Fullscreen */}
+      {previewModalPhoto && (
+        <SightingPhotoLightbox
+          photo={previewModalPhoto}
+          tusker={tusker}
+          onClose={() => setPreviewModalPhoto(null)}
+          onSelectIndex={(idx) => setPreviewModalPhoto((prev) => ({ ...prev, activeIdx: idx }))}
+        />
       )}
       {/* Three-dots Action Dropdown Menu (via portal to prevent table overflow clipping) */}
       {activeMenu && createPortal(

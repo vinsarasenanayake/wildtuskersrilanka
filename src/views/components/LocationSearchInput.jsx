@@ -312,11 +312,11 @@ export default function LocationSearchInput({
           });
           const hasExact = combined.some((c) => c.title.toLowerCase() === q);
           if (!hasExact && q.length > 0) {
-            combined.unshift({
+            combined.push({
               title: q.charAt(0).toUpperCase() + q.slice(1),
-              subtitle: 'Select as location',
+              subtitle: 'Use as location • Auto-resolved on map',
               full: `${q}, Sri Lanka`,
-              badge: 'Custom',
+              source: 'custom_entry',
             });
           }
           setSuggestions(combined.slice(0, 8));
@@ -325,11 +325,11 @@ export default function LocationSearchInput({
           setLoading(false);
           const combined = [...localMatches];
           if (!combined.some((c) => c.title.toLowerCase() === q) && q.length > 0) {
-            combined.unshift({
+            combined.push({
               title: q.charAt(0).toUpperCase() + q.slice(1),
-              subtitle: 'Select as location',
+              subtitle: 'Use as location • Auto-resolved on map',
               full: `${q}, Sri Lanka`,
-              badge: 'Custom',
+              source: 'custom_entry',
             });
           }
           setSuggestions(combined.slice(0, 8));
@@ -338,11 +338,11 @@ export default function LocationSearchInput({
       setLoading(false);
       const combined = [...localMatches];
       if (!combined.some((c) => c.title.toLowerCase() === q) && q.length > 0) {
-        combined.unshift({
+        combined.push({
           title: q.charAt(0).toUpperCase() + q.slice(1),
-          subtitle: 'Select as location',
+          subtitle: 'Use as location • Auto-resolved on map',
           full: `${q}, Sri Lanka`,
-          badge: 'Custom',
+          source: 'custom_entry',
         });
       }
       setSuggestions(combined.slice(0, 8));
@@ -802,7 +802,7 @@ export default function LocationSearchInput({
                         <span className="font-semibold text-[0.88rem] text-[#111111] truncate">
                           {item.title}
                         </span>
-                        {item.badge && (
+                        {item.badge && item.badge.toLowerCase() !== 'custom' && (
                           <span className="text-[0.65rem] font-bold px-1.5 py-0.5 rounded bg-[#0b2518] text-[#c69b55] uppercase tracking-wide shrink-0">
                             {item.badge}
                           </span>

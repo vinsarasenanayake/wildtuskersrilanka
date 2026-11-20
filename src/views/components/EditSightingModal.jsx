@@ -27,9 +27,13 @@ export default function EditSightingModal({
   onSave,
 }) {
   const details = parseSightingDetails(sighting);
+  const initialImages = details.images && details.images.length > 0
+    ? details.images
+    : (sighting?.imageUrl ? [sighting.imageUrl] : []);
 
   const [formData, setFormData] = useState({
-    imageUrl: sighting?.imageUrl || '',
+    imageUrl: initialImages[0] || sighting?.imageUrl || '',
+    images: initialImages,
     captureDate: sighting?.captureDate || new Date().toISOString().split('T')[0],
     author: sighting?.author || 'WTS Admin',
     location: details.location || '',
@@ -75,8 +79,12 @@ export default function EditSightingModal({
   };
 
   const handleImageChange = (urls) => {
-    const url = Array.isArray(urls) ? urls[0] || '' : urls || '';
-    setFormData((prev) => ({ ...prev, imageUrl: url }));
+    const list = Array.isArray(urls) ? urls : (urls ? [urls] : []);
+    setFormData((prev) => ({
+      ...prev,
+      images: list,
+      imageUrl: list[0] || '',
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -90,7 +98,12 @@ export default function EditSightingModal({
       setSaving(true);
       setError('');
 
+      const allImages = formData.images && formData.images.length > 0
+        ? formData.images
+        : (formData.imageUrl ? [formData.imageUrl] : []);
+      const primaryUrl = allImages[0] || formData.imageUrl || sighting.imageUrl || '';
       const coords = getLocationCoordinates(formData.location) || details.coords || null;
+
       const serializedDetails = {
         note: (formData.note || '').trim(),
         location: (formData.location || '').trim(),
@@ -100,10 +113,11 @@ export default function EditSightingModal({
         specialMarks: (formData.specialMarks || '').trim(),
         specialWounds: (formData.specialWounds || '').trim(),
         remarks: (formData.note || '').trim(),
+        images: allImages,
       };
 
       const updatedPayload = {
-        imageUrl: formData.imageUrl || sighting.imageUrl,
+        imageUrl: primaryUrl,
         captureDate: formData.captureDate,
         author: (formData.author || 'WTS Admin').trim(),
         note: JSON.stringify(serializedDetails),
@@ -167,7 +181,8 @@ export default function EditSightingModal({
             </label>
             <ImageUploadBox
               folder="sightings"
-              value={formData.imageUrl ? [formData.imageUrl] : []}
+              multiple
+              value={formData.images && formData.images.length > 0 ? formData.images : (formData.imageUrl ? [formData.imageUrl] : [])}
               onChange={handleImageChange}
               aspectClass="aspect-[16/10]"
             />

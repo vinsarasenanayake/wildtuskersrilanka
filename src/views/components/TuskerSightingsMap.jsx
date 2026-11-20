@@ -82,7 +82,7 @@ export default function TuskerSightingsMap({
         author: sighting.author || 'WTS Field Contributor',
         health: details.healthCondition || '—',
         threat: details.threatLevel || '—',
-        photo: sighting.imageUrl || null,
+        photo: (details.images && details.images[0]) || (sighting.imageUrl ? (typeof sighting.imageUrl === 'string' ? sighting.imageUrl.split(',')[0].trim() : sighting.imageUrl) : null),
         notes: details.note || (!sighting.note?.trim().startsWith('{') ? sighting.note : '') || details.remarks || '—',
         coords: resolvedCoords,
         rawSighting: sighting,

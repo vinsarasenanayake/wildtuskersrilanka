@@ -353,7 +353,7 @@ export function useSightingForm(tuskerId) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Prefill with tusker's current data so admin can review and update
+  // Load tusker metadata for display; do not prefill observation fields from old sightings
   useEffect(() => {
     let active = true;
     if (tuskerId) {
@@ -361,14 +361,19 @@ export function useSightingForm(tuskerId) {
         .then(t => {
           if (active && t) {
             setInitialTusker(t);
+            // New sightings must start completely fresh & clean:
+            // Sighting area, wounds, marks, threat level, and remarks must not inherit old records.
             setFormData(prev => ({
               ...prev,
-              lastSeenArea: prev.lastSeenArea || t.lastSeenArea || t.location || '',
-              healthCondition: prev.healthCondition || t.healthCondition || 'Good',
-              threatLevel: prev.threatLevel || t.threatLevel || '',
-              specialMarks: prev.specialMarks || t.specialMarks || '',
-              specialWounds: prev.specialWounds || t.specialWounds || '',
-              remarks: prev.remarks || t.remarks || '',
+              imageUrl: '',
+              imageUrls: [],
+              lastSeenArea: '',
+              healthCondition: 'Good',
+              threatLevel: '',
+              specialMarks: '',
+              specialWounds: '',
+              remarks: '',
+              note: '',
             }));
           }
         })
@@ -417,6 +422,7 @@ export function useSightingForm(tuskerId) {
     }
 
     try {
+      const primaryUrl = finalUrls[0] || imageUrl || '';
       const coords = getLocationCoordinates(lastSeenArea);
       const sightingDetails = {
         note: (note || '').trim(),
@@ -427,21 +433,18 @@ export function useSightingForm(tuskerId) {
         specialMarks: (specialMarks || '').trim(),
         specialWounds: (specialWounds || '').trim(),
         remarks: (remarks || '').trim(),
+        images: finalUrls, // All photos attached to this single sighting
       };
       const serializedNote = JSON.stringify(sightingDetails);
       const observer = (author || 'WTS Admin').trim();
 
-      // 1. Add sighting row(s) to tusker_sightings
-      await Promise.all(
-        finalUrls.map(url =>
-          addSightingToTusker(tuskerId, {
-            imageUrl: url,
-            captureDate,
-            note: serializedNote,
-            author: observer,
-          })
-        )
-      );
+      // 1. Add single sighting row to tusker_sightings with primary image and full photos list
+      await addSightingToTusker(tuskerId, {
+        imageUrl: finalUrls.join(', ') || primaryUrl,
+        captureDate,
+        note: serializedNote,
+        author: observer,
+      });
 
       // 2. Update tusker's current profile state (for both admin and public)
       // Note: First Recorded By, First Recorded Date, and Nickname By are NEVER modified here!
