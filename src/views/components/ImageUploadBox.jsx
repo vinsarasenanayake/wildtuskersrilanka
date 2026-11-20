@@ -1,10 +1,12 @@
 import React, { useRef, useState, useMemo } from 'react';
-import { UploadCloud, Camera, Trash2, Loader2, CheckCircle2, Plus, Image as ImageIcon, GripVertical } from 'lucide-react';
+import { UploadCloud, Camera, Trash2, Loader2, CheckCircle2, Plus, Image as ImageIcon, GripVertical, Crop } from 'lucide-react';
 import { uploadMediaFile } from '../../utils/storageUpload';
+import ImageCropperModal from './ImageCropperModal';
 
 /**
  * Universal Direct Image Upload Component
  * Supports single and multiple image uploads directly to Supabase storage (wts-media bucket).
+ * Supports integrated cropping for ear biometrics and progression photos.
  *
  * @param {string|string[]} value - Current image URL or array of URLs
  * @param {function} onChange - Callback: (urls: string[] | string, primaryUrl: string) => void
@@ -14,6 +16,12 @@ import { uploadMediaFile } from '../../utils/storageUpload';
  * @param {boolean} circle - Render circular avatar upload (single profile photo mode)
  * @param {string} aspectClass - Aspect ratio class (default 'aspect-[4/3]')
  * @param {boolean} required - Display required indicator
+ * @param {boolean} allowCrop - Whether to show crop tools for single image
+ * @param {boolean} autoCropOnSelect - Whether selecting a file auto-opens the cropper
+ * @param {string} cropLabel - Button label for cropping (e.g. 'Crop Ear Area')
+ * @param {string} cropTitle - Title for crop modal
+ * @param {string} cropSubtitle - Subtitle for crop modal
+ * @param {string} cropAspect - Default aspect ratio ('free', '3:4', '1:1', '4:3', '16:9')
  */
 export default function ImageUploadBox({
   value,
@@ -24,6 +32,12 @@ export default function ImageUploadBox({
   circle = false,
   aspectClass = 'aspect-[4/3]',
   required = false,
+  allowCrop = false,
+  autoCropOnSelect = false,
+  cropLabel = 'Crop Photo',
+  cropTitle = 'Crop Ear Biometric Area',
+  cropSubtitle = 'Drag the crop box or handles to focus directly on the ear pinna, margin notches, and venation.',
+  cropAspect = 'free',
 }) {
   const fileInputRef = useRef(null);
   const addMoreInputRef = useRef(null);
@@ -33,6 +47,10 @@ export default function ImageUploadBox({
   const [uploadError, setUploadError] = useState('');
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
+
+  // Interactive Cropper Modal state
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [cropperSource, setCropperSource] = useState(null);
 
   // Default to multiple=true unless circle mode or explicitly set to false
   const isMultiple = circle ? false : (multiple !== undefined ? multiple : true);
@@ -86,6 +104,15 @@ export default function ImageUploadBox({
 
     const filesToUpload = isMultiple ? validFiles : validFiles.slice(0, 1);
 
+    // If single image mode with allowCrop and autoCropOnSelect, immediately launch cropper modal
+    if (!isMultiple && allowCrop && autoCropOnSelect && filesToUpload.length > 0) {
+      setCropperSource(filesToUpload[0]);
+      setCropperOpen(true);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (addMoreInputRef.current) addMoreInputRef.current.value = '';
+      return;
+    }
+
     setUploadError('');
     setUploading(true);
     setUploadCount(filesToUpload.length);
@@ -116,6 +143,40 @@ export default function ImageUploadBox({
       setUploadCount(0);
       if (fileInputRef.current) fileInputRef.current.value = '';
       if (addMoreInputRef.current) addMoreInputRef.current.value = '';
+    }
+  };
+
+  const handleCropComplete = async ({ file, blob, dataUrl }) => {
+    if (!file && !blob && !dataUrl) return;
+
+    setUploadError('');
+    setUploading(true);
+    setUploadCount(1);
+
+    try {
+      const uploadTarget = file || blob;
+      let finalUrl = '';
+      if (uploadTarget) {
+        try {
+          finalUrl = await uploadMediaFile(uploadTarget, folder);
+        } catch (err) {
+          console.error('[ImageUploadBox] cropped file upload failed:', err);
+          finalUrl = dataUrl || (uploadTarget instanceof Blob ? URL.createObjectURL(uploadTarget) : '');
+        }
+      } else {
+        finalUrl = dataUrl;
+      }
+
+      if (finalUrl) {
+        emitChange([finalUrl]);
+      }
+    } catch (err) {
+      console.error('[ImageUploadBox] handleCropComplete error:', err);
+      setUploadError('Failed to save cropped image.');
+    } finally {
+      setUploading(false);
+      setUploadCount(0);
+      setCropperSource(null);
     }
   };
 
@@ -406,6 +467,21 @@ export default function ImageUploadBox({
               className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300 pointer-events-none"
             />
             <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
+              {allowCrop && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCropperSource(imageList[0]);
+                    setCropperOpen(true);
+                  }}
+                  className="px-2.5 py-1.5 rounded-[8px] bg-[#0b2518] hover:bg-[#133824] text-white font-sans text-xs font-semibold shadow-md flex items-center gap-1.5 cursor-pointer border border-[#c69b55]/50 transition-all"
+                  title={cropLabel}
+                >
+                  <Crop size={13} className="text-[#c69b55]" />
+                  <span>{cropLabel}</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => !uploading && fileInputRef.current?.click()}
@@ -424,14 +500,29 @@ export default function ImageUploadBox({
               </button>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => !uploading && fileInputRef.current?.click()}
-            className="text-[0.76rem] font-semibold text-accent hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
-          >
-            <UploadCloud size={14} />
-            <span>Click to replace photo</span>
-          </button>
+          <div className="flex items-center gap-2.5 flex-wrap justify-center mt-1">
+            {allowCrop && (
+              <button
+                type="button"
+                onClick={() => {
+                  setCropperSource(imageList[0]);
+                  setCropperOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-[#0b2518] hover:bg-[#133824] text-white text-[0.76rem] font-bold border border-[#c69b55]/40 cursor-pointer shadow-2xs transition-colors"
+              >
+                <Crop size={13} className="text-[#c69b55]" />
+                <span>{cropLabel}</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => !uploading && fileInputRef.current?.click()}
+              className="text-[0.76rem] font-semibold text-accent hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
+            >
+              <UploadCloud size={14} />
+              <span>Click to replace photo</span>
+            </button>
+          </div>
         </div>
       )}
 
@@ -549,6 +640,22 @@ export default function ImageUploadBox({
       {/* Error message */}
       {uploadError && (
         <span className="text-[0.72rem] text-rose-500 font-medium">{uploadError}</span>
+      )}
+
+      {/* Interactive Ear & Progression Photo Cropper Modal */}
+      {allowCrop && (
+        <ImageCropperModal
+          isOpen={cropperOpen}
+          imageSrc={cropperSource}
+          title={cropTitle}
+          subtitle={cropSubtitle}
+          defaultAspect={cropAspect}
+          onClose={() => {
+            setCropperOpen(false);
+            setCropperSource(null);
+          }}
+          onCropComplete={handleCropComplete}
+        />
       )}
     </div>
   );

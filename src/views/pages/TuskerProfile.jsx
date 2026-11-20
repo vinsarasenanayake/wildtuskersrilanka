@@ -857,13 +857,23 @@ function ComparisonFormModal({
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Photo Upload */}
+          {/* Photo Upload with Interactive Cropper for Ear Biometrics */}
           <div>
             <ImageUploadBox
               folder="comparisons"
               value={photo ? [photo] : []}
               onChange={(urls) => setPhoto(Array.isArray(urls) ? (urls[0] || '') : (urls || ''))}
               multiple={false}
+              allowCrop={true}
+              autoCropOnSelect={activeType === 'ear'}
+              cropLabel={activeType === 'ear' ? 'Crop Ear Area' : 'Crop Photo'}
+              cropTitle={activeType === 'ear' ? 'Crop Ear Biometric Area' : 'Crop Progression Photo'}
+              cropSubtitle={
+                activeType === 'ear'
+                  ? 'Drag and frame the crop box directly to highlight the ear pinna, margin notches, and venations.'
+                  : 'Drag and frame the crop box to highlight the tusker or morphological progression.'
+              }
+              cropAspect={activeType === 'ear' ? '3:4' : 'free'}
               label={activeType === 'photographic' ? 'Progression Photo *' : 'Ear Venation / Crop Photo *'}
               aspectClass="aspect-[4/3] max-w-[280px] mx-auto"
             />
@@ -3045,7 +3055,7 @@ export default function TuskerProfile() {
                     Manage sequential multi-year photographic progressions and ear venation biometrics over the years. Added records are immediately reflected in the public comparison collage above.
                   </p>
                 </div>
-                <div className="flex items-center gap-2.5 flex-wrap">
+                <div className="flex flex-col sm:flex-row items-end sm:items-center justify-end gap-2.5 shrink-0 ml-auto w-full sm:w-auto">
                   <button
                     type="button"
                     onClick={() => {
@@ -3069,9 +3079,9 @@ export default function TuskerProfile() {
                         index: -1,
                       });
                     }}
-                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-[10px] bg-white border border-[#d5d5d5] hover:border-[#111111] hover:bg-[#fbfbfb] text-[#111111] text-[0.82rem] font-semibold transition-all shadow-xs cursor-pointer w-full sm:w-[195px] text-center"
+                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-[10px] bg-[#0b2518] hover:bg-[#133824] text-white text-[0.82rem] font-semibold transition-all shadow-xs cursor-pointer border-none w-full sm:w-[195px] text-center"
                   >
-                    <Plus size={15} className="text-accent" />
+                    <Plus size={15} className="text-[#c69b55]" />
                     <span>Add Ear Comparison</span>
                   </button>
                 </div>
