@@ -149,11 +149,18 @@ function mapTusker(row) {
 
 export function parseSightingDetails(sighting) {
   if (!sighting) {
-    return { note: '', location: '', healthCondition: '', threatLevel: '', specialMarks: '', specialWounds: '', remarks: '' };
+    return { note: '', location: '', healthCondition: '', threatLevel: '', specialMarks: '', specialWounds: '', remarks: '', coords: null };
   }
   if (sighting.note && typeof sighting.note === 'string' && sighting.note.trim().startsWith('{')) {
     try {
       const parsed = JSON.parse(sighting.note);
+      const coords =
+        parsed.coords && typeof parsed.coords.lat === 'number' && typeof parsed.coords.lng === 'number'
+          ? parsed.coords
+          : parsed.lat && parsed.lng
+          ? { lat: Number(parsed.lat), lng: Number(parsed.lng) }
+          : null;
+
       return {
         note: parsed.note || '',
         location: parsed.location || '',
@@ -162,6 +169,7 @@ export function parseSightingDetails(sighting) {
         specialMarks: parsed.specialMarks || '',
         specialWounds: parsed.specialWounds || '',
         remarks: parsed.remarks || '',
+        coords,
       };
     } catch {
       // fallback to plain note
@@ -175,6 +183,7 @@ export function parseSightingDetails(sighting) {
     specialMarks: '',
     specialWounds: '',
     remarks: '',
+    coords: null,
   };
 }
 

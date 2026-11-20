@@ -11,7 +11,7 @@ import {
   compareTuskerId
 } from '../models/TuskerModel';
 import { useAuth } from './useAuth';
-import { SRI_LANKA_WILDLIFE_LOCATIONS } from '../utils/sriLankaLocations';
+import { SRI_LANKA_WILDLIFE_LOCATIONS, getLocationCoordinates } from '../utils/sriLankaLocations';
 
 /* ==============================================================
    SECTION 1: WILD TUSKERS DIRECTORY & SEARCH CONTROLLER
@@ -417,9 +417,11 @@ export function useSightingForm(tuskerId) {
     }
 
     try {
+      const coords = getLocationCoordinates(lastSeenArea);
       const sightingDetails = {
         note: (note || '').trim(),
         location: (lastSeenArea || '').trim(),
+        coords: coords || null,
         healthCondition: healthCondition || '',
         threatLevel: threatLevel || '',
         specialMarks: (specialMarks || '').trim(),

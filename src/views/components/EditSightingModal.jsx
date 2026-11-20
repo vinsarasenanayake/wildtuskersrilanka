@@ -4,6 +4,7 @@ import { X, Save, MapPin, Camera, Calendar, UserCheck, HeartPulse, ShieldAlert, 
 import LocationSearchInput from './LocationSearchInput';
 import ImageUploadBox from './ImageUploadBox';
 import { parseSightingDetails, THREAT_LEVELS } from '../../models/TuskerModel';
+import { getLocationCoordinates } from '../../utils/sriLankaLocations';
 
 const INPUT_CLASS =
   'w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.9rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12';
@@ -89,9 +90,11 @@ export default function EditSightingModal({
       setSaving(true);
       setError('');
 
+      const coords = getLocationCoordinates(formData.location) || details.coords || null;
       const serializedDetails = {
         note: (formData.note || '').trim(),
         location: (formData.location || '').trim(),
+        coords,
         healthCondition: formData.healthCondition || '',
         threatLevel: formData.threatLevel || '',
         specialMarks: (formData.specialMarks || '').trim(),

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -731,6 +731,25 @@ export default function TuskerProfile() {
     }
   }, [tusker]);
 
+  // Combine baseline tusker photos with subsequent sighting photos at the end
+  const allProfilePhotos = useMemo(() => {
+    const basePhotos = Array.isArray(tusker?.photos)
+      ? [...tusker.photos]
+      : (tusker?.photo ? [tusker.photo] : []);
+    const sightingPhotos = [];
+    (tusker?.sightings || []).forEach((s) => {
+      const urls = Array.isArray(s.imageUrl)
+        ? s.imageUrl
+        : (typeof s.imageUrl === 'string' && s.imageUrl.trim() ? s.imageUrl.split(',').map((u) => u.trim()) : []);
+      urls.forEach((url) => {
+        if (url && typeof url === 'string' && url.length > 0 && !basePhotos.includes(url) && !sightingPhotos.includes(url)) {
+          sightingPhotos.push(url);
+        }
+      });
+    });
+    return [...basePhotos, ...sightingPhotos];
+  }, [tusker?.photos, tusker?.photo, tusker?.sightings]);
+
   useEffect(() => {
     if (selectedComparisonImg || showRiskModal || previewModalPhoto) {
       const prevOverflow = document.body.style.overflow;
@@ -807,7 +826,7 @@ export default function TuskerProfile() {
           {/* LEFT - Slideshow */}
           <div>
             <PhotoSlideshow
-              photos={tusker.photos}
+              photos={allProfilePhotos}
               name={tusker.name}
               tuskerId={tusker.id}
               current={currentPhotoIndex}

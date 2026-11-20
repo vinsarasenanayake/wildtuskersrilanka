@@ -10,7 +10,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { parseSightingDetails } from '../../models/TuskerModel';
-import { getLocationCoordinates } from '../../utils/sriLankaLocations';
+import { getLocationCoordinates, resolveLocationCoordinatesAsync } from '../../utils/sriLankaLocations';
 import { loadLeaflet } from '../../utils/leafletLoader';
 
 const SRI_LANKA_CENTER = [7.8731, 80.7718];
@@ -33,6 +33,33 @@ export default function TuskerSightingsMap({
 
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const [resolvedCoordsMap, setResolvedCoordsMap] = useState({});
+
+  // Asynchronously resolve coordinates for any location not matched synchronously
+  useEffect(() => {
+    if (!tusker?.sightings || !Array.isArray(tusker.sightings)) return;
+    let isMounted = true;
+
+    tusker.sightings.forEach((sighting, idx) => {
+      const details = parseSightingDetails(sighting);
+      const loc = details.location;
+      if (!loc) return;
+      const key = sighting.id || `sighting-${idx}`;
+      const syncCoords = details.coords || getLocationCoordinates(loc);
+
+      if (!syncCoords && !resolvedCoordsMap[key]) {
+        resolveLocationCoordinatesAsync(loc).then((coords) => {
+          if (isMounted && coords) {
+            setResolvedCoordsMap((prev) => ({ ...prev, [key]: coords }));
+          }
+        });
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [tusker?.sightings, resolvedCoordsMap]);
 
   // Subsequent sighting records (Row 2, Row 3...)
   const sightingRecords = useMemo(() => {
@@ -41,10 +68,11 @@ export default function TuskerSightingsMap({
       const details = parseSightingDetails(sighting);
       const rowNum = idx + 2;
       const sightingNum = idx + 1;
-      const resolvedCoords = getLocationCoordinates(details.location);
+      const key = sighting.id || `sighting-${idx}`;
+      const resolvedCoords = details.coords || getLocationCoordinates(details.location) || resolvedCoordsMap[key] || null;
 
       return {
-        id: sighting.id || `sighting-${idx}`,
+        id: key,
         rowNum,
         sightingNum,
         isBaseline: false,
@@ -60,7 +88,7 @@ export default function TuskerSightingsMap({
         rawSighting: sighting,
       };
     });
-  }, [tusker]);
+  }, [tusker, resolvedCoordsMap]);
 
   // All active plotted points (verified field sightings with coordinates)
   const activePoints = useMemo(() => {
