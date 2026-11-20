@@ -284,10 +284,11 @@ export default function FieldNotes() {
                       {note.description}
                     </div>
 
-                    {/* Special Note */}
+                    {/* Observed Tuskers */}
                     {note.specialNote && (
-                      <div className="text-sm font-sans text-amber-900 bg-amber-50/60 border border-amber-200/60 p-3 rounded-lg">
-                        <strong>Special Observation:</strong> {note.specialNote}
+                      <div className="text-sm font-sans text-amber-900 bg-amber-50/60 border border-amber-200/60 p-3 rounded-lg flex items-center gap-1.5">
+                        <strong>Tuskers Observed:</strong>
+                        <span>{note.specialNote}</span>
                       </div>
                     )}
 
@@ -394,10 +395,11 @@ export default function FieldNotes() {
                       {note.description}
                     </div>
 
-                    {/* Special Note */}
+                    {/* Observed Tuskers */}
                     {note.specialNote && (
-                      <div className="pl-5 mt-1 text-[#222222] font-sans text-[0.95rem] leading-[1.8] italic bg-white/60 p-3 rounded-lg border-l-2 border-accent">
-                        {note.specialNote}
+                      <div className="pl-5 mt-1 text-[#222222] font-sans text-[0.92rem] leading-[1.7] bg-[#faf5ec]/70 p-3 rounded-lg border-l-3 border-accent">
+                        <strong className="text-accent font-bold">Tuskers Observed: </strong>
+                        <span>{note.specialNote}</span>
                       </div>
                     )}
 

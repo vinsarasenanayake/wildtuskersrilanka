@@ -63,3 +63,13 @@
     animation: fade-in 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 }
+
+/* Leaflet Map Custom Marker & Container */
+.custom-leaflet-marker {
+  background: transparent !important;
+  border: none !important;
+}
+.leaflet-container {
+  font-family: inherit !important;
+  z-index: 1 !important;
+}

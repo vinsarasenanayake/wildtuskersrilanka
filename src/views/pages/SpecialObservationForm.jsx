@@ -12,6 +12,7 @@ import { useSpecialObservationForm } from '../../controllers/useSpecialObservati
 import { getTuskers } from '../../models/TuskerModel';
 import { useAuth } from '../../controllers/useAuth';
 import TuskerMultiSelect from '../components/TuskerMultiSelect';
+import LocationSearchInput from '../components/LocationSearchInput';
 
 export default function SpecialObservationForm() {
   const { id } = useParams();
@@ -182,13 +183,12 @@ export default function SpecialObservationForm() {
                 <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">
                   Location / National Park
                 </label>
-                <input
-                  type="text"
+                <LocationSearchInput
                   name="location"
-                  className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
                   placeholder="e.g. Yala National Park - Block 1"
                   value={formData.location}
                   onChange={handleChange}
+                  className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
                 />
               </div>
 

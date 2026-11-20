@@ -16,6 +16,7 @@ import { useAuth } from '../../controllers/useAuth';
 import StatusBadge from '../components/StatusBadge';
 import ImageUploadBox from '../components/ImageUploadBox';
 import EditGalleryPhotoModal from '../components/EditGalleryPhotoModal';
+import LocationSearchInput from '../components/LocationSearchInput';
 
 /* ==============================================================
    CENTRAL ADMINISTRATIVE CONSOLE COMPONENT
@@ -1599,13 +1600,12 @@ export default function AdminPortal() {
                     <label className="text-xs font-bold text-gray-600 uppercase tracking-wider block mb-1">
                       Location *
                     </label>
-                    <input
-                      type="text"
+                    <LocationSearchInput
                       required
                       placeholder="e.g. Yala, Galgamuwa, Minneriya"
                       value={unlistedFormData.location}
-                      onChange={(e) => setUnlistedFormData({ ...unlistedFormData, location: e.target.value })}
-                      className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"
+                      onChange={(e, val) => setUnlistedFormData({ ...unlistedFormData, location: val || e.target.value })}
+                      className="w-full py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"
                     />
                   </div>
                 </div>

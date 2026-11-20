@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CheckCircle2, Save, MapPin, Camera, Calendar, UserCheck } from 'lucide-react';
 import TuskerMultiSelect from './TuskerMultiSelect';
+import LocationSearchInput from './LocationSearchInput';
 
 /**
  * EditGalleryPhotoModal
@@ -219,13 +220,12 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
                     <MapPin size={12} className="text-accent" />
                     <span>Location / Sanctuary</span>
                   </label>
-                  <input
-                    type="text"
+                  <LocationSearchInput
                     name="location"
                     value={formData.location}
                     onChange={handleChange}
                     placeholder="e.g. Kala Wewa / Wilpattu"
-                    className="bg-white border border-gray-300 rounded-lg px-3.5 py-2 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+                    className="bg-white border border-gray-300 rounded-lg py-2 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
                   />
                 </div>
 

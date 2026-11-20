@@ -20,6 +20,74 @@ export const THREAT_LEVELS = ['Low', 'Medium', 'High', 'Critical'];
 export const ZONES = ['Zone 1', 'Zone 2', 'Zone 3', 'Zone 4'];
 export const AGE_RANGES = ['1-10', '10-20', '20-30', '30-40', '40-50', '50-60', '60+'];
 
+export const PROVINCES = [
+  'Central',
+  'Eastern',
+  'North Central',
+  'Northern',
+  'North Western',
+  'Sabaragamuwa',
+  'Southern',
+  'Uva',
+  'Western',
+];
+
+export const DISTRICTS = [
+  'Ampara',
+  'Anuradhapura',
+  'Badulla',
+  'Batticaloa',
+  'Colombo',
+  'Galle',
+  'Gampaha',
+  'Hambantota',
+  'Jaffna',
+  'Kalutara',
+  'Kandy',
+  'Kegalle',
+  'Kilinochchi',
+  'Kurunegala',
+  'Mannar',
+  'Matale',
+  'Matara',
+  'Monaragala',
+  'Mullaitivu',
+  'Nuwara Eliya',
+  'Polonnaruwa',
+  'Puttalam',
+  'Ratnapura',
+  'Trincomalee',
+  'Vavuniya',
+];
+
+export const DISTRICT_TO_PROVINCE_MAP = {
+  Ampara: 'Eastern',
+  Anuradhapura: 'North Central',
+  Badulla: 'Uva',
+  Batticaloa: 'Eastern',
+  Colombo: 'Western',
+  Galle: 'Southern',
+  Gampaha: 'Western',
+  Hambantota: 'Southern',
+  Jaffna: 'Northern',
+  Kalutara: 'Western',
+  Kandy: 'Central',
+  Kegalle: 'Sabaragamuwa',
+  Kilinochchi: 'Northern',
+  Kurunegala: 'North Western',
+  Mannar: 'Northern',
+  Matale: 'Central',
+  Matara: 'Southern',
+  Monaragala: 'Uva',
+  Mullaitivu: 'Northern',
+  'Nuwara Eliya': 'Central',
+  Polonnaruwa: 'North Central',
+  Puttalam: 'North Western',
+  Ratnapura: 'Sabaragamuwa',
+  Trincomalee: 'Eastern',
+  Vavuniya: 'Northern',
+};
+
 /**
  * Calculates current estimated age or age at death based on proximate birth year.
  * Falls back to legacy ageRange if birth year is not yet documented.
@@ -138,6 +206,9 @@ export async function tuskerExists(id) {
 export async function addTusker(tusker) {
   const payload = { ...tusker, id: tusker.id.toUpperCase().trim() };
   if (payload.threatLevel === 'Critical') payload.threatLevel = 'Highest';
+  if (payload.lastSeen && typeof payload.lastSeen === 'string' && /^\d{4}-\d{2}$/.test(payload.lastSeen)) {
+    payload.lastSeen = `${payload.lastSeen}-01`;
+  }
   const row = toRow(payload, TUSKER_FIELDS);
   unwrap(await supabase.from('tuskers').insert(row));
 }
@@ -145,6 +216,9 @@ export async function addTusker(tusker) {
 export async function updateTusker(id, updated) {
   const payload = { ...updated };
   if (payload.threatLevel === 'Critical') payload.threatLevel = 'Highest';
+  if (payload.lastSeen && typeof payload.lastSeen === 'string' && /^\d{4}-\d{2}$/.test(payload.lastSeen)) {
+    payload.lastSeen = `${payload.lastSeen}-01`;
+  }
   const row = toRow(payload, TUSKER_FIELDS.filter(f => f !== 'id'));
   unwrap(await supabase.from('tuskers').update(row).eq('id', id.toUpperCase()));
 }
@@ -161,6 +235,19 @@ export async function addSightingToTusker(tuskerId, sighting) {
     note: sighting.note || null,
     author: sighting.author || null,
   }));
+}
+
+export async function updateSighting(sightingId, sighting) {
+  const payload = {};
+  if (sighting.imageUrl !== undefined) payload.image_url = sighting.imageUrl;
+  if (sighting.captureDate !== undefined) payload.capture_date = sighting.captureDate;
+  if (sighting.note !== undefined) payload.note = sighting.note;
+  if (sighting.author !== undefined) payload.author = sighting.author;
+  unwrap(await supabase.from('tusker_sightings').update(payload).eq('id', sightingId));
+}
+
+export async function deleteSighting(sightingId) {
+  unwrap(await supabase.from('tusker_sightings').delete().eq('id', sightingId));
 }
 
 /* ==============================================================

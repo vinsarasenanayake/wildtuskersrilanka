@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Search, MapPin, X, ChevronDown, PlusCircle, Trash2, ShieldAlert } from 'lucide-react';
 import { useUnlistedTuskers } from '../../controllers/useUnlistedTuskers';
 import ImageUploadBox from '../components/ImageUploadBox';
+import LocationSearchInput from '../components/LocationSearchInput';
 
 export default function UnlistedMonitoring() {
   const navigate = useNavigate();
@@ -355,13 +356,12 @@ export default function UnlistedMonitoring() {
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">
                     Location *
                   </label>
-                  <input
-                    type="text"
+                  <LocationSearchInput
                     required
                     placeholder="e.g. Yala, Galgamuwa, Minneriya"
                     value={newFormData.location}
-                    onChange={e => setNewFormData({ ...newFormData, location: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent"
+                    onChange={(e, val) => setNewFormData({ ...newFormData, location: val || e.target.value })}
+                    className="w-full py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent"
                   />
                 </div>
               </div>

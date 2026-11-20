@@ -3,8 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, PlusCircle, Sparkles } from 'lucide-react';
 import { useTuskerForm } from '../../controllers/useTusker';
 import { useAuth } from '../../controllers/useAuth';
-import { LIVING_STATUSES, THREAT_LEVELS, ZONES, AGE_RANGES } from '../../models/TuskerModel';
+import {
+  LIVING_STATUSES,
+  THREAT_LEVELS,
+  ZONES,
+  AGE_RANGES,
+  PROVINCES,
+  DISTRICTS,
+  DISTRICT_TO_PROVINCE_MAP,
+} from '../../models/TuskerModel';
 import ImageUploadBox from '../components/ImageUploadBox';
+import LocationSearchInput from '../components/LocationSearchInput';
 
 /* ── Shared field styling ───────────────────────────────────── */
 const INPUT_CLASS = 'w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12 disabled:opacity-60';
@@ -66,6 +75,14 @@ export default function TuskerForm() {
     return `${age} years${isDeceased ? ' (at death)' : ''}`;
   }, [formData.proximateBirthYear, formData.birthYear, formData.livingStatus, formData.deathYear]);
 
+  const handleDistrictChange = (e) => {
+    const selectedDist = e.target.value;
+    handleChange(e);
+    if (selectedDist && DISTRICT_TO_PROVINCE_MAP[selectedDist]) {
+      handleChange({ target: { name: 'province', value: DISTRICT_TO_PROVINCE_MAP[selectedDist] } });
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const savedId = await saveProfile();
@@ -111,7 +128,14 @@ export default function TuskerForm() {
                 <input type="text" name="sinhala" className={INPUT_CLASS} placeholder="e.g. පානම පුට්ටුව" value={formData.sinhala} onChange={handleChange} />
               </Field>
               <Field label="Roaming Area">
-                <input type="text" name="location" className={INPUT_CLASS} placeholder="e.g. Kumana / Panama" value={formData.location} onChange={handleChange} />
+                <LocationSearchInput
+                  name="location"
+                  multi={true}
+                  placeholder="Search & add roaming area (e.g. Buttala, Wellawaya, Kumana)..."
+                  value={formData.location}
+                  onChange={handleChange}
+                  className={INPUT_CLASS}
+                />
               </Field>
               <Field label="First Recorded Date">
                 <input type="date" name="listedDate" className={INPUT_CLASS} placeholder="" value={formData.listedDate} onChange={handleChange} />
@@ -162,7 +186,13 @@ export default function TuskerForm() {
                 </>
               )}
               <Field label={formData.livingStatus === 'Deceased' ? "Last Recorded Area" : "Last Seen Area"}>
-                <input type="text" name="lastSeenArea" className={INPUT_CLASS} placeholder="e.g. Galgamuwa" value={formData.lastSeenArea} onChange={handleChange} />
+                <LocationSearchInput
+                  name="lastSeenArea"
+                  placeholder="e.g. Galgamuwa, Yala, Wilpattu..."
+                  value={formData.lastSeenArea}
+                  onChange={handleChange}
+                  className={INPUT_CLASS}
+                />
               </Field>
               <Field label={formData.livingStatus === 'Deceased' ? "Last Recorded Month" : "Last Seen (Month)"}>
                 <input type="month" name="lastSeen" className={INPUT_CLASS} placeholder="" value={formData.lastSeen} onChange={handleChange} />
@@ -209,10 +239,22 @@ export default function TuskerForm() {
                 </select>
               </Field>
               <Field label="District">
-                <input type="text" name="district" className={INPUT_CLASS} placeholder="e.g. Anuradhapura" value={formData.district} onChange={handleChange} />
+                <select name="district" className={SELECT_CLASS} value={formData.district} onChange={handleDistrictChange}>
+                  <option value="">— Not set —</option>
+                  {formData.district && !DISTRICTS.includes(formData.district) && (
+                    <option value={formData.district}>{formData.district}</option>
+                  )}
+                  {DISTRICTS.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
               </Field>
               <Field label="Province">
-                <input type="text" name="province" className={INPUT_CLASS} placeholder="e.g. North-Central" value={formData.province} onChange={handleChange} />
+                <select name="province" className={SELECT_CLASS} value={formData.province} onChange={handleChange}>
+                  <option value="">— Not set —</option>
+                  {formData.province && !PROVINCES.includes(formData.province) && (
+                    <option value={formData.province}>{formData.province}</option>
+                  )}
+                  {PROVINCES.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
               </Field>
             </div>
 

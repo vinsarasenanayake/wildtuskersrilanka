@@ -25,6 +25,7 @@ import { getTuskerComparison, getTuskerEarComparison } from '../../models/Tusker
 import { useAuth } from '../../controllers/useAuth';
 import { getCachedAspect, setCachedAspect, probeImageAspect } from '../../utils/photoAspectCache';
 import ImageUploadBox from '../components/ImageUploadBox';
+import LocationSearchInput from '../components/LocationSearchInput';
 
 /* ── Photo Slideshow Component ───────────────────────────────── */
 function PhotoSlideshow({ photos = [], id, current, prev, next, setCurrent }) {
@@ -683,13 +684,12 @@ export default function UnlistedTuskerProfile() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">Roaming Location *</label>
-                    <input
-                      type="text"
+                    <LocationSearchInput
                       required
                       value={editFormData.location}
-                      onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
+                      onChange={(e, val) => setEditFormData({ ...editFormData, location: val || e.target.value })}
                       placeholder="e.g. Yala Block 3"
-                      className="border border-[#dde6e1] rounded-xl px-3.5 py-2.5 text-sm text-[#111111] focus:outline-none focus:border-accent"
+                      className="border border-[#dde6e1] rounded-xl py-2.5 text-sm text-[#111111] focus:outline-none focus:border-accent"
                     />
                   </div>
 

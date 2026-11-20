@@ -29,10 +29,15 @@ import {
   Lock,
   Plus,
   Shield,
+  MoreVertical,
+  Edit,
+  Trash2,
 } from 'lucide-react';
 import { useTuskerProfile } from '../../controllers/useTusker';
-import { calculateTuskerAge, parseSightingDetails } from '../../models/TuskerModel';
+import { calculateTuskerAge, parseSightingDetails, updateSighting, deleteSighting } from '../../models/TuskerModel';
 import StatusBadge from '../components/StatusBadge';
+import TuskerSightingsMap from '../components/TuskerSightingsMap';
+import EditSightingModal from '../components/EditSightingModal';
 import { getCachedAspect, setCachedAspect, probeImageAspect } from '../../utils/photoAspectCache';
 
 /* ── Fullscreen Zoom Lightbox ─────────────────────────────────── */
@@ -566,6 +571,8 @@ export default function TuskerProfile() {
 
   const {
     tusker,
+    setTusker,
+    reloadTusker,
     loading,
     comparisonList,
     earComparisonList,
@@ -580,6 +587,68 @@ export default function TuskerProfile() {
   const [showRiskModal, setShowRiskModal] = useState(false);
   const [selectedComparisonImg, setSelectedComparisonImg] = useState(null);
   const [previewModalPhoto, setPreviewModalPhoto] = useState(null);
+
+  // Sighting Edit & Delete State
+  const [activeMenu, setActiveMenu] = useState(null); // { id, sighting, sightingNum, rowNum, top, right }
+  const [editingSighting, setEditingSighting] = useState(null); // { sighting, sightingNum, rowNum }
+  const [deletingSighting, setDeletingSighting] = useState(null); // { sighting, sightingNum, rowNum }
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Close active dropdown menu on outside click or window scroll
+  useEffect(() => {
+    if (!activeMenu) return;
+    const handleClick = () => setActiveMenu(null);
+    const handleScroll = () => setActiveMenu(null);
+    window.addEventListener('click', handleClick);
+    window.addEventListener('scroll', handleScroll, true);
+    return () => {
+      window.removeEventListener('click', handleClick);
+      window.removeEventListener('scroll', handleScroll, true);
+    };
+  }, [activeMenu]);
+
+  const handleSaveEditedSighting = async (sightingId, updatedPayload) => {
+    await updateSighting(sightingId, updatedPayload);
+    if (reloadTusker) {
+      await reloadTusker();
+    } else if (setTusker) {
+      setTusker((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          sightings: (prev.sightings || []).map((s) =>
+            s.id === sightingId ? { ...s, ...updatedPayload } : s
+          ),
+        };
+      });
+    }
+  };
+
+  const handleConfirmDeleteSighting = async () => {
+    if (!deletingSighting?.sighting?.id) return;
+    try {
+      setIsDeleting(true);
+      await deleteSighting(deletingSighting.sighting.id);
+      if (reloadTusker) {
+        await reloadTusker();
+      } else if (setTusker) {
+        setTusker((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            sightings: (prev.sightings || []).filter(
+              (s) => s.id !== deletingSighting.sighting.id
+            ),
+          };
+        });
+      }
+      setDeletingSighting(null);
+    } catch (err) {
+      alert(`Failed to delete sighting: ${err.message || err}`);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const adminTableContainerRef = useRef(null);
   const adminTheadRef = useRef(null);
@@ -1150,8 +1219,8 @@ export default function TuskerProfile() {
                     <th className="py-3.5 px-4 w-[120px] bg-[#f8f9fa]">Health</th>
                     <th className="py-3.5 px-4 w-[110px] bg-[#f8f9fa]">Life Threat</th>
                     <th className="py-3.5 px-4 w-[190px] bg-[#f8f9fa]">Special Marks &amp; Wounds</th>
-                    <th className="py-3.5 px-4 bg-[#f8f9fa]">Notes / Remarks</th>
                     <th className="py-3.5 px-4 w-[90px] text-center bg-[#f8f9fa]">Photo</th>
+                    <th className="py-3.5 px-4 w-[65px] text-center bg-[#f8f9fa]">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#edf0f2] font-sans text-[0.84rem] text-[#222222]">
@@ -1219,15 +1288,6 @@ export default function TuskerProfile() {
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4">
-                      <div
-                        className="line-clamp-2 max-w-[320px] text-[#444444] text-[0.8rem]"
-                        title={tusker.remarks || tusker.description}
-                      >
-                        {tusker.remarks || tusker.description || 'Initial registry documentation.'}
-                      </div>
-                    </td>
-
                     <td className="py-3.5 px-4 text-center">
                       {tusker.photos?.[0] ? (
                         <button
@@ -1253,6 +1313,10 @@ export default function TuskerProfile() {
                       ) : (
                         <span className="text-[#aaaaaa] text-xs">—</span>
                       )}
+                    </td>
+
+                    <td className="py-3.5 px-4 text-center text-[#aaaaaa] text-xs select-none" title="Permanent baseline documentation">
+                      —
                     </td>
                   </tr>
 
@@ -1327,12 +1391,6 @@ export default function TuskerProfile() {
                           </div>
                         </td>
 
-                        <td className="py-3.5 px-4">
-                          <div className="line-clamp-2 max-w-[320px] text-[#444444] text-[0.8rem]" title={noteDisplay}>
-                            {noteDisplay}
-                          </div>
-                        </td>
-
                         <td className="py-3.5 px-4 text-center">
                           {sighting.imageUrl ? (
                             <button
@@ -1359,6 +1417,33 @@ export default function TuskerProfile() {
                             <span className="text-[#aaaaaa] text-xs">—</span>
                           )}
                         </td>
+
+                        <td className="py-3.5 px-4 text-center">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (activeMenu?.id === sighting.id) {
+                                setActiveMenu(null);
+                              } else {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setActiveMenu({
+                                  id: sighting.id,
+                                  sighting,
+                                  sightingNum,
+                                  rowNum,
+                                  top: rect.bottom + 4,
+                                  right: Math.max(12, window.innerWidth - rect.right),
+                                });
+                              }
+                            }}
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-[#666666] hover:text-[#111111] hover:bg-[#eaeaea] transition-colors mx-auto cursor-pointer border-none bg-transparent"
+                            title="Actions"
+                            aria-label="Actions"
+                          >
+                            <MoreVertical size={16} />
+                          </button>
+                        </td>
                       </tr>
                     );
                   })}
@@ -1380,79 +1465,12 @@ export default function TuskerProfile() {
                 </tbody>
               </table>
             </div>
-          </div>
-        )}
 
-        {/* BOTTOM - Sightings / Community Contributions (Visible to Public and Admin) */}
-        {tusker.sightings && tusker.sightings.length > 0 && (
-          <div className="mt-16 pt-10 border-t border-[#eeeeee]">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-sans text-[1.5rem] font-bold text-[#111111] m-0">Recorded Sightings &amp; Community Photos</h2>
-              <span className="font-sans text-xs font-semibold text-[#888888]">{tusker.sightings.length} {tusker.sightings.length === 1 ? 'Sighting' : 'Sightings'}</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {tusker.sightings.map((sighting, idx) => {
-                const details = parseSightingDetails(sighting);
-                const publicNote = details.note || (!sighting.note?.trim().startsWith('{') ? sighting.note : '') || details.remarks;
-                return (
-                  <div key={sighting.id || idx} className="bg-[#f9faf8] border border-[#eaeaea] rounded-[12px] overflow-hidden flex flex-col hover:border-accent/30 transition-all">
-                    <div
-                      className="w-full aspect-[4/3] bg-black/5 relative group cursor-pointer"
-                      onClick={() => setPreviewModalPhoto({
-                        url: sighting.imageUrl,
-                        title: `${tusker.name} (${tusker.id}) - Sighting Photo`,
-                        date: formatDate(sighting.captureDate) || sighting.captureDate,
-                        author: sighting.author || 'WTS Community',
-                        location: details.location || '',
-                        healthCondition: details.healthCondition || '',
-                        threatLevel: details.threatLevel || '',
-                        note: publicNote || ''
-                      })}
-                    >
-                      <img src={sighting.imageUrl} alt={`Sighting on ${sighting.captureDate}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-1.5 font-sans text-xs font-semibold">
-                        <Maximize2 size={16} />
-                        <span>View Photo</span>
-                      </div>
-                    </div>
-                    <div className="p-5 flex flex-col gap-2.5 flex-1 justify-between">
-                      <div className="flex flex-col gap-1.5">
-                        <div className="flex justify-between items-center">
-                          <span className="font-sans text-[0.85rem] font-semibold text-[#888888] flex items-center gap-1">
-                            <Calendar size={13} />
-                            {formatDate(sighting.captureDate)}
-                          </span>
-                          <span className="font-sans text-[0.75rem] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-[4px]">{sighting.author}</span>
-                        </div>
-                        {details.location && (
-                          <div className="font-sans text-[0.8rem] text-[#666666] flex items-center gap-1">
-                            <MapPin size={12} className="text-accent" />
-                            <span>{details.location}</span>
-                          </div>
-                        )}
-                        {publicNote && (
-                          <p className="font-sans text-[0.88rem] text-[#333333] leading-[1.6] m-0 line-clamp-3">{publicNote}</p>
-                        )}
-                      </div>
-                      {(details.healthCondition || details.threatLevel) && (
-                        <div className="flex items-center gap-2 pt-2 border-t border-[#f0f0f0] text-xs">
-                          {details.healthCondition && (
-                            <span className="bg-[#e8f5ec] text-[#1f7a3d] font-semibold px-2 py-0.5 rounded-[4px]">
-                              Health: {details.healthCondition}
-                            </span>
-                          )}
-                          {details.threatLevel && (
-                            <span className={`font-bold px-2 py-0.5 rounded-[4px] ${THREAT_STYLES[details.threatLevel] || ''}`}>
-                              {details.threatLevel} Threat
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            {/* Google Map of Sighting Points (Admin Only View) */}
+            <TuskerSightingsMap
+              tusker={tusker}
+              onPreviewPhoto={setPreviewModalPhoto}
+            />
           </div>
         )}
       </div>
@@ -1628,6 +1646,103 @@ export default function TuskerProfile() {
                   {previewModalPhoto.note}
                 </p>
               )}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+      {/* Three-dots Action Dropdown Menu (via portal to prevent table overflow clipping) */}
+      {activeMenu && createPortal(
+        <div
+          style={{ top: `${activeMenu.top}px`, right: `${activeMenu.right}px` }}
+          className="fixed z-[9999] w-40 bg-white border border-[#e5e7eb] rounded-[10px] shadow-xl py-1 flex flex-col font-sans text-[0.82rem] animate-in fade-in"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setEditingSighting({
+                sighting: activeMenu.sighting,
+                sightingNum: activeMenu.sightingNum,
+                rowNum: activeMenu.rowNum,
+              });
+              setActiveMenu(null);
+            }}
+            className="flex items-center gap-2.5 px-3.5 py-2 text-[#333333] hover:bg-[#faf5ec] hover:text-accent font-medium w-full text-left transition-colors cursor-pointer border-none bg-transparent"
+          >
+            <Edit size={14} className="text-accent" />
+            <span>Edit Sighting</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setDeletingSighting({
+                sighting: activeMenu.sighting,
+                sightingNum: activeMenu.sightingNum,
+                rowNum: activeMenu.rowNum,
+              });
+              setActiveMenu(null);
+            }}
+            className="flex items-center gap-2.5 px-3.5 py-2 text-[#dc2626] hover:bg-[#fdecea] font-medium w-full text-left transition-colors cursor-pointer border-none bg-transparent border-t border-[#f0f0f0]"
+          >
+            <Trash2 size={14} className="text-[#dc2626]" />
+            <span>Delete Sighting</span>
+          </button>
+        </div>,
+        document.body
+      )}
+
+      {/* Edit Sighting Modal */}
+      {editingSighting && (
+        <EditSightingModal
+          sighting={editingSighting.sighting}
+          tusker={tusker}
+          sightingNum={editingSighting.sightingNum}
+          rowNum={editingSighting.rowNum}
+          onClose={() => setEditingSighting(null)}
+          onSave={handleSaveEditedSighting}
+        />
+      )}
+
+      {/* Delete Sighting Confirmation Modal */}
+      {deletingSighting && createPortal(
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in"
+          onClick={() => !isDeleting && setDeletingSighting(null)}
+        >
+          <div
+            className="bg-white rounded-[16px] max-w-md w-full shadow-2xl border border-[#e5e7eb] p-6 flex flex-col gap-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 text-[#dc2626]">
+              <div className="w-10 h-10 rounded-full bg-[#fdecea] flex items-center justify-center shrink-0">
+                <Trash2 size={20} />
+              </div>
+              <div>
+                <h3 className="font-sans text-[1.1rem] font-bold text-[#111111] m-0">Delete Sighting #{deletingSighting.sightingNum}?</h3>
+                <span className="text-xs text-[#777777]">Row {deletingSighting.rowNum} • {formatDate(deletingSighting.sighting?.captureDate) || 'Verified Sighting'}</span>
+              </div>
+            </div>
+            <p className="font-sans text-[0.88rem] text-[#555555] leading-relaxed m-0">
+              Are you sure you want to delete this sighting record for <strong>{tusker?.name}</strong>? This will permanently remove this sighting and its coordinates from the profile and sightings map. This action cannot be undone.
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setDeletingSighting(null)}
+                className="px-4 py-2 rounded-[10px] border border-[#d5d5d5] bg-white text-[#444444] font-sans text-xs font-semibold hover:bg-[#f5f5f5] transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleConfirmDeleteSighting}
+                className="px-4 py-2 rounded-[10px] bg-[#dc2626] text-white font-sans text-xs font-bold hover:bg-[#b91c1c] transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Sighting'}
+              </button>
             </div>
           </div>
         </div>,

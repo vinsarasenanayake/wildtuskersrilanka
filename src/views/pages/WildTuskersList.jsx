@@ -335,7 +335,10 @@ export default function WildTuskersList() {
                   {tusker.id} – {tusker.name}
                   {tusker.sinhala && <span className="font-normal text-[#444444]"> ({tusker.sinhala})</span>}
                 </p>
-                <p className="font-sans text-[0.8rem] text-[#999999] m-0">{tusker.location}</p>
+                <p className="font-sans text-[0.8rem] text-[#888888] m-0 flex items-center gap-1.5 truncate">
+                  <MapPin size={11} className="text-accent shrink-0" />
+                  <span className="truncate">{tusker.location || 'Location not recorded'}</span>
+                </p>
               </div>
             </div>
           ))}

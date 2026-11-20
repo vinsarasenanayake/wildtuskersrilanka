@@ -19,6 +19,7 @@ import { getTuskers } from '../../models/TuskerModel';
 import ImageUploadBox from '../components/ImageUploadBox';
 import TuskerMultiSelect from '../components/TuskerMultiSelect';
 import EditGalleryPhotoModal from '../components/EditGalleryPhotoModal';
+import LocationSearchInput from '../components/LocationSearchInput';
 import Footer from '../components/Footer';
 
 export default function Gallery() {
@@ -772,13 +773,12 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
               <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">
                 Location / Sanctuary
               </label>
-              <input
-                type="text"
+              <LocationSearchInput
                 name="location"
                 placeholder="e.g. Udawalawe / Minneriya"
                 value={formData.location}
                 onChange={handleChange}
-                className="bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm"
+                className="bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg py-2.5 outline-none focus:border-accent focus:bg-white text-sm"
               />
             </div>
 

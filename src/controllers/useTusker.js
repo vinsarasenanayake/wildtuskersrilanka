@@ -11,6 +11,7 @@ import {
   compareTuskerId
 } from '../models/TuskerModel';
 import { useAuth } from './useAuth';
+import { SRI_LANKA_WILDLIFE_LOCATIONS } from '../utils/sriLankaLocations';
 
 /* ==============================================================
    SECTION 1: WILD TUSKERS DIRECTORY & SEARCH CONTROLLER
@@ -46,10 +47,16 @@ export function useTuskerList() {
 
   const allLocations = useMemo(() => {
     const byKey = new Map();
+    // 1. Gather all areas documented across tuskers
     tuskers.forEach(t => splitAreas(t.location).forEach(a => {
       const key = a.toLowerCase();
       if (!byKey.has(key)) byKey.set(key, a);
     }));
+    // 2. Also incorporate curated Sri Lanka wildlife sanctuaries & parks
+    SRI_LANKA_WILDLIFE_LOCATIONS.forEach(loc => {
+      const key = loc.name.toLowerCase();
+      if (!byKey.has(key)) byKey.set(key, loc.name);
+    });
     return [...byKey.values()].sort((a, b) => a.localeCompare(b));
   }, [tuskers]);
 
@@ -149,6 +156,14 @@ export function useTuskerList() {
     setLocationQuery(val);
     const q = val.toLowerCase();
     const filtered = allLocations.filter(loc => loc.toLowerCase().includes(q));
+    filtered.sort((a, b) => {
+      const countA = countInArea(a);
+      const countB = countInArea(b);
+      if (countA > 0 && countB === 0) return -1;
+      if (countB > 0 && countA === 0) return 1;
+      if (countA !== countB) return countB - countA;
+      return a.localeCompare(b);
+    });
     setLocSugg(filtered);
     setShowLocDrop(true);
   };
@@ -186,7 +201,15 @@ export function useTuskerList() {
   };
 
   const focusLocation = () => {
-    setLocSugg(allLocations);
+    const sorted = [...allLocations].sort((a, b) => {
+      const countA = countInArea(a);
+      const countB = countInArea(b);
+      if (countA > 0 && countB === 0) return -1;
+      if (countB > 0 && countA === 0) return 1;
+      if (countA !== countB) return countB - countA;
+      return a.localeCompare(b);
+    });
+    setLocSugg(sorted);
     setShowLocDrop(true);
   };
 
@@ -289,6 +312,13 @@ export function useTuskerProfile(id) {
 
   return {
     tusker,
+    setTusker,
+    reloadTusker: () => {
+      if (id) {
+        return getTuskerById(id).then(t => { if (t) setTusker(t); return t; });
+      }
+      return Promise.resolve(null);
+    },
     loading,
     comparisonList,
     earComparisonList,
@@ -418,8 +448,9 @@ export function useSightingForm(tuskerId) {
         profileUpdates.lastSeenArea = lastSeenArea.trim();
       }
       if (captureDate) {
-        // Update last seen to YYYY-MM
-        profileUpdates.lastSeen = captureDate.slice(0, 7);
+        // PostgreSQL date requires YYYY-MM-DD
+        const monthStr = captureDate.slice(0, 7);
+        profileUpdates.lastSeen = `${monthStr}-01`;
       }
       if (healthCondition) {
         profileUpdates.healthCondition = healthCondition;
