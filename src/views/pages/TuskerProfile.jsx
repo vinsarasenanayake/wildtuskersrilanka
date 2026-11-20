@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -581,6 +581,81 @@ export default function TuskerProfile() {
   const [selectedComparisonImg, setSelectedComparisonImg] = useState(null);
   const [previewModalPhoto, setPreviewModalPhoto] = useState(null);
 
+  const adminTableContainerRef = useRef(null);
+  const adminTheadRef = useRef(null);
+  const adminFirstRowRef = useRef(null);
+  const [adminTableHeight, setAdminTableHeight] = useState(null);
+
+  useLayoutEffect(() => {
+    if (!isAdmin) return;
+
+    const getRowBottomInTable = (rowEl, theadEl) => {
+      if (!rowEl) return 0;
+      const theadHeight = theadEl ? theadEl.offsetHeight : 0;
+      const rowHeight = rowEl.offsetHeight;
+      const rowOffsetTop = rowEl.offsetTop;
+
+      if (rowOffsetTop >= theadHeight) {
+        return rowOffsetTop + rowHeight;
+      }
+      const tbodyOffsetTop = rowEl.parentElement ? rowEl.parentElement.offsetTop : 0;
+      if (tbodyOffsetTop > 0) {
+        return tbodyOffsetTop + rowOffsetTop + rowHeight;
+      }
+      return theadHeight + rowHeight;
+    };
+
+    const updateTableHeight = () => {
+      const container = adminTableContainerRef.current;
+      const theadEl = adminTheadRef.current;
+      const rowEl = adminFirstRowRef.current;
+      if (!container || !theadEl || !rowEl) return;
+
+      let contentHeight = 0;
+      if (container.scrollTop === 0) {
+        const theadRect = theadEl.getBoundingClientRect();
+        const rowRect = rowEl.getBoundingClientRect();
+        if (theadRect.height > 0 && rowRect.height > 0) {
+          contentHeight = Math.floor(rowRect.bottom - theadRect.top);
+        }
+      }
+      if (!contentHeight || contentHeight <= 0) {
+        contentHeight = getRowBottomInTable(rowEl, theadEl);
+      }
+
+      if (contentHeight > 0) {
+        const style = window.getComputedStyle(container);
+        const borderTop = parseFloat(style.borderTopWidth) || 1;
+        const borderBottom = parseFloat(style.borderBottomWidth) || 1;
+
+        // Extra allowance if a horizontal scrollbar is present on narrow screens
+        const hScrollbarHeight = container.offsetHeight > 0
+          ? Math.max(0, container.offsetHeight - container.clientHeight - (borderTop + borderBottom))
+          : 0;
+
+        const targetHeight = contentHeight + borderTop + borderBottom + hScrollbarHeight;
+        setAdminTableHeight((prev) => (prev === targetHeight ? prev : targetHeight));
+      }
+    };
+
+    updateTableHeight();
+
+    let ro;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(() => {
+        updateTableHeight();
+      });
+      if (adminTheadRef.current) ro.observe(adminTheadRef.current);
+      if (adminFirstRowRef.current) ro.observe(adminFirstRowRef.current);
+    }
+
+    window.addEventListener('resize', updateTableHeight);
+    return () => {
+      if (ro) ro.disconnect();
+      window.removeEventListener('resize', updateTableHeight);
+    };
+  }, [isAdmin, tusker]);
+
   useEffect(() => {
     if (tusker) {
       document.title = `Wild Tuskers Sri Lanka | ${tusker.name}`;
@@ -1033,6 +1108,11 @@ export default function TuskerProfile() {
                   <span className="font-sans text-xs font-semibold text-[#888888]">
                     {(tusker.sightings?.length || 0) + 1} Total Records
                   </span>
+                  {(tusker.sightings?.length || 0) > 1 && (
+                    <span className="font-sans text-[0.72rem] text-accent font-semibold bg-accent/10 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                      ↕ Scroll table to view all records
+                    </span>
+                  )}
                 </div>
                 <h2 className="font-sans text-[1.45rem] font-bold text-[#111111] m-0">
                   Sightings &amp; Observation Records History
@@ -1051,25 +1131,35 @@ export default function TuskerProfile() {
               </button>
             </div>
 
-            {/* Table Container */}
-            <div className="w-full overflow-x-auto bg-white border border-[#e5e7eb] rounded-[14px] shadow-sm">
+            {/* Table Container - Dynamic height matching Header + Row 1, scrollable vertically for subsequent rows */}
+            <div
+              ref={adminTableContainerRef}
+              style={adminTableHeight ? { height: `${adminTableHeight}px` } : { maxHeight: '135px' }}
+              className="w-full overflow-auto bg-white border border-[#e5e7eb] rounded-[14px] shadow-sm"
+            >
               <table className="w-full text-left border-collapse min-w-[1020px]">
-                <thead>
-                  <tr className="bg-[#f8f9fa] border-b border-[#e5e7eb] text-[0.74rem] uppercase font-bold tracking-[0.6px] text-[#555555]">
-                    <th className="py-3.5 px-4 w-[130px]">Record #</th>
-                    <th className="py-3.5 px-4 w-[115px]">Date / Year</th>
-                    <th className="py-3.5 px-4 w-[170px]">Observer / Recorder</th>
-                    <th className="py-3.5 px-4 w-[160px]">Location / Area</th>
-                    <th className="py-3.5 px-4 w-[120px]">Health</th>
-                    <th className="py-3.5 px-4 w-[110px]">Life Threat</th>
-                    <th className="py-3.5 px-4 w-[190px]">Special Marks &amp; Wounds</th>
-                    <th className="py-3.5 px-4">Notes / Remarks</th>
-                    <th className="py-3.5 px-4 w-[90px] text-center">Photo</th>
+                <thead
+                  ref={adminTheadRef}
+                  className="sticky top-0 z-10 bg-[#f8f9fa] shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                >
+                  <tr className="border-b border-[#e5e7eb] text-[0.74rem] uppercase font-bold tracking-[0.6px] text-[#555555]">
+                    <th className="py-3.5 px-4 w-[130px] bg-[#f8f9fa]">Record #</th>
+                    <th className="py-3.5 px-4 w-[115px] bg-[#f8f9fa]">Date / Year</th>
+                    <th className="py-3.5 px-4 w-[170px] bg-[#f8f9fa]">Observer / Recorder</th>
+                    <th className="py-3.5 px-4 w-[160px] bg-[#f8f9fa]">Location / Area</th>
+                    <th className="py-3.5 px-4 w-[120px] bg-[#f8f9fa]">Health</th>
+                    <th className="py-3.5 px-4 w-[110px] bg-[#f8f9fa]">Life Threat</th>
+                    <th className="py-3.5 px-4 w-[190px] bg-[#f8f9fa]">Special Marks &amp; Wounds</th>
+                    <th className="py-3.5 px-4 bg-[#f8f9fa]">Notes / Remarks</th>
+                    <th className="py-3.5 px-4 w-[90px] text-center bg-[#f8f9fa]">Photo</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#edf0f2] font-sans text-[0.84rem] text-[#222222]">
                   {/* Row 1: Baseline Registration (Permanently Preserved) */}
-                  <tr className="bg-[#fafaf6] hover:bg-[#f4f5ee] transition-colors">
+                  <tr
+                    ref={adminFirstRowRef}
+                    className="bg-[#fafaf6] hover:bg-[#f4f5ee] transition-colors"
+                  >
                     <td className="py-3.5 px-4">
                       <div className="flex flex-col gap-1">
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.72rem] font-bold bg-[#0b2518] text-[#c69b55] w-fit">
