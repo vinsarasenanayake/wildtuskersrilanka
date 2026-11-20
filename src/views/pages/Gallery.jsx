@@ -769,7 +769,7 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
             </div>
 
             {/* Location */}
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 min-w-0">
               <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">
                 Location / Sanctuary
               </label>
@@ -778,7 +778,7 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
                 placeholder="e.g. Udawalawe / Minneriya"
                 value={formData.location}
                 onChange={handleChange}
-                className="bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg py-2.5 outline-none focus:border-accent focus:bg-white text-sm"
+                className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg py-2.5 outline-none focus:border-accent focus:bg-white text-sm"
               />
             </div>
 

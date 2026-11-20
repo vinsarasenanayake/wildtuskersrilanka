@@ -215,7 +215,7 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
 
               {/* Location & Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 min-w-0">
                   <label className="text-xs font-bold text-[#444] uppercase tracking-wider flex items-center gap-1">
                     <MapPin size={12} className="text-accent" />
                     <span>Location / Sanctuary</span>
@@ -225,11 +225,11 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
                     value={formData.location}
                     onChange={handleChange}
                     placeholder="e.g. Kala Wewa / Wilpattu"
-                    className="bg-white border border-gray-300 rounded-lg py-2 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+                    className="w-full bg-white border border-gray-300 rounded-lg py-2 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
                   />
                 </div>
 
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 min-w-0">
                   <label className="text-xs font-bold text-[#444] uppercase tracking-wider flex items-center gap-1">
                     <Calendar size={12} className="text-accent" />
                     <span>Date Taken</span>
@@ -239,14 +239,14 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
                     name="date"
                     value={formData.date}
                     onChange={handleChange}
-                    className="bg-white border border-gray-300 rounded-lg px-3.5 py-2 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-3.5 py-2 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
                   />
                 </div>
               </div>
 
               {/* Photographer & Contact */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 min-w-0">
                   <label className="text-xs font-bold text-[#444] uppercase tracking-wider flex items-center gap-1">
                     <Camera size={12} className="text-accent" />
                     <span>Photographer Name</span>
@@ -258,12 +258,12 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
                     value={formData.photographer}
                     onChange={handleChange}
                     placeholder="e.g. WTS Admin"
-                    className="bg-white border border-gray-300 rounded-lg px-3.5 py-2 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-3.5 py-2 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
                     required
                   />
                 </div>
 
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 min-w-0">
                   <label className="text-xs font-bold text-[#444] uppercase tracking-wider flex items-center gap-1">
                     <UserCheck size={12} className="text-accent" />
                     <span>Status</span>

@@ -107,7 +107,7 @@ export default function Navbar() {
 
         {/* CTA + Mobile Toggle */}
         <div className={`flex items-center gap-3.5 xl:gap-4 shrink-0 ${
-          isAdmin && isActive('/admin')
+          isAdmin && location.pathname === '/admin'
             ? ''
             : 'ml-4 xl:ml-6 pl-4 xl:pl-6 border-l border-white/20'
         }`}>
@@ -124,8 +124,8 @@ export default function Navbar() {
           )}
 
           {isAdmin ? (
-            !isActive('/admin') && (
-              <>
+            <>
+              {location.pathname !== '/admin' && (
                 <Link
                   to="/admin"
                   className="font-semibold text-[0.86rem] px-4 py-[0.55rem] rounded-[4px] hidden sm:inline-flex items-center gap-1.5 transition-all duration-300 bg-white/15 text-white hover:bg-white/25"
@@ -133,15 +133,15 @@ export default function Navbar() {
                   <Shield size={15} />
                   <span>Admin Portal</span>
                 </Link>
-                <button
-                  onClick={handleLogoutClick}
-                  className="bg-primary-light text-white font-semibold text-[0.85rem] px-4 py-[0.55rem] rounded-[4px] hidden sm:inline-flex items-center gap-1 shadow-[0_4px_10px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-white/10! hover:border-white! transition-all duration-300 cursor-pointer"
-                >
-                  <LogOut size={15} />
-                  <span>Logout</span>
-                </button>
-              </>
-            )
+              )}
+              <button
+                onClick={handleLogoutClick}
+                className="bg-primary-light text-white font-semibold text-[0.85rem] px-4 py-[0.55rem] rounded-[4px] hidden sm:inline-flex items-center gap-1 shadow-[0_4px_10px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-white/10! hover:border-white! transition-all duration-300 cursor-pointer"
+              >
+                <LogOut size={15} />
+                <span>Logout</span>
+              </button>
+            </>
           ) : (
             <Link
               to="/login"

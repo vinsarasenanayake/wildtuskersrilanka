@@ -72,4 +72,116 @@
 .leaflet-container {
   font-family: inherit !important;
   z-index: 1 !important;
+  background-color: #0e1210 !important;
+}
+
+/* Leaflet: hide attribution text */
+.leaflet-control-attribution,
+.leaflet-control-attribution * {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Google Maps clean UI: hide map-type, rotate/tilt, fullscreen clutter, and attribution / terms / copyright bars */
+.gm-style-mtc,
+.gm-style-mtc-container,
+.gm-compass,
+.gm-tilt,
+div.gm-bundled-control,
+div.gm-bundled-control *,
+button[title*="Rotate" i],
+button[title*="tilt" i],
+button[aria-label*="Rotate" i],
+button[aria-label*="tilt" i],
+button[title*="compass" i],
+button[aria-label*="compass" i],
+button[aria-label*="bearing" i],
+button[title="Toggle fullscreen view"],
+button[aria-label="Toggle fullscreen view"],
+.gm-fullscreen-control,
+.gm-style-cc,
+.gm-style-cc-container,
+.gm-style-cc *,
+button[title*="Keyboard shortcuts" i],
+button[aria-label*="Keyboard shortcuts" i],
+a[href*="terms_maps"],
+a[href*="google.com/intl"][href*="terms"],
+a[href*="help/terms_maps"],
+a[href*="report-a-bug"],
+a[title*="Report errors"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Google Maps InfoWindow Dark Theme */
+.gm-style .gm-style-iw-c {
+  border-radius: 14px !important;
+  padding: 10px 14px 10px 12px !important;
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.65), 0 4px 14px -2px rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(198, 155, 85, 0.35) !important;
+  background-color: #0d1612 !important;
+  color: #f3f4f6 !important;
+}
+.gm-style .gm-style-iw-d {
+  overflow: hidden !important;
+  padding: 0 !important;
+  max-height: none !important;
+}
+.gm-style .gm-style-iw-tc::after {
+  background: #0d1612 !important;
+}
+.gm-style .gm-ui-hover-effect {
+  top: 4px !important;
+  right: 4px !important;
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 0.75 !important;
+  filter: invert(1) brightness(1.2) !important;
+  transition: all 0.2s ease !important;
+}
+.gm-style .gm-ui-hover-effect:hover {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  opacity: 1 !important;
+}
+
+/* Leaflet Popup Dark Theme */
+.leaflet-popup-content-wrapper {
+  border-radius: 14px !important;
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.65) !important;
+  padding: 4px 8px !important;
+  border: 1px solid rgba(198, 155, 85, 0.35) !important;
+  background-color: #0d1612 !important;
+  color: #f3f4f6 !important;
+}
+.leaflet-popup-tip {
+  background: #0d1612 !important;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.4) !important;
+}
+.leaflet-container a.leaflet-popup-close-button {
+  top: 6px !important;
+  right: 6px !important;
+  color: #9ca3af !important;
+  border-radius: 50% !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 16px !important;
+}
+.leaflet-container a.leaflet-popup-close-button:hover {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}
+.leaflet-container a.leaflet-popup-close-button:hover {
+  color: #111111 !important;
+  background-color: #f0f3f1 !important;
 }

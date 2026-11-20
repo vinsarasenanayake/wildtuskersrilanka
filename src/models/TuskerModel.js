@@ -132,6 +132,65 @@ export function compareTuskerId(aId, bId) {
 }
 
 const TUSKER_SELECT = '*, sightings:tusker_sightings(*)';
+// Exact sighting coordinates live in the admin-only sighting_locations table.
+const TUSKER_SELECT_ADMIN = '*, sightings:tusker_sightings(*, pin:sighting_locations(lat, lng))';
+
+async function tuskerSelect() {
+  try {
+    const { data } = await supabase.auth.getSession();
+    return data?.session ? TUSKER_SELECT_ADMIN : TUSKER_SELECT;
+  } catch {
+    return TUSKER_SELECT;
+  }
+}
+
+function mapSighting(row) {
+  const s = fromRow(row);
+  if (s.pin && typeof s.pin.lat === 'number' && typeof s.pin.lng === 'number') {
+    s.coords = { lat: s.pin.lat, lng: s.pin.lng };
+  }
+  delete s.pin;
+  return s;
+}
+
+/** Removes coordinates from a serialized sighting note and returns them separately. */
+function splitCoordsFromNote(note) {
+  if (typeof note !== 'string' || !note.trim().startsWith('{')) return { note, coords: undefined };
+  try {
+    const parsed = JSON.parse(note);
+    let coords = null;
+    if (parsed.coords && typeof parsed.coords.lat === 'number' && typeof parsed.coords.lng === 'number') {
+      coords = { lat: parsed.coords.lat, lng: parsed.coords.lng };
+    } else if (parsed.lat != null && parsed.lng != null && !Number.isNaN(Number(parsed.lat)) && !Number.isNaN(Number(parsed.lng))) {
+      coords = { lat: Number(parsed.lat), lng: Number(parsed.lng) };
+    }
+    delete parsed.coords;
+    delete parsed.lat;
+    delete parsed.lng;
+    return { note: JSON.stringify(parsed), coords };
+  } catch {
+    return { note, coords: undefined };
+  }
+}
+
+async function saveSightingLocation(sightingId, coords, locationName) {
+  if (coords === undefined) return;
+  if (coords === null) {
+    unwrap(await supabase.from('sighting_locations').delete().eq('sighting_id', sightingId));
+    return;
+  }
+  unwrap(await supabase.from('sighting_locations').upsert({
+    sighting_id: sightingId,
+    lat: coords.lat,
+    lng: coords.lng,
+    location_name: locationName || null,
+    updated_at: new Date().toISOString(),
+  }));
+}
+
+function locationNameFromNote(note) {
+  try { return JSON.parse(note).location || null; } catch { return null; }
+}
 
 function mapTusker(row) {
   const t = fromRow(row);
@@ -142,7 +201,7 @@ function mapTusker(row) {
   if (!t.photographicComparison) delete t.photographicComparison;
   if (!t.earComparison) delete t.earComparison;
   t.sightings = (t.sightings || [])
-    .map(fromRow)
+    .map(mapSighting)
     .sort((a, b) => a.id - b.id);
   return t;
 }
@@ -151,15 +210,19 @@ export function parseSightingDetails(sighting) {
   if (!sighting) {
     return { note: '', location: '', healthCondition: '', threatLevel: '', specialMarks: '', specialWounds: '', remarks: '', coords: null, images: [] };
   }
+  const savedCoords =
+    sighting.coords && typeof sighting.coords.lat === 'number' && typeof sighting.coords.lng === 'number'
+      ? sighting.coords
+      : null;
   if (sighting.note && typeof sighting.note === 'string' && sighting.note.trim().startsWith('{')) {
     try {
       const parsed = JSON.parse(sighting.note);
-      const coords =
-        parsed.coords && typeof parsed.coords.lat === 'number' && typeof parsed.coords.lng === 'number'
+      const coords = savedCoords ||
+        (parsed.coords && typeof parsed.coords.lat === 'number' && typeof parsed.coords.lng === 'number'
           ? parsed.coords
-          : parsed.lat && parsed.lng
+          : parsed.lat != null && parsed.lng != null && parsed.lat !== '' && parsed.lng !== '' && Number.isFinite(Number(parsed.lat)) && Number.isFinite(Number(parsed.lng))
           ? { lat: Number(parsed.lat), lng: Number(parsed.lng) }
-          : null;
+          : null);
 
       const images = Array.isArray(parsed.images)
         ? parsed.images.filter(Boolean)
@@ -192,7 +255,7 @@ export function parseSightingDetails(sighting) {
     specialMarks: '',
     specialWounds: '',
     remarks: '',
-    coords: null,
+    coords: savedCoords,
     images: sighting.imageUrl
       ? (typeof sighting.imageUrl === 'string' ? sighting.imageUrl.split(',').map((s) => s.trim()).filter(Boolean) : [sighting.imageUrl])
       : [],
@@ -202,17 +265,25 @@ export function parseSightingDetails(sighting) {
 /* ==============================================================
    SECTION 2: TUSKERS REGISTRY CRUD (async, Supabase)
 ============================================================== */
+// Runs a tusker query with the admin select (includes exact pins) when
+// logged in, falling back to the public select if that is not available.
+async function queryTuskers(build) {
+  const select = await tuskerSelect();
+  const res = await build(supabase.from('tuskers').select(select));
+  if (res.error && select !== TUSKER_SELECT) {
+    return unwrap(await build(supabase.from('tuskers').select(TUSKER_SELECT)));
+  }
+  return unwrap(res);
+}
+
 export async function getTuskers() {
-  const rows = unwrap(await supabase.from('tuskers').select(TUSKER_SELECT));
+  const rows = await queryTuskers((q) => q);
   return rows.map(mapTusker).sort((a, b) => compareTuskerId(a.id, b.id));
 }
 
 export async function getTuskerById(id) {
   if (!id) return null;
-  const row = unwrap(
-    await supabase.from('tuskers').select(TUSKER_SELECT)
-      .eq('id', id.toUpperCase()).maybeSingle()
-  );
+  const row = await queryTuskers((q) => q.eq('id', id.toUpperCase()).maybeSingle());
   return row ? mapTusker(row) : null;
 }
 
@@ -249,22 +320,33 @@ export async function deleteTusker(id) {
 }
 
 export async function addSightingToTusker(tuskerId, sighting) {
-  unwrap(await supabase.from('tusker_sightings').insert({
+  const { note, coords } = splitCoordsFromNote(sighting.note || null);
+  const row = unwrap(await supabase.from('tusker_sightings').insert({
     tusker_id: tuskerId.toUpperCase(),
     image_url: sighting.imageUrl,
     capture_date: sighting.captureDate,
-    note: sighting.note || null,
+    note: note || null,
     author: sighting.author || null,
-  }));
+  }).select('id').single());
+  const pin = coords !== undefined ? coords : sighting.coords;
+  if (row?.id && pin) {
+    await saveSightingLocation(row.id, pin, locationNameFromNote(note));
+  }
 }
 
 export async function updateSighting(sightingId, sighting) {
   const payload = {};
   if (sighting.imageUrl !== undefined) payload.image_url = sighting.imageUrl;
   if (sighting.captureDate !== undefined) payload.capture_date = sighting.captureDate;
-  if (sighting.note !== undefined) payload.note = sighting.note;
+  let pin = sighting.coords;
+  if (sighting.note !== undefined) {
+    const split = splitCoordsFromNote(sighting.note);
+    payload.note = split.note;
+    if (pin === undefined) pin = split.coords;
+  }
   if (sighting.author !== undefined) payload.author = sighting.author;
   unwrap(await supabase.from('tusker_sightings').update(payload).eq('id', sightingId));
+  await saveSightingLocation(sightingId, pin, locationNameFromNote(payload.note));
 }
 
 export async function deleteSighting(sightingId) {

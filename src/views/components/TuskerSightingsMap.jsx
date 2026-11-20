@@ -11,7 +11,8 @@ import {
 } from 'lucide-react';
 import { parseSightingDetails } from '../../models/TuskerModel';
 import { getLocationCoordinates, resolveLocationCoordinatesAsync } from '../../utils/sriLankaLocations';
-import { loadLeaflet } from '../../utils/leafletLoader';
+import { createMap } from '../../utils/mapEngine';
+import { escapeHtml } from '../../utils/escapeHtml';
 
 const SRI_LANKA_CENTER = [7.8731, 80.7718];
 
@@ -28,8 +29,7 @@ export default function TuskerSightingsMap({
   onPreviewPhoto,
 }) {
   const mapContainerRef = useRef(null);
-  const leafletMapRef = useRef(null);
-  const markersLayerRef = useRef(null);
+  const mapRef = useRef(null);
 
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
@@ -108,14 +108,12 @@ export default function TuskerSightingsMap({
   // View all sightings handler: restores all pins and refits map bounds
   const handleViewAll = useCallback(() => {
     setSelectedPoint(null);
-    const map = leafletMapRef.current;
-    if (map && window.L && activePoints.length > 0) {
-      map.closePopup();
+    const map = mapRef.current;
+    if (map && activePoints.length > 0) {
       if (activePoints.length === 1 && activePoints[0].coords) {
         map.setView([activePoints[0].coords.lat, activePoints[0].coords.lng], 12);
       } else {
-        const latLngs = activePoints.map((p) => [p.coords.lat, p.coords.lng]);
-        map.fitBounds(window.L.latLngBounds(latLngs), { padding: [50, 50], maxZoom: 13 });
+        map.fitBounds(activePoints.map((p) => [p.coords.lat, p.coords.lng]), { padding: 50, maxZoom: 13 });
       }
     }
   }, [activePoints]);
@@ -130,75 +128,36 @@ export default function TuskerSightingsMap({
     }
   }, [selectedPoint?.id, handleViewAll]);
 
-  // Initialize Leaflet Map
+  // Initialize the map (Google Maps when a key is set, free maps otherwise)
   useEffect(() => {
     let active = true;
-    if (!mapContainerRef.current) return;
+    let created = null;
+    if (!mapContainerRef.current) return undefined;
 
-    loadLeaflet()
-      .then((L) => {
-        if (!active || !mapContainerRef.current) return;
-
-        // Prevent re-initialization if already created
-        if (!leafletMapRef.current) {
-          // If container already had a Leaflet instance attached, clean up internal id
-          if (mapContainerRef.current._leaflet_id) {
-            delete mapContainerRef.current._leaflet_id;
-          }
-
-          const map = L.map(mapContainerRef.current, {
-            center: SRI_LANKA_CENTER,
-            zoom: 8,
-            zoomControl: true,
-            scrollWheelZoom: true,
-          });
-
-          // Primary: Google Maps Roadmap Tile Layer (High detail & speed)
-          const googleTiles = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-            maxZoom: 20,
-            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-            attribution: '&copy; Google Maps',
-          });
-
-          // Fallback OSM layer if Google tiles fail
-          const osmTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; OpenStreetMap contributors',
-          });
-
-          googleTiles.on('tileerror', () => {
-            if (map.hasLayer(googleTiles)) {
-              map.removeLayer(googleTiles);
-              osmTiles.addTo(map);
-            }
-          });
-
-          googleTiles.addTo(map);
-
-          markersLayerRef.current = L.layerGroup().addTo(map);
-          leafletMapRef.current = map;
-          setIsMapLoaded(true);
-        }
+    createMap(mapContainerRef.current, { center: SRI_LANKA_CENTER, zoom: 8, gestureHandling: 'cooperative' })
+      .then((map) => {
+        if (!active) { map.destroy(); return; }
+        created = map;
+        mapRef.current = map;
+        setIsMapLoaded(true);
       })
       .catch((err) => {
-        console.error('Failed to initialize Leaflet sightings map:', err);
+        console.error('Failed to initialize sightings map:', err);
       });
 
     return () => {
       active = false;
+      if (created) created.destroy();
+      mapRef.current = null;
     };
   }, []);
 
-  // Update Markers whenever displayedPoints or isMapLoaded changes
+  // Update markers whenever displayedPoints or isMapLoaded changes
   useEffect(() => {
-    const map = leafletMapRef.current;
-    const markersLayer = markersLayerRef.current;
-    const L = window.L;
+    const map = mapRef.current;
+    if (!map || !isMapLoaded) return;
 
-    if (!map || !markersLayer || !L || !isMapLoaded) return;
-
-    // Clear previous markers
-    markersLayer.clearLayers();
+    map.clearMarkers();
 
     if (displayedPoints.length === 0) {
       map.setView(SRI_LANKA_CENTER, 8);
@@ -206,6 +165,7 @@ export default function TuskerSightingsMap({
     }
 
     const latLngs = [];
+    let lastPin = null;
 
     displayedPoints.forEach((point) => {
       if (!point.coords) return;
@@ -213,60 +173,36 @@ export default function TuskerSightingsMap({
       latLngs.push(pos);
 
       const pinLabel = `S${point.sightingNum}`;
-
-      // Custom SVG marker pin
       const markerHtml = `
-        <div style="position: relative; width: 36px; height: 44px; cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+        <div style="position: relative; width: 36px; height: 44px; cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.45));">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 44" width="36" height="44">
             <path d="M18 0C8.06 0 0 8.06 0 18c0 13.5 18 26 18 26s18-12.5 18-26C36 8.06 27.94 0 18 0z" fill="#0b2518" stroke="#c69b55" stroke-width="2.5"/>
             <circle cx="18" cy="18" r="11" fill="#16402b"/>
-            <text x="18" y="22" font-size="11" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif">${pinLabel}</text>
+            <text x="18" y="22" font-size="11" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif">${escapeHtml(pinLabel)}</text>
           </svg>
         </div>
       `;
 
-      const icon = L.divIcon({
-        className: 'custom-leaflet-marker',
+      lastPin = map.addMarker(pos, {
         html: markerHtml,
-        iconSize: [36, 44],
-        iconAnchor: [18, 44],
-        popupAnchor: [0, -42],
+        height: 44,
+        popup: {
+          badge: `Row ${point.rowNum} • Sighting #${point.sightingNum}`,
+          date: point.date,
+          title: point.location,
+          lines: [point.author ? `Observer: ${point.author}` : ''],
+        },
+        onClick: () => setSelectedPoint(point),
       });
-
-      const marker = L.marker(pos, { icon });
-
-      // Clean Popup on marker
-      const popupHtml = `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif; padding: 4px; max-width: 240px; line-height: 1.4;">
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
-            <span style="background: #e8f5ec; color: #16402b; font-weight: bold; font-size: 11px; padding: 2px 6px; border-radius: 4px;">
-              Row ${point.rowNum} • Sighting #${point.sightingNum}
-            </span>
-            <span style="font-size: 11px; color: #777;">${point.date}</span>
-          </div>
-          <div style="font-weight: bold; font-size: 14px; color: #111; margin-bottom: 3px;">
-            ${point.location}
-          </div>
-          <div style="font-size: 12px; color: #555;">
-            Observer: <strong>${point.author}</strong>
-          </div>
-        </div>
-      `;
-      marker.bindPopup(popupHtml);
-
-      marker.on('click', () => {
-        setSelectedPoint(point);
-      });
-
-      marker.addTo(markersLayer);
     });
 
-    // Auto-fit bounds or pan to selected single pin
     if (latLngs.length === 1) {
       map.setView(latLngs[0], 12, { animate: true });
+      if (selectedPoint && lastPin) lastPin.openPopup();
     } else if (latLngs.length > 1) {
-      map.fitBounds(L.latLngBounds(latLngs), { padding: [50, 50], maxZoom: 13, animate: true });
+      map.fitBounds(latLngs, { padding: 50, maxZoom: 13 });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [displayedPoints, isMapLoaded]);
 
   return (

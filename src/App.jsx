@@ -21,6 +21,9 @@ import UnlistedMonitoring from './views/pages/UnlistedMonitoring';
 import UnlistedTuskerProfile from './views/pages/UnlistedTuskerProfile';
 import Login from './views/pages/Login';
 import AIApp from './views/pages/AIApp';
+import NotFound from './views/pages/NotFound';
+import TuskerMap from './views/pages/TuskerMap';
+import { RequireAdmin, VisitorOnly } from './views/components/RouteGuards';
 
 /* ── Application Router ────────────────────────────────────── */
 function App() {
@@ -45,10 +48,10 @@ function App() {
           <Route path="/about" element={<AboutUs />} />
           <Route path="/tuskers" element={<WildTuskersList />} />
           <Route path="/tuskers/:id" element={<TuskerProfile />} />
-          <Route path="/tuskers/:id/add-sighting" element={<AddTuskerSighting />} />
+          <Route path="/tuskers/:id/add-sighting" element={<RequireAdmin><AddTuskerSighting /></RequireAdmin>} />
           <Route path="/projects" element={<OurProjects />} />
           <Route path="/field-notes" element={<FieldNotes />} />
-          <Route path="/add-field-note" element={<FieldNoteForm />} />
+          <Route path="/add-field-note" element={<VisitorOnly adminTo="/field-notes"><FieldNoteForm /></VisitorOnly>} />
           <Route path="/observations" element={<SpecialObservations />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/ai-app" element={<AIApp />} />
@@ -62,11 +65,15 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Navigate to="/login" replace />} />
           <Route path="/admin" element={<AdminPortal />} />
-          <Route path="/admin/add-tusker" element={<TuskerForm />} />
-          <Route path="/admin/edit-tusker/:id" element={<TuskerForm />} />
-          <Route path="/admin/add-observation" element={<SpecialObservationForm />} />
-          <Route path="/admin/edit-observation/:id" element={<SpecialObservationForm />} />
-          <Route path="/admin/create-event" element={<EventForm />} />
+          <Route path="/admin/add-tusker" element={<RequireAdmin><TuskerForm /></RequireAdmin>} />
+          <Route path="/admin/edit-tusker/:id" element={<RequireAdmin><TuskerForm /></RequireAdmin>} />
+          <Route path="/admin/add-observation" element={<RequireAdmin><SpecialObservationForm /></RequireAdmin>} />
+          <Route path="/admin/edit-observation/:id" element={<RequireAdmin><SpecialObservationForm /></RequireAdmin>} />
+          <Route path="/admin/tusker-map" element={<RequireAdmin><TuskerMap /></RequireAdmin>} />
+          <Route path="/admin/create-event" element={<RequireAdmin><EventForm /></RequireAdmin>} />
+
+          {/* Anything else */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
     </>

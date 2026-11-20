@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
+import { Map as MapIcon } from 'lucide-react';
 import {
   Shield, PlusCircle, Trash2, Edit3, Eye, FileText, Binoculars, Calendar,
   Radar, Database, CheckCircle2, XCircle, Search, LogOut, RefreshCw, AlertCircle, Check, Users, ExternalLink, Save, X
@@ -513,6 +514,20 @@ export default function AdminPortal() {
               <span>Refresh Records</span>
             </button>
           </div>
+
+          <Link
+            to="/admin/tusker-map"
+            className="flex items-center gap-3 p-3.5 mb-3 rounded-xl bg-gradient-to-r from-[#0b2518] to-[#16402b] hover:from-[#16402b] hover:to-[#1d5236] text-white transition-all shadow-sm group border border-[#c69b55]/40 no-underline"
+          >
+            <div className="w-9 h-9 rounded-lg bg-[#c69b55]/20 text-[#c69b55] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+              <MapIcon size={18} />
+            </div>
+            <div className="overflow-hidden flex-1">
+              <div className="font-semibold text-sm leading-tight">Tusker Map</div>
+              <div className="text-[0.75rem] text-white/70 truncate">All tuskers on one satellite map, with exact sighting pins</div>
+            </div>
+            <span className="text-[#c69b55] text-xs font-semibold shrink-0">Open →</span>
+          </Link>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <Link

@@ -574,11 +574,14 @@ async function uploadGalleryImage(img) {
 /* ==============================================================
    SECTION 3: GALLERY CRUD OPERATIONS
 ============================================================== */
+// Visitors may not read photographer contact details.
+const PUBLIC_GALLERY_COLUMNS = 'id, image_url, title, tusker_name, location, date, photographer, status, submitted_at, approved_at';
+
 export async function getGalleryPhotos({ admin = false } = {}) {
   try {
     let query = supabase
       .from('gallery_photos')
-      .select('*')
+      .select(admin ? '*' : PUBLIC_GALLERY_COLUMNS)
       .order('date', { ascending: false })
       .order('id', { ascending: false });
 

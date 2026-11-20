@@ -2191,8 +2191,10 @@ export default function TuskerProfile() {
   useEffect(() => {
     if (tusker) {
       document.title = `Wild Tuskers Sri Lanka | ${tusker.name}`;
+    } else if (!loading) {
+      document.title = 'Wild Tuskers Sri Lanka | Tusker Not Found';
     }
-  }, [tusker]);
+  }, [tusker, loading]);
 
   // Combine baseline tusker photos with ALL subsequent sighting photos at the end
   const allProfilePhotos = useMemo(() => {
@@ -3037,7 +3039,7 @@ export default function TuskerProfile() {
               </table>
             </div>
 
-            {/* Google Map of Sighting Points (Admin Only View) */}
+            {/* Map of Sighting Points (Admin Only View) */}
             <TuskerSightingsMap
               tusker={tusker}
               onPreviewPhoto={setPreviewModalPhoto}

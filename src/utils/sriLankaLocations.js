@@ -1,3 +1,4 @@
+import { isGoogleMapsEnabled, loadGoogleMaps } from './mapEngine';
 /* ── Comprehensive Sri Lanka Locations Database (Districts, Cities, Wildlife Reserves, Tanks & Roaming Areas) ── */
 export const SRI_LANKA_WILDLIFE_LOCATIONS = [
   // ── All 25 Districts ──
@@ -146,6 +147,7 @@ export const SRI_LANKA_WILDLIFE_LOCATIONS = [
   { name: 'Giritale', type: 'Elephant Roaming Area', region: 'Polonnaruwa District', lat: 7.9833, lng: 80.9167 },
   { name: 'Kantale', type: 'Elephant Roaming Area', region: 'Trincomalee District', lat: 8.3667, lng: 80.9833 },
   { name: 'Kekirawa', type: 'Elephant Roaming Area', region: 'Anuradhapura District', lat: 8.0500, lng: 80.5833 },
+  { name: 'Kakirawa', type: 'Elephant Roaming Area', region: 'Anuradhapura District', lat: 8.0500, lng: 80.5833 },
   { name: 'Horowpathana', type: 'Elephant Holding Ground', region: 'Anuradhapura District', lat: 8.5833, lng: 80.8667 },
   { name: 'Kahatagasdigiliya', type: 'Elephant Roaming Area', region: 'Anuradhapura District', lat: 8.4333, lng: 80.6833 },
   { name: 'Nochchiyagama', type: 'Elephant Roaming Area', region: 'Anuradhapura District', lat: 8.2833, lng: 80.2167 },
@@ -442,6 +444,16 @@ export async function reverseGeocodeCoordinatesAsync(lat, lng) {
 
   const fallbackCoordName = `Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
 
+  // 0. Google Geocoding when Google Maps is configured
+  if (isGoogleMapsEnabled()) {
+    try {
+      const g = await googleReverseGeocode(lat, lng);
+      if (g) return g;
+    } catch (err) {
+      console.warn('[maps] Google reverse geocode failed, using free geocoder:', err?.message || err);
+    }
+  }
+
   // 1. Try Nominatim reverse geocoder
   if (typeof fetch !== 'undefined') {
     try {
@@ -569,7 +581,7 @@ export async function resolveLocationCoordinatesAsync(locationName) {
         if (Array.isArray(data) && data.length > 0 && data[0].lat && data[0].lon) {
           const lat = parseFloat(data[0].lat);
           const lng = parseFloat(data[0].lon);
-          if (!isNaN(lat) && !isNaN(lng)) {
+          if (!isNaN(lat) && !isNaN(lng) && lat >= 5.5 && lat <= 10.0 && lng >= 79.5 && lng <= 82.5) {
             const result = { lat, lng, name: primaryName };
             cacheLocationCoordinates(primaryName, result);
             return result;
@@ -592,7 +604,7 @@ export async function resolveLocationCoordinatesAsync(locationName) {
         const feature = pData.features && pData.features[0];
         if (feature && feature.geometry && Array.isArray(feature.geometry.coordinates)) {
           const [lon, lat] = feature.geometry.coordinates;
-          if (typeof lat === 'number' && typeof lon === 'number') {
+          if (typeof lat === 'number' && typeof lon === 'number' && lat >= 5.5 && lat <= 10.0 && lon >= 79.5 && lon <= 82.5) {
             const result = { lat, lng: lon, name: primaryName };
             cacheLocationCoordinates(primaryName, result);
             return result;
@@ -615,4 +627,111 @@ export async function resolveLocationCoordinatesAsync(locationName) {
   }
 
   return null;
+}
+
+/* ── Live place search while typing (Photon, OpenStreetMap data) ──────
+   Photon is built for search-as-you-type; Nominatim's rules forbid
+   autocomplete, so Nominatim is only used for one-off lookups. */
+const PHOTON_URL = 'https://photon.komoot.io/api/';
+const SRI_LANKA_BBOX = '79.4,5.8,82.0,10.0';
+
+export async function searchPlacesLive(query, { limit = 8, signal } = {}) {
+  const q = String(query || '').trim();
+  if (isGoogleMapsEnabled()) {
+    if (q.length < 3) return []; // save Google quota on 1–2 letter searches
+    try {
+      return await googleAutocomplete(q, limit);
+    } catch (err) {
+      console.warn('[maps] Google search failed, using free search:', err?.message || err);
+    }
+  }
+  if (q.length < 2 || typeof fetch === 'undefined') return [];
+  const url = `${PHOTON_URL}?q=${encodeURIComponent(q)}&limit=${limit}&lang=en&bbox=${SRI_LANKA_BBOX}`;
+  const res = await fetch(url, { signal });
+  if (!res.ok) return [];
+  const data = await res.json();
+  const seen = new Set();
+  return (data?.features || [])
+    .filter((f) => !f.properties?.countrycode || f.properties.countrycode === 'LK')
+    .map((f) => {
+      const p = f.properties || {};
+      const [lng, lat] = f.geometry?.coordinates || [];
+      const title = p.name || p.street || p.city || '';
+      const subtitle = [p.city !== title ? p.city : null, p.district || p.county, p.state]
+        .filter(Boolean)
+        .join(', ');
+      return {
+        title,
+        subtitle: subtitle || 'Sri Lanka',
+        full: [title, subtitle, 'Sri Lanka'].filter(Boolean).join(', '),
+        lat: typeof lat === 'number' ? lat : undefined,
+        lng: typeof lng === 'number' ? lng : undefined,
+      };
+    })
+    .filter((r) => {
+      const key = r.title.toLowerCase();
+      if (!r.title || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+}
+
+/* ── Google Places / Geocoding (used only when a Google key is set) ── */
+let googleSessionToken = null;
+
+async function googleAutocomplete(q, limit) {
+  await loadGoogleMaps();
+  const { AutocompleteSuggestion, AutocompleteSessionToken } = await window.google.maps.importLibrary('places');
+  // One session per search → selection; Google bills the session, not each keystroke, when it ends in a selection
+  if (!googleSessionToken) googleSessionToken = new AutocompleteSessionToken();
+  const { suggestions } = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
+    input: q,
+    sessionToken: googleSessionToken,
+    includedRegionCodes: ['lk'],
+    language: 'en',
+  });
+  return (suggestions || [])
+    .map((sug) => sug.placePrediction)
+    .filter(Boolean)
+    .slice(0, limit)
+    .map((pp) => {
+      const title = pp.mainText?.text || pp.text?.text || '';
+      const subtitle = (pp.secondaryText?.text || 'Sri Lanka').replace(/,?\s*Sri Lanka$/, '') || 'Sri Lanka';
+      return {
+        title,
+        subtitle,
+        full: pp.text?.text || title,
+        getCoords: async () => {
+          try {
+            const place = pp.toPlace();
+            await place.fetchFields({ fields: ['location'] });
+            googleSessionToken = null; // session finished
+            if (!place.location) return null;
+            const coords = { lat: place.location.lat(), lng: place.location.lng() };
+            cacheLocationCoordinates(title, coords);
+            return coords;
+          } catch {
+            return null;
+          }
+        },
+      };
+    });
+}
+
+async function googleReverseGeocode(lat, lng) {
+  await loadGoogleMaps();
+  const { Geocoder } = await window.google.maps.importLibrary('geocoding');
+  const { results } = await new Geocoder().geocode({ location: { lat, lng }, language: 'en' });
+  const best = (results || []).find((r) => !(r.types || []).includes('plus_code')) || null;
+  if (!best) return null;
+  const comps = best.address_components || [];
+  const pick = (...types) => comps.find((c) => types.some((t) => (c.types || []).includes(t)))?.long_name;
+  const name =
+    pick('natural_feature', 'park', 'point_of_interest', 'establishment') ||
+    pick('sublocality', 'locality', 'administrative_area_level_4', 'administrative_area_level_3') ||
+    pick('route') ||
+    comps[0]?.long_name;
+  if (!name) return null;
+  const region = pick('administrative_area_level_2', 'administrative_area_level_1') || 'Sri Lanka';
+  return { name, fullAddress: best.formatted_address, region };
 }

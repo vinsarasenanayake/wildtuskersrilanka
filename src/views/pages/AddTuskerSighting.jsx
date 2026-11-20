@@ -132,7 +132,7 @@ export default function AddTuskerSighting() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {/* Sighting Area / Location */}
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-1.5 min-w-0">
                   <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center gap-1.5">
                     <MapPin size={13} className="text-accent" />
                     <span>Sighting Area / Location</span>
@@ -147,7 +147,7 @@ export default function AddTuskerSighting() {
                 </div>
 
                 {/* Health Condition */}
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-1.5 min-w-0">
                   <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center gap-1.5">
                     <Activity size={13} className="text-accent" />
                     <span>Health Condition</span>
