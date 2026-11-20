@@ -63,7 +63,7 @@ export function loadGoogleMaps() {
 function buildPopup({ badge, date, title, lines = [] } = {}) {
   const root = document.createElement('div');
   root.style.cssText =
-    'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-width:180px;max-width:260px;line-height:1.4;padding:4px 2px;color:#f3f4f6;';
+    'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-width:180px;max-width:250px;line-height:1.4;padding:4px 2px;color:#111827;';
 
   if (badge || date) {
     const top = document.createElement('div');
@@ -72,13 +72,13 @@ function buildPopup({ badge, date, title, lines = [] } = {}) {
     if (badge) {
       const b = document.createElement('span');
       b.style.cssText =
-        'background:rgba(198,155,85,0.18);color:#e5b869;border:1px solid rgba(198,155,85,0.45);font-weight:700;font-size:10px;padding:2px 7px;border-radius:6px;letter-spacing:0.5px;text-transform:uppercase;box-shadow:0 1px 3px rgba(0,0,0,0.3);';
+        'background:#0b2518;color:#c69b55;font-weight:700;font-size:10px;padding:2px 7px;border-radius:6px;letter-spacing:0.4px;text-transform:uppercase;box-shadow:0 1px 2px rgba(0,0,0,0.06);';
       b.textContent = badge;
       top.appendChild(b);
     }
     if (date) {
       const d = document.createElement('span');
-      d.style.cssText = 'font-size:10.5px;font-weight:600;color:#9ca3af;margin-left:auto;';
+      d.style.cssText = 'font-size:10.5px;font-weight:600;color:#6b7280;margin-left:auto;';
       d.textContent = date;
       top.appendChild(d);
     }
@@ -88,7 +88,7 @@ function buildPopup({ badge, date, title, lines = [] } = {}) {
   if (title) {
     const t = document.createElement('div');
     t.style.cssText =
-      'font-weight:700;font-size:13.5px;color:#ffffff;line-height:1.3;margin-bottom:4px;word-break:break-word;';
+      'font-weight:700;font-size:13.5px;color:#0b2518;line-height:1.3;margin-bottom:3px;word-break:break-word;';
     t.textContent = title;
     root.appendChild(t);
   }
@@ -98,10 +98,10 @@ function buildPopup({ badge, date, title, lines = [] } = {}) {
     const trimmed = String(line).trim();
     if (/^-?\d+\.\d+,\s*-?\d+\.\d+$/.test(trimmed)) {
       l.style.cssText =
-        'display:inline-flex;align-items:center;gap:4px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;font-weight:600;color:#a7f3d0;background:#13261c;padding:2px 7px;border-radius:5px;border:1px solid #1f422e;margin-top:4px;';
+        'display:inline-flex;align-items:center;gap:4px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;font-weight:600;color:#2b4235;background:#f2f6f4;padding:2px 6px;border-radius:5px;border:1px solid #dbe6df;margin-top:4px;';
       l.textContent = `📍 ${trimmed}`;
     } else {
-      l.style.cssText = 'font-size:11.5px;color:#d1d5db;margin-top:2px;line-height:1.35;';
+      l.style.cssText = 'font-size:11.5px;color:#4b5563;margin-top:2px;line-height:1.35;';
       l.textContent = line;
     }
     root.appendChild(l);
@@ -111,16 +111,11 @@ function buildPopup({ badge, date, title, lines = [] } = {}) {
 }
 
 /* ── Google implementation ────────────────────────────────────────── */
-function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTypeId = 'hybrid' }) {
+function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTypeId = 'satellite' }) {
   const map = new maps.Map(container, {
     center: { lat: center[0], lng: center[1] },
     zoom,
     mapTypeId,
-    tilt: 0,
-    heading: 0,
-    backgroundColor: '#0e1210',
-    disableDefaultUI: true,
-    zoomControl: false,
     mapTypeControl: false,
     streetViewControl: false,
     fullscreenControl: false,
@@ -141,7 +136,7 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
       super();
       this.pos = new maps.LatLng(pos[0], pos[1]);
       this.el = document.createElement('div');
-      this.el.style.cssText = `position:absolute;transform:translate(-50%,${centered ? '-50%' : '-100%'});cursor:pointer;z-index:20;`;
+      this.el.style.cssText = `position:absolute;transform:translate(-50%,${centered ? '-50%' : '-100%'});cursor:pointer`;
       this.el.innerHTML = html; // our own static SVG markup
       this.el.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -149,33 +144,14 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
       });
       this.setMap(map);
     }
-    onAdd() {
-      const panes = this.getPanes();
-      if (panes?.overlayMouseTarget) {
-        panes.overlayMouseTarget.appendChild(this.el);
-      }
-    }
+    onAdd() { this.getPanes().overlayMouseTarget.appendChild(this.el); }
     draw() {
-      const projection = this.getProjection();
-      if (!projection) return;
-      const p = projection.fromLatLngToDivPixel(this.pos);
-      if (p) {
-        this.el.style.left = `${Math.round(p.x)}px`;
-        this.el.style.top = `${Math.round(p.y)}px`;
-      }
+      const p = this.getProjection()?.fromLatLngToDivPixel(this.pos);
+      if (p) { this.el.style.left = `${p.x}px`; this.el.style.top = `${p.y}px`; }
     }
-    onRemove() {
-      if (this.el.parentNode) {
-        this.el.parentNode.removeChild(this.el);
-      }
-    }
-    setPos(pos) {
-      this.pos = new maps.LatLng(pos[0], pos[1]);
-      this.draw();
-    }
-    setHtml(html) {
-      this.el.innerHTML = html;
-    }
+    onRemove() { this.el.remove(); }
+    setPos(pos) { this.pos = new maps.LatLng(pos[0], pos[1]); this.draw(); }
+    setHtml(html) { this.el.innerHTML = html; }
   }
 
   const openPopupAt = (pos, popup, offsetY) => {
@@ -192,14 +168,8 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
       else { map.setCenter({ lat: pos[0], lng: pos[1] }); map.setZoom(z); }
     },
     fitBounds(points, { padding = 50, maxZoom = 13 } = {}) {
-      const validPoints = (points || []).filter(
-        (p) => Array.isArray(p) && p.length >= 2 &&
-               Number.isFinite(p[0]) && Number.isFinite(p[1]) &&
-               p[0] >= 5.5 && p[0] <= 10.0 && p[1] >= 79.5 && p[1] <= 82.5
-      );
-      if (!validPoints.length) return;
       const b = new maps.LatLngBounds();
-      validPoints.forEach((p) => b.extend({ lat: p[0], lng: p[1] }));
+      points.forEach((p) => b.extend({ lat: p[0], lng: p[1] }));
       map.fitBounds(b, padding);
       maps.event.addListenerOnce(map, 'idle', () => { if (map.getZoom() > maxZoom) map.setZoom(maxZoom); });
     },
@@ -247,16 +217,15 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
 }
 
 /* ── Leaflet implementation (free fallback) ───────────────────────── */
-function createLeafletMap(L, container, { center, zoom, gestureHandling }) {
+function createLeafletMap(L, container, { center, zoom, gestureHandling, mapTypeId }) {
   if (container._leaflet_id) delete container._leaflet_id;
   const map = L.map(container, {
     center,
     zoom,
     zoomControl: true,
-    attributionControl: false,
     scrollWheelZoom: gestureHandling !== 'cooperative',
   });
-  addBaseLayers(L, map, { defaultLayer: 'satellite', showControl: false });
+  addBaseLayers(L, map, { defaultLayer: 'satellite', showControl: false, labels: mapTypeId === 'hybrid' });
   const areaLayer = L.layerGroup().addTo(map);
   const layer = L.layerGroup().addTo(map);
 
