@@ -130,17 +130,17 @@ export default function AboutUs() {
 
       {/* ── Admins Section ── */}
       <section className="mb-16">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-3 border-b-2 border-[#f0f0f0] gap-4">
-          <h2 className="font-sans text-[1.05rem] font-bold text-[#111111] flex items-center gap-2 m-0">
+        <div className="flex flex-row items-center justify-between mb-8 pb-3 border-b-2 border-[#f0f0f0] gap-2 sm:gap-4 flex-wrap">
+          <h2 className="font-sans text-[1.05rem] font-bold text-[#111111] flex items-center gap-2 m-0 shrink-0">
             Admins <span className="font-normal text-[0.9rem] text-[#aaaaaa]">{admins.length}</span>
           </h2>
 
           {isAdmin && (
             <button
               onClick={openAddModal}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary hover:bg-primary-light text-white text-xs font-bold transition-all shadow-sm border-none cursor-pointer self-start sm:self-auto"
+              className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-primary hover:bg-primary-light text-white text-[0.72rem] sm:text-xs font-bold transition-all shadow-sm border-none cursor-pointer shrink-0 whitespace-nowrap"
             >
-              <PlusCircle size={15} />
+              <PlusCircle size={14} className="sm:w-[15px] sm:h-[15px]" />
               <span>Add Admin / Team Member</span>
             </button>
           )}

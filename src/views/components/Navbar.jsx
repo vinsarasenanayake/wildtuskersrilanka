@@ -177,61 +177,54 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Overlay */}
+      {/* Mobile Backdrop Overlay */}
       <div
-        className={`fixed inset-0 bg-[#0b2518]/40 backdrop-blur-sm z-[998] transition-opacity duration-350 ${
+        className={`fixed inset-0 bg-black/45 backdrop-blur-[2px] z-[998] transition-opacity duration-300 ${
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
         onClick={closeMenu}
       />
 
-      {/* Mobile Drawer */}
+      {/* Mobile Floating Menu Card (Modern Compact Curved Minimalist Sheet) */}
       <div
-        className={`fixed top-0 right-0 bottom-0 w-full max-w-[320px] bg-bg-card z-[999] flex flex-col px-8 py-6 shadow-[-10px_0_30px_rgba(0,0,0,0.05)] transition-transform duration-350 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed top-3 right-3 sm:top-4 sm:right-4 w-[calc(100vw-24px)] max-w-[280px] bg-white/98 backdrop-blur-2xl z-[999] flex flex-col p-5 rounded-[26px] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] border border-black/[0.06] transition-all duration-300 ease-out max-h-[calc(100vh-24px)] overflow-y-auto ${
+          isOpen ? 'translate-x-0 opacity-100 pointer-events-auto' : 'translate-x-[108%] opacity-0 pointer-events-none'
         }`}
       >
-        <div className="flex items-center justify-between pb-6 border-b border-border mb-8">
-          <span className="font-serif text-[1.25rem] font-bold text-text-dark">Navigation</span>
+        {/* Top: Minimal Clean Close Icon */}
+        <div className="flex items-center justify-between mb-3.5">
           <button
-            className="flex items-center justify-center p-1.5 text-text-dark rounded-[4px] hover:bg-border transition-colors cursor-pointer"
+            className="flex items-center justify-center p-1 -ml-1 text-[#111111] hover:text-accent rounded-full hover:bg-black/5 transition-all cursor-pointer border-none bg-transparent"
             onClick={closeMenu}
             aria-label="Close navigation"
           >
-            <X size={24} />
+            <X size={20} strokeWidth={2.4} />
           </button>
         </div>
 
+        {/* Navigation Items (Clean Minimalist List) */}
         <nav>
-          <ul className="flex flex-col list-none gap-6">
+          <ul className="flex flex-col list-none gap-2.5 m-0 p-0">
             {visibleNavItems.map((item, idx) => {
-              const IconComponent = item.icon;
               const active = isActive(item.path);
               return (
                 <li
                   key={item.name}
-                  className={`transition-all duration-400 ease-out ${
-                    isOpen ? 'translate-x-0 opacity-100' : 'translate-x-5 opacity-0'
+                  className={`transition-all duration-300 ease-out ${
+                    isOpen ? 'translate-x-0 opacity-100' : 'translate-x-3 opacity-0'
                   }`}
-                  style={{ transitionDelay: `${idx * 0.05}s` }}
+                  style={{ transitionDelay: `${idx * 0.03}s` }}
                 >
                   <Link
                     to={item.path}
                     onClick={closeMenu}
-                    className={`font-sans text-[1.15rem] font-medium inline-flex items-center gap-[0.6rem] py-2 transition-all duration-200 hover:text-accent hover:pl-1 group ${
-                      active ? 'text-accent pl-1' : 'text-text-dark'
+                    className={`font-sans text-[0.98rem] tracking-tight block py-0.5 transition-all duration-200 no-underline cursor-pointer ${
+                      active
+                        ? 'text-accent font-bold'
+                        : 'text-[#1c1c1e] font-medium hover:text-accent hover:translate-x-1'
                     }`}
                   >
-                    <IconComponent
-                      size={18}
-                      className={`text-text-muted transition-colors group-hover:text-accent ${
-                        active ? 'text-accent' : ''
-                      }`}
-                    />
                     <span>{item.name}</span>
-                    {active && (
-                      <span className="absolute bottom-0 left-1 right-1 h-[2px] bg-accent rounded-full transition-all duration-300" />
-                    )}
                   </Link>
                 </li>
               );
@@ -239,9 +232,10 @@ export default function Navbar() {
           </ul>
         </nav>
 
-        <div className="mt-auto flex flex-col gap-4 pt-6 border-t border-border">
+        {/* Bottom Actions - right below the menu items without big empty space */}
+        <div className="mt-4 pt-3 border-t border-black/[0.06] flex flex-col gap-2">
           {!isAdmin && (
-            <div className="flex justify-center mb-1">
+            <div className="flex justify-center mb-0.5">
               <a
                 href="https://www.facebook.com/groups/785810441596309/"
                 target="_blank"
@@ -249,7 +243,7 @@ export default function Navbar() {
                 className="inline-flex items-center justify-center opacity-90 hover:opacity-100 hover:scale-110 transition-all duration-200 cursor-pointer"
                 title="Wild Tuskers Sri Lanka Facebook Group"
               >
-                <Facebook size={30} />
+                <Facebook size={24} />
               </a>
             </div>
           )}
@@ -259,16 +253,16 @@ export default function Navbar() {
               <Link
                 to="/admin"
                 onClick={closeMenu}
-                className="bg-accent! text-primary! font-semibold text-[0.95rem] py-[0.8rem] px-6 rounded-[4px] w-full flex items-center justify-center gap-2 shadow-[0_4px_10px_rgba(11,37,24,0.15)] hover:bg-accent-hover! transition-all duration-300"
+                className="bg-accent! text-primary! font-semibold text-[0.84rem] py-2 px-4 rounded-xl w-full flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(202,138,4,0.18)] hover:bg-accent-hover! transition-all duration-200 no-underline"
               >
-                <Shield size={16} />
+                <Shield size={14} />
                 <span>Admin Portal</span>
               </Link>
               <button
                 onClick={handleLogoutClick}
-                className="bg-primary-light text-white font-semibold text-[0.95rem] py-[0.8rem] px-6 rounded-[4px] w-full flex items-center justify-center gap-1.5 shadow-[0_4px_10px_rgba(11,37,24,0.15)] hover:bg-primary transition-all duration-300 cursor-pointer"
+                className="bg-primary-light text-white font-semibold text-[0.84rem] py-2 px-4 rounded-xl w-full flex items-center justify-center gap-1.5 shadow-[0_4px_12px_rgba(11,37,24,0.15)] hover:bg-primary transition-all duration-200 cursor-pointer border-none"
               >
-                <LogOut size={16} />
+                <LogOut size={14} />
                 <span>Logout</span>
               </button>
             </div>
@@ -276,13 +270,13 @@ export default function Navbar() {
             <Link
               to="/login"
               onClick={closeMenu}
-              className="bg-primary-light text-white font-semibold text-[1rem] py-[0.85rem] px-6 rounded-[4px] w-full flex items-center justify-center gap-2 shadow-[0_4px_10px_rgba(11,37,24,0.15)] hover:bg-primary transition-all duration-300"
+              className="bg-primary text-white font-semibold text-[0.86rem] py-2 px-4 rounded-xl w-full flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(11,37,24,0.15)] hover:bg-primary-light transition-all duration-200 no-underline"
             >
-              <Shield size={16} />
+              <Shield size={14} />
               <span>Admin Login</span>
             </Link>
           )}
-          <p className="font-sans text-[0.75rem] text-text-muted text-center mb-0">© 2026 Wild Tuskers Sri Lanka</p>
+          <p className="font-sans text-[0.68rem] text-[#aaaaaa] text-center mb-0 mt-0.5">© 2026 Wild Tuskers Sri Lanka</p>
         </div>
       </div>
     </header>

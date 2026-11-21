@@ -73,47 +73,120 @@ export default function WildTuskersList() {
     document.title = 'Wild Tuskers Sri Lanka | Wild Tuskers List';
   }, []);
 
+  const renderSortDropdown = (extraClass = '') => (
+    <div className={`relative ${extraClass}`} ref={sortRef}>
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => setShowSortDrop(prev => !prev)}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowSortDrop(prev => !prev); } }}
+        className={`flex items-center gap-2 bg-[#f7f7f8] border-1.5 rounded-[10px] px-3.5 py-2.5 transition-all cursor-pointer select-none ${
+          showSortDrop ? 'border-accent bg-white ring-3 ring-accent/12' : 'border-[#e8e8e8] hover:border-accent/60'
+        }`}
+      >
+        <ArrowUpDown size={16} className="text-accent shrink-0" />
+        <span
+          className={`font-sans text-[0.9rem] font-normal flex-1 truncate select-none ${
+            sortOrder === 'ID_DESC' ? 'text-[#bbbbbb]' : 'text-[#111111]'
+          }`}
+        >
+          {sortOrder === 'ID_DESC' ? 'Sort by…' : (SORT_OPTIONS.find(o => o.id === sortOrder)?.label || 'Sort by…')}
+        </span>
+
+        {sortOrder !== 'ID_DESC' ? (
+          <button
+            type="button"
+            className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSortOrder('ID_DESC');
+              setShowSortDrop(false);
+            }}
+            title="Reset sorting"
+          >
+            <X size={14} />
+          </button>
+        ) : (
+          <ChevronDown
+            size={14}
+            className={`text-[#aaaaaa] shrink-0 transition-transform duration-200 pointer-events-none ${
+              showSortDrop ? 'rotate-180 text-accent' : ''
+            }`}
+          />
+        )}
+      </div>
+
+      {showSortDrop && (
+        <ul className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white border-1.5 border-[#e8e8e8] rounded-[10px] shadow-[0_8px_24px_rgba(0,0,0,0.1)] z-[200] list-none m-0 py-1.5 overflow-hidden">
+          {SORT_OPTIONS.map(opt => (
+            <li
+              key={opt.id}
+              className={`flex items-center justify-between px-4 py-2.5 cursor-pointer font-sans text-[0.88rem] transition-colors hover:bg-[#faf5ec] ${
+                sortOrder === opt.id ? 'bg-[#faf5ec] text-accent font-semibold' : 'text-[#333333]'
+              }`}
+              onMouseDown={() => {
+                setSortOrder(opt.id);
+                setShowSortDrop(false);
+              }}
+            >
+              <span className="truncate">{opt.label}</span>
+              {sortOrder === opt.id && <Check size={14} className="text-accent shrink-0 ml-2" />}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+
   return (
     <div className="w-full max-w-[1280px] mx-auto pt-[calc(80px+2.5rem)] pb-20 px-8 min-h-screen bg-white">
 
       {/* ── Page Header ── */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 pb-6 border-b border-[#eeeeee]">
-        <div className="text-center sm:text-left">
-          <h1 className="font-sans text-[2.25rem] font-bold text-[#111111] mb-1.5">Wild Tuskers List</h1>
-          <p className="font-sans text-[0.95rem] text-[#777777] m-0">
+      <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-4 mb-10 pb-6 border-b border-[#eeeeee]">
+        <div className="text-center md:text-left">
+          <h1 className="font-sans text-2xl sm:text-3xl md:text-[2.25rem] font-bold text-[#111111] mb-1.5">
+            Wild Tuskers List
+          </h1>
+          <p className="font-sans text-xs sm:text-[0.88rem] md:text-[0.95rem] text-[#777777] m-0">
             {tuskers.length} identified tuskers documented by the WTS team
           </p>
         </div>
-        <div className="flex items-center gap-3 shrink-0 flex-wrap justify-center sm:justify-end">
+
+        {/* Action Buttons: On mobile: Add Tusker & Unlisted in 1 row with AI App below; On desktop: All 3 in a row */}
+        <div className="flex flex-col md:flex-row items-center gap-2.5 sm:gap-3 shrink-0 w-full md:w-auto">
           {isAdmin && (
-            <>
+            <div className="flex items-center gap-2 sm:gap-2.5 w-full sm:w-auto justify-center md:justify-end">
               <Link
                 to="/admin/add-tusker"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent hover:bg-accent-hover text-primary font-semibold text-[0.88rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0"
+                className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-accent hover:bg-accent-hover text-primary font-semibold text-[0.78rem] sm:text-[0.88rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0 whitespace-nowrap"
               >
-                <PlusCircle size={16} />
+                <PlusCircle size={15} />
                 <span>Add a New Tusker</span>
               </Link>
               <Link
                 to="/unlisted"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#faf5ec] hover:bg-[#f3ebd9] text-primary border border-accent/40 font-semibold text-[0.88rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0"
+                className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#faf5ec] hover:bg-[#f3ebd9] text-primary border border-accent/40 font-semibold text-[0.78rem] sm:text-[0.88rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0 whitespace-nowrap"
               >
-                <Radar size={16} className="text-accent" />
+                <Radar size={15} className="text-accent" />
                 <span>Unlisted Monitoring</span>
               </Link>
-            </>
+            </div>
           )}
-          <Link
-            to="/ai-app"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#16402b] hover:bg-[#1f593c] text-white font-medium text-[0.88rem] shadow-sm hover:shadow-md border border-[#2d8056]/30 transition-all duration-200 shrink-0 group no-underline"
-          >
-            <span>AI Re-Identification App</span>
-            <ArrowRight size={14} className="text-white transition-transform duration-200 group-hover:translate-x-1" />
-          </Link>
+          <div className="flex justify-center md:justify-end w-full md:w-auto">
+            <Link
+              to="/ai-app"
+              className={`inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#16402b] hover:bg-[#1f593c] text-white font-medium text-[0.78rem] sm:text-[0.88rem] shadow-sm hover:shadow-md border border-[#2d8056]/30 transition-all duration-200 group no-underline shrink-0 ${
+                isAdmin ? 'w-full md:w-auto' : ''
+              }`}
+            >
+              <span>AI Re-Identification App</span>
+              <ArrowRight size={14} className="text-white transition-transform duration-200 group-hover:translate-x-1" />
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* ── Search Toolbar ── */}
+      {/* ── Search Toolbar: On mobile Sort by is placed directly below Filter by Location ── */}
       <div className="flex items-center gap-4 mb-4 flex-wrap max-sm:flex-col">
 
         {/* Name Search */}
@@ -200,24 +273,27 @@ export default function WildTuskersList() {
           )}
         </div>
 
+        {/* Mobile-only Sort Dropdown: directly below Filter by Location */}
+        {renderSortDropdown('w-full sm:hidden')}
+
       </div>
 
-      {/* ── Living Status Filter & Sort Row ── */}
+      {/* ── Living Status Filter & Sort Row: Desktop keeps Sort aligned on the right, directly under Location ── */}
       <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
-        {/* Living Status Pills */}
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* Living Status Pills (2x2 grid on mobile, flex on desktop) */}
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
           {['ALL', ...LIVING_STATUSES].map(st => (
             <button
               key={st}
               type="button"
               onClick={() => setStatusFilter(st)}
-              className={`font-sans text-[0.82rem] font-semibold rounded-full px-3.5 py-1.5 border cursor-pointer transition-all ${
+              className={`font-sans text-[0.8rem] sm:text-[0.82rem] font-semibold rounded-full px-3.5 py-1.5 border cursor-pointer transition-all flex items-center justify-center ${
                 statusFilter === st
-                  ? 'bg-primary text-white border-primary'
+                  ? 'bg-primary text-white border-primary shadow-sm'
                   : 'bg-white text-[#555555] border-[#e8e8e8] hover:border-accent hover:text-accent'
               }`}
             >
-              {st === 'ALL' ? 'All' : st}
+              <span>{st === 'ALL' ? 'All' : st}</span>
               <span className={`ml-1.5 font-normal ${statusFilter === st ? 'text-white/70' : 'text-[#aaaaaa]'}`}>
                 {statusCounts[st] || 0}
               </span>
@@ -225,69 +301,8 @@ export default function WildTuskersList() {
           ))}
         </div>
 
-        {/* Sort Dropdown - directly below Filter by Location, matching its design */}
-        <div className="relative flex-1 min-w-[220px] max-w-[280px] max-md:max-w-full max-sm:max-w-full max-sm:w-full ml-auto" ref={sortRef}>
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={() => setShowSortDrop(prev => !prev)}
-            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowSortDrop(prev => !prev); } }}
-            className={`flex items-center gap-2 bg-[#f7f7f8] border-1.5 rounded-[10px] px-3.5 py-2.5 transition-all cursor-pointer select-none ${
-              showSortDrop ? 'border-accent bg-white ring-3 ring-accent/12' : 'border-[#e8e8e8] hover:border-accent/60'
-            }`}
-          >
-            <ArrowUpDown size={16} className="text-accent shrink-0" />
-            <span
-              className={`font-sans text-[0.9rem] font-normal flex-1 truncate select-none ${
-                sortOrder === 'ID_DESC' ? 'text-[#bbbbbb]' : 'text-[#111111]'
-              }`}
-            >
-              {sortOrder === 'ID_DESC' ? 'Sort by…' : (SORT_OPTIONS.find(o => o.id === sortOrder)?.label || 'Sort by…')}
-            </span>
-
-            {sortOrder !== 'ID_DESC' ? (
-              <button
-                type="button"
-                className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSortOrder('ID_DESC');
-                  setShowSortDrop(false);
-                }}
-                title="Reset sorting"
-              >
-                <X size={14} />
-              </button>
-            ) : (
-              <ChevronDown
-                size={14}
-                className={`text-[#aaaaaa] shrink-0 transition-transform duration-200 pointer-events-none ${
-                  showSortDrop ? 'rotate-180 text-accent' : ''
-                }`}
-              />
-            )}
-          </div>
-
-          {showSortDrop && (
-            <ul className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white border-1.5 border-[#e8e8e8] rounded-[10px] shadow-[0_8px_24px_rgba(0,0,0,0.1)] z-[200] list-none m-0 py-1.5 overflow-hidden">
-              {SORT_OPTIONS.map(opt => (
-                <li
-                  key={opt.id}
-                  className={`flex items-center justify-between px-4 py-2.5 cursor-pointer font-sans text-[0.88rem] transition-colors hover:bg-[#faf5ec] ${
-                    sortOrder === opt.id ? 'bg-[#faf5ec] text-accent font-semibold' : 'text-[#333333]'
-                  }`}
-                  onMouseDown={() => {
-                    setSortOrder(opt.id);
-                    setShowSortDrop(false);
-                  }}
-                >
-                  <span className="truncate">{opt.label}</span>
-                  {sortOrder === opt.id && <Check size={14} className="text-accent shrink-0 ml-2" />}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        {/* Desktop-only Sort Dropdown: directly below Filter by Location */}
+        {renderSortDropdown('hidden sm:block relative flex-1 min-w-[220px] max-w-[280px] max-md:max-w-full max-sm:max-w-full max-sm:w-full ml-auto')}
       </div>
 
       {/* ── Results Count ── */}

@@ -243,16 +243,16 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
       onMouseLeave={handleMouseUp}
     >
       {/* Top Header Bar */}
-      <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 bg-black/60 backdrop-blur-md border-b border-white/10 z-20 shrink-0">
-        <div className="flex items-center gap-3 min-w-0">
-          <span className="bg-accent/20 border border-accent/40 text-accent font-mono font-bold text-xs px-2.5 py-1 rounded">
+      <div className="flex items-center justify-between px-3.5 sm:px-6 py-3 sm:py-3.5 bg-black/60 backdrop-blur-md border-b border-white/10 z-20 shrink-0">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1 mr-2">
+          <span className="bg-accent/20 border border-accent/40 text-accent font-mono font-bold text-xs px-2.5 py-1 rounded shrink-0">
             {tuskerId || 'WTS'}
           </span>
           <span className="font-sans text-sm sm:text-base font-semibold truncate text-white/90">
             {name}
           </span>
           {photos && photos.length > 0 && (
-            <span className="text-xs text-white/50 bg-white/10 px-2 py-0.5 rounded-full font-medium">
+            <span className="hidden sm:inline-block text-xs text-white/50 bg-white/10 px-2.5 py-0.5 rounded-full font-medium whitespace-nowrap shrink-0">
               {index + 1} of {photos.length}
             </span>
           )}
@@ -340,6 +340,15 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
           </>
         )}
 
+        {/* Floating Photo Counter Badge (Mobile Only, keeping desktop untouched) */}
+        {photos && photos.length > 1 && (
+          <div className="sm:hidden absolute bottom-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none select-none">
+            <span className="px-3.5 py-1 rounded-full bg-black/65 backdrop-blur-md border border-white/20 text-xs font-semibold text-white/90 shadow-lg tracking-wider font-sans">
+              {index + 1} / {photos.length}
+            </span>
+          </div>
+        )}
+
         {/* Scalable & Draggable Image Canvas */}
         {activePhoto && (
           <div
@@ -404,7 +413,7 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
             ))}
           </div>
         )}
-        <div className="text-[11px] text-white/40 flex items-center gap-3">
+        <div className="text-[11px] text-white/40 hidden sm:flex items-center gap-3">
           <span>Scroll to zoom</span>
           <span>•</span>
           <span>Double-click to toggle zoom</span>
@@ -2332,8 +2341,11 @@ export default function TuskerProfile() {
           <button
             className="inline-flex items-center gap-1.5 font-sans text-[0.88rem] font-medium text-[#888888] bg-none border-none cursor-pointer p-0 transition-colors hover:text-accent"
             onClick={() => navigate('/tuskers')}
+            aria-label="Back to List"
+            title="Back to List"
           >
-            <ArrowLeft size={16} /> Back to List
+            <ArrowLeft size={16} />
+            <span className="hidden sm:inline">Back to List</span>
           </button>
           <div className="flex items-center gap-3">
             {canAddSighting && (

@@ -95,8 +95,9 @@ function createBufferedShape(anchorCoords, bufferKm = 10) {
 
   const round = (poly) => poly.map((r) => r.map(([lng, lat]) => [Number(lng.toFixed(5)), Number(lat.toFixed(5))]));
   if (!pieces.length) {
-    // Nothing on land (e.g. bad coordinates): fall back to the plain outline
-    return { kind: 'polygon', geojson: { type: 'Polygon', coordinates: round([ring]) } };
+    // The whole area is out at sea (wrong coordinates): draw no shaded area
+    // rather than one in the ocean. The pins still show.
+    return null;
   }
   return {
     kind: 'polygon',
