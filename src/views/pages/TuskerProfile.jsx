@@ -168,15 +168,37 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
     };
   }, []);
 
-  const rafRef = useRef(null);
+  // Smooth zoom/pan: combine many wheel/mouse events into one update per screen frame,
+  // and skip the CSS transition while the user is actively wheeling or dragging.
+  const wheelAccRef = useRef(0);
+  const wheelFrameRef = useRef(0);
+  const moveFrameRef = useRef(0);
+  const pendingPosRef = useRef(null);
+  const wheelIdleRef = useRef(0);
+  const [isWheeling, setIsWheeling] = useState(false);
+
+  useEffect(() => () => {
+    cancelAnimationFrame(wheelFrameRef.current);
+    cancelAnimationFrame(moveFrameRef.current);
+    clearTimeout(wheelIdleRef.current);
+  }, []);
 
   const handleWheel = (e) => {
     e.preventDefault();
-    const delta = e.deltaY * -0.0045;
-    setScale((prev) => {
-      const nextScale = Math.min(Math.max(prev + delta, 1), 5);
-      if (nextScale === 1) setPosition({ x: 0, y: 0 });
-      return nextScale;
+    wheelAccRef.current += e.deltaY * -0.002;
+    setIsWheeling(true);
+    clearTimeout(wheelIdleRef.current);
+    wheelIdleRef.current = setTimeout(() => setIsWheeling(false), 160);
+    if (wheelFrameRef.current) return;
+    wheelFrameRef.current = requestAnimationFrame(() => {
+      wheelFrameRef.current = 0;
+      const delta = wheelAccRef.current;
+      wheelAccRef.current = 0;
+      setScale((prev) => {
+        const nextScale = Math.min(Math.max(prev + delta, 1), 4);
+        if (nextScale === 1) setPosition({ x: 0, y: 0 });
+        return nextScale;
+      });
     });
   };
 
@@ -195,12 +217,14 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
     if (!isDragging || scale <= 1) return;
     const newX = e.clientX - dragStartRef.current.x;
     const newY = e.clientY - dragStartRef.current.y;
-    if (Math.abs(newX - position.x) > 2 || Math.abs(newY - position.y) > 2) {
+    if (Math.abs(newX - position.x) > 3 || Math.abs(newY - position.y) > 3) {
       hasDraggedRef.current = true;
     }
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(() => {
-      setPosition({ x: newX, y: newY });
+    pendingPosRef.current = { x: newX, y: newY };
+    if (moveFrameRef.current) return;
+    moveFrameRef.current = requestAnimationFrame(() => {
+      moveFrameRef.current = 0;
+      if (pendingPosRef.current) setPosition(pendingPosRef.current);
     });
   };
 
@@ -351,11 +375,10 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
               src={activePhoto}
               alt={`${name} preview ${index + 1}`}
               draggable={false}
-              className="max-h-[82vh] max-w-[92vw] object-contain select-none will-change-transform"
+              className={`max-h-[82vh] max-w-[92vw] object-contain select-none ${isDragging || isWheeling ? '' : 'transition-transform duration-75'}`}
               style={{
                 transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
                 transformOrigin: 'center center',
-                transition: isDragging ? 'none' : 'transform 0.15s cubic-bezier(0.2, 0, 0, 1)',
               }}
             />
           </div>
@@ -1146,15 +1169,37 @@ function ComparisonPhotoLightbox({
     }
   };
 
-  const rafRef = useRef(null);
+  // Smooth zoom/pan: combine many wheel/mouse events into one update per screen frame,
+  // and skip the CSS transition while the user is actively wheeling or dragging.
+  const wheelAccRef = useRef(0);
+  const wheelFrameRef = useRef(0);
+  const moveFrameRef = useRef(0);
+  const pendingPosRef = useRef(null);
+  const wheelIdleRef = useRef(0);
+  const [isWheeling, setIsWheeling] = useState(false);
+
+  useEffect(() => () => {
+    cancelAnimationFrame(wheelFrameRef.current);
+    cancelAnimationFrame(moveFrameRef.current);
+    clearTimeout(wheelIdleRef.current);
+  }, []);
 
   const handleWheel = (e) => {
     e.preventDefault();
-    const delta = e.deltaY * -0.0045;
-    setScale((prev) => {
-      const nextScale = Math.min(Math.max(prev + delta, 1), 5);
-      if (nextScale === 1) setPosition({ x: 0, y: 0 });
-      return nextScale;
+    wheelAccRef.current += e.deltaY * -0.002;
+    setIsWheeling(true);
+    clearTimeout(wheelIdleRef.current);
+    wheelIdleRef.current = setTimeout(() => setIsWheeling(false), 160);
+    if (wheelFrameRef.current) return;
+    wheelFrameRef.current = requestAnimationFrame(() => {
+      wheelFrameRef.current = 0;
+      const delta = wheelAccRef.current;
+      wheelAccRef.current = 0;
+      setScale((prev) => {
+        const nextScale = Math.min(Math.max(prev + delta, 1), 4);
+        if (nextScale === 1) setPosition({ x: 0, y: 0 });
+        return nextScale;
+      });
     });
   };
 
@@ -1173,12 +1218,14 @@ function ComparisonPhotoLightbox({
     if (!isDragging || scale <= 1) return;
     const newX = e.clientX - dragStartRef.current.x;
     const newY = e.clientY - dragStartRef.current.y;
-    if (Math.abs(newX - position.x) > 2 || Math.abs(newY - position.y) > 2) {
+    if (Math.abs(newX - position.x) > 3 || Math.abs(newY - position.y) > 3) {
       hasDraggedRef.current = true;
     }
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(() => {
-      setPosition({ x: newX, y: newY });
+    pendingPosRef.current = { x: newX, y: newY };
+    if (moveFrameRef.current) return;
+    moveFrameRef.current = requestAnimationFrame(() => {
+      moveFrameRef.current = 0;
+      if (pendingPosRef.current) setPosition(pendingPosRef.current);
     });
   };
 
@@ -1370,11 +1417,10 @@ function ComparisonPhotoLightbox({
               src={activeItem.photo}
               alt={`${tusker?.name || 'Tusker'} ${activeItem.year}`}
               draggable={false}
-              className="max-h-[70vh] sm:max-h-[74vh] max-w-[92vw] w-auto h-auto object-contain rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10 select-none will-change-transform"
+              className={`max-h-[70vh] sm:max-h-[74vh] max-w-[92vw] w-auto h-auto object-contain rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10 select-none ${isDragging || isWheeling ? '' : 'transition-transform duration-75'}`}
               style={{
                 transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
                 transformOrigin: 'center center',
-                transition: isDragging ? 'none' : 'transform 0.15s cubic-bezier(0.2, 0, 0, 1)',
               }}
             />
           </div>
@@ -1575,15 +1621,37 @@ function SightingPhotoLightbox({
     }
   };
 
-  const rafRef = useRef(null);
+  // Smooth zoom/pan: combine many wheel/mouse events into one update per screen frame,
+  // and skip the CSS transition while the user is actively wheeling or dragging.
+  const wheelAccRef = useRef(0);
+  const wheelFrameRef = useRef(0);
+  const moveFrameRef = useRef(0);
+  const pendingPosRef = useRef(null);
+  const wheelIdleRef = useRef(0);
+  const [isWheeling, setIsWheeling] = useState(false);
+
+  useEffect(() => () => {
+    cancelAnimationFrame(wheelFrameRef.current);
+    cancelAnimationFrame(moveFrameRef.current);
+    clearTimeout(wheelIdleRef.current);
+  }, []);
 
   const handleWheel = (e) => {
     e.preventDefault();
-    const delta = e.deltaY * -0.0045;
-    setScale((prev) => {
-      const nextScale = Math.min(Math.max(prev + delta, 1), 5);
-      if (nextScale === 1) setPosition({ x: 0, y: 0 });
-      return nextScale;
+    wheelAccRef.current += e.deltaY * -0.002;
+    setIsWheeling(true);
+    clearTimeout(wheelIdleRef.current);
+    wheelIdleRef.current = setTimeout(() => setIsWheeling(false), 160);
+    if (wheelFrameRef.current) return;
+    wheelFrameRef.current = requestAnimationFrame(() => {
+      wheelFrameRef.current = 0;
+      const delta = wheelAccRef.current;
+      wheelAccRef.current = 0;
+      setScale((prev) => {
+        const nextScale = Math.min(Math.max(prev + delta, 1), 4);
+        if (nextScale === 1) setPosition({ x: 0, y: 0 });
+        return nextScale;
+      });
     });
   };
 
@@ -1602,12 +1670,14 @@ function SightingPhotoLightbox({
     if (!isDragging || scale <= 1) return;
     const newX = e.clientX - dragStartRef.current.x;
     const newY = e.clientY - dragStartRef.current.y;
-    if (Math.abs(newX - position.x) > 2 || Math.abs(newY - position.y) > 2) {
+    if (Math.abs(newX - position.x) > 3 || Math.abs(newY - position.y) > 3) {
       hasDraggedRef.current = true;
     }
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(() => {
-      setPosition({ x: newX, y: newY });
+    pendingPosRef.current = { x: newX, y: newY };
+    if (moveFrameRef.current) return;
+    moveFrameRef.current = requestAnimationFrame(() => {
+      moveFrameRef.current = 0;
+      if (pendingPosRef.current) setPosition(pendingPosRef.current);
     });
   };
 
@@ -1795,11 +1865,10 @@ function SightingPhotoLightbox({
               src={activeUrl}
               alt={photo.title || 'Sighting'}
               draggable={false}
-              className="max-h-[70vh] sm:max-h-[74vh] max-w-[92vw] w-auto h-auto object-contain rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10 select-none will-change-transform"
+              className={`max-h-[70vh] sm:max-h-[74vh] max-w-[92vw] w-auto h-auto object-contain rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10 select-none ${isDragging || isWheeling ? '' : 'transition-transform duration-75'}`}
               style={{
                 transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
                 transformOrigin: 'center center',
-                transition: isDragging ? 'none' : 'transform 0.15s cubic-bezier(0.2, 0, 0, 1)',
               }}
             />
           </div>

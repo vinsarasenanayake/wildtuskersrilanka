@@ -350,7 +350,7 @@ export default function TuskerMap() {
 
           {/* Selected area card */}
           {selected && (
-            <div className="absolute top-3 left-3 z-[5] w-[310px] max-h-[70%] overflow-y-auto bg-[#0d1612]/95 backdrop-blur-md rounded-xl shadow-2xl border border-[#c69b55]/40 text-white">
+            <div className="absolute top-3 left-3 z-[5] w-[310px] max-h-[70%] overflow-y-auto bg-[#0d1612]/95 rounded-xl shadow-2xl border border-[#c69b55]/40 text-white">
               <div className="flex items-start justify-between gap-2 px-3.5 pt-3 pb-2 border-b border-white/10">
                 <div className="min-w-0">
                   <div className="text-sm font-bold text-white">{selected.title}</div>

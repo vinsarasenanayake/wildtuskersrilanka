@@ -533,7 +533,7 @@ export default function TuskerSightingsMap({
     let created = null;
     if (!mapContainerRef.current) return undefined;
 
-    createMap(mapContainerRef.current, { center: SRI_LANKA_CENTER, zoom: 8, gestureHandling: 'greedy' })
+    createMap(mapContainerRef.current, { center: SRI_LANKA_CENTER, zoom: 8, gestureHandling: 'cooperative' })
       .then((map) => {
         if (!active) { map.destroy(); return; }
         created = map;
@@ -736,7 +736,7 @@ export default function TuskerSightingsMap({
 
         {/* Floating Active Sighting Detail Card Overlay */}
         {selectedPoint && (
-          <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:max-w-xs bg-white/95 backdrop-blur-md rounded-xl p-3.5 shadow-xl border border-black/10 z-[1000] animate-in fade-in">
+          <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:max-w-xs bg-white/95 rounded-xl p-3.5 shadow-xl border border-black/10 z-[1000] animate-in fade-in">
             <div className="flex items-start justify-between gap-2 mb-2">
               <div>
                 <span className="inline-block px-2 py-0.5 rounded text-[0.68rem] font-bold bg-[#e8f5ec] text-[#1f7a3d]">

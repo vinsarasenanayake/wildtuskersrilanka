@@ -159,18 +159,32 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
   });
   // Google draws a grey "can't load Google Maps correctly" box on errors
   // (quota reached, key problems). Spot it and switch to the free maps.
-  const errorWatch = new MutationObserver(() => {
-    if (container.querySelector('.gm-err-container, .gm-err-message')) {
-      errorWatch.disconnect();
-      markGoogleBroken('error shown on map');
-    }
-  });
-  errorWatch.observe(container, { childList: true, subtree: true });
-  setTimeout(() => errorWatch.disconnect(), 60000);
+  // (Checked a few times after loading — watching every change slowed zooming.)
+  const errorChecks = [1500, 5000, 12000].map((ms) =>
+    setTimeout(() => {
+      if (container.isConnected && container.querySelector('.gm-err-container, .gm-err-message')) {
+        markGoogleBroken('error shown on map');
+      }
+    }, ms)
+  );
 
   const info = new maps.InfoWindow();
   const markers = new Set();
   const areas = new Set();
+
+  // All shaded polygons share one layer (one layer per area made zooming slow)
+  let sharedData = null;
+  const polygonLayer = () => {
+    if (!sharedData) {
+      sharedData = new maps.Data({ map });
+      sharedData.setStyle((feature) => feature.getProperty('_style') || {});
+      sharedData.addListener('click', (e) => {
+        const cb = e.feature.getProperty('_onClick');
+        if (typeof cb === 'function') cb();
+      });
+    }
+    return sharedData;
+  };
 
   // HTML pin drawn with an OverlayView (no Map ID needed)
   class HtmlMarker extends maps.OverlayView {
@@ -178,7 +192,8 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
       super();
       this.pos = new maps.LatLng(pos[0], pos[1]);
       this.el = document.createElement('div');
-      this.el.style.cssText = `position:absolute;transform:translate(-50%,${centered ? '-50%' : '-100%'});cursor:pointer;z-index:20;width:max-content;`;
+      this.anchor = centered ? '-50%' : '-100%';
+      this.el.style.cssText = `position:absolute;left:0;top:0;transform:translate(-50%,${this.anchor});cursor:pointer;z-index:20;width:max-content;will-change:transform;`;
       this.el.innerHTML = html; // our own static SVG markup
       this.el.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -197,8 +212,7 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
       if (!projection) return;
       const p = projection.fromLatLngToDivPixel(this.pos);
       if (p) {
-        this.el.style.left = `${Math.round(p.x)}px`;
-        this.el.style.top = `${Math.round(p.y)}px`;
+        this.el.style.transform = `translate(${Math.round(p.x)}px, ${Math.round(p.y)}px) translate(-50%, ${this.anchor})`;
       }
     }
     onRemove() {
@@ -266,10 +280,15 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
         });
         if (onClick) obj.addListener('click', onClick);
       } else {
-        obj = new maps.Data({ map });
-        obj.addGeoJson({ type: 'Feature', geometry: shape.geojson, properties: {} });
-        obj.setStyle({ fillColor: fill, fillOpacity, strokeColor: stroke, strokeWeight, strokeOpacity: 0.9, clickable: Boolean(onClick) });
-        if (onClick) obj.addListener('click', onClick);
+        const features = polygonLayer().addGeoJson({
+          type: 'Feature',
+          geometry: shape.geojson,
+          properties: {
+            _style: { fillColor: fill, fillOpacity, strokeColor: stroke, strokeWeight, strokeOpacity: 0.9, clickable: Boolean(onClick) },
+            _onClick: onClick || null,
+          },
+        });
+        obj = { setMap: () => features.forEach((f) => sharedData && sharedData.remove(f)) };
       }
       areas.add(obj);
       return { remove() { obj.setMap(null); areas.delete(obj); } };
@@ -290,31 +309,19 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
       map.addListener('click', (e) => { if (e.latLng) cb({ lat: e.latLng.lat(), lng: e.latLng.lng() }); });
     },
     resize() { maps.event.trigger(map, 'resize'); },
-    destroy() { markers.forEach((m) => m.setMap(null)); markers.clear(); areas.forEach((o) => o.setMap(null)); areas.clear(); info.close(); maps.event.clearInstanceListeners(map); container.remove(); },
+    destroy() { markers.forEach((m) => m.setMap(null)); markers.clear(); areas.forEach((o) => o.setMap(null)); areas.clear(); info.close(); errorChecks.forEach(clearTimeout); maps.event.clearInstanceListeners(map); container.remove(); },
   };
 }
 
 /* ── Leaflet implementation (free fallback) ───────────────────────── */
-function createLeafletMap(L, container, { center, zoom, gestureHandling: _gestureHandling }) {
+function createLeafletMap(L, container, { center, zoom, gestureHandling }) {
   if (container._leaflet_id) delete container._leaflet_id;
   const map = L.map(container, {
     center,
     zoom,
     zoomControl: true,
     attributionControl: false,
-    preferCanvas: true, // Hardware-accelerated GPU canvas for vector polygons and paths
-    zoomSnap: 0.5,      // Fluid zoom step increments
-    zoomDelta: 0.5,      // Responsive zooming
-    wheelPxPerZoomLevel: 55, // Responsive mouse wheel zooming
-    wheelDebounceTime: 15,
-    scrollWheelZoom: true,
-    inertia: true,
-    inertiaDeceleration: 3000,
-    inertiaMaxSpeed: 2000,
-    zoomAnimation: true,
-    zoomAnimationThreshold: 4,
-    fadeAnimation: true,
-    markerZoomAnimation: true,
+    scrollWheelZoom: gestureHandling !== 'cooperative',
   });
   addBaseLayers(L, map, { defaultLayer: 'satellite', showControl: false });
   const areaLayer = L.layerGroup().addTo(map);
