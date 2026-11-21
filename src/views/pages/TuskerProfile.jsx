@@ -712,12 +712,12 @@ function ComparisonFormModal({
       tusker,
       compType === 'photographic' ? tusker?.photographicComparison : tusker?.earComparison
     );
-    if (!baseline) return compType === 'photographic' ? 'First Recorded Photo' : 'Initial Ear Baseline';
+    if (!baseline) return compType === 'photographic' ? 'First Recorded Photo' : 'First Recorded Ear';
     const diff = parsed - baseline;
     if (diff > 0) {
       return `${diff}-Year Progression`;
     }
-    return compType === 'photographic' ? 'First Recorded Photo' : 'Initial Ear Baseline';
+    return compType === 'photographic' ? 'First Recorded Photo' : 'First Recorded Ear';
   }, [tusker]);
 
   useEffect(() => {
@@ -754,29 +754,11 @@ function ComparisonFormModal({
     }
   };
 
-  const handleTypeToggle = (newType) => {
-    setActiveType(newType);
-    if (!isEditing) {
-      const autoStage = calculateAutoStage(year, newType);
-      if (autoStage) {
-        setStage(autoStage);
-      }
-    }
-  };
-
   if (!isOpen) return null;
 
   const photoPresets = [
     'First Recorded Photo',
     'Recent Assessment',
-  ];
-
-  const earPresets = [
-    'Right Pinna Baseline',
-    'Left Pinna Baseline',
-    'Ear Margin Progression',
-    'Venation & Notch Check',
-    'Bilateral Assessment',
   ];
 
   const handleSubmit = (e) => {
@@ -833,14 +815,14 @@ function ComparisonFormModal({
         <div className="flex items-center justify-between pb-4 border-b border-[#eeeeee]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-[12px] bg-[#0b2518] text-[#c69b55] flex items-center justify-center shadow-xs">
-              <Camera size={20} />
+              {activeType === 'photographic' ? <Camera size={20} /> : <Sliders size={20} />}
             </div>
             <div>
               <h3 className="font-sans text-[1.2rem] font-bold text-[#111111] m-0">
                 {isEditing ? 'Edit' : 'Add'} {activeType === 'photographic' ? 'Photographic Comparison' : 'Ear Biometric Comparison'}
               </h3>
               <p className="font-sans text-[0.8rem] text-[#777777] m-0 mt-0.5">
-                {tusker ? `${tusker.name} (${tusker.id})` : 'Tusker'} • Sequential Progression Comparison
+                {tusker ? `${tusker.name} (${tusker.id})` : 'Tusker'} • {activeType === 'photographic' ? 'Sequential Progression Comparison' : 'Ear Biometric Identification'}
               </p>
             </div>
           </div>
@@ -853,36 +835,6 @@ function ComparisonFormModal({
             <X size={18} />
           </button>
         </div>
-
-        {/* Type Toggle (when adding new) */}
-        {!isEditing && (
-          <div className="flex items-center bg-[#f4f5f4] p-1 rounded-[12px] gap-1">
-            <button
-              type="button"
-              onClick={() => handleTypeToggle('photographic')}
-              className={`flex-1 py-2 px-3 rounded-[9px] text-[0.82rem] font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 ${
-                activeType === 'photographic'
-                  ? 'bg-white text-[#0b2518] shadow-xs'
-                  : 'bg-transparent text-[#666666] hover:text-[#111111]'
-              }`}
-            >
-              <Camera size={14} className={activeType === 'photographic' ? 'text-accent' : ''} />
-              <span>Photographic Progression</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTypeToggle('ear')}
-              className={`flex-1 py-2 px-3 rounded-[9px] text-[0.82rem] font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 ${
-                activeType === 'ear'
-                  ? 'bg-white text-[#0b2518] shadow-xs'
-                  : 'bg-transparent text-[#666666] hover:text-[#111111]'
-              }`}
-            >
-              <Sliders size={14} className={activeType === 'ear' ? 'text-accent' : ''} />
-              <span>Ear Biometric Comparison</span>
-            </button>
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* Photo Upload with Interactive Cropper for Ear Biometrics */}
@@ -901,7 +853,7 @@ function ComparisonFormModal({
                   ? 'Drag and frame the crop box directly to highlight the ear pinna, margin notches, and venations.'
                   : 'Drag and frame the crop box to highlight the tusker or morphological progression.'
               }
-              cropAspect={activeType === 'ear' ? '3:4' : 'free'}
+              cropAspect="free"
               label={activeType === 'photographic' ? 'Progression Photo *' : 'Ear Venation / Crop Photo *'}
               aspectClass="aspect-[4/3] max-w-[280px] mx-auto"
             />
@@ -937,24 +889,25 @@ function ComparisonFormModal({
             </div>
           </div>
 
-          {/* Quick preset suggestions for stage */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[0.72rem] text-[#888888] font-medium mr-1">Suggestions:</span>
-            {(activeType === 'photographic' ? photoPresets : earPresets).map((preset) => (
-              <button
-                key={preset}
-                type="button"
-                onClick={() => setStage(preset)}
-                className={`text-[0.72rem] px-2.5 py-1 rounded-full border transition-colors cursor-pointer ${
-                  stage === preset
+          {/* Quick preset suggestions for stage (photo progression only) */}
+          {activeType === 'photographic' && (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[0.72rem] text-[#888888] font-medium mr-1">Suggestions:</span>
+              {photoPresets.map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => setStage(preset)}
+                  className={`text-[0.72rem] px-2.5 py-1 rounded-full border transition-colors cursor-pointer ${stage === preset
                     ? 'bg-[#0b2518] text-[#c69b55] border-[#0b2518] font-semibold'
                     : 'bg-[#fafafa] text-[#555555] border-[#e0e0e0] hover:border-[#999999]'
-                }`}
-              >
-                {preset}
-              </button>
-            ))}
-          </div>
+                    }`}
+                >
+                  {preset}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Location Picker */}
           <div>
@@ -1014,9 +967,9 @@ function ComparisonFormModal({
                 onChange={(e) => setEarSide(e.target.value)}
                 className="w-full px-3 py-2 rounded-[8px] border border-[#d5d5d5] bg-white font-sans text-sm text-[#111111] focus:outline-none focus:border-accent"
               >
-                <option value="Right Ear">Right Ear (Right Pinna)</option>
-                <option value="Left Ear">Left Ear (Left Pinna)</option>
-                <option value="Both Ears">Both Ears (Bilateral Comparison)</option>
+                <option value="Right Ear">Right Ear</option>
+                <option value="Left Ear">Left Ear</option>
+                <option value="Both Ears">Both Ears</option>
               </select>
             </div>
           )}
@@ -1054,14 +1007,14 @@ function ComparisonFormModal({
               type="button"
               onClick={onClose}
               disabled={isSaving}
-              className="px-4 py-2.5 rounded-[10px] bg-[#f4f4f4] hover:bg-[#eaeaea] text-[#555555] font-sans text-sm font-semibold border-none cursor-pointer transition-colors"
+              className="h-10 px-4 rounded-[10px] bg-[#f4f4f4] hover:bg-[#eaeaea] text-[#555555] font-sans text-sm font-semibold border-none cursor-pointer transition-colors inline-flex items-center justify-center box-border"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSaving}
-              className="px-5 py-2.5 rounded-[10px] bg-[#0b2518] hover:bg-[#133824] text-white font-sans text-sm font-semibold border-none cursor-pointer transition-all shadow-xs flex items-center gap-2 disabled:opacity-60"
+              className="h-10 px-5 rounded-[10px] bg-[#0b2518] hover:bg-[#133824] text-white font-sans text-sm font-semibold border-none cursor-pointer transition-all shadow-xs inline-flex items-center justify-center gap-2 disabled:opacity-60 box-border"
             >
               {isSaving && <Loader2 size={16} className="animate-spin text-[#c69b55]" />}
               <span>{isSaving ? 'Saving...' : isEditing ? 'Update' : 'Save'}</span>
@@ -1487,11 +1440,10 @@ function ComparisonPhotoLightbox({
                     key={idx}
                     type="button"
                     onClick={() => changeItem(idx)}
-                    className={`h-11 px-2.5 rounded-lg flex items-center gap-2 border transition-all cursor-pointer bg-black/40 text-left ${
-                      idx === activeIdx
-                        ? 'border-accent ring-2 ring-accent/60 bg-white/15'
-                        : 'border-white/15 opacity-60 hover:opacity-100 hover:border-white/40'
-                    }`}
+                    className={`h-11 px-2.5 rounded-lg flex items-center gap-2 border transition-all cursor-pointer bg-black/40 text-left ${idx === activeIdx
+                      ? 'border-accent ring-2 ring-accent/60 bg-white/15'
+                      : 'border-white/15 opacity-60 hover:opacity-100 hover:border-white/40'
+                      }`}
                   >
                     {it.photo && (
                       <img src={it.photo} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
@@ -1535,8 +1487,8 @@ function SightingPhotoLightbox({
     return photo.images && photo.images.length > 0
       ? photo.images
       : photo.url
-      ? [photo.url]
-      : [];
+        ? [photo.url]
+        : [];
   }, [photo.images, photo.url]);
   const activeIdx = photo.activeIdx !== undefined ? photo.activeIdx : 0;
   const activeUrl = images[activeIdx] || photo.url;
@@ -1941,11 +1893,10 @@ function SightingPhotoLightbox({
                     key={idx}
                     type="button"
                     onClick={() => changeIndex(idx)}
-                    className={`w-11 h-11 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer p-0 bg-black/40 ${
-                      idx === activeIdx
-                        ? 'border-accent ring-2 ring-accent/60 scale-105 opacity-100'
-                        : 'border-white/15 opacity-60 hover:opacity-100 hover:border-white/40'
-                    }`}
+                    className={`w-11 h-11 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer p-0 bg-black/40 ${idx === activeIdx
+                      ? 'border-accent ring-2 ring-accent/60 scale-105 opacity-100'
+                      : 'border-white/15 opacity-60 hover:opacity-100 hover:border-white/40'
+                      }`}
                   >
                     <img src={imgUrl} alt="" className="w-full h-full object-cover" />
                   </button>
@@ -2139,7 +2090,7 @@ export default function TuskerProfile() {
         const latestSighting = remainingSightings[remainingSightings.length - 1];
         const latestDetails = parseSightingDetails(latestSighting);
         profileRollback = {
-          lastSeenArea: latestDetails.location || tusker?.location || '',
+          lastSeenArea: latestDetails.location || (tusker?.location ? tusker.location.split('/')[0].trim() : ''),
           healthCondition: latestDetails.healthCondition || 'Good',
           threatLevel: latestDetails.threatLevel || '',
           specialMarks: latestDetails.specialMarks || '',
@@ -2152,7 +2103,7 @@ export default function TuskerProfile() {
       } else {
         // All subsequent field sightings deleted: restore original baseline tusker data
         profileRollback = {
-          lastSeenArea: tusker?.location || '',
+          lastSeenArea: tusker?.location ? tusker.location.split('/')[0].trim() : '',
           healthCondition: 'Good',
           threatLevel: '',
           specialMarks: '',
@@ -2542,7 +2493,7 @@ export default function TuskerProfile() {
                           }}
                           className="inline-flex items-center gap-1 font-sans text-[0.82rem] font-semibold text-accent hover:text-accent-hover hover:underline transition-colors cursor-pointer"
                         >
-                          View Risk Assessment <ExternalLink size={12} />
+                          View Risk Calculation <ExternalLink size={12} />
                         </a>
                       )}
                     </div>
@@ -3384,7 +3335,7 @@ export default function TuskerProfile() {
         </Suspense>
       )}
 
-            {/* Gallery-Style Comparison Photo Lightbox with Zoom & Fullscreen */}
+      {/* Gallery-Style Comparison Photo Lightbox with Zoom & Fullscreen */}
       {selectedComparisonImg && (
         <ComparisonPhotoLightbox
           item={selectedComparisonImg}
@@ -3455,7 +3406,7 @@ export default function TuskerProfile() {
         document.body
       )}
 
-            {/* Gallery-Style Sighting / Observation Photo Lightbox with Zoom & Fullscreen */}
+      {/* Gallery-Style Sighting / Observation Photo Lightbox with Zoom & Fullscreen */}
       {previewModalPhoto && (
         <SightingPhotoLightbox
           photo={previewModalPhoto}
@@ -3544,7 +3495,7 @@ export default function TuskerProfile() {
                 type="button"
                 disabled={isDeleting}
                 onClick={() => setDeletingSighting(null)}
-                className="px-4 py-2 rounded-[10px] border border-[#d5d5d5] bg-white text-[#444444] font-sans text-xs font-semibold hover:bg-[#f5f5f5] transition-all cursor-pointer"
+                className="h-9 px-4 rounded-[10px] border border-[#d5d5d5] bg-white text-[#444444] font-sans text-xs font-semibold hover:bg-[#f5f5f5] transition-all cursor-pointer inline-flex items-center justify-center box-border"
               >
                 Cancel
               </button>
@@ -3552,7 +3503,7 @@ export default function TuskerProfile() {
                 type="button"
                 disabled={isDeleting}
                 onClick={handleConfirmDeleteSighting}
-                className="px-4 py-2 rounded-[10px] bg-[#dc2626] text-white font-sans text-xs font-bold hover:bg-[#b91c1c] transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                className="h-9 px-4 rounded-[10px] bg-[#dc2626] text-white font-sans text-xs font-bold hover:bg-[#b91c1c] transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 disabled:opacity-50 box-border border border-transparent"
               >
                 {isDeleting ? 'Deleting...' : 'Delete Sighting'}
               </button>

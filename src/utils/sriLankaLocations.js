@@ -182,6 +182,7 @@ export const SRI_LANKA_WILDLIFE_LOCATIONS = [
   { name: 'Silavathurai', type: 'Coastal Roaming Area', region: 'Mannar District', lat: 8.7500, lng: 79.9167 },
   { name: 'Silavathura', type: 'Coastal Roaming Area', region: 'Mannar District', lat: 8.7500, lng: 79.9167 },
   { name: 'Mullikulam', type: 'Wilpattu North Border', region: 'Mannar District', lat: 8.6167, lng: 79.9167 },
+  { name: 'Vidattaltivu', type: 'Nature Reserve', region: 'Mannar District', lat: 9.0333, lng: 80.0167 },
   { name: 'Vedithalathiv', type: 'Nature Reserve', region: 'Mannar District', lat: 9.0333, lng: 80.0167 },
   { name: 'Maha Kanadarawa', type: 'Reservoir', region: 'Anuradhapura District', lat: 8.4167, lng: 80.5000 },
   { name: 'Mahakanadarawa', type: 'Reservoir', region: 'Anuradhapura District', lat: 8.4167, lng: 80.5000 },
@@ -193,6 +194,7 @@ export const SRI_LANKA_WILDLIFE_LOCATIONS = [
   { name: 'Kebathigollewa', type: 'Elephant Roaming Area', region: 'Anuradhapura District', lat: 8.6333, lng: 80.6833 },
   { name: 'Galenbindunuwewa', type: 'Agricultural Area', region: 'Anuradhapura District', lat: 8.2167, lng: 80.6833 },
   { name: 'Palugaswewa', type: 'Elephant Roaming Area', region: 'Anuradhapura District', lat: 8.0833, lng: 80.6833 },
+  { name: 'Rambewa', type: 'Elephant Roaming Area', region: 'Anuradhapura District', lat: 8.4667, lng: 80.5167 },
   { name: 'Rambawa', type: 'Elephant Roaming Area', region: 'Anuradhapura District', lat: 8.4667, lng: 80.5167 },
   { name: 'Ritigala', type: 'Strict Nature Reserve', region: 'Anuradhapura District', lat: 8.1167, lng: 80.6500 },
   { name: 'Tantirimale', type: 'Historic Roaming Area', region: 'Anuradhapura District', lat: 8.5833, lng: 80.2667 },
@@ -454,6 +456,11 @@ export function getLocationCoordinates(locationName) {
   else if (aliasLower === 'anganmadiila') primaryName = 'Angammedilla';
   else if (aliasLower === 'bundangala') primaryName = 'Buddhangala';
   else if (aliasLower === 'monarafala') primaryName = 'Monaragala';
+  else if (aliasLower === 'rambawa') primaryName = 'Rambewa';
+  else if (aliasLower === 'maha kanadarawa' || aliasLower === 'kanadarawa' || aliasLower === 'mahakanadarawa forest side') primaryName = 'Mahakanadarawa';
+  else if (aliasLower === 'maha wilachchiya') primaryName = 'Mahawilachchiya';
+  else if (aliasLower === 'vedithalathiv') primaryName = 'Vidattaltivu';
+  else if (aliasLower === 'eluwankulam') primaryName = 'Eluwankulama';
 
   const primaryLower = primaryName.toLowerCase();
   const normalizedPrimary = normalizePlaceName(primaryName);

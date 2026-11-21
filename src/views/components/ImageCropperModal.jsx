@@ -361,14 +361,38 @@ export default function ImageCropperModal({
     const isSideways = rotation % 180 !== 0;
     const nw = naturalDimensions.width;
     const nh = naturalDimensions.height;
+    if (nw <= 0 || nh <= 0) return;
 
-    // Destination size for thumbnail
-    const targetThumbWidth = 140;
-    const targetThumbHeight = Math.round((targetThumbWidth * crop.h) / crop.w) || 105;
-    canvas.width = targetThumbWidth;
-    canvas.height = targetThumbHeight;
+    const sourceW = isSideways ? nh : nw;
+    const sourceH = isSideways ? nw : nh;
+
+    const sx = Math.max(0, crop.x * sourceW);
+    const sy = Math.max(0, crop.y * sourceH);
+    const sw = Math.min(sourceW - sx, crop.w * sourceW);
+    const sh = Math.min(sourceH - sy, crop.h * sourceH);
+
+    if (sw <= 0 || sh <= 0) return;
+
+    const cropAspect = sw / sh;
+    const maxThumbSize = 130;
+    let thumbW, thumbH;
+    if (cropAspect >= 1) {
+      thumbW = maxThumbSize;
+      thumbH = Math.max(24, Math.round(maxThumbSize / cropAspect));
+    } else {
+      thumbH = maxThumbSize;
+      thumbW = Math.max(24, Math.round(maxThumbSize * cropAspect));
+    }
+
+    // High-DPI (2x) resolution so the thumbnail is always crisp
+    canvas.width = thumbW * 2;
+    canvas.height = thumbH * 2;
+    canvas.style.width = `${thumbW}px`;
+    canvas.style.height = `${thumbH}px`;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
 
     // Render rotated crop
     ctx.save();
@@ -376,25 +400,15 @@ export default function ImageCropperModal({
       // Create offscreen rotated canvas
       const offCanvas = document.createElement('canvas');
       const offCtx = offCanvas.getContext('2d');
-      offCanvas.width = isSideways ? nh : nw;
-      offCanvas.height = isSideways ? nw : nh;
+      offCanvas.width = sourceW;
+      offCanvas.height = sourceH;
 
       offCtx.translate(offCanvas.width / 2, offCanvas.height / 2);
       offCtx.rotate((rotation * Math.PI) / 180);
       offCtx.drawImage(img, -nw / 2, -nh / 2);
 
-      const sx = crop.x * offCanvas.width;
-      const sy = crop.y * offCanvas.height;
-      const sw = crop.w * offCanvas.width;
-      const sh = crop.h * offCanvas.height;
-
       ctx.drawImage(offCanvas, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
     } else {
-      const sx = crop.x * nw;
-      const sy = crop.y * nh;
-      const sw = crop.w * nw;
-      const sh = crop.h * nh;
-
       try {
         ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
       } catch {
@@ -738,13 +752,13 @@ export default function ImageCropperModal({
 
           {/* Live Cropped Result Thumbnail in Bottom-Right Corner */}
           {imageLoaded && (
-            <div className="absolute bottom-3 right-3 bg-[#181c19]/90 backdrop-blur-md p-1.5 rounded-[12px] border border-[#2b352f] shadow-lg flex flex-col items-center gap-1 hidden sm:flex pointer-events-none">
+            <div className="absolute bottom-3 right-3 bg-[#181c19]/95 backdrop-blur-md p-2 rounded-[12px] border border-[#2b352f] shadow-xl flex flex-col items-center gap-1.5 hidden sm:flex pointer-events-none">
               <span className="text-[0.62rem] font-bold text-[#c69b55] uppercase tracking-wider">
                 Live Preview
               </span>
               <canvas
                 ref={previewCanvasRef}
-                className="w-24 h-auto rounded-[8px] border border-white/15 bg-black object-contain"
+                className="rounded-[8px] border border-white/15 bg-black object-contain shadow-sm"
               />
             </div>
           )}
@@ -764,7 +778,7 @@ export default function ImageCropperModal({
             type="button"
             onClick={handleUseFullImage}
             disabled={isApplying}
-            className="w-full sm:w-auto px-4 py-2 rounded-[10px] bg-[#242b26] hover:bg-[#2f3832] text-[#9ba8a0] hover:text-white font-sans text-xs font-semibold transition-colors border-none cursor-pointer"
+            className="w-full sm:w-auto h-9 px-4 rounded-[10px] bg-[#242b26] hover:bg-[#2f3832] text-[#9ba8a0] hover:text-white font-sans text-xs font-semibold transition-colors border-none cursor-pointer inline-flex items-center justify-center"
           >
             Use Full Image (Skip Crop)
           </button>
@@ -774,7 +788,7 @@ export default function ImageCropperModal({
               type="button"
               onClick={onClose}
               disabled={isApplying}
-              className="flex-1 sm:flex-initial px-4 py-2 rounded-[10px] bg-[#242b26] hover:bg-[#2f3832] text-[#9ba8a0] hover:text-white font-sans text-xs font-semibold transition-colors border-none cursor-pointer"
+              className="flex-1 sm:flex-initial h-9 px-4 rounded-[10px] bg-[#242b26] hover:bg-[#2f3832] text-[#9ba8a0] hover:text-white font-sans text-xs font-semibold transition-colors border-none cursor-pointer inline-flex items-center justify-center"
             >
               Cancel
             </button>
@@ -782,7 +796,7 @@ export default function ImageCropperModal({
               type="button"
               onClick={handleApplyCrop}
               disabled={isApplying || !imageLoaded}
-              className="flex-1 sm:flex-initial px-5 py-2.2 rounded-[10px] bg-[#0b2518] hover:bg-[#133824] text-white font-sans text-xs font-bold transition-all shadow-md border border-[#c69b55]/40 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="flex-1 sm:flex-initial h-9 px-5 rounded-[10px] bg-[#0b2518] hover:bg-[#133824] text-white font-sans text-xs font-bold transition-all shadow-md border border-[#c69b55]/40 inline-flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 box-border"
             >
               {isApplying ? (
                 <>

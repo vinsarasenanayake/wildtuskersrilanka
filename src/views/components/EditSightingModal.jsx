@@ -404,7 +404,7 @@ export default function EditSightingModal({
               type="button"
               onClick={onClose}
               disabled={saving}
-              className="px-4 py-2 rounded-lg text-xs font-semibold text-[#666666] hover:text-[#111111] bg-gray-100 hover:bg-gray-200 border-none cursor-pointer transition-colors"
+              className="h-9 px-4 rounded-lg text-xs font-semibold text-[#666666] hover:text-[#111111] bg-gray-100 hover:bg-gray-200 border-none cursor-pointer transition-colors inline-flex items-center justify-center"
             >
               Cancel
             </button>
@@ -412,7 +412,7 @@ export default function EditSightingModal({
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold bg-accent hover:bg-accent-hover text-primary border-none cursor-pointer shadow-xs transition-all disabled:opacity-50"
+              className="h-9 inline-flex items-center justify-center gap-2 px-5 rounded-lg text-xs font-bold bg-accent hover:bg-accent-hover text-primary border-none cursor-pointer shadow-xs transition-all disabled:opacity-50"
             >
               {saving ? (
                 <>

@@ -287,14 +287,14 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
                   type="button"
                   onClick={onClose}
                   disabled={saving}
-                  className="px-4 py-2 rounded-lg font-sans text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors border-none cursor-pointer"
+                  className="h-9 px-4 rounded-lg font-sans text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors border-none cursor-pointer inline-flex items-center justify-center"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 rounded-lg font-sans text-xs font-semibold text-primary bg-accent hover:bg-accent-hover transition-colors border-none cursor-pointer flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                  className="h-9 px-5 rounded-lg font-sans text-xs font-semibold text-primary bg-accent hover:bg-accent-hover transition-colors border-none cursor-pointer inline-flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
                 >
                   <Save size={14} />
                   <span>{saving ? 'Saving Changes...' : 'Save Changes'}</span>

@@ -68,11 +68,14 @@ export default function Home() {
           </div>
 
           {/* 2. Mission Statement (Enlarged and center-aligned) */}
-          <p className="font-sans text-[1rem] sm:text-[1.08rem] md:text-[1.14rem] text-[#f2f6f4] leading-[1.65] font-normal drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] text-center w-full m-0 px-1">
-            Wild Tuskers Sri Lanka is a dedicated team of wildlife researchers and conservationists
-            committed to identifying and protecting the rare tusked elephants of Sri Lanka,
-            guardians of one of Asia's most endangered natural treasures.
-          </p>
+          <div className="text-center w-full m-0 px-1 flex flex-col gap-2">
+            <p className="font-sans text-[0.98rem] sm:text-[1.06rem] md:text-[1.12rem] text-[#f2f6f4] leading-[1.65] font-normal drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] m-0">
+              <span className="font-semibold text-white">Guardians of a Rare Legacy.</span> Wild Tuskers Sri Lanka unites passionate wildlife enthusiasts and conservationists in a shared mission to identify, protect, and preserve Sri Lanka's magnificent tusked elephants, one of Asia's most extraordinary and endangered wildlife treasures.
+            </p>
+            <p className="font-sans text-[0.88rem] sm:text-[0.94rem] md:text-[0.98rem] text-[#e6c687] font-medium tracking-wide drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] m-0">
+              Stand with us. Protect the giants. Preserve the legacy
+            </p>
+          </div>
 
           {/* 3. Compact Frosted Glass Population Counts Box */}
           <div className="w-full rounded-2xl bg-white/15 backdrop-blur-xl border border-white/25 shadow-[0_16px_40px_rgba(0,0,0,0.45),inset_0_1px_1px_rgba(255,255,255,0.3)] overflow-hidden">

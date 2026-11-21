@@ -33,7 +33,7 @@ export default function RiskAssessmentModal({ tusker, onClose }) {
             </div>
             <div className="min-w-0">
               <h2 id="risk-modal-title" className="font-sans text-[1.05rem] font-bold text-white m-0 tracking-tight truncate">
-                Risk Assessment &amp; Prioritization Report
+                Risk Calculation &amp; Prioritization Report
               </h2>
               <p className="font-sans text-[0.78rem] text-[#d1d5db] m-0 flex items-center gap-1.5 truncate">
                 <span className="font-mono text-[#c69b55] font-bold">{tusker.id}</span>

@@ -495,7 +495,18 @@ export default function TuskerSightingsMap({
     const map = mapRef.current;
     if (!map) return;
 
-    const allPts = anchorCoords.map((c) => [c.lat, c.lng]).concat(activeSightings.map((p) => [p.coords.lat, p.coords.lng]));
+    const allPts = [];
+    // Ensure the entire polygon perimeter is included so the full home range is always visible
+    if (homeRangeShape?.geojson?.coordinates?.[0]?.length) {
+      homeRangeShape.geojson.coordinates[0].forEach(([lng, lat]) => {
+        allPts.push([lat, lng]);
+      });
+    } else {
+      anchorCoords.forEach((c) => allPts.push([c.lat, c.lng]));
+    }
+    activeSightings.forEach((p) => {
+      if (p.coords) allPts.push([p.coords.lat, p.coords.lng]);
+    });
     if (lastSeenPoint?.coords) {
       allPts.push([lastSeenPoint.coords.lat, lastSeenPoint.coords.lng]);
     }
@@ -511,11 +522,11 @@ export default function TuskerSightingsMap({
     });
 
     if (uniquePts.length === 1) {
-      map.setView(uniquePts[0], 11, { animate: true });
+      map.setView(uniquePts[0], 10, { animate: true });
     } else if (uniquePts.length > 1) {
-      map.fitBounds(uniquePts, { padding: 60, maxZoom: 12 });
+      map.fitBounds(uniquePts, { padding: 45, maxZoom: 11 });
     }
-  }, [anchorCoords, activeSightings, lastSeenPoint]);
+  }, [homeRangeShape, anchorCoords, activeSightings, lastSeenPoint]);
 
   // Select / isolate a specific sighting or last seen point
   const handleSelectPoint = useCallback((point) => {
@@ -559,7 +570,18 @@ export default function TuskerSightingsMap({
     map.clearMarkers();
     map.clearAreas();
 
-    const allPts = anchorCoords.map((c) => [c.lat, c.lng]).concat(displayedSightings.map((p) => [p.coords.lat, p.coords.lng]));
+    const allPts = [];
+    if (!selectedPoint && homeRangeShape?.geojson?.coordinates?.[0]?.length) {
+      // Include the entire home range polygon perimeter so the full habitat area is visible
+      homeRangeShape.geojson.coordinates[0].forEach(([lng, lat]) => {
+        allPts.push([lat, lng]);
+      });
+    } else {
+      anchorCoords.forEach((c) => allPts.push([c.lat, c.lng]));
+    }
+    displayedSightings.forEach((p) => {
+      if (p.coords) allPts.push([p.coords.lat, p.coords.lng]);
+    });
     if (lastSeenPoint?.coords && (!selectedPoint || selectedPoint.id === 'last-seen-pin')) {
       allPts.push([lastSeenPoint.coords.lat, lastSeenPoint.coords.lng]);
     }
@@ -659,9 +681,9 @@ export default function TuskerSightingsMap({
       map.setView([selectedPoint.coords.lat, selectedPoint.coords.lng], 12, { animate: true });
       lastPin.openPopup();
     } else if (uniquePts.length === 1) {
-      map.setView(uniquePts[0], 11, { animate: true });
+      map.setView(uniquePts[0], 10, { animate: true });
     } else if (uniquePts.length > 1) {
-      map.fitBounds(uniquePts, { padding: 60, maxZoom: 12 });
+      map.fitBounds(uniquePts, { padding: 45, maxZoom: selectedPoint ? 12 : 11 });
     }
   }, [displayedSightings, isMapLoaded, selectedPoint, homeRangeShape, statusTheme, anchorCoords, lastSeenPoint, isDeceased, handleSelectPoint, tusker?.location, tusker?.livingStatus]);
 

@@ -86,30 +86,51 @@ export function loadGoogleMaps() {
 }
 
 /* ── Popup content (built from text, never raw HTML) ──────────────── */
-function buildPopup({ badge, date, title, lines = [] } = {}) {
+function buildPopup({ badge, date, title, lines = [] } = {}, onClose) {
   const root = document.createElement('div');
   root.style.cssText =
-    'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-width:180px;max-width:260px;line-height:1.4;padding:4px 2px;color:#f3f4f6;';
+    'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-width:190px;max-width:270px;line-height:1.4;padding:4px 2px;color:#f3f4f6;position:relative;';
 
-  if (badge || date) {
-    const top = document.createElement('div');
-    top.style.cssText =
-      'display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px;flex-wrap:wrap;';
-    if (badge) {
-      const b = document.createElement('span');
-      b.style.cssText =
-        'background:rgba(198,155,85,0.18);color:#e5b869;border:1px solid rgba(198,155,85,0.45);font-weight:700;font-size:10px;padding:2px 7px;border-radius:6px;letter-spacing:0.5px;text-transform:uppercase;box-shadow:0 1px 3px rgba(0,0,0,0.3);';
-      b.textContent = badge;
-      top.appendChild(b);
-    }
-    if (date) {
-      const d = document.createElement('span');
-      d.style.cssText = 'font-size:10.5px;font-weight:600;color:#9ca3af;margin-left:auto;';
-      d.textContent = date;
-      top.appendChild(d);
-    }
-    root.appendChild(top);
+  const top = document.createElement('div');
+  top.style.cssText =
+    'display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;';
+
+  const leftMeta = document.createElement('div');
+  leftMeta.style.cssText = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;';
+
+  if (badge) {
+    const b = document.createElement('span');
+    b.style.cssText =
+      'background:rgba(198,155,85,0.18);color:#e5b869;border:1px solid rgba(198,155,85,0.45);font-weight:700;font-size:10px;padding:2px 7px;border-radius:6px;letter-spacing:0.5px;text-transform:uppercase;box-shadow:0 1px 3px rgba(0,0,0,0.3);';
+    b.textContent = badge;
+    leftMeta.appendChild(b);
   }
+  if (date) {
+    const d = document.createElement('span');
+    d.style.cssText = 'font-size:10.5px;font-weight:600;color:#9ca3af;';
+    d.textContent = date;
+    leftMeta.appendChild(d);
+  }
+  top.appendChild(leftMeta);
+
+  if (onClose) {
+    const closeBtn = document.createElement('button');
+    closeBtn.setAttribute('type', 'button');
+    closeBtn.setAttribute('aria-label', 'Close popup');
+    closeBtn.textContent = '✕';
+    closeBtn.style.cssText =
+      'background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#d1d5db;font-size:11px;font-weight:700;cursor:pointer;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.15s ease;margin-left:auto;padding:0;line-height:1;flex-shrink:0;';
+    closeBtn.onmouseenter = () => { closeBtn.style.backgroundColor = 'rgba(255,255,255,0.22)'; closeBtn.style.color = '#ffffff'; };
+    closeBtn.onmouseleave = () => { closeBtn.style.backgroundColor = 'rgba(255,255,255,0.08)'; closeBtn.style.color = '#d1d5db'; };
+    closeBtn.onclick = (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      onClose();
+    };
+    top.appendChild(closeBtn);
+  }
+
+  root.appendChild(top);
 
   if (title) {
     const t = document.createElement('div');
@@ -231,7 +252,7 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
   }
 
   const openPopupAt = (pos, popup, offsetY) => {
-    info.setContent(buildPopup(popup));
+    info.setContent(buildPopup(popup, () => info.close()));
     info.setOptions({ pixelOffset: new maps.Size(0, -offsetY) });
     info.setPosition({ lat: pos[0], lng: pos[1] });
     info.open({ map });
@@ -360,12 +381,13 @@ function createLeafletMap(L, container, { center, zoom, gestureHandling: _gestur
         ? L.divIcon({ className: 'custom-leaflet-marker', html: `<div style="position:relative;transform:translate(-50%,-50%);width:max-content">${html}</div>`, iconSize: [0, 0], iconAnchor: [0, 0] })
         : iconFor(html, height);
       const m = L.marker(pos, { icon }).addTo(layer);
-      if (popup) m.bindPopup(buildPopup(popup));
+      const closePopup = () => map.closePopup();
+      if (popup) m.bindPopup(buildPopup(popup, closePopup));
       if (onClick) m.on('click', onClick);
       return {
         setPosition(p) { m.setLatLng(p); },
         setHtml(h) { m.setIcon(iconFor(h, height)); },
-        openPopup(p) { if (p) m.bindPopup(buildPopup(p)); m.openPopup(); },
+        openPopup(p) { if (p) m.bindPopup(buildPopup(p, closePopup)); m.openPopup(); },
         remove() { layer.removeLayer(m); },
       };
     },

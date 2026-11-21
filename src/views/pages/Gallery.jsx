@@ -922,14 +922,14 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="bg-transparent border border-[#dddddd] text-[#666666] font-semibold rounded-lg px-4 py-2 cursor-pointer hover:bg-[#f5f5f5]"
+                className="h-10 bg-transparent border border-[#dddddd] text-[#666666] font-semibold rounded-lg px-4 cursor-pointer hover:bg-[#f5f5f5] inline-flex items-center justify-center box-border"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting || uploading}
-                className="bg-primary hover:bg-primary-light text-white font-semibold rounded-lg px-6 py-2 border-none cursor-pointer disabled:opacity-60 transition-all flex items-center gap-1.5"
+                className="h-10 bg-primary hover:bg-primary-light text-white font-semibold rounded-lg px-6 border border-primary cursor-pointer disabled:opacity-60 transition-all inline-flex items-center justify-center gap-1.5 box-border"
               >
                 <Upload size={14} />
                 <span>
