@@ -7,7 +7,7 @@
    1.1 s apart to respect Nominatim's free-use policy. */
 import { getLocationCoordinates } from './sriLankaLocations';
 
-const CACHE_PREFIX = 'wts_area_v2_';
+const CACHE_PREFIX = 'wts_area_v3_';
 const CACHE_DAYS = 30;
 const CIRCLE_RADIUS_M = 4000;
 

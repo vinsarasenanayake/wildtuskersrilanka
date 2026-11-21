@@ -31,7 +31,7 @@ export function useTuskerList() {
   }, []);
 
   // Roaming areas and last-seen locations are often combined corridors
-  // (e.g. "Anuradhapura / Maha Kanadarawa / Kebithigollewa / Tantirimale")
+  // (e.g. "Anuradhapura / Maha Kanadarawa / Kebithigollewa / Thanthirimale")
   // or list multiple park blocks ("Yala Block 3,5"), so expand blocks and
   // split them into discrete individual locations for filtering.
   const splitAreas = (loc) => {

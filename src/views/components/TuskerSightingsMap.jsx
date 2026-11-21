@@ -79,7 +79,7 @@ const SRI_LANKA_COASTLINE = [
   [9.500, 80.200], // Pooneryn
   [9.240, 80.040], // Devil's Point
   [9.120, 80.030], // Illuppaikadavai
-  [8.990, 80.000], // Vidattaltivu
+  [8.990, 80.000], // Vidataltivu
   [8.980, 79.910], // Mannar causeway
   [8.810, 79.900], // Arippu
   [8.780, 79.900], // Silavathurai
