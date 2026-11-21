@@ -75,10 +75,11 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Navigation */}
-        {/* Full menu only when it fits on one line (wider for admins, who
-            have two buttons on the right); narrower screens use the ☰ menu. */}
-        <nav className={`hidden ${isAdmin ? 'min-[1536px]:flex' : 'min-[1440px]:flex'} items-center flex-1 justify-center px-4`}>
-          <ul className="flex list-none items-center gap-4 lg:gap-5 xl:gap-7 2xl:gap-8">
+        {/* Full menu from 1280 px. Between 1280 and 1535 px it is a little
+            more compact (no icons, tighter spacing) so every tab fits;
+            narrower screens use the ☰ menu. */}
+        <nav className="hidden xl:flex items-center flex-1 justify-center px-2 2xl:px-4">
+          <ul className="flex list-none items-center gap-4 min-[1440px]:gap-5 2xl:gap-8">
             {visibleNavItems.map((item) => {
               const IconComponent = item.icon;
               const active = isActive(item.path);
@@ -86,13 +87,13 @@ export default function Navbar() {
                 <li key={item.name}>
                   <Link
                     to={item.path}
-                    className={`inline-flex items-center gap-[0.45rem] xl:gap-2 font-medium text-[0.88rem] xl:text-[0.94rem] 2xl:text-[0.96rem] whitespace-nowrap relative py-2 px-1 transition-all duration-300 group ${
+                    className={`inline-flex items-center gap-2 font-medium text-[0.9rem] 2xl:text-[0.96rem] whitespace-nowrap relative py-2 px-1 transition-all duration-300 group ${
                       active ? 'opacity-100 text-accent font-semibold' : 'text-white/85 hover:opacity-100 hover:text-accent'
                     }`}
                   >
                     <IconComponent
                       size={15}
-                      className={`opacity-75 transition-transform duration-200 group-hover:-translate-y-[1px] group-hover:opacity-100 ${
+                      className={`hidden 2xl:block opacity-75 transition-transform duration-200 group-hover:-translate-y-[1px] group-hover:opacity-100 ${
                         active ? 'opacity-100 -translate-y-[1px]' : ''
                       }`}
                     />
@@ -108,10 +109,10 @@ export default function Navbar() {
         </nav>
 
         {/* CTA + Mobile Toggle */}
-        <div className={`flex items-center gap-3.5 xl:gap-4 shrink-0 ${
+        <div className={`flex items-center gap-3 2xl:gap-4 shrink-0 ${
           isAdmin && location.pathname === '/admin'
             ? ''
-            : 'ml-4 xl:ml-6 pl-4 xl:pl-6 border-l border-white/20'
+            : 'ml-3 2xl:ml-6 pl-3 2xl:pl-6 border-l border-white/20'
         }`}>
           {!isAdmin && (
             <a
@@ -130,7 +131,7 @@ export default function Navbar() {
               {location.pathname !== '/admin' && (
                 <Link
                   to="/admin"
-                  className="font-semibold text-[0.86rem] px-4 py-[0.55rem] rounded-[4px] hidden sm:inline-flex items-center gap-1.5 transition-all duration-300 bg-white/15 text-white hover:bg-white/25"
+                  className="font-semibold text-[0.86rem] px-3 2xl:px-4 py-[0.55rem] rounded-[4px] hidden sm:inline-flex whitespace-nowrap items-center gap-1.5 transition-all duration-300 bg-white/15 text-white hover:bg-white/25"
                 >
                   <Shield size={15} />
                   <span>Admin Portal</span>
@@ -138,7 +139,7 @@ export default function Navbar() {
               )}
               <button
                 onClick={handleLogoutClick}
-                className="bg-primary-light text-white font-semibold text-[0.85rem] px-4 py-[0.55rem] rounded-[4px] hidden sm:inline-flex items-center gap-1 shadow-[0_4px_10px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-white/10! hover:border-white! transition-all duration-300 cursor-pointer"
+                className="bg-primary-light text-white font-semibold text-[0.85rem] px-3 2xl:px-4 py-[0.55rem] rounded-[4px] hidden sm:inline-flex whitespace-nowrap items-center gap-1 shadow-[0_4px_10px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-white/10! hover:border-white! transition-all duration-300 cursor-pointer"
               >
                 <LogOut size={15} />
                 <span>Logout</span>
@@ -167,7 +168,7 @@ export default function Navbar() {
           )}
 
           <button
-            className={`flex ${isAdmin ? 'min-[1536px]:hidden' : 'min-[1440px]:hidden'} items-center justify-center p-2 text-white opacity-85 hover:opacity-100 transition-opacity duration-200`}
+            className={`flex xl:hidden items-center justify-center p-2 text-white opacity-85 hover:opacity-100 transition-opacity duration-200`}
             onClick={toggleMenu}
             aria-label="Toggle Navigation"
           >
