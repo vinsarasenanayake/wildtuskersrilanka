@@ -14,156 +14,10 @@ import { parseSightingDetails } from '../../models/TuskerModel';
 import { getLocationCoordinates, resolveLocationCoordinatesAsync } from '../../utils/sriLankaLocations';
 import { createMap } from '../../utils/mapEngine';
 import { escapeHtml } from '../../utils/escapeHtml';
+import polygonClipping from '../../utils/vendor/polygonClipping';
+import SRI_LANKA_LAND from '../../data/sriLankaLand.json';
 
 const SRI_LANKA_CENTER = [7.8731, 80.7718];
-
-/**
- * High-precision Sri Lanka coastline boundary coordinates (clockwise loop).
- * Used to clamp all tusker roaming areas to the land's edge so no habitat polygon
- * ever protrudes into the Indian Ocean or open sea.
- */
-const SRI_LANKA_COASTLINE = [
-  [5.924, 80.588], // Dondra Head
-  [5.940, 80.620], // Gandara
-  [5.960, 80.690], // Dikwella
-  [6.024, 80.795], // Tangalle
-  [6.050, 80.850], // Rekawa
-  [6.090, 80.940], // Kalametiya
-  [6.125, 81.121], // Hambantota
-  [6.180, 81.250], // Bundala
-  [6.216, 81.336], // Kirinda
-  [6.262, 81.418], // Palatupana (Yala Block 1 beach)
-  [6.335, 81.495], // Patanangala (Yala coast)
-  [6.388, 81.545], // Menik Ganga mouth
-  [6.425, 81.570], // Buthawa
-  [6.495, 81.685], // Kumbukkan Oya mouth (Yala / Kumana border)
-  [6.525, 81.715], // Kumana Villu beach
-  [6.628, 81.785], // Okanda beach
-  [6.755, 81.818], // Panama beach
-  [6.845, 81.838], // Arugam Bay
-  [6.875, 81.842], // Pottuvil
-  [7.000, 81.870], // Komari
-  [7.115, 81.850], // Thirukkovil
-  [7.218, 81.850], // Akkaraipattu
-  [7.350, 81.845], // Karaitivu
-  [7.410, 81.830], // Kalmunai
-  [7.530, 81.790], // Kaluvanchikudy
-  [7.680, 81.730], // Kattankudy
-  [7.715, 81.710], // Batticaloa
-  [7.770, 81.610], // Eravur
-  [7.890, 81.575], // Valachchenai
-  [7.925, 81.565], // Pasikuda
-  [8.010, 81.500], // Mankerni
-  [8.130, 81.435], // Vakarai
-  [8.255, 81.370], // Verugal
-  [8.400, 81.350], // Ilankanthai
-  [8.525, 81.315], // Foul Point
-  [8.570, 81.245], // Trincomalee
-  [8.600, 81.230], // Uppuveli
-  [8.685, 81.195], // Nilaveli
-  [8.815, 81.095], // Kuchchaveli
-  [8.945, 80.995], // Pulmoddai
-  [9.000, 80.930], // Kokkilai
-  [9.110, 80.875], // Nayaru
-  [9.180, 80.850], // Alampil
-  [9.270, 80.815], // Mullaitivu
-  [9.420, 80.680], // Chalai
-  [9.500, 80.590], // Chundikkulam
-  [9.650, 80.450], // Vadamarachchi
-  [9.835, 80.240], // Point Pedro
-  [9.825, 80.170], // Valvettithurai
-  [9.815, 80.035], // Kankesanthurai
-  [9.805, 79.980], // Keerimalai
-  [9.740, 79.870], // Karainagar
-  [9.680, 79.910], // Kayts
-  [9.500, 80.200], // Pooneryn
-  [9.240, 80.040], // Devil's Point
-  [9.120, 80.030], // Illuppaikadavai
-  [8.990, 80.000], // Vidataltivu
-  [8.980, 79.910], // Mannar causeway
-  [8.810, 79.900], // Arippu
-  [8.780, 79.900], // Silavathurai
-  [8.580, 79.920], // Marichchukkaddi
-  [8.530, 79.870], // Kudiramalai Point (Wilpattu)
-  [8.320, 79.790], // Dutch Bay
-  [8.240, 79.760], // Kalpitiya
-  [8.160, 79.710], // Kandakuliya
-  [7.980, 79.820], // Palavi
-  [7.800, 79.810], // Mundel
-  [7.575, 79.790], // Chilaw
-  [7.410, 79.820], // Marawila
-  [7.210, 79.840], // Negombo
-  [6.927, 79.840], // Colombo
-  [6.835, 79.860], // Mount Lavinia
-  [6.715, 79.900], // Panadura
-  [6.585, 79.960], // Kalutara
-  [6.475, 79.980], // Beruwala
-  [6.425, 79.995], // Bentota
-  [6.275, 80.035], // Balapitiya
-  [6.235, 80.050], // Ambalangoda
-  [6.140, 80.100], // Hikkaduwa
-  [6.027, 80.217], // Galle Fort
-  [5.970, 80.425], // Weligama
-  [5.945, 80.455], // Mirissa
-  [5.945, 80.550], // Matara
-  [5.924, 80.588], // Dondra Head
-];
-
-/**
- * Ray-casting point-in-polygon test against the Sri Lanka mainland landmass.
- * Returns true if point is on land, false if in the ocean / sea.
- */
-function isPointOnLand(pt, polygon = SRI_LANKA_COASTLINE) {
-  let inside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const xi = polygon[i][1];
-    const yi = polygon[i][0];
-    const xj = polygon[j][1];
-    const yj = polygon[j][0];
-    const intersect = ((yi > pt.lat) !== (yj > pt.lat))
-        && (pt.lng < (xj - xi) * (pt.lat - yi) / (yj - yi) + xi);
-    if (intersect) inside = !inside;
-  }
-  return inside;
-}
-
-/**
- * Finds intersection point between line segments p1-p2 and p3-p4.
- */
-function segmentIntersection(p1, p2, p3, p4) {
-  const d = (p4.lat - p3.lat) * (p2.lng - p1.lng) - (p4.lng - p3.lng) * (p2.lat - p1.lat);
-  if (Math.abs(d) < 1e-9) return null;
-  const ua = ((p4.lng - p3.lng) * (p1.lat - p3.lat) - (p4.lat - p3.lat) * (p1.lng - p3.lng)) / d;
-  const ub = ((p2.lng - p1.lng) * (p1.lat - p3.lat) - (p2.lat - p1.lat) * (p1.lng - p3.lng)) / d;
-  if (ua >= 0 && ua <= 1 && ub >= 0 && ub <= 1) {
-    return {
-      lat: p1.lat + ua * (p2.lat - p1.lat),
-      lng: p1.lng + ua * (p2.lng - p1.lng),
-    };
-  }
-  return null;
-}
-
-/**
- * Clamps a candidate coordinate to the Sri Lanka coastline if it points out to sea.
- * If the point is on land, it is returned untouched. If in the sea, it is restricted
- * to the exact beach/land edge with a tiny 0.5% buffer inland towards the anchor.
- */
-function clampToCoast(anchor, pt) {
-  if (isPointOnLand(pt, SRI_LANKA_COASTLINE)) return pt;
-  for (let i = 0, j = SRI_LANKA_COASTLINE.length - 1; i < SRI_LANKA_COASTLINE.length; j = i++) {
-    const c1 = { lat: SRI_LANKA_COASTLINE[j][0], lng: SRI_LANKA_COASTLINE[j][1] };
-    const c2 = { lat: SRI_LANKA_COASTLINE[i][0], lng: SRI_LANKA_COASTLINE[i][1] };
-    const hit = segmentIntersection(anchor, pt, c1, c2);
-    if (hit) {
-      return {
-        lat: hit.lat + (anchor.lat - hit.lat) * 0.005,
-        lng: hit.lng + (anchor.lng - hit.lng) * 0.005,
-      };
-    }
-  }
-  return anchor;
-}
 
 /**
  * 2D Cross product of OA and OB vectors (O = origin).
@@ -202,54 +56,95 @@ function computeConvexHull(points) {
 
 /**
  * Generates a unified home range shape strictly restricted to land.
- * Samples radial buffer points around each anchor location and clamps any
- * ocean-bound points to the Sri Lanka coastline so the polygon edge hugs the beach
- * and never extends into the sea.
- * Buffer radius defaults to 10 km (~0.090° latitude).
+ * 1. Draws a 10 km circle around every anchor location.
+ * 2. Wraps them in one smooth outline (convex hull).
+ * 3. Cuts that outline to Sri Lanka's real coastline, so the sea and coastal
+ *    lagoons (e.g. Puttalam Lagoon) are removed. Inland tanks, wewas, rivers
+ *    and reservoirs are part of the land outline, so they stay inside.
+ * The result can be several pieces (e.g. mainland + Kalpitiya peninsula).
  */
 function createBufferedShape(anchorCoords, bufferKm = 10) {
   if (!anchorCoords || anchorCoords.length === 0) return null;
 
   const radialPoints = [];
-  const numSamples = 24;
+  const numSamples = 48;
   const LAT_DEG_PER_KM = 1 / 111.0;
 
   anchorCoords.forEach((pt) => {
-    // If the anchor is slightly offshore due to generalized coordinate input, clamp anchor to land
-    const baseAnchor = isPointOnLand(pt, SRI_LANKA_COASTLINE)
-      ? pt
-      : clampToCoast({ lat: SRI_LANKA_CENTER[0], lng: SRI_LANKA_CENTER[1] }, pt);
-
-    const LNG_DEG_PER_KM = 1 / (111.0 * Math.cos((baseAnchor.lat * Math.PI) / 180));
-
+    const LNG_DEG_PER_KM = 1 / (111.0 * Math.cos((pt.lat * Math.PI) / 180));
     for (let i = 0; i < numSamples; i++) {
       const theta = (i * 2 * Math.PI) / numSamples;
-      const raw = {
-        lat: baseAnchor.lat + Math.sin(theta) * bufferKm * LAT_DEG_PER_KM,
-        lng: baseAnchor.lng + Math.cos(theta) * bufferKm * LNG_DEG_PER_KM,
-      };
-      // Strictly clamp any point heading into the sea to the coastline
-      radialPoints.push(clampToCoast(baseAnchor, raw));
+      radialPoints.push({
+        lat: pt.lat + Math.sin(theta) * bufferKm * LAT_DEG_PER_KM,
+        lng: pt.lng + Math.cos(theta) * bufferKm * LNG_DEG_PER_KM,
+      });
     }
   });
 
   const hull = computeConvexHull(radialPoints);
-  const ring = hull.map((p) => [Number(p.lng.toFixed(5)), Number(p.lat.toFixed(5))]);
-  if (ring.length > 0) ring.push([ring[0][0], ring[0][1]]); // Close polygon loop
+  const ring = hull.map((p) => [p.lng, p.lat]);
+  if (ring.length < 3) return null;
+  ring.push([ring[0][0], ring[0][1]]); // Close polygon loop
 
+  let pieces = [];
+  try {
+    pieces = polygonClipping.intersection([ring], SRI_LANKA_LAND.coordinates);
+  } catch (err) {
+    console.warn('[TuskerSightingsMap] could not cut home range to the coastline', err);
+  }
+
+  const round = (poly) => poly.map((r) => r.map(([lng, lat]) => [Number(lng.toFixed(5)), Number(lat.toFixed(5))]));
+  if (!pieces.length) {
+    // Nothing on land (e.g. bad coordinates): fall back to the plain outline
+    return { kind: 'polygon', geojson: { type: 'Polygon', coordinates: round([ring]) } };
+  }
   return {
     kind: 'polygon',
-    geojson: {
-      type: 'Polygon',
-      coordinates: [ring],
-    },
+    geojson: pieces.length === 1
+      ? { type: 'Polygon', coordinates: round(pieces[0]) }
+      : { type: 'MultiPolygon', coordinates: pieces.map(round) },
   };
+}
+
+/** Every outer-edge point of a Polygon or MultiPolygon, as [lng, lat]. */
+function shapeOutlinePoints(geojson) {
+  if (!geojson?.coordinates) return [];
+  const polys = geojson.type === 'MultiPolygon' ? geojson.coordinates : [geojson.coordinates];
+  return polys.flatMap((poly) => poly[0] || []);
 }
 
 // Helper to clean location tokens without stripping block numbers
 function cleanToken(s) {
   return String(s || '').replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim();
 }
+
+/** Splits a LOCATION field into its places. "Yala Block 3,5" becomes
+ *  "Yala Block 3" and "Yala Block 5" so both blocks are on the map. */
+function splitLocationParts(raw) {
+  return String(raw || '')
+    .split(/\s*[/]\s*/)
+    .map(cleanToken)
+    .filter(Boolean)
+    .flatMap((part) => {
+      const m = part.match(/^(.*?\bblock)\s*(\d+(?:\s*,\s*\d+)+)$/i);
+      return m ? m[2].split(/\s*,\s*/).map((n) => `${m[1]} ${n}`) : [part];
+    });
+}
+
+/** Distance in km between two {lat, lng} points. */
+function distanceKm(a, b) {
+  const R = 6371;
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos((a.lat * Math.PI) / 180) * Math.cos((b.lat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+// A last-seen place or field sighting this close to the registered roaming
+// area is treated as part of the home range, so its pin sits inside the
+// shaded area. Anything further away (e.g. a translocation) keeps its pin
+// but does not stretch the home range across the country.
+const NEARBY_RANGE_KM = 50;
 
 /**
  * Returns visual theme for the home range polygon & badges according to tusker living status:
@@ -338,7 +233,7 @@ export default function TuskerSightingsMap({
 
     // 1. Resolve LOCATION field corridor areas
     if (tusker?.location) {
-      const parts = String(tusker.location).split(/\s*[/]\s*/).map(cleanToken).filter(Boolean);
+      const parts = splitLocationParts(tusker.location);
       parts.forEach((part, idx) => {
         const key = `loc-${idx}-${part.toLowerCase()}`;
         const syncCoords = getLocationCoordinates(part);
@@ -388,7 +283,7 @@ export default function TuskerSightingsMap({
     const rawLoc = String(tusker.location || '').trim();
     const anchors = [];
     if (rawLoc) {
-      const parts = rawLoc.split(/\s*[/]\s*/).map(cleanToken).filter(Boolean);
+      const parts = splitLocationParts(rawLoc);
       parts.forEach((part, idx) => {
         const key = `loc-${idx}-${part.toLowerCase()}`;
         const coords = getLocationCoordinates(part) || resolvedCoordsMap[key] || null;
@@ -429,8 +324,6 @@ export default function TuskerSightingsMap({
       });
     });
 
-    // ── 3. Build Unified Home Range Shape over LOCATION anchors ──
-    const shape = createBufferedShape(anchors, 10);
 
     // ── 4. Determine Last Seen Pin in this range (exact name + coordinates) ──
     const rawParts = rawLoc ? rawLoc.split(/\s*[/]\s*/).map(cleanToken).filter(Boolean) : [];
@@ -453,6 +346,18 @@ export default function TuskerSightingsMap({
         lastSeenCoords = anchors[0];
       }
     }
+
+    // ── 3. Build Unified Home Range Shape over LOCATION anchors, plus the
+    //       last-seen place and field sightings when they are nearby ──
+    const rangeAnchors = [...anchors];
+    const addIfNearby = (raw) => {
+      const pt = raw ? { lat: Number(raw.lat), lng: Number(raw.lng) } : null;
+      if (!pt || !Number.isFinite(pt.lat) || !Number.isFinite(pt.lng)) return;
+      if (!anchors.length || anchors.some((a) => distanceKm(a, pt) <= NEARBY_RANGE_KM)) rangeAnchors.push(pt);
+    };
+    addIfNearby(lastSeenCoords);
+    sightings.forEach((sp) => addIfNearby(sp.coords));
+    const shape = createBufferedShape(rangeAnchors, 10);
 
     const lastSeen = (lastSeenAreaName && lastSeenCoords)
       ? {
@@ -497,8 +402,8 @@ export default function TuskerSightingsMap({
 
     const allPts = [];
     // Ensure the entire polygon perimeter is included so the full home range is always visible
-    if (homeRangeShape?.geojson?.coordinates?.[0]?.length) {
-      homeRangeShape.geojson.coordinates[0].forEach(([lng, lat]) => {
+    if (shapeOutlinePoints(homeRangeShape?.geojson).length) {
+      shapeOutlinePoints(homeRangeShape.geojson).forEach(([lng, lat]) => {
         allPts.push([lat, lng]);
       });
     } else {
@@ -571,9 +476,9 @@ export default function TuskerSightingsMap({
     map.clearAreas();
 
     const allPts = [];
-    if (!selectedPoint && homeRangeShape?.geojson?.coordinates?.[0]?.length) {
+    if (!selectedPoint && shapeOutlinePoints(homeRangeShape?.geojson).length) {
       // Include the entire home range polygon perimeter so the full habitat area is visible
-      homeRangeShape.geojson.coordinates[0].forEach(([lng, lat]) => {
+      shapeOutlinePoints(homeRangeShape.geojson).forEach(([lng, lat]) => {
         allPts.push([lat, lng]);
       });
     } else {

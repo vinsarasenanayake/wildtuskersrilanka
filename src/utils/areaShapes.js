@@ -6,10 +6,39 @@
    Results are cached in the browser for 30 days, and lookups are spaced
    1.1 s apart to respect Nominatim's free-use policy. */
 import { getLocationCoordinates } from './sriLankaLocations';
+import polygonClipping from './vendor/polygonClipping';
+import SRI_LANKA_LAND from '../data/sriLankaLand.json';
 
-const CACHE_PREFIX = 'wts_area_v3_';
+const CACHE_PREFIX = 'wts_area_v4_';
 const CACHE_DAYS = 30;
 const CIRCLE_RADIUS_M = 4000;
+
+/** A ~4 km circle around a place, cut to Sri Lanka's coastline so it never
+ *  covers the sea or coastal lagoons (inland tanks and rivers stay inside). */
+function landCircle(key, name, center, extra = {}) {
+  const ring = [];
+  const lat = Number(center.lat), lng = Number(center.lng);
+  const dLat = CIRCLE_RADIUS_M / 111000;
+  const dLng = dLat / Math.cos((lat * Math.PI) / 180);
+  for (let i = 0; i < 48; i++) {
+    const t = (i * 2 * Math.PI) / 48;
+    ring.push([lng + Math.cos(t) * dLng, lat + Math.sin(t) * dLat]);
+  }
+  ring.push(ring[0]);
+  let pieces = [];
+  try { pieces = polygonClipping.intersection([ring], SRI_LANKA_LAND.coordinates); } catch { /* keep the plain circle */ }
+  if (!pieces.length) {
+    return { kind: 'circle', id: `circle:${key}`, name, center, radius: CIRCLE_RADIUS_M, label: center, ...extra };
+  }
+  return {
+    kind: 'polygon',
+    id: `circle:${key}`,
+    name,
+    geojson: pieces.length === 1 ? { type: 'Polygon', coordinates: pieces[0] } : { type: 'MultiPolygon', coordinates: pieces },
+    label: center,
+    ...extra,
+  };
+}
 
 export function cleanAreaName(raw) {
   return String(raw || '')
@@ -122,9 +151,7 @@ export async function resolveAreaShape(rawName) {
   }
 
   const center = knownCenter || point;
-  const shape = center
-    ? { kind: 'circle', id: `circle:${key}`, name: base, center, radius: CIRCLE_RADIUS_M, label: center }
-    : null;
+  const shape = center ? landCircle(key, base, center) : null;
   writeCache(key, shape);
   return shape;
 }
@@ -137,9 +164,7 @@ export function instantAreaShape(rawName) {
   const cached = readCache(key);
   if (cached) return cached;
   const center = getLocationCoordinates(base) || (key === 'kekirawa' ? getLocationCoordinates('Kekirawa') : null);
-  return center
-    ? { kind: 'circle', id: `circle:${key}`, name: base, center, radius: CIRCLE_RADIUS_M, label: center, provisional: true }
-    : null;
+  return center ? landCircle(key, base, center, { provisional: true }) : null;
 }
 
 /** [[lat, lng], …] covering a shape, for fitting the map view. */
