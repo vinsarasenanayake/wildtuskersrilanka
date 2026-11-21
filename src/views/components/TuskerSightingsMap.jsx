@@ -533,7 +533,7 @@ export default function TuskerSightingsMap({
     let created = null;
     if (!mapContainerRef.current) return undefined;
 
-    createMap(mapContainerRef.current, { center: SRI_LANKA_CENTER, zoom: 8, gestureHandling: 'cooperative' })
+    createMap(mapContainerRef.current, { center: SRI_LANKA_CENTER, zoom: 8, gestureHandling: 'greedy' })
       .then((map) => {
         if (!active) { map.destroy(); return; }
         created = map;

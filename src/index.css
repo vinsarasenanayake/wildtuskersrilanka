@@ -79,6 +79,13 @@
   font-family: inherit !important;
   z-index: 1 !important;
   background-color: #0e1210 !important;
+  transform: translate3d(0, 0, 0);
+}
+.leaflet-tile {
+  will-change: transform, opacity;
+}
+.leaflet-zoom-animated {
+  will-change: transform;
 }
 
 /* Leaflet: hide attribution text */

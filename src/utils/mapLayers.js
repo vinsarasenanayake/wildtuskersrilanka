@@ -24,7 +24,14 @@ const ESRI_CREDIT = 'Imagery &copy; Esri, Maxar, Earthstar Geographics, and the 
  */
 export function addBaseLayers(L, map, { position = 'topright', showControl = false } = {}) {
   // Satellite imagery; if a Clarity tile is missing, use the standard imagery tile
-  const imagery = L.tileLayer(ESRI_CLARITY, { maxZoom: 19, maxNativeZoom: 18, attribution: ESRI_CREDIT });
+  const imagery = L.tileLayer(ESRI_CLARITY, {
+    maxZoom: 19,
+    maxNativeZoom: 18,
+    attribution: ESRI_CREDIT,
+    keepBuffer: 8,
+    updateWhenZooming: false,
+    updateWhenIdle: false,
+  });
   imagery.on('tileerror', (e) => {
     const { x, y, z } = e.coords;
     if (e.tile && !e.tile.dataset.fallback) {
@@ -32,7 +39,14 @@ export function addBaseLayers(L, map, { position = 'topright', showControl = fal
       e.tile.src = ESRI_IMAGERY.replace('{z}', z).replace('{y}', y).replace('{x}', x);
     }
   });
-  const labels = L.tileLayer(ESRI_LABELS, { maxZoom: 19, maxNativeZoom: 18, pane: 'overlayPane' });
+  const labels = L.tileLayer(ESRI_LABELS, {
+    maxZoom: 19,
+    maxNativeZoom: 18,
+    pane: 'overlayPane',
+    keepBuffer: 8,
+    updateWhenZooming: false,
+    updateWhenIdle: false,
+  });
   const satellite = L.layerGroup([imagery, labels]);
 
   const osmCredit =

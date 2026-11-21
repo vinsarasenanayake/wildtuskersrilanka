@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import {
@@ -255,7 +255,7 @@ function normalizeTuskerName(str) {
                 <img
                   src={item.imageUrl}
                   alt={item.title}
-                  className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                  className="w-full h-full object-cover transition-transform duration-250 ease-out group-hover:scale-105"
                   loading="lazy"
                   decoding="async"
                 />
@@ -443,7 +443,7 @@ function CoverflowCarousel({ items, onSelectPhoto, getTuskerDisplayName }) {
               <img
                 src={item.imageUrl}
                 alt={item.title}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                 draggable={false}
               />
 
@@ -481,6 +481,66 @@ function TuskerPhotoLightbox({
   onDelete,
   onEdit,
 }) {
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const hasDraggedRef = useRef(false);
+  const rafRef = useRef(null);
+
+  const resetZoom = useCallback(() => {
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+    setIsDragging(false);
+  }, []);
+
+  const toggleZoom = useCallback((e) => {
+    e?.stopPropagation();
+    if (scale > 1) {
+      resetZoom();
+    } else {
+      setScale(2.5);
+    }
+  }, [scale, resetZoom]);
+
+  const handleWheel = (e) => {
+    e.preventDefault();
+    const delta = e.deltaY * -0.0045;
+    setScale((prev) => {
+      const nextScale = Math.min(Math.max(prev + delta, 1), 5);
+      if (nextScale === 1) setPosition({ x: 0, y: 0 });
+      return nextScale;
+    });
+  };
+
+  const handleMouseDown = (e) => {
+    if (scale <= 1) return;
+    if (e.button !== 0) return;
+    setIsDragging(true);
+    hasDraggedRef.current = false;
+    dragStartRef.current = {
+      x: e.clientX - position.x,
+      y: e.clientY - position.y,
+    };
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging || scale <= 1) return;
+    const newX = e.clientX - dragStartRef.current.x;
+    const newY = e.clientY - dragStartRef.current.y;
+    if (Math.abs(newX - position.x) > 2 || Math.abs(newY - position.y) > 2) {
+      hasDraggedRef.current = true;
+    }
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      setPosition({ x: newX, y: newY });
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
   // Prevent background scrolling while modal is open
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;
@@ -496,14 +556,20 @@ function TuskerPhotoLightbox({
     };
   }, []);
 
-  // Keyboard escape listener to close modal
+  // Keyboard escape listener to close modal or reset zoom
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        if (scale > 1) {
+          resetZoom();
+        } else {
+          onClose();
+        }
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, [onClose, scale, resetZoom]);
 
   // Match all tuskers if multiple are featured in this photograph
   const allMatchedTuskers = useMemo(() => {
@@ -554,13 +620,43 @@ function TuskerPhotoLightbox({
 
       {/* ── Center Area: Full View Photo (Both landscape & portrait visible fully in center) ── */}
       <div
-        className="flex-1 w-full flex items-center justify-center min-h-0 my-auto py-2 relative"
-        onClick={(e) => e.stopPropagation()}
+        className="flex-1 w-full flex items-center justify-center min-h-0 my-auto py-2 relative overflow-hidden select-none"
+        style={{
+          cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
+        }}
+        onWheel={handleWheel}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            if (scale === 1) onClose();
+            else resetZoom();
+            return;
+          }
+          e.stopPropagation();
+          if (hasDraggedRef.current) {
+            hasDraggedRef.current = false;
+            return;
+          }
+          if (scale === 1) setScale(2.5);
+        }}
+        onDoubleClick={(e) => {
+          e.stopPropagation();
+          toggleZoom(e);
+        }}
       >
         <img
           src={photo.imageUrl}
           alt={tuskerDisplayName}
-          className="max-w-full max-h-[75vh] sm:max-h-[80vh] w-auto h-auto object-contain rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] select-none border border-white/10"
+          draggable={false}
+          className="max-w-full max-h-[75vh] sm:max-h-[80vh] w-auto h-auto object-contain rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] select-none border border-white/10 will-change-transform"
+          style={{
+            transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
+            transformOrigin: 'center center',
+            transition: isDragging ? 'none' : 'transform 0.15s cubic-bezier(0.2, 0, 0, 1)',
+          }}
         />
       </div>
 
