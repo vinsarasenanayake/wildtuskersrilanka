@@ -42,12 +42,16 @@
   {
     "id": "T009",
     "name": "Nalaka",
-    "location": "Yala"
+    "location": "Yala",
+    "riskScore": "42",
+    "threatLevel": "Medium"
   },
   {
     "id": "T010",
     "name": "Nandimithra",
-    "location": "Yala"
+    "location": "Yala",
+    "riskScore": "58",
+    "threatLevel": "Medium"
   },
   {
     "id": "T011",
@@ -57,7 +61,9 @@
   {
     "id": "T012",
     "name": "Gemunu",
-    "location": "Yala"
+    "location": "Yala",
+    "riskScore": "47.7",
+    "threatLevel": "Medium"
   },
   {
     "id": "T013",
@@ -67,7 +73,9 @@
   {
     "id": "T014",
     "name": "Rawana",
-    "location": "Yala"
+    "location": "Yala",
+    "riskScore": "42.9",
+    "threatLevel": "Medium"
   },
   {
     "id": "T015",
@@ -112,7 +120,9 @@
   {
     "id": "T023",
     "name": "Chethiya",
-    "location": "Yala / Yala Block 3,5"
+    "location": "Yala / Yala Block 3,5",
+    "riskScore": "57.9",
+    "threatLevel": "Medium"
   },
   {
     "id": "T024",
@@ -127,22 +137,30 @@
   {
     "id": "T026",
     "name": "Kalinga",
-    "location": "Kumana"
+    "location": "Kumana",
+    "riskScore": "45.2",
+    "threatLevel": "Medium"
   },
   {
     "id": "T027",
     "name": "Magha",
-    "location": "Kumana"
+    "location": "Kumana",
+    "riskScore": "45.2",
+    "threatLevel": "Medium"
   },
   {
     "id": "T028",
     "name": "Elara",
-    "location": "Kumana"
+    "location": "Kumana",
+    "riskScore": "45.2",
+    "threatLevel": "Medium"
   },
   {
     "id": "T029",
     "name": "Mahanama",
-    "location": "Kumana / Panama / Ampara"
+    "location": "Kumana / Panama / Ampara",
+    "riskScore": "66.4",
+    "threatLevel": "High"
   },
   {
     "id": "T030",
@@ -172,12 +190,16 @@
   {
     "id": "T035",
     "name": "Kashyapa",
-    "location": "Bundala / Weerawila"
+    "location": "Bundala / Weerawila",
+    "riskScore": "77.7",
+    "threatLevel": "High"
   },
   {
     "id": "T036",
     "name": "Vijayaba",
-    "location": "Habarana / Minneriya"
+    "location": "Habarana / Minneriya",
+    "riskScore": "64.8",
+    "threatLevel": "High"
   },
   {
     "id": "T037",
@@ -187,7 +209,9 @@
   {
     "id": "T038",
     "name": "Sumedha",
-    "location": "Minneriya / Kaudulla"
+    "location": "Minneriya / Kaudulla",
+    "riskScore": "61.3",
+    "threatLevel": "High"
   },
   {
     "id": "T039",
@@ -197,17 +221,23 @@
   {
     "id": "T040",
     "name": "Bhanu",
-    "location": "Minneriya / Kaudulla / Kanadarawa"
+    "location": "Minneriya / Kaudulla / Kanadarawa",
+    "riskScore": "61.2",
+    "threatLevel": "High"
   },
   {
     "id": "T041",
     "name": "Wasaba",
-    "location": "Minneriya / Kaudulla / Eco park"
+    "location": "Minneriya / Kaudulla / Eco park",
+    "riskScore": "66.5",
+    "threatLevel": "High"
   },
   {
     "id": "T042",
     "name": "Baddhiya",
-    "location": "Minneriya / Kaudulla / Somawathiya"
+    "location": "Minneriya / Kaudulla / Somawathiya",
+    "riskScore": "62.9",
+    "threatLevel": "High"
   },
   {
     "id": "T043",
@@ -228,13 +258,17 @@
     "id": "T046",
     "name": "Sadeesha / Walimba",
     "location": "Nuwaragala / Maha Oya",
-    "sinhala": "සදීෂ / වාලිම්භ"
+    "sinhala": "සදීෂ / වාලිම්භ",
+    "riskScore": "60.4",
+    "threatLevel": "High"
   },
   {
     "id": "T047",
     "name": "Sapumal",
     "location": "Minneriya / Kaudulla",
-    "sinhala": "සපුමල්"
+    "sinhala": "සපුමල්",
+    "riskScore": "38.1",
+    "threatLevel": "Low"
   },
   {
     "id": "T048",
@@ -304,7 +338,9 @@
   {
     "id": "T061",
     "name": "Suranimala",
-    "location": "Kala Wewa / Mannankattiya"
+    "location": "Kala Wewa / Mannankattiya",
+    "riskScore": "76.9",
+    "threatLevel": "High"
   },
   {
     "id": "T062",
@@ -326,7 +362,9 @@
   {
     "id": "T065",
     "name": "Weera",
-    "location": "Kala Wewa"
+    "location": "Kala Wewa",
+    "riskScore": "61.2",
+    "threatLevel": "High"
   },
   {
     "id": "T066",
@@ -367,7 +405,9 @@
   {
     "id": "T073",
     "name": "Homo",
-    "location": "Kala Wewa / Galgamuwa"
+    "location": "Kala Wewa / Galgamuwa",
+    "riskScore": "60.5",
+    "threatLevel": "High"
   },
   {
     "id": "T074",
@@ -387,7 +427,9 @@
   {
     "id": "T077",
     "name": "Raghu",
-    "location": "Galgamuwa"
+    "location": "Galgamuwa",
+    "riskScore": "75.5",
+    "threatLevel": "High"
   },
   {
     "id": "T078",
@@ -397,7 +439,9 @@
   {
     "id": "T079",
     "name": "Ratta",
-    "location": "Galgamuwa"
+    "location": "Galgamuwa",
+    "riskScore": "69.6",
+    "threatLevel": "High"
   },
   {
     "id": "T080",
@@ -427,7 +471,9 @@
   {
     "id": "T085",
     "name": "Narada",
-    "location": "Galgamuwa"
+    "location": "Galgamuwa",
+    "riskScore": "60.5",
+    "threatLevel": "High"
   },
   {
     "id": "T086",
@@ -482,7 +528,9 @@
   {
     "id": "T096",
     "name": "Agbo",
-    "location": "Thirapane / Mannakkattiya / Kanadarawa"
+    "location": "Thirapane / Mannakkattiya / Kanadarawa",
+    "riskScore": "96.7",
+    "threatLevel": "Critical"
   },
   {
     "id": "T097",
@@ -542,7 +590,9 @@
   {
     "id": "T108",
     "name": "Ananda",
-    "location": "Kala wewa / Thirappane"
+    "location": "Kala wewa / Thirappane",
+    "riskScore": "60.5",
+    "threatLevel": "High"
   },
   {
     "id": "T109",
@@ -572,7 +622,9 @@
   {
     "id": "T114",
     "name": "Sumedha",
-    "location": "Udawalawa"
+    "location": "Udawalawa",
+    "riskScore": "71.8",
+    "threatLevel": "High"
   },
   {
     "id": "T115",
@@ -582,7 +634,9 @@
   {
     "id": "T116",
     "name": "Bullet / Senadhi",
-    "location": "Udawalawa"
+    "location": "Udawalawa",
+    "riskScore": "60.6",
+    "threatLevel": "High"
   },
   {
     "id": "T117",
@@ -597,7 +651,9 @@
   {
     "id": "T119",
     "name": "Wijaya",
-    "location": "Wilpattu / Eluwankulam / Pomparippu"
+    "location": "Wilpattu / Eluwankulam / Pomparippu",
+    "riskScore": "54.9",
+    "threatLevel": "Medium"
   },
   {
     "id": "T120",
@@ -607,7 +663,9 @@
   {
     "id": "T121",
     "name": "Aritta",
-    "location": "Wilpattu / Maha Wilachchiya"
+    "location": "Wilpattu / Maha Wilachchiya",
+    "riskScore": "64.8",
+    "threatLevel": "High"
   },
   {
     "id": "T122",
@@ -627,12 +685,16 @@
   {
     "id": "T125",
     "name": "kukulkatuwa Single tusker",
-    "location": "Wilpattu / Maha Wilachchiya"
+    "location": "Wilpattu / Maha Wilachchiya",
+    "riskScore": "62.1",
+    "threatLevel": "High"
   },
   {
     "id": "T126",
     "name": "Manabarana",
-    "location": "Galgamuwa"
+    "location": "Galgamuwa",
+    "riskScore": "71",
+    "threatLevel": "High"
   },
   {
     "id": "T127",
@@ -662,7 +724,9 @@
   {
     "id": "T132",
     "name": "Soorya",
-    "location": "Wilpattu / Mahawilachchiya / Silavathurai / Mullikulam"
+    "location": "Wilpattu / Mahawilachchiya / Silavathurai / Mullikulam",
+    "riskScore": "75.8",
+    "threatLevel": "High"
   },
   {
     "id": "T133",
@@ -682,7 +746,9 @@
   {
     "id": "T136",
     "name": "Wimale",
-    "location": "Wilpattu / Mahawilachchiya / Silavathurai / Mullikulam"
+    "location": "Wilpattu / Mahawilachchiya / Silavathurai / Mullikulam",
+    "riskScore": "59.6",
+    "threatLevel": "Medium"
   },
   {
     "id": "T137",
@@ -723,7 +789,9 @@
   {
     "id": "T144",
     "name": "Welusumana",
-    "location": "Nawagathegama / Karuwalgaswewa / Puttalam / Tabbowa"
+    "location": "Nawagathegama / Karuwalgaswewa / Puttalam / Tabbowa",
+    "riskScore": "64.5",
+    "threatLevel": "High"
   },
   {
     "id": "T145",
@@ -735,13 +803,17 @@
     "id": "T146",
     "name": "Hemal",
     "location": "Wasgamuwa / Anganmadiila",
-    "sinhala": "හේමාල්"
+    "sinhala": "හේමාල්",
+    "riskScore": "65.1",
+    "threatLevel": "High"
   },
   {
     "id": "T147",
     "name": "Aloka",
     "location": "Wasgamuwa / Anganmadiila",
-    "sinhala": "ආලෝක"
+    "sinhala": "ආලෝක",
+    "riskScore": "63.9",
+    "threatLevel": "High"
   },
   {
     "id": "T148",
@@ -771,7 +843,9 @@
     "id": "T152",
     "name": "Maha",
     "location": "Maduru oya / Ampara / Toppigala / Chenkaladi",
-    "sinhala": "මහ"
+    "sinhala": "මහ",
+    "riskScore": "76.1",
+    "threatLevel": "High"
   },
   {
     "id": "T153",
@@ -783,13 +857,17 @@
     "id": "T154",
     "name": "Sumitta",
     "location": "Wilpattu / Eluwankulam / Karuwagaswewa / Tabbowa / Puttalam",
-    "sinhala": "සුමිත්ත"
+    "sinhala": "සුමිත්ත",
+    "riskScore": "57.1",
+    "threatLevel": "Medium"
   },
   {
     "id": "T155",
     "name": "Khali",
     "location": "Wilpattu / Mahawilachchiya / Silavathurai / Mullikulam",
-    "sinhala": "කාලි"
+    "sinhala": "කාලි",
+    "riskScore": "57.1",
+    "threatLevel": "Medium"
   },
   {
     "id": "T156",
@@ -920,7 +998,9 @@
     "id": "T177",
     "name": "Wasala",
     "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala",
-    "sinhala": "වාසල"
+    "sinhala": "වාසල",
+    "riskScore": "95",
+    "threatLevel": "Critical"
   },
   {
     "id": "T178",
@@ -944,7 +1024,9 @@
     "id": "T181",
     "name": "Manula",
     "location": "Bundala / Hambanthota / Mattala",
-    "sinhala": "මනුල"
+    "sinhala": "මනුල",
+    "riskScore": "63.8",
+    "threatLevel": "High"
   },
   {
     "id": "T182",
@@ -962,13 +1044,17 @@
     "id": "T184",
     "name": "Mahasena",
     "location": "Yala / Lunugamvehera",
-    "sinhala": "මහසේන"
+    "sinhala": "මහසේන",
+    "riskScore": "74.9",
+    "threatLevel": "High"
   },
   {
     "id": "T185",
     "name": "Deegabhaya",
     "location": "Wilpattu / Mahawilachchiya / Silavathurai / Mullikulam",
-    "sinhala": "දීඝාභය"
+    "sinhala": "දීඝාභය",
+    "riskScore": "78.5",
+    "threatLevel": "High"
   },
   {
     "id": "T186",
@@ -986,7 +1072,9 @@
     "id": "T188",
     "name": "Kanchadeva",
     "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
-    "sinhala": "කන්චදේව"
+    "sinhala": "කන්චදේව",
+    "riskScore": "69.8",
+    "threatLevel": "High"
   },
   {
     "id": "T189",
@@ -1154,7 +1242,9 @@
     "id": "T216",
     "name": "Nagaragiri",
     "location": "Maduru Oya",
-    "sinhala": "නගරගිරී"
+    "sinhala": "නගරගිරී",
+    "riskScore": "61.5",
+    "threatLevel": "High"
   },
   {
     "id": "T217",
@@ -1190,7 +1280,9 @@
     "id": "T222",
     "name": "Hudanchi",
     "location": "Kumana",
-    "sinhala": "හුඩංචි"
+    "sinhala": "හුඩංචි",
+    "riskScore": "62",
+    "threatLevel": "High"
   },
   {
     "id": "T223",
@@ -1214,7 +1306,9 @@
     "id": "T226",
     "name": "Luhul",
     "location": "Lunugamvehera",
-    "sinhala": "ලුහුල්"
+    "sinhala": "ලුහුල්",
+    "riskScore": "66.3",
+    "threatLevel": "High"
   },
   {
     "id": "T227",
@@ -1250,7 +1344,9 @@
     "id": "T232",
     "name": "Gajabahu",
     "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
-    "sinhala": "ගජබාහු"
+    "sinhala": "ගජබාහු",
+    "riskScore": "78.9",
+    "threatLevel": "High"
   },
   {
     "id": "T233",
@@ -1274,7 +1370,9 @@
     "id": "T236",
     "name": "Therapuththa",
     "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam",
-    "sinhala": "ථෙරපුත්ත"
+    "sinhala": "ථෙරපුත්ත",
+    "riskScore": "61.4",
+    "threatLevel": "High"
   },
   {
     "id": "T237",
@@ -1292,7 +1390,9 @@
     "id": "T239",
     "name": "Madduma",
     "location": "Yala Block 3,5 / Buttala",
-    "sinhala": "මැද්දුම"
+    "sinhala": "මැද්දුම",
+    "riskScore": "62.5",
+    "threatLevel": "High"
   },
   {
     "id": "T240",
@@ -1316,7 +1416,9 @@
     "id": "T243",
     "name": "Megha",
     "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
-    "sinhala": "මේඝ"
+    "sinhala": "මේඝ",
+    "riskScore": "71.7",
+    "threatLevel": "High"
   },
   {
     "id": "T244",
@@ -1352,7 +1454,9 @@
     "id": "T249",
     "name": "Saddha",
     "location": "Yala Block 3,5 / Buttala",
-    "sinhala": "සද්ධා"
+    "sinhala": "සද්ධා",
+    "riskScore": "60.7",
+    "threatLevel": "High"
   },
   {
     "id": "T250",
@@ -1442,7 +1546,9 @@
     "id": "T264",
     "name": "Eka Dantha",
     "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
-    "sinhala": "ඒක දන්ත"
+    "sinhala": "ඒක දන්ත",
+    "riskScore": "63.8",
+    "threatLevel": "High"
   },
   {
     "id": "T265",
@@ -1472,7 +1578,9 @@
     "id": "T269",
     "name": "Sankadathu",
     "location": "Wilpattu / Pomparippu / Silavathura",
-    "sinhala": "සංඛදතු"
+    "sinhala": "සංඛදතු",
+    "riskScore": "55.5",
+    "threatLevel": "Medium"
   },
   {
     "id": "T270",
@@ -1580,7 +1688,9 @@
     "id": "T287",
     "name": "Vanniyan",
     "location": "Vedithalathiv / Madu",
-    "sinhala": "වන්නියාන්"
+    "sinhala": "වන්නියාන්",
+    "riskScore": "75.1",
+    "threatLevel": "High"
   },
   {
     "id": "T288",
@@ -1592,7 +1702,9 @@
     "id": "T289",
     "name": "Prathapa",
     "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
-    "sinhala": "ප්‍රතාප"
+    "sinhala": "ප්‍රතාප",
+    "riskScore": "60.2",
+    "threatLevel": "High"
   },
   {
     "id": "T290",
@@ -1610,7 +1722,9 @@
     "id": "T292",
     "name": "Giriba",
     "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
-    "sinhala": "ගිරිබා"
+    "sinhala": "ගිරිබා",
+    "riskScore": "60.2",
+    "threatLevel": "High"
   },
   {
     "id": "T293",
@@ -1628,7 +1742,9 @@
     "id": "T295",
     "name": "Lankeshwara",
     "location": "Mannankattiya / Mihinthale / Mahakanadara / Thirappane",
-    "sinhala": "ලංකේශ්වර"
+    "sinhala": "ලංකේශ්වර",
+    "riskScore": "63.7",
+    "threatLevel": "High"
   },
   {
     "id": "T296",
@@ -1652,13 +1768,17 @@
     "id": "T299",
     "name": "Vishnu",
     "location": "Wilpattu / Kukulkatuwa",
-    "sinhala": "විෂ්ණු"
+    "sinhala": "විෂ්ණු",
+    "riskScore": "60.5",
+    "threatLevel": "High"
   },
   {
     "id": "T300",
     "name": "Werambha",
     "location": "Kahatagasdigiliya / Horowpathana",
-    "sinhala": "වේරම්භ"
+    "sinhala": "වේරම්භ",
+    "riskScore": "64",
+    "threatLevel": "High"
   },
   {
     "id": "T301",
@@ -1718,7 +1838,9 @@
     "id": "T310",
     "name": "Bulatha",
     "location": "Galenbindunuwewa / Mihinthale",
-    "sinhala": "බුලතා"
+    "sinhala": "බුලතා",
+    "riskScore": "64",
+    "threatLevel": "High"
   },
   {
     "id": "T311",
@@ -1730,7 +1852,9 @@
     "id": "T312",
     "name": "Kambili",
     "location": "Kabithigollewa / Kahatagasdigiliya",
-    "sinhala": "කම්බිලි"
+    "sinhala": "කම්බිලි",
+    "riskScore": "73.2",
+    "threatLevel": "High"
   },
   {
     "id": "T313",
@@ -1748,7 +1872,9 @@
     "id": "T315",
     "name": "Dappula / Dala Kota",
     "location": "Lunugamvehera",
-    "sinhala": "දප්පුල / දළ කොටා"
+    "sinhala": "දප්පුල / දළ කොටා",
+    "riskScore": "63.8",
+    "threatLevel": "High"
   },
   {
     "id": "T316",
@@ -1767,7 +1893,9 @@
     "recordedBy": "Kushan Sameera and Sanjaya Madhushan",
     "nicknameGivenBy": "Kushan Sameera and Sanjaya Madhushan",
     "listedDate": "2026",
-    "description": "In Remembrance of Sakkha Senevi.\n\nSakka Senevi, also referred to as Sakkha Senevi or Seneviratna Sakka, was a prominent military commander and general who served under King Kassapa V during the Anuradhapura period of Sri Lankan history.\n\nKing Kassapa V is generally placed in the early 10th century, although his reign is dated differently in various chronological traditions. Sakka Senevi is remembered as one of the notable military figures associated with this era, reflecting the important role played by military commanders in the political and territorial affairs of ancient Sri Lanka."
+    "description": "In Remembrance of Sakkha Senevi.\n\nSakka Senevi, also referred to as Sakkha Senevi or Seneviratna Sakka, was a prominent military commander and general who served under King Kassapa V during the Anuradhapura period of Sri Lankan history.\n\nKing Kassapa V is generally placed in the early 10th century, although his reign is dated differently in various chronological traditions. Sakka Senevi is remembered as one of the notable military figures associated with this era, reflecting the important role played by military commanders in the political and territorial affairs of ancient Sri Lanka.",
+    "riskScore": "60.2",
+    "threatLevel": "High"
   },
   {
     "id": "T318",
@@ -1777,7 +1905,9 @@
     "recordedBy": "Niklesh Mahanama",
     "nicknameGivenBy": "Niklesh Mahanama",
     "listedDate": "2026",
-    "description": "Derived from the ancient Sanskrit-rooted expression Dharanī (the Earth) and Indra (lord, ruler, or supreme one), Dharanindra can be interpreted as \"Lord of the Earth.\""
+    "description": "Derived from the ancient Sanskrit-rooted expression Dharanī (the Earth) and Indra (lord, ruler, or supreme one), Dharanindra can be interpreted as \"Lord of the Earth.\"",
+    "riskScore": "64.8",
+    "threatLevel": "High"
   },
   {
     "id": "T319",
@@ -1826,7 +1956,9 @@
     "sinhala": "මේඝදූත",
     "recordedBy": "Niklesh Mahanama",
     "nicknameGivenBy": "Niklesh Mahanama",
-    "listedDate": "2026"
+    "listedDate": "2026",
+    "riskScore": "63.8",
+    "threatLevel": "High"
   },
   {
     "id": "T324",
@@ -1854,7 +1986,9 @@
     "recordedBy": "Maduranga Bandara",
     "nicknameGivenBy": "Maduranga Bandara",
     "listedDate": "2026",
-    "description": "The name Chandragiri is a majestic compound derived from Sanskrit/Sinhala classical roots:\n\nChandra (චන්ද්‍ර): Moonlight / Moon (Handapana)\nGiri (ගිරි): Mountain / Massive Rock (Gala)\n\nLiterally translating to \"Moonlit Mountain,\" the name carries a dual significance. It honors the tusker's regional home of Handapanagala while serving as a metaphor for his massive, rock-like physical stature and calm, commanding presence."
+    "description": "The name Chandragiri is a majestic compound derived from Sanskrit/Sinhala classical roots:\n\nChandra (චන්ද්‍ර): Moonlight / Moon (Handapana)\nGiri (ගිරි): Mountain / Massive Rock (Gala)\n\nLiterally translating to \"Moonlit Mountain,\" the name carries a dual significance. It honors the tusker's regional home of Handapanagala while serving as a metaphor for his massive, rock-like physical stature and calm, commanding presence.",
+    "riskScore": "62.4",
+    "threatLevel": "High"
   },
   {
     "id": "T327",

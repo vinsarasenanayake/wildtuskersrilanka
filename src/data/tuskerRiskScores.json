@@ -1,0 +1,3419 @@
+{
+  "T009": {
+    "id": "T009",
+    "name": "Nalaka",
+    "roamingArea": "Yala",
+    "lastSeen": "Yala",
+    "livingStatus": "Alive",
+    "riskLevel": "Medium Risk",
+    "score": 42,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 2,
+        "max": 7,
+        "weight": 25,
+        "points": 7.1
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 1,
+        "max": 6,
+        "weight": 20,
+        "points": 3.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 1,
+        "max": 6,
+        "weight": 15,
+        "points": 2.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 2,
+        "max": 6,
+        "weight": 10,
+        "points": 3.3
+      }
+    }
+  },
+  "T010": {
+    "id": "T010",
+    "name": "Nandimithra",
+    "roamingArea": "Yala",
+    "lastSeen": "Yala/Sithulpawwa",
+    "livingStatus": "Alive",
+    "riskLevel": "Medium Risk",
+    "score": 58,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 6,
+        "max": 7,
+        "weight": 25,
+        "points": 21.4
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 1,
+        "max": 6,
+        "weight": 20,
+        "points": 3.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 1,
+        "max": 6,
+        "weight": 15,
+        "points": 2.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T012": {
+    "id": "T012",
+    "name": "Gamunu",
+    "roamingArea": "Yala",
+    "lastSeen": "Yala",
+    "livingStatus": "Alive",
+    "riskLevel": "Medium Risk",
+    "score": 47.7,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 4,
+        "max": 7,
+        "weight": 30,
+        "points": 17.1
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 6,
+        "max": 7,
+        "weight": 25,
+        "points": 21.4
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 1,
+        "max": 6,
+        "weight": 20,
+        "points": 3.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 1,
+        "max": 6,
+        "weight": 15,
+        "points": 2.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 2,
+        "max": 6,
+        "weight": 10,
+        "points": 3.3
+      }
+    }
+  },
+  "T014": {
+    "id": "T014",
+    "name": "Ravana",
+    "roamingArea": "Yala",
+    "lastSeen": "Yala",
+    "livingStatus": "Alive",
+    "riskLevel": "Medium Risk",
+    "score": 42.9,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 4,
+        "max": 7,
+        "weight": 30,
+        "points": 17.1
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 2,
+        "max": 6,
+        "weight": 20,
+        "points": 6.7
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 2,
+        "max": 6,
+        "weight": 15,
+        "points": 5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 2,
+        "max": 6,
+        "weight": 10,
+        "points": 3.3
+      }
+    }
+  },
+  "T023": {
+    "id": "T023",
+    "name": "Chethiya",
+    "roamingArea": "Yala/Yala Block 3,5",
+    "lastSeen": "Buttala",
+    "livingStatus": "Alive",
+    "riskLevel": "Medium Risk",
+    "score": 57.9,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 4,
+        "max": 7,
+        "weight": 30,
+        "points": 17.1
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 4,
+        "max": 6,
+        "weight": 10,
+        "points": 6.7
+      }
+    }
+  },
+  "T026": {
+    "id": "T026",
+    "name": "Kalinga",
+    "roamingArea": "Kumana",
+    "lastSeen": "Kumana",
+    "livingStatus": "Alive",
+    "riskLevel": "Medium Risk",
+    "score": 45.2,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 2,
+        "max": 7,
+        "weight": 25,
+        "points": 7.1
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 2,
+        "max": 6,
+        "weight": 20,
+        "points": 6.7
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 2,
+        "max": 6,
+        "weight": 15,
+        "points": 5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T027": {
+    "id": "T027",
+    "name": "Magha",
+    "roamingArea": "Kumana",
+    "lastSeen": "Kumana",
+    "livingStatus": "Alive",
+    "riskLevel": "Medium Risk",
+    "score": 45.2,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 2,
+        "max": 7,
+        "weight": 25,
+        "points": 7.1
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 2,
+        "max": 6,
+        "weight": 20,
+        "points": 6.7
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 2,
+        "max": 6,
+        "weight": 15,
+        "points": 5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T028": {
+    "id": "T028",
+    "name": "Elara",
+    "roamingArea": "Kumana",
+    "lastSeen": "Kumana",
+    "livingStatus": "Alive",
+    "riskLevel": "Medium Risk",
+    "score": 45.2,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 2,
+        "max": 7,
+        "weight": 25,
+        "points": 7.1
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 2,
+        "max": 6,
+        "weight": 20,
+        "points": 6.7
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 2,
+        "max": 6,
+        "weight": 15,
+        "points": 5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T029": {
+    "id": "T029",
+    "name": "Mahanama",
+    "roamingArea": "Kumana/Panama/Ampara",
+    "lastSeen": "Ampara",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 66.4,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 4,
+        "max": 6,
+        "weight": 10,
+        "points": 6.7
+      }
+    }
+  },
+  "T035": {
+    "id": "T035",
+    "name": "Kashyapa (Bundala)",
+    "roamingArea": "Bundala/Weerawila",
+    "lastSeen": "Weerawila",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 77.7,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 5,
+        "max": 7,
+        "weight": 25,
+        "points": 17.9
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 5,
+        "max": 6,
+        "weight": 20,
+        "points": 16.7
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 5,
+        "max": 6,
+        "weight": 15,
+        "points": 12.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T036": {
+    "id": "T036",
+    "name": "Vijayaba",
+    "roamingArea": "Habarana/Minneriya",
+    "lastSeen": "Digampathana",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 64.8,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T038": {
+    "id": "T038",
+    "name": "Sumedha",
+    "roamingArea": "Minneriya/Kaudulla",
+    "lastSeen": "Minneriya",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 61.3,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 7,
+        "max": 7,
+        "weight": 30,
+        "points": 30
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 2,
+        "max": 7,
+        "weight": 25,
+        "points": 7.1
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 3,
+        "max": 6,
+        "weight": 15,
+        "points": 7.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 2,
+        "max": 6,
+        "weight": 10,
+        "points": 3.3
+      }
+    }
+  },
+  "T040": {
+    "id": "T040",
+    "name": "Bhanu",
+    "roamingArea": "Minneriya/Kaudulla/Kanadarawa",
+    "lastSeen": "Kaudulla",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 61.2,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 2,
+        "max": 7,
+        "weight": 25,
+        "points": 7.1
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T041": {
+    "id": "T041",
+    "name": "Wasaba",
+    "roamingArea": "Minneriya/Kaudulla/Eco park",
+    "lastSeen": "Habarana",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 66.5,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 7,
+        "max": 7,
+        "weight": 30,
+        "points": 30
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 3,
+        "max": 6,
+        "weight": 15,
+        "points": 7.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T042": {
+    "id": "T042",
+    "name": "Baddhiya",
+    "roamingArea": "Minneriya/Kaudulla/Somawathiya",
+    "lastSeen": "Kaudulla",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 62.9,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 2,
+        "max": 7,
+        "weight": 25,
+        "points": 7.1
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 4,
+        "max": 6,
+        "weight": 10,
+        "points": 6.7
+      }
+    }
+  },
+  "T046": {
+    "id": "T046",
+    "name": "Walimba",
+    "roamingArea": "Nuwaragala/Maha Oya",
+    "lastSeen": "Nuwaragala",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 60.4,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 2,
+        "max": 7,
+        "weight": 25,
+        "points": 7.1
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 3,
+        "max": 6,
+        "weight": 20,
+        "points": 10
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 3,
+        "max": 6,
+        "weight": 15,
+        "points": 7.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 6,
+        "max": 6,
+        "weight": 10,
+        "points": 10
+      }
+    }
+  },
+  "T047": {
+    "id": "T047",
+    "name": "Sapumal",
+    "roamingArea": "Minneriya/Kaudulla",
+    "lastSeen": "Kaudulla",
+    "livingStatus": "Alive",
+    "riskLevel": "Low Risk",
+    "score": 38.1,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 3,
+        "max": 7,
+        "weight": 30,
+        "points": 12.9
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 1,
+        "max": 7,
+        "weight": 25,
+        "points": 3.6
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 2,
+        "max": 6,
+        "weight": 15,
+        "points": 5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 2,
+        "max": 6,
+        "weight": 10,
+        "points": 3.3
+      }
+    }
+  },
+  "T061": {
+    "id": "T061",
+    "name": "Suranimala",
+    "roamingArea": "Kala Wewa/Mannankattiya",
+    "lastSeen": "Hurulu wewa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 76.9,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 5,
+        "max": 7,
+        "weight": 25,
+        "points": 17.9
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 5,
+        "max": 6,
+        "weight": 20,
+        "points": 16.7
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 4,
+        "max": 6,
+        "weight": 10,
+        "points": 6.7
+      }
+    }
+  },
+  "T065": {
+    "id": "T065",
+    "name": "Weera",
+    "roamingArea": "Kala Wewa",
+    "lastSeen": "Medawachchiya",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 61.2,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 2,
+        "max": 7,
+        "weight": 25,
+        "points": 7.1
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T073": {
+    "id": "T073",
+    "name": "Homo",
+    "roamingArea": "Kala Wewa/Galgamuwa/",
+    "lastSeen": "Galgamuwa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 60.5,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T077": {
+    "id": "T077",
+    "name": "Raghu",
+    "roamingArea": "Galgamuwa",
+    "lastSeen": "Galgamuwa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 75.5,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 6,
+        "max": 7,
+        "weight": 25,
+        "points": 21.4
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T079": {
+    "id": "T079",
+    "name": "Ratta",
+    "roamingArea": "Galgamuwa",
+    "lastSeen": "Galgamuwa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 69.6,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 6,
+        "max": 7,
+        "weight": 25,
+        "points": 21.4
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 3,
+        "max": 6,
+        "weight": 15,
+        "points": 7.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 1,
+        "max": 6,
+        "weight": 10,
+        "points": 1.7
+      }
+    }
+  },
+  "T085": {
+    "id": "T085",
+    "name": "Narada",
+    "roamingArea": "Galgamuwa",
+    "lastSeen": "Galgamuwa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 60.5,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T096": {
+    "id": "T096",
+    "name": "Agbo",
+    "roamingArea": "Thirapane/Mannakkattiya/Kanadarawa",
+    "lastSeen": "Thirappane",
+    "livingStatus": "Alive",
+    "riskLevel": "Critical Risk",
+    "score": 96.7,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 7,
+        "max": 7,
+        "weight": 30,
+        "points": 30
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 7,
+        "max": 7,
+        "weight": 25,
+        "points": 25
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 6,
+        "max": 6,
+        "weight": 20,
+        "points": 20
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 6,
+        "max": 6,
+        "weight": 15,
+        "points": 15
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 4,
+        "max": 6,
+        "weight": 10,
+        "points": 6.7
+      }
+    }
+  },
+  "T108": {
+    "id": "T108",
+    "name": "Ananda",
+    "roamingArea": "Kala wewa/Thirappane",
+    "lastSeen": "Kala Wewa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 60.5,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T114": {
+    "id": "T114",
+    "name": "Sumedha",
+    "roamingArea": "Udawalawa",
+    "lastSeen": "Udawalawa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 71.8,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 7,
+        "max": 7,
+        "weight": 30,
+        "points": 30
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 4,
+        "max": 7,
+        "weight": 25,
+        "points": 14.3
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 3,
+        "max": 6,
+        "weight": 20,
+        "points": 10
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 3,
+        "max": 6,
+        "weight": 15,
+        "points": 7.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 6,
+        "max": 6,
+        "weight": 10,
+        "points": 10
+      }
+    }
+  },
+  "T116": {
+    "id": "T116",
+    "name": "Bullet",
+    "roamingArea": "Udawalawa",
+    "lastSeen": "Udawalawa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 60.6,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 3,
+        "max": 6,
+        "weight": 15,
+        "points": 7.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 2,
+        "max": 6,
+        "weight": 10,
+        "points": 3.3
+      }
+    }
+  },
+  "T119": {
+    "id": "T119",
+    "name": "Wijaya",
+    "roamingArea": "Wilpattu/ Eluwankulam/Pomparippu",
+    "lastSeen": "Pomparippu",
+    "livingStatus": "Alive",
+    "riskLevel": "Medium Risk",
+    "score": 54.9,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 7,
+        "max": 7,
+        "weight": 30,
+        "points": 30
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 1,
+        "max": 6,
+        "weight": 20,
+        "points": 3.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 1,
+        "max": 6,
+        "weight": 15,
+        "points": 2.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T121": {
+    "id": "T121",
+    "name": "Aritta",
+    "roamingArea": "Wilpattu/Maha Wilachchiya",
+    "lastSeen": "Maha Wilachchiya",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 64.8,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T125": {
+    "id": "T125",
+    "name": "Kukulkatuwa Single Tusker",
+    "roamingArea": "Wilpattu/Maha Wilachchiya",
+    "lastSeen": "Kukulkatuwa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 62.1,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 4,
+        "max": 6,
+        "weight": 10,
+        "points": 6.7
+      }
+    }
+  },
+  "T126": {
+    "id": "T126",
+    "name": "Manabarana",
+    "roamingArea": "Galgamuwa",
+    "lastSeen": "Galgamuwa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 71,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 5,
+        "max": 7,
+        "weight": 25,
+        "points": 17.9
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 5,
+        "max": 6,
+        "weight": 20,
+        "points": 16.7
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T132": {
+    "id": "T132",
+    "name": "Soorya",
+    "roamingArea": "Wilpattu / Mahawilachchiya / Silavathurai / Mullikulam",
+    "lastSeen": "Thalawa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 75.8,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 4,
+        "max": 7,
+        "weight": 25,
+        "points": 14.3
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 5,
+        "max": 6,
+        "weight": 20,
+        "points": 16.7
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 5,
+        "max": 6,
+        "weight": 15,
+        "points": 12.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 4,
+        "max": 6,
+        "weight": 10,
+        "points": 6.7
+      }
+    }
+  },
+  "T136": {
+    "id": "T136",
+    "name": "Wimale",
+    "roamingArea": "Wilpattu / Mahawilachchiya / Silavathurai / Mullikulam",
+    "lastSeen": "Wilpattu",
+    "livingStatus": "Alive",
+    "riskLevel": "Medium Risk",
+    "score": 59.6,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 3,
+        "max": 6,
+        "weight": 15,
+        "points": 7.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 4,
+        "max": 6,
+        "weight": 10,
+        "points": 6.7
+      }
+    }
+  },
+  "T144": {
+    "id": "T144",
+    "name": "Welusumana",
+    "roamingArea": "Nawagathegama / Karuwalgaswewa /Puttalam/ Tabbowa",
+    "lastSeen": "Karuwalagaswewa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 64.5,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 2,
+        "max": 7,
+        "weight": 25,
+        "points": 7.1
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T146": {
+    "id": "T146",
+    "name": "Hemal",
+    "roamingArea": "Wasgamuwa /Anganmadiila",
+    "lastSeen": "Wasgamuwa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 65.1,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 5,
+        "max": 7,
+        "weight": 25,
+        "points": 17.9
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 3,
+        "max": 6,
+        "weight": 20,
+        "points": 10
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 3,
+        "max": 6,
+        "weight": 15,
+        "points": 7.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T147": {
+    "id": "T147",
+    "name": "Aloka",
+    "roamingArea": "Wasgamuwa /Anganmadiila",
+    "lastSeen": "Wasgamuwa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 63.9,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 3,
+        "max": 6,
+        "weight": 20,
+        "points": 10
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 3,
+        "max": 6,
+        "weight": 15,
+        "points": 7.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 6,
+        "max": 6,
+        "weight": 10,
+        "points": 10
+      }
+    }
+  },
+  "T152": {
+    "id": "T152",
+    "name": "Maha",
+    "roamingArea": "Maduru oya / Ampara / Toppigala/ Chenkaladi",
+    "lastSeen": "Maduru Oya",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 76.1,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 5,
+        "max": 7,
+        "weight": 25,
+        "points": 17.9
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 5,
+        "max": 6,
+        "weight": 15,
+        "points": 12.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 4,
+        "max": 6,
+        "weight": 10,
+        "points": 6.7
+      }
+    }
+  },
+  "T154": {
+    "id": "T154",
+    "name": "Sumitta",
+    "roamingArea": "Wilpattu/ Eluwankulam/ Karuwagaswewa /Tabbowa/ Puttalam",
+    "lastSeen": "Pomparippu",
+    "livingStatus": "Alive",
+    "riskLevel": "Medium Risk",
+    "score": 57.1,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 7,
+        "max": 7,
+        "weight": 30,
+        "points": 30
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 2,
+        "max": 7,
+        "weight": 25,
+        "points": 7.1
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 2,
+        "max": 6,
+        "weight": 20,
+        "points": 6.7
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 2,
+        "max": 6,
+        "weight": 15,
+        "points": 5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T155": {
+    "id": "T155",
+    "name": "Khali",
+    "roamingArea": "Wilpattu / Mahawilachchiya / Silavathurai / Mullikulam",
+    "lastSeen": "Wilpattu",
+    "livingStatus": "Alive",
+    "riskLevel": "Medium Risk",
+    "score": 57.1,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 7,
+        "max": 7,
+        "weight": 30,
+        "points": 30
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 2,
+        "max": 7,
+        "weight": 25,
+        "points": 7.1
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 2,
+        "max": 6,
+        "weight": 20,
+        "points": 6.7
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 2,
+        "max": 6,
+        "weight": 15,
+        "points": 5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T177": {
+    "id": "T177",
+    "name": "Wasala",
+    "roamingArea": "Nawagaththegama/ Anamaduwa/ Mahakubukkadawala",
+    "lastSeen": "Mahakubukkadawala",
+    "livingStatus": "Alive",
+    "riskLevel": "Critical Risk",
+    "score": 95,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 7,
+        "max": 7,
+        "weight": 30,
+        "points": 30
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 7,
+        "max": 7,
+        "weight": 25,
+        "points": 25
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 6,
+        "max": 6,
+        "weight": 20,
+        "points": 20
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 6,
+        "max": 6,
+        "weight": 15,
+        "points": 15
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T181": {
+    "id": "T181",
+    "name": "Manula",
+    "roamingArea": "Hambanthota/Mattala/Lunugamvehera",
+    "lastSeen": "Bandagiriya",
+    "livingStatus": "A;ive",
+    "riskLevel": "High Risk",
+    "score": 63.8,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T184": {
+    "id": "T184",
+    "name": "Mahasena",
+    "roamingArea": "Yala/Lunugamvehera",
+    "lastSeen": "Lunugamvehera",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 74.9,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 7,
+        "max": 7,
+        "weight": 30,
+        "points": 30
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 5,
+        "max": 6,
+        "weight": 15,
+        "points": 12.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T185": {
+    "id": "T185",
+    "name": "Deeghabaya",
+    "roamingArea": "Wilpattu / Mahawilachchiya / Silavathurai / Mullikulam",
+    "lastSeen": "Maha Wilachchiya",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 78.5,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 7,
+        "max": 7,
+        "weight": 30,
+        "points": 30
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 4,
+        "max": 7,
+        "weight": 25,
+        "points": 14.3
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 5,
+        "max": 6,
+        "weight": 15,
+        "points": 12.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T188": {
+    "id": "T188",
+    "name": "Kanchadeva",
+    "roamingArea": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
+    "lastSeen": "Tantirimale",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 69.8,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 6,
+        "max": 6,
+        "weight": 10,
+        "points": 10
+      }
+    }
+  },
+  "T216": {
+    "id": "T216",
+    "name": "Nagaragiri",
+    "roamingArea": "Maduru Oya",
+    "lastSeen": "Maduru Oya",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 61.5,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 4,
+        "max": 7,
+        "weight": 25,
+        "points": 14.3
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 3,
+        "max": 6,
+        "weight": 20,
+        "points": 10
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 3,
+        "max": 6,
+        "weight": 15,
+        "points": 7.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T222": {
+    "id": "T222",
+    "name": "Hudanchi",
+    "roamingArea": "Kumana/Panama/Ampara",
+    "lastSeen": "Bakmitiyawa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 62,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 4,
+        "max": 7,
+        "weight": 30,
+        "points": 17.1
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 5,
+        "max": 6,
+        "weight": 15,
+        "points": 12.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T226": {
+    "id": "T226",
+    "name": "Luhul",
+    "roamingArea": "Yala/Lunugamvehera",
+    "lastSeen": "Lunugamvehera",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 66.3,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 5,
+        "max": 6,
+        "weight": 15,
+        "points": 12.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T232": {
+    "id": "T232",
+    "name": "Gajbahu",
+    "roamingArea": "Padaviya/Wahalkada/Kabithigollewa/Yan Oya",
+    "lastSeen": "Yan Oya",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 78.9,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 7,
+        "max": 7,
+        "weight": 30,
+        "points": 30
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 6,
+        "max": 7,
+        "weight": 25,
+        "points": 21.4
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 3,
+        "max": 6,
+        "weight": 20,
+        "points": 10
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 3,
+        "max": 6,
+        "weight": 15,
+        "points": 7.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 6,
+        "max": 6,
+        "weight": 10,
+        "points": 10
+      }
+    }
+  },
+  "T236": {
+    "id": "T236",
+    "name": "Therapuththa",
+    "roamingArea": "Wilpattu/ Eluwankulam/ Karuwalagaswewa /Tabbowa/ Puttalam",
+    "lastSeen": "Karuwalagaswewa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 61.4,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 3,
+        "max": 6,
+        "weight": 20,
+        "points": 10
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T239": {
+    "id": "T239",
+    "name": "Madduma",
+    "roamingArea": "Yala Block 3,5/Buttala",
+    "lastSeen": "Buttala",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 62.5,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 4,
+        "max": 7,
+        "weight": 25,
+        "points": 14.3
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 3,
+        "max": 6,
+        "weight": 20,
+        "points": 10
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 3,
+        "max": 6,
+        "weight": 15,
+        "points": 7.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T243": {
+    "id": "T243",
+    "name": "Megha",
+    "roamingArea": "Padaviya/Wahalkada/Kabithigollewa/Yan Oya",
+    "lastSeen": "Kabithigollewa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 71.7,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 4,
+        "max": 7,
+        "weight": 25,
+        "points": 14.3
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T249": {
+    "id": "T249",
+    "name": "Saddha",
+    "roamingArea": "Yala Block 3,5/Buttala",
+    "lastSeen": "Buttala",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 60.7,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 4,
+        "max": 7,
+        "weight": 25,
+        "points": 14.3
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 3,
+        "max": 6,
+        "weight": 20,
+        "points": 10
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T264": {
+    "id": "T264",
+    "name": "Eka Dantha",
+    "roamingArea": "Padaviya/Wahalkada/Kabithigollewa/Yan Oya",
+    "lastSeen": "Kabithigollewa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 63.8,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T269": {
+    "id": "T269",
+    "name": "Sankadhathu",
+    "roamingArea": "Wilpattu/Pomparippu/Silavathura",
+    "lastSeen": "Pomparippu",
+    "livingStatus": "Alive",
+    "riskLevel": "Medium Risk",
+    "score": 55.5,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 7,
+        "max": 7,
+        "weight": 30,
+        "points": 30
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 2,
+        "max": 7,
+        "weight": 25,
+        "points": 7.1
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 2,
+        "max": 6,
+        "weight": 20,
+        "points": 6.7
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 2,
+        "max": 6,
+        "weight": 15,
+        "points": 5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 4,
+        "max": 6,
+        "weight": 10,
+        "points": 6.7
+      }
+    }
+  },
+  "T287": {
+    "id": "T287",
+    "name": "Vanniyan",
+    "roamingArea": "Vedithalathiv/Madu",
+    "lastSeen": "Vedithalathiv",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 75.1,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 7,
+        "max": 7,
+        "weight": 30,
+        "points": 30
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 4,
+        "max": 7,
+        "weight": 25,
+        "points": 14.3
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 3,
+        "max": 6,
+        "weight": 15,
+        "points": 7.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 6,
+        "max": 6,
+        "weight": 10,
+        "points": 10
+      }
+    }
+  },
+  "T289": {
+    "id": "T289",
+    "name": "Prathapa",
+    "roamingArea": "Padaviya/Wahalkada/Kabithigollewa/Yan Oya",
+    "lastSeen": "Padaviya",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 60.2,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 2,
+        "max": 7,
+        "weight": 25,
+        "points": 7.1
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T292": {
+    "id": "T292",
+    "name": "Giriba",
+    "roamingArea": "Padaviya/Wahalkada/Kabithigollewa/Yan Oya",
+    "lastSeen": "Padaviya",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 60.2,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 2,
+        "max": 7,
+        "weight": 25,
+        "points": 7.1
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T295": {
+    "id": "T295",
+    "name": "Lankeshwara",
+    "roamingArea": "Mannankattiya/Mihinthale/Mahakanadara/Thirappane",
+    "lastSeen": "Hurulu wewa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 63.7,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 2,
+        "max": 7,
+        "weight": 25,
+        "points": 7.1
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 3,
+        "max": 6,
+        "weight": 20,
+        "points": 10
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 5,
+        "max": 6,
+        "weight": 15,
+        "points": 12.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T299": {
+    "id": "T299",
+    "name": "Vishnu",
+    "roamingArea": "wilpattu/kukulkatuwa",
+    "lastSeen": "Wilpattu",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 60.5,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T300": {
+    "id": "T300",
+    "name": "Werambha",
+    "roamingArea": "Kahatagasdigiliya/Horowpathana",
+    "lastSeen": "Kahatagasdigiliya",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 64,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 4,
+        "max": 7,
+        "weight": 25,
+        "points": 14.3
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 3,
+        "max": 6,
+        "weight": 20,
+        "points": 10
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T310": {
+    "id": "T310",
+    "name": "Bulatha",
+    "roamingArea": "Galenbindunuwewa/Mihinthale",
+    "lastSeen": "Galenbindunuwewa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 64,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 4,
+        "max": 7,
+        "weight": 25,
+        "points": 14.3
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T312": {
+    "id": "T312",
+    "name": "Kambili",
+    "roamingArea": "Kabithigollewa/Kahatagasdigiliya",
+    "lastSeen": "Kabithigollewa",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 73.2,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 7,
+        "max": 7,
+        "weight": 25,
+        "points": 25
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 3,
+        "max": 6,
+        "weight": 20,
+        "points": 10
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 3,
+        "max": 6,
+        "weight": 15,
+        "points": 7.5
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T315": {
+    "id": "T315",
+    "name": "Dappula/Dala Kota",
+    "roamingArea": "Lunugamvehera",
+    "lastSeen": "Lunugamvehera",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 63.8,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T317": {
+    "id": "T317",
+    "name": "Sakkha",
+    "roamingArea": "Horowpathana/Gomarankadawala",
+    "lastSeen": "Gomarankadawala",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 60.2,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 2,
+        "max": 7,
+        "weight": 25,
+        "points": 7.1
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T318": {
+    "id": "T318",
+    "name": "Dharanindra",
+    "roamingArea": "Suriyapura/Kaudulla",
+    "lastSeen": "Suriyapura",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 64.8,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 6,
+        "max": 7,
+        "weight": 30,
+        "points": 25.7
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 3,
+        "max": 6,
+        "weight": 10,
+        "points": 5
+      }
+    }
+  },
+  "T323": {
+    "id": "T323",
+    "name": "Meghadutha",
+    "roamingArea": "Athimale/Monarafala/Kotiyagala",
+    "lastSeen": "Athimale",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 63.8,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 3,
+        "max": 7,
+        "weight": 25,
+        "points": 10.7
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 4,
+        "max": 6,
+        "weight": 20,
+        "points": 13.3
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 5,
+        "max": 6,
+        "weight": 10,
+        "points": 8.3
+      }
+    }
+  },
+  "T326": {
+    "id": "T326",
+    "name": "Chandragiri",
+    "roamingArea": "Butthala/Wellawaya/Handapanagala",
+    "lastSeen": "Buttala",
+    "livingStatus": "Alive",
+    "riskLevel": "High Risk",
+    "score": 62.4,
+    "dimensions": {
+      "specimenRarity": {
+        "name": "Specimen Rarity",
+        "description": "Conservation value & morphological rarity",
+        "raw": 5,
+        "max": 7,
+        "weight": 30,
+        "points": 21.4
+      },
+      "behaviourRisk": {
+        "name": "Behaviour Risk",
+        "description": "Observed temperament & conflict propensity",
+        "raw": 4,
+        "max": 7,
+        "weight": 25,
+        "points": 14.3
+      },
+      "settlementOverlap": {
+        "name": "Settlement Overlap",
+        "description": "Exposure to villages, farming corridors & roads",
+        "raw": 3,
+        "max": 6,
+        "weight": 20,
+        "points": 10
+      },
+      "conflictIntensity": {
+        "name": "Conflict Intensity",
+        "description": "Severity & recurrence of human-elephant conflict",
+        "raw": 4,
+        "max": 6,
+        "weight": 15,
+        "points": 10
+      },
+      "sightingRisk": {
+        "name": "Sighting Frequency Risk",
+        "description": "Observability & uncertainty index (reversed: lower sightings = higher concern)",
+        "raw": 4,
+        "max": 6,
+        "weight": 10,
+        "points": 6.7
+      }
+    }
+  }
+}

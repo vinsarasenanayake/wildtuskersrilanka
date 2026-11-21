@@ -43,6 +43,7 @@ import TuskerSightingsMap from '../components/TuskerSightingsMap';
 import EditSightingModal from '../components/EditSightingModal';
 import ImageUploadBox from '../components/ImageUploadBox';
 import LocationSearchInput from '../components/LocationSearchInput';
+import RiskAssessmentModal from '../components/RiskAssessmentModal';
 import { getCachedAspect, setCachedAspect, probeImageAspect } from '../../utils/photoAspectCache';
 
 /* ── Fullscreen Zoom Lightbox ─────────────────────────────────── */
@@ -3291,62 +3292,11 @@ export default function TuskerProfile() {
       </div>
 
       {/* Risk Assessment Modal */}
-      {showRiskModal && createPortal(
-        <div
-          className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => setShowRiskModal(false)}
-        >
-          <div
-            className="bg-white rounded-[16px] max-w-[500px] w-full p-6 shadow-2xl border border-[#e8e8e8] flex flex-col gap-4 relative my-auto"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex justify-between items-center pb-3 border-b border-[#eeeeee]">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#faf5ec] text-accent flex items-center justify-center">
-                  <ShieldAlert size={18} />
-                </div>
-                <div>
-                  <h3 className="font-sans text-[1.1rem] font-bold text-[#111111] m-0">Risk Assessment Report</h3>
-                  <p className="font-sans text-[0.78rem] text-[#888888] m-0">{tusker.id} - {tusker.name}</p>
-                </div>
-              </div>
-              <button
-                className="w-8 h-8 rounded-full border-none bg-[#f5f5f5] hover:bg-[#e8e8e8] text-[#555555] cursor-pointer flex items-center justify-center transition-colors"
-                onClick={() => setShowRiskModal(false)}
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-3 font-sans text-[0.9rem] text-[#444444]">
-              <div className="flex justify-between items-center p-3 rounded-[10px] bg-[#f9faf8] border border-[#eeeeee]">
-                <span className="font-medium text-[#666666]">Overall Risk Rating</span>
-                <span className="font-bold text-[#111111] text-[1rem]">{tusker.riskScore || 'Not Applicable'}</span>
-              </div>
-
-              <div className="flex flex-col gap-2 pt-1">
-                <p className="m-0 leading-relaxed text-[#555555]">
-                  The WTS Risk Score is an index calculated based on:
-                </p>
-                <ul className="m-0 pl-5 text-[0.85rem] text-[#666666] flex flex-col gap-1.5">
-                  <li><strong className="text-[#222222]">Corridor Proximity:</strong> Frequency of movement across human settlements and farming areas in {tusker.location || 'Sri Lanka'}.</li>
-                  <li><strong className="text-[#222222]">Physical Vulnerability:</strong> Tusk span attractiveness for illicit poaching and snare frequency.</li>
-                  <li><strong className="text-[#222222]">Conflict & Injury History:</strong> {tusker.specialWounds && tusker.specialWounds !== 'None recorded.' ? tusker.specialWounds : 'No previous severe conflict injuries recorded.'}</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="pt-2 flex justify-end">
-              <button
-                className="bg-primary text-white text-[0.85rem] font-semibold px-5 py-2 rounded-[8px] border-none cursor-pointer hover:bg-primary-light transition-all"
-                onClick={() => setShowRiskModal(false)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
+      {showRiskModal && (
+        <RiskAssessmentModal
+          tusker={tusker}
+          onClose={() => setShowRiskModal(false)}
+        />
       )}
 
             {/* Gallery-Style Comparison Photo Lightbox with Zoom & Fullscreen */}
