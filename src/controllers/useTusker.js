@@ -11,7 +11,7 @@ import {
   compareTuskerId
 } from '../models/TuskerModel';
 import { useAuth } from './useAuth';
-import { SRI_LANKA_WILDLIFE_LOCATIONS, getLocationCoordinates } from '../utils/sriLankaLocations';
+import { getLocationCoordinates } from '../utils/sriLankaLocations';
 
 /* ==============================================================
    SECTION 1: WILD TUSKERS DIRECTORY & SEARCH CONTROLLER
@@ -47,21 +47,32 @@ export function useTuskerList() {
 
   const allLocations = useMemo(() => {
     const byKey = new Map();
-    // 1. Gather all areas documented across tuskers
-    tuskers.forEach(t => splitAreas(t.location).forEach(a => {
-      const key = a.toLowerCase();
-      if (!byKey.has(key)) byKey.set(key, a);
-    }));
-    // 2. Also incorporate curated Sri Lanka wildlife sanctuaries & parks
-    SRI_LANKA_WILDLIFE_LOCATIONS.forEach(loc => {
-      const key = loc.name.toLowerCase();
-      if (!byKey.has(key)) byKey.set(key, loc.name);
+    // 1. Gather all areas documented across tuskers (both location and lastSeenArea)
+    tuskers.forEach(t => {
+      splitAreas(t.location).forEach(a => {
+        const key = a.toLowerCase();
+        if (!byKey.has(key)) byKey.set(key, a);
+      });
+      splitAreas(t.lastSeenArea).forEach(a => {
+        const key = a.toLowerCase();
+        if (!byKey.has(key)) byKey.set(key, a);
+      });
     });
     return [...byKey.values()].sort((a, b) => a.localeCompare(b));
   }, [tuskers]);
 
-  const tuskerRoamsIn = (t, area) =>
-    splitAreas(t.location).some(a => a.toLowerCase() === area.toLowerCase());
+  const tuskerRoamsIn = (t, area) => {
+    if (!area) return true;
+    const target = area.toLowerCase().trim();
+    const areas = [
+      ...splitAreas(t.location),
+      ...splitAreas(t.lastSeenArea),
+    ];
+    return areas.some(a => {
+      const aLow = a.toLowerCase().trim();
+      return aLow === target || aLow.includes(target) || target.includes(aLow);
+    });
+  };
 
   const statusCounts = useMemo(() => {
     const counts = { ALL: tuskers.length };
@@ -220,8 +231,9 @@ export function useTuskerList() {
       list = list.filter(t =>
         t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q));
     }
-    if (selectedLocation) {
-      list = list.filter(t => tuskerRoamsIn(t, selectedLocation));
+    const activeLoc = selectedLocation || locationQuery.trim();
+    if (activeLoc) {
+      list = list.filter(t => tuskerRoamsIn(t, activeLoc));
     }
     if (statusFilter !== 'ALL') {
       list = list.filter(t => t.livingStatus === statusFilter);
@@ -238,7 +250,7 @@ export function useTuskerList() {
       list.sort((a, b) => compareTuskerId(b.id, a.id));
     }
     return list;
-  }, [nameQuery, selectedLocation, statusFilter, sortOrder, tuskers]);
+  }, [nameQuery, selectedLocation, locationQuery, statusFilter, sortOrder, tuskers]);
 
   return {
     tuskers,
@@ -287,7 +299,7 @@ export function useTuskerProfile(id) {
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [id]);
-  const canAddSighting = isAdmin;
+  const canAddSighting = isAdmin && tusker?.livingStatus !== 'Deceased';
 
   // Only show comparisons that were actually recorded for this tusker.
   // (The auto-generated narrative would invent history for real elephants.)

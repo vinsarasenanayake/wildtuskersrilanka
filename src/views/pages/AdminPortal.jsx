@@ -14,6 +14,7 @@ import { getFieldNotes, approveFieldNote, rejectFieldNote } from '../../models/F
 import { getGalleryPhotos, approveGalleryPhoto, rejectGalleryPhoto, deleteGalleryPhoto, updateGalleryPhoto } from '../../models/GalleryModel';
 import { getTeamMembers, addTeamMember, updateTeamMember, deleteTeamMember } from '../../models/TeamModel';
 import { useAuth } from '../../controllers/useAuth';
+import { safeUrl } from '../../utils/safeUrl';
 import StatusBadge from '../components/StatusBadge';
 import ImageUploadBox from '../components/ImageUploadBox';
 import EditGalleryPhotoModal from '../components/EditGalleryPhotoModal';
@@ -1381,7 +1382,7 @@ export default function AdminPortal() {
                             <td className="py-3 px-4 text-xs text-[#5a6c63]">
                               {member.facebookUrl ? (
                                 <a
-                                  href={member.facebookUrl}
+                                  href={safeUrl(member.facebookUrl)}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-accent hover:underline inline-flex items-center gap-1 font-medium"

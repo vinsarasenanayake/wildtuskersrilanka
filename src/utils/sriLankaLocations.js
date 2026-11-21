@@ -1,4 +1,4 @@
-import { isGoogleMapsEnabled, loadGoogleMaps } from './mapEngine';
+import { isGoogleMapsEnabled, loadGoogleMaps } from './mapEngine.js';
 /* ── Comprehensive Sri Lanka Locations Database (Districts, Cities, Wildlife Reserves, Tanks & Roaming Areas) ── */
 export const SRI_LANKA_WILDLIFE_LOCATIONS = [
   // ── All 25 Districts ──
@@ -35,9 +35,31 @@ export const SRI_LANKA_WILDLIFE_LOCATIONS = [
   { name: 'Yala National Park - Block 3', type: 'National Park', region: 'Kumbukkan Oya Area', lat: 6.4700, lng: 81.4500 },
   { name: 'Yala National Park - Block 4', type: 'National Park', region: 'Northern Section', lat: 6.5500, lng: 81.4000 },
   { name: 'Yala National Park - Block 5', type: 'National Park', region: 'Lunugamwehera Adjacent', lat: 6.4100, lng: 81.2500 },
+  { name: 'Yala National Park - Block 6', type: 'National Park', region: 'Lunugamwehera Corridor', lat: 6.4400, lng: 81.2200 },
+  { name: 'Yala Block 1', type: 'National Park', region: 'Palatupana, Southern Province', lat: 6.2750, lng: 81.4050 },
+  { name: 'Yala Block 2', type: 'National Park', region: 'Menik Ganga Area', lat: 6.3800, lng: 81.4800 },
+  { name: 'Yala Block 3', type: 'National Park', region: 'Kumbukkan Oya Area', lat: 6.4700, lng: 81.4500 },
+  { name: 'Yala Block 4', type: 'National Park', region: 'Northern Section', lat: 6.5500, lng: 81.4000 },
+  { name: 'Yala Block 5', type: 'National Park', region: 'Lunugamwehera Adjacent', lat: 6.4100, lng: 81.2500 },
+  { name: 'Yala Block 6', type: 'National Park', region: 'Lunugamwehera Corridor', lat: 6.4400, lng: 81.2200 },
+  { name: 'Yala Block 3,5', type: 'National Park Corridor', region: 'Kumbukkan Oya / Northern Blocks', lat: 6.4700, lng: 81.4500 },
+  { name: 'Yala Block 3, 5', type: 'National Park Corridor', region: 'Kumbukkan Oya / Northern Blocks', lat: 6.4700, lng: 81.4500 },
+  { name: 'Yala Block 3,6', type: 'National Park Corridor', region: 'Northern Blocks', lat: 6.4600, lng: 81.3800 },
+  { name: 'Angammedilla National Park', type: 'National Park', region: 'Polonnaruwa District', lat: 7.9167, lng: 80.9500 },
+  { name: 'Angammedilla', type: 'National Park', region: 'Polonnaruwa District', lat: 7.9167, lng: 80.9500 },
+  { name: 'Anganmadiila', type: 'National Park', region: 'Polonnaruwa District', lat: 7.9167, lng: 80.9500 },
+  { name: 'Buddhangala Sanctuary', type: 'Sanctuary', region: 'Ampara District', lat: 7.3333, lng: 81.6500 },
+  { name: 'Buddhangala', type: 'Sanctuary', region: 'Ampara District', lat: 7.3333, lng: 81.6500 },
+  { name: 'Bundangala', type: 'Sanctuary', region: 'Ampara District', lat: 7.3333, lng: 81.6500 },
   { name: 'Wilpattu National Park', type: 'National Park', region: 'North Western & North Central', lat: 8.4500, lng: 80.0167 },
-  { name: 'Kumana National Park (Yala East)', type: 'National Park', region: 'Ampara, Eastern Province', lat: 6.5167, lng: 81.7000 },
-  { name: 'Kumana', type: 'National Park', region: 'Ampara, Eastern Province', lat: 6.5167, lng: 81.7000 },
+  { name: 'Kumana National Park (Yala East)', type: 'National Park', region: 'Ampara, Eastern Province', lat: 6.5400, lng: 81.6000 },
+  { name: 'Kumana', type: 'National Park', region: 'Ampara, Eastern Province', lat: 6.5400, lng: 81.6000 },
+  { name: 'Kumana Villu', type: 'Lagoon / Wetland', region: 'Ampara, Eastern Province', lat: 6.5250, lng: 81.7150 },
+  { name: 'Yala East', type: 'National Park', region: 'Kumana Border, Eastern Province', lat: 6.5100, lng: 81.5700 },
+  { name: 'Maha Wilachchiya', type: 'Elephant Roaming Area / Wewa', region: 'Anuradhapura District', lat: 8.4167, lng: 80.2000 },
+  { name: 'Wilachchiya', type: 'Elephant Roaming Area', region: 'Anuradhapura District', lat: 8.4167, lng: 80.2000 },
+  { name: 'Mattala', type: 'Elephant Roaming Corridor', region: 'Hambantota District', lat: 6.2890, lng: 81.1230 },
+  { name: 'Manampitiya', type: 'Flood Plains Elephant Corridor', region: 'Polonnaruwa District', lat: 7.9150, lng: 81.0850 },
   { name: 'Minneriya National Park', type: 'National Park', region: 'North Central Province', lat: 8.0333, lng: 80.8333 },
   { name: 'Minneriya', type: 'National Park', region: 'North Central Province', lat: 8.0333, lng: 80.8333 },
   { name: 'Kaudulla National Park', type: 'National Park', region: 'North Central Province', lat: 8.1500, lng: 80.9000 },
@@ -132,12 +154,84 @@ export const SRI_LANKA_WILDLIFE_LOCATIONS = [
   { name: 'Allai Tank', type: 'Historic Reservoir', region: 'Trincomalee District', lat: 8.4333, lng: 81.3000 },
 
   // ── Primary Tusker Roaming Areas & Wildlife Junctions ──
-  { name: 'Athimale', type: 'Elephant Roaming Area', region: 'Monaragala District', lat: 7.0858, lng: 81.4428 },
-  { name: 'Athimale Wewa', type: 'Reservoir', region: 'Monaragala District', lat: 7.0858, lng: 81.4428 },
+  { name: 'Ethimale', type: 'Elephant Roaming Area', region: 'Monaragala District', lat: 6.8231, lng: 81.5356 },
+  { name: 'Ethimale Wewa', type: 'Reservoir', region: 'Monaragala District', lat: 6.8231, lng: 81.5356 },
+  { name: 'Athimale', type: 'Elephant Roaming Area', region: 'Monaragala District', lat: 6.8231, lng: 81.5356 },
+  { name: 'Athimale Wewa', type: 'Reservoir', region: 'Monaragala District', lat: 6.8231, lng: 81.5356 },
+  { name: 'Mau Ara', type: 'Reservoir / Elephant Corridor', region: 'Rathnapura / Udawalawe', lat: 6.4420, lng: 80.9320 },
+  { name: 'Mau Ara Wewa', type: 'Reservoir / Elephant Corridor', region: 'Rathnapura / Udawalawe', lat: 6.4420, lng: 80.9320 },
+  { name: 'Mawara', type: 'Reservoir / Elephant Corridor', region: 'Rathnapura / Udawalawe', lat: 6.4420, lng: 80.9320 },
+  { name: 'Chenkaladi', type: 'Town / Corridor', region: 'Batticaloa District', lat: 7.7889, lng: 81.5833 },
+  { name: 'Thoppigala', type: 'Rock / Sanctuary', region: 'Batticaloa District', lat: 7.7167, lng: 81.3167 },
+  { name: 'Toppigala', type: 'Rock / Sanctuary', region: 'Batticaloa District', lat: 7.7167, lng: 81.3167 },
+  { name: 'Deeghavapi', type: 'Sanctuary', region: 'Ampara District', lat: 7.2333, lng: 81.7667 },
+  { name: 'Deegawapi', type: 'Sanctuary', region: 'Ampara District', lat: 7.2333, lng: 81.7667 },
+  { name: 'Sagama', type: 'Reservoir / Roaming Area', region: 'Ampara District', lat: 7.1500, lng: 81.8000 },
+  { name: 'Saagama', type: 'Reservoir / Roaming Area', region: 'Ampara District', lat: 7.1500, lng: 81.8000 },
+  { name: 'Sengamuwa', type: 'Elephant Corridor', region: 'Ampara District', lat: 6.9500, lng: 81.8167 },
+  { name: 'Shasthrawela', type: 'Elephant Roaming Area', region: 'Ampara District', lat: 6.8200, lng: 81.8200 },
+  { name: 'Sasthrawela', type: 'Elephant Roaming Area', region: 'Ampara District', lat: 6.8200, lng: 81.8200 },
+  { name: 'Buddhangala', type: 'Sanctuary', region: 'Ampara District', lat: 7.3333, lng: 81.6500 },
+  { name: 'Bundangala', type: 'Sanctuary', region: 'Ampara District', lat: 7.3333, lng: 81.6500 },
+  { name: 'Nuwaragala', type: 'Forest Reserve', region: 'Ampara District', lat: 7.6000, lng: 81.3333 },
+  { name: 'Galoya', type: 'National Park', region: 'Gal Oya / Ampara', lat: 7.2000, lng: 81.4667 },
+  { name: 'Aralaganwila', type: 'Agricultural Area', region: 'Polonnaruwa District', lat: 7.8500, lng: 81.1833 },
+  { name: 'Angammedilla', type: 'National Park', region: 'Polonnaruwa District', lat: 7.9167, lng: 80.9500 },
+  { name: 'Anganmadiila', type: 'National Park', region: 'Polonnaruwa District', lat: 7.9167, lng: 80.9500 },
+  { name: 'Madu', type: 'Sanctuary', region: 'Mannar District', lat: 8.8500, lng: 80.2000 },
+  { name: 'Silavathurai', type: 'Coastal Roaming Area', region: 'Mannar District', lat: 8.7500, lng: 79.9167 },
+  { name: 'Silavathura', type: 'Coastal Roaming Area', region: 'Mannar District', lat: 8.7500, lng: 79.9167 },
+  { name: 'Mullikulam', type: 'Wilpattu North Border', region: 'Mannar District', lat: 8.6167, lng: 79.9167 },
+  { name: 'Vedithalathiv', type: 'Nature Reserve', region: 'Mannar District', lat: 9.0333, lng: 80.0167 },
+  { name: 'Maha Kanadarawa', type: 'Reservoir', region: 'Anuradhapura District', lat: 8.4167, lng: 80.5000 },
+  { name: 'Mahakanadarawa', type: 'Reservoir', region: 'Anuradhapura District', lat: 8.4167, lng: 80.5000 },
+  { name: 'Mahakandarawa', type: 'Reservoir', region: 'Anuradhapura District', lat: 8.4167, lng: 80.5000 },
+  { name: 'Mahakanadara', type: 'Reservoir', region: 'Anuradhapura District', lat: 8.4167, lng: 80.5000 },
+  { name: 'Kanadarawa', type: 'Reservoir', region: 'Anuradhapura District', lat: 8.4167, lng: 80.5000 },
+  { name: 'Kebithigollewa', type: 'Elephant Roaming Area', region: 'Anuradhapura District', lat: 8.6333, lng: 80.6833 },
+  { name: 'Kabithigollewa', type: 'Elephant Roaming Area', region: 'Anuradhapura District', lat: 8.6333, lng: 80.6833 },
+  { name: 'Kebathigollewa', type: 'Elephant Roaming Area', region: 'Anuradhapura District', lat: 8.6333, lng: 80.6833 },
+  { name: 'Galenbindunuwewa', type: 'Agricultural Area', region: 'Anuradhapura District', lat: 8.2167, lng: 80.6833 },
+  { name: 'Palugaswewa', type: 'Elephant Roaming Area', region: 'Anuradhapura District', lat: 8.0833, lng: 80.6833 },
+  { name: 'Rambawa', type: 'Elephant Roaming Area', region: 'Anuradhapura District', lat: 8.4667, lng: 80.5167 },
+  { name: 'Ritigala', type: 'Strict Nature Reserve', region: 'Anuradhapura District', lat: 8.1167, lng: 80.6500 },
+  { name: 'Tantirimale', type: 'Historic Roaming Area', region: 'Anuradhapura District', lat: 8.5833, lng: 80.2667 },
+  { name: 'Tanthirimale', type: 'Historic Roaming Area', region: 'Anuradhapura District', lat: 8.5833, lng: 80.2667 },
+  { name: 'Tirappane', type: 'Elephant Roaming Area', region: 'Anuradhapura District', lat: 8.1833, lng: 80.5167 },
+  { name: 'Thirappane', type: 'Elephant Roaming Area', region: 'Anuradhapura District', lat: 8.1833, lng: 80.5167 },
+  { name: 'Thirapane', type: 'Elephant Roaming Area', region: 'Anuradhapura District', lat: 8.1833, lng: 80.5167 },
+  { name: 'Mannankattiya', type: 'Reservoir', region: 'Anuradhapura District', lat: 8.2500, lng: 80.5833 },
+  { name: 'Mannakkattiya', type: 'Reservoir', region: 'Anuradhapura District', lat: 8.2500, lng: 80.5833 },
+  { name: 'Hurulu Wewa', type: 'Reservoir / Reserve', region: 'Anuradhapura District', lat: 8.1333, lng: 80.8000 },
+  { name: 'Hurulu Eco Park', type: 'Elephant Sanctuary', region: 'Anuradhapura District', lat: 8.0500, lng: 80.7800 },
+  { name: 'Eco park', type: 'Elephant Sanctuary', region: 'Anuradhapura District', lat: 8.0500, lng: 80.7800 },
+  { name: 'Nawagattegama', type: 'Elephant Roaming Area', region: 'Puttalam District', lat: 7.9667, lng: 80.0333 },
+  { name: 'Nawagaththegama', type: 'Elephant Roaming Area', region: 'Puttalam District', lat: 7.9667, lng: 80.0333 },
+  { name: 'Nawagathegama', type: 'Elephant Roaming Area', region: 'Puttalam District', lat: 7.9667, lng: 80.0333 },
+  { name: 'Tabbowa', type: 'Sanctuary / Reservoir', region: 'Puttalam District', lat: 8.1000, lng: 79.9500 },
+  { name: 'Thabbowa', type: 'Sanctuary / Reservoir', region: 'Puttalam District', lat: 8.1000, lng: 79.9500 },
+  { name: 'Mahakumbukkadawala', type: 'Elephant Roaming Area', region: 'Puttalam District', lat: 7.9167, lng: 79.9333 },
+  { name: 'Mahakubukkadawala', type: 'Elephant Roaming Area', region: 'Puttalam District', lat: 7.9167, lng: 79.9333 },
+  { name: 'Karuwalagaswewa', type: 'Elephant Roaming Area', region: 'Puttalam District', lat: 8.0333, lng: 80.0500 },
+  { name: 'Karuwagaswewa', type: 'Elephant Roaming Area', region: 'Puttalam District', lat: 8.0333, lng: 80.0500 },
+  { name: 'Karuwalgaswewa', type: 'Elephant Roaming Area', region: 'Puttalam District', lat: 8.0333, lng: 80.0500 },
+  { name: 'Pothana', type: 'Elephant Corridor', region: 'Puttalam District', lat: 8.2500, lng: 79.9000 },
+  { name: 'Kukulkatuwa', type: 'Elephant Corridor', region: 'Puttalam / Wilpattu', lat: 8.3500, lng: 80.0500 },
+  { name: 'Naval Headworks Sanctuary', type: 'Sanctuary', region: 'Trincomalee District', lat: 8.5667, lng: 81.1667 },
+  { name: 'Suriyapura', type: 'Agricultural Area', region: 'Trincomalee / Kantale', lat: 8.2167, lng: 81.0167 },
+  { name: 'Yan Oya', type: 'River Corridor', region: 'Padaviya / Trincomalee', lat: 8.8667, lng: 80.9500 },
+  { name: 'Okkampitiya', type: 'Elephant Roaming Area', region: 'Monaragala District', lat: 6.7833, lng: 81.3167 },
+  { name: 'Hambanthota', type: 'Port City / Wildlife Border', region: 'Hambantota District', lat: 6.1247, lng: 81.1185 },
+  { name: 'Butthala', type: 'Elephant Roaming Area', region: 'Monaragala District', lat: 6.7583, lng: 81.2483 },
+  { name: 'Udawalawa', type: 'National Park', region: 'Sabaragamuwa & Uva', lat: 6.4742, lng: 80.8986 },
   { name: 'Buttala', type: 'Elephant Roaming Area', region: 'Monaragala District', lat: 6.7583, lng: 81.2483 },
   { name: 'Pelwatta', type: 'Elephant Roaming Area', region: 'Monaragala District', lat: 6.7800, lng: 81.1800 },
   { name: 'Siyambalanduwa', type: 'Elephant Roaming Area', region: 'Ampara / Monaragala', lat: 6.9056, lng: 81.5542 },
-  { name: 'Panama', type: 'Elephant Roaming Area', region: 'Ampara, Eastern Province', lat: 6.7558, lng: 81.8058 },
+  { name: 'Panama', type: 'Elephant Roaming Area', region: 'Ampara, Eastern Province', lat: 6.7558, lng: 81.7450 },
+  { name: 'Panama West', type: 'Elephant Roaming Area', region: 'Ampara, Eastern Province', lat: 6.7800, lng: 81.7100 },
+  { name: 'Panama South', type: 'Elephant Roaming Area', region: 'Ampara, Eastern Province', lat: 6.6800, lng: 81.7200 },
+  { name: 'Panama North', type: 'Elephant Roaming Area', region: 'Ampara, Eastern Province', lat: 6.8000, lng: 81.8100 },
+  { name: 'Panama Village', type: 'Village / Coastal Point', region: 'Ampara, Eastern Province', lat: 6.7558, lng: 81.8058 },
   { name: 'Okanda', type: 'Elephant Roaming Area', region: 'Kumana Border, Eastern Province', lat: 6.6214, lng: 81.7828 },
   { name: 'Kataragama', type: 'Elephant Roaming Area', region: 'Monaragala District', lat: 6.4133, lng: 81.3325 },
   { name: 'Wellawaya', type: 'Elephant Roaming Area', region: 'Monaragala District', lat: 6.7389, lng: 81.1017 },
@@ -350,12 +444,21 @@ export function getLocationCoordinates(locationName) {
   }
 
   // If multiple locations joined by slash, pick the first one to resolve primary coordinate
-  const primaryName = locationName.split(/\s*[/]\s*/)[0].trim();
+  let primaryName = locationName.split(/\s*[/]\s*/)[0].trim();
   if (!primaryName) return null;
+
+  // Normalize phonetic aliases & typos
+  const aliasLower = primaryName.toLowerCase();
+  if (aliasLower === 'athimale') primaryName = 'Ethimale';
+  else if (aliasLower === 'mawara') primaryName = 'Mau Ara';
+  else if (aliasLower === 'anganmadiila') primaryName = 'Angammedilla';
+  else if (aliasLower === 'bundangala') primaryName = 'Buddhangala';
+  else if (aliasLower === 'monarafala') primaryName = 'Monaragala';
+
   const primaryLower = primaryName.toLowerCase();
   const normalizedPrimary = normalizePlaceName(primaryName);
 
-  // 1. Exact match
+  // 1. Exact match on raw name
   const exact = SRI_LANKA_WILDLIFE_LOCATIONS.find(
     (l) => l.name.toLowerCase() === primaryLower
   );
@@ -363,22 +466,43 @@ export function getLocationCoordinates(locationName) {
     return { lat: exact.lat, lng: exact.lng, name: exact.name };
   }
 
-  // 2. Normalized stem match (e.g. "Eluwankulama Tank" -> "eluwankulama")
-  if (normalizedPrimary.length >= 3) {
-    const stemMatch = SRI_LANKA_WILDLIFE_LOCATIONS.find((l) => {
-      const normLoc = normalizePlaceName(l.name);
-      return (
-        normLoc === normalizedPrimary ||
-        (normLoc.length >= 4 && normalizedPrimary.includes(normLoc)) ||
-        (normalizedPrimary.length >= 4 && normLoc.includes(normalizedPrimary))
-      );
+  // 2. Exact match on normalized stem (e.g. "Yala Block 5" -> "yala block 5")
+  const exactNorm = SRI_LANKA_WILDLIFE_LOCATIONS.find(
+    (l) => normalizePlaceName(l.name) === normalizedPrimary
+  );
+  if (exactNorm && typeof exactNorm.lat === 'number') {
+    return { lat: exactNorm.lat, lng: exactNorm.lng, name: exactNorm.name };
+  }
+
+  // 3. Block number specific match (e.g. "Yala Block 5", "Yala Block 3,5", "Block 3")
+  const blockMatch = primaryLower.match(/block\s*(\d+)/i);
+  if (blockMatch) {
+    const bNum = blockMatch[1];
+    const bEntry = SRI_LANKA_WILDLIFE_LOCATIONS.find((l) => {
+      const lLow = l.name.toLowerCase();
+      return lLow.includes(`block ${bNum}`) || lLow.includes(`block-${bNum}`) || lLow.includes(`block ${bNum},`);
     });
-    if (stemMatch && typeof stemMatch.lat === 'number') {
-      return { lat: stemMatch.lat, lng: stemMatch.lng, name: stemMatch.name };
+    if (bEntry && typeof bEntry.lat === 'number') {
+      return { lat: bEntry.lat, lng: bEntry.lng, name: bEntry.name };
     }
   }
 
-  // 3. Substring includes match
+  // 4. Substring / stemmed match (prefer longer/more specific entries first)
+  if (normalizedPrimary.length >= 3) {
+    const candidates = SRI_LANKA_WILDLIFE_LOCATIONS.filter((l) => {
+      const normLoc = normalizePlaceName(l.name);
+      return (
+        (normLoc.length >= 4 && normalizedPrimary.includes(normLoc)) ||
+        (normalizedPrimary.length >= 4 && normLoc.includes(normalizedPrimary))
+      );
+    }).sort((a, b) => b.name.length - a.name.length);
+
+    if (candidates.length > 0 && typeof candidates[0].lat === 'number') {
+      return { lat: candidates[0].lat, lng: candidates[0].lng, name: candidates[0].name };
+    }
+  }
+
+  // 5. Substring includes match
   const partial = SRI_LANKA_WILDLIFE_LOCATIONS.find(
     (l) => primaryLower.includes(l.name.toLowerCase()) || l.name.toLowerCase().includes(primaryLower)
   );

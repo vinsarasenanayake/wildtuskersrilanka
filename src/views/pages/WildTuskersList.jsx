@@ -124,7 +124,7 @@ export default function WildTuskersList() {
             <input
               type="text"
               className="border-none bg-transparent outline-none font-sans text-[0.9rem] text-[#111111] caret-[#111111] w-full placeholder:text-[#bbbbbb]"
-              placeholder="Search tusker name, ID, or location…"
+              placeholder="Search tusker name or ID…"
               value={nameQuery}
               onChange={e => handleNameInput(e.target.value)}
               onFocus={() => nameQuery && setShowNameSugg(true)}
@@ -161,8 +161,8 @@ export default function WildTuskersList() {
               onFocus={focusLocation}
             />
             {locationQuery
-              ? <button className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]" onMouseDown={clearLocation}><X size={14} /></button>
-              : <ChevronDown size={14} className="text-[#aaaaaa] shrink-0 pointer-events-none" />
+              ? <button type="button" aria-label="Clear location filter" className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]" onMouseDown={clearLocation}><X size={14} /></button>
+              : <button type="button" aria-label="Toggle location list" className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]" onClick={() => { if (showLocDrop) setShowLocDrop(false); else focusLocation(); }}><ChevronDown size={14} /></button>
             }
           </div>
           {showLocDrop && locSuggestions.length > 0 && (

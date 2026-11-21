@@ -146,7 +146,7 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
     heading: 0,
     backgroundColor: '#0e1210',
     disableDefaultUI: true,
-    zoomControl: false,
+    zoomControl: true,
     mapTypeControl: false,
     streetViewControl: false,
     fullscreenControl: false,
@@ -178,7 +178,7 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
       super();
       this.pos = new maps.LatLng(pos[0], pos[1]);
       this.el = document.createElement('div');
-      this.el.style.cssText = `position:absolute;transform:translate(-50%,${centered ? '-50%' : '-100%'});cursor:pointer;z-index:20;`;
+      this.el.style.cssText = `position:absolute;transform:translate(-50%,${centered ? '-50%' : '-100%'});cursor:pointer;z-index:20;width:max-content;`;
       this.el.innerHTML = html; // our own static SVG markup
       this.el.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -275,6 +275,17 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
       return { remove() { obj.setMap(null); areas.delete(obj); } };
     },
     clearAreas() { areas.forEach((o) => o.setMap(null)); areas.clear(); },
+    addPolyline(points, { stroke = '#c69b55', strokeWeight = 2.5 } = {}) {
+      const line = new maps.Polyline({
+        map,
+        path: points.map(([lat, lng]) => ({ lat: Number(lat), lng: Number(lng) })),
+        strokeColor: stroke,
+        strokeWeight,
+        strokeOpacity: 0.85,
+      });
+      areas.add(line);
+      return { remove() { line.setMap(null); areas.delete(line); } };
+    },
     onClick(cb) {
       map.addListener('click', (e) => { if (e.latLng) cb({ lat: e.latLng.lat(), lng: e.latLng.lng() }); });
     },
@@ -298,7 +309,13 @@ function createLeafletMap(L, container, { center, zoom, gestureHandling }) {
   const layer = L.layerGroup().addTo(map);
 
   const iconFor = (html, height) =>
-    L.divIcon({ className: 'custom-leaflet-marker', html, iconSize: [36, height], iconAnchor: [18, height], popupAnchor: [0, -(height - 2)] });
+    L.divIcon({
+      className: 'custom-leaflet-marker',
+      html: `<div style="position:relative;transform:translate(-50%,-100%);width:max-content">${html}</div>`,
+      iconSize: [0, 0],
+      iconAnchor: [0, 0],
+      popupAnchor: [0, -(height - 2)],
+    });
 
   return {
     engine: 'leaflet',
@@ -308,7 +325,7 @@ function createLeafletMap(L, container, { center, zoom, gestureHandling }) {
     },
     addMarker(pos, { html, popup, onClick, height = 42, centered = false } = {}) {
       const icon = centered
-        ? L.divIcon({ className: 'custom-leaflet-marker', html: `<div style="transform:translate(-50%,-50%);width:max-content">${html}</div>`, iconSize: [0, 0], iconAnchor: [0, 0] })
+        ? L.divIcon({ className: 'custom-leaflet-marker', html: `<div style="position:relative;transform:translate(-50%,-50%);width:max-content">${html}</div>`, iconSize: [0, 0], iconAnchor: [0, 0] })
         : iconFor(html, height);
       const m = L.marker(pos, { icon }).addTo(layer);
       if (popup) m.bindPopup(buildPopup(popup));
@@ -331,6 +348,10 @@ function createLeafletMap(L, container, { center, zoom, gestureHandling }) {
       return { remove() { areaLayer.removeLayer(obj); } };
     },
     clearAreas() { areaLayer.clearLayers(); },
+    addPolyline(points, { stroke = '#c69b55', strokeWeight = 2.5, dashArray = '6, 8' } = {}) {
+      const line = L.polyline(points, { color: stroke, weight: strokeWeight, opacity: 0.85, dashArray }).addTo(areaLayer);
+      return { remove() { areaLayer.removeLayer(line); } };
+    },
     onClick(cb) { map.on('click', (e) => cb({ lat: e.latlng.lat, lng: e.latlng.lng })); },
     resize() { map.invalidateSize(); },
     destroy() { map.remove(); container.remove(); },

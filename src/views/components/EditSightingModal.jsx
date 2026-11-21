@@ -14,6 +14,87 @@ const SELECT_CLASS =
 
 const HEALTH_OPTIONS = ['Good', 'Fair', 'Poor', 'Injured', 'Critical', 'Under Observation'];
 
+function getInitialFormData(sightingObj) {
+  if (!sightingObj) {
+    return {
+      imageUrl: '',
+      images: [],
+      captureDate: new Date().toISOString().split('T')[0],
+      author: 'WTS Admin',
+      location: '',
+      healthCondition: 'Good',
+      threatLevel: '',
+      specialMarks: '',
+      specialWounds: '',
+      note: '',
+    };
+  }
+
+  const details = parseSightingDetails(sightingObj);
+
+  // Extract images from all possible sources
+  let allImgs = [];
+  if (Array.isArray(details.images) && details.images.length > 0) {
+    allImgs = details.images;
+  } else if (Array.isArray(sightingObj.images) && sightingObj.images.length > 0) {
+    allImgs = sightingObj.images;
+  } else if (Array.isArray(sightingObj.imageUrls) && sightingObj.imageUrls.length > 0) {
+    allImgs = sightingObj.imageUrls;
+  } else if (sightingObj.photo) {
+    allImgs = [sightingObj.photo];
+  } else if (sightingObj.imageUrl) {
+    allImgs = typeof sightingObj.imageUrl === 'string'
+      ? sightingObj.imageUrl.split(',').map((s) => s.trim()).filter(Boolean)
+      : [sightingObj.imageUrl];
+  }
+
+  // Extract capture date
+  const rawDate = sightingObj.captureDate || sightingObj.date || '';
+  let captureDate = '';
+  if (rawDate && rawDate !== '—') {
+    const match = String(rawDate).match(/\d{4}-\d{2}-\d{2}/);
+    if (match) {
+      captureDate = match[0];
+    } else {
+      captureDate = rawDate;
+    }
+  }
+  if (!captureDate) {
+    captureDate = new Date().toISOString().split('T')[0];
+  }
+
+  // Extract location
+  const location = details.location || sightingObj.location || sightingObj.lastSeenArea || '';
+
+  // Extract author / recorder
+  const author = sightingObj.author || sightingObj.recordedBy || sightingObj.recorder || 'WTS Admin';
+
+  // Extract health condition
+  const healthCondition = details.healthCondition || sightingObj.healthCondition || sightingObj.health || 'Good';
+
+  // Extract threat level
+  const threatLevel = details.threatLevel || sightingObj.threatLevel || sightingObj.threat || '';
+
+  // Extract marks, wounds, remarks, notes
+  const specialMarks = details.specialMarks || sightingObj.specialMarks || '';
+  const specialWounds = details.specialWounds || sightingObj.specialWounds || '';
+  const notJson = (v) => (typeof v === 'string' && !v.trim().startsWith('{') ? v : '');
+  const note = details.note || details.remarks || notJson(sightingObj.notes) || notJson(sightingObj.note) || notJson(sightingObj.remarks) || '';
+
+  return {
+    imageUrl: allImgs[0] || '',
+    images: allImgs,
+    captureDate,
+    author: author !== '—' ? author : 'WTS Admin',
+    location: location !== 'Location unrecorded' ? location : '',
+    healthCondition: healthCondition !== '—' ? healthCondition : 'Good',
+    threatLevel: threatLevel !== '—' ? threatLevel : '',
+    specialMarks,
+    specialWounds,
+    note: note !== '—' ? note : '',
+  };
+}
+
 /**
  * EditSightingModal
  * Allows admins to edit an existing field sighting record (Row 2, Row 3...) for a tusker.
@@ -26,23 +107,14 @@ export default function EditSightingModal({
   onClose,
   onSave,
 }) {
-  const details = parseSightingDetails(sighting);
-  const initialImages = details.images && details.images.length > 0
-    ? details.images
-    : (sighting?.imageUrl ? [sighting.imageUrl] : []);
+  const [formData, setFormData] = useState(() => getInitialFormData(sighting));
 
-  const [formData, setFormData] = useState({
-    imageUrl: initialImages[0] || sighting?.imageUrl || '',
-    images: initialImages,
-    captureDate: sighting?.captureDate || new Date().toISOString().split('T')[0],
-    author: sighting?.author || 'WTS Admin',
-    location: details.location || '',
-    healthCondition: details.healthCondition || 'Good',
-    threatLevel: details.threatLevel || '',
-    specialMarks: details.specialMarks || '',
-    specialWounds: details.specialWounds || '',
-    note: details.note || (typeof sighting?.note === 'string' && !sighting.note.trim().startsWith('{') ? sighting.note : '') || details.remarks || '',
-  });
+  // Keep form data strictly in sync with the incoming sighting
+  useEffect(() => {
+    if (sighting) {
+      setFormData(getInitialFormData(sighting));
+    }
+  }, [sighting]);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');

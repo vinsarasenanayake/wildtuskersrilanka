@@ -4,6 +4,7 @@ import { PlusCircle, Edit2, Trash2, X, Save, Shield, ExternalLink, Loader2 } fro
 import { getTeamMembers, addTeamMember, updateTeamMember, deleteTeamMember } from '../../models/TeamModel';
 import { useAuth } from '../../controllers/useAuth';
 import ImageUploadBox from '../components/ImageUploadBox';
+import { safeUrl } from '../../utils/safeUrl';
 import Footer from '../components/Footer';
 
 export default function AboutUs() {
@@ -312,7 +313,7 @@ function MemberCard({ member, isAdmin, onEdit, onDelete }) {
   const cardProps =
     member.facebookUrl && !isAdmin
       ? {
-          href: member.facebookUrl,
+          href: safeUrl(member.facebookUrl),
           target: '_blank',
           rel: 'noopener noreferrer',
           title: `View ${member.name}'s Facebook Profile`,

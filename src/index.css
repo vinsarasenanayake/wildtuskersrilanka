@@ -181,7 +181,8 @@ a[title*="Report errors"] {
   color: #ffffff !important;
   background-color: rgba(255, 255, 255, 0.15) !important;
 }
-.leaflet-container a.leaflet-popup-close-button:hover {
-  color: #111111 !important;
-  background-color: #f0f3f1 !important;
+
+/* Hide Leaflet layer switch control (satellite is kept as permanent default) */
+.leaflet-control-layers {
+  display: none !important;
 }

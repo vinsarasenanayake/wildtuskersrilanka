@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -43,7 +43,8 @@ import TuskerSightingsMap from '../components/TuskerSightingsMap';
 import EditSightingModal from '../components/EditSightingModal';
 import ImageUploadBox from '../components/ImageUploadBox';
 import LocationSearchInput from '../components/LocationSearchInput';
-import RiskAssessmentModal from '../components/RiskAssessmentModal';
+// Loaded only when a risk assessment is opened, so the risk data is not part of the main site download
+const RiskAssessmentModal = lazy(() => import('../components/RiskAssessmentModal'));
 import { getCachedAspect, setCachedAspect, probeImageAspect } from '../../utils/photoAspectCache';
 
 /* ── Fullscreen Zoom Lightbox ─────────────────────────────────── */
@@ -2744,13 +2745,15 @@ export default function TuskerProfile() {
                 </p>
               </div>
 
-              <button
-                onClick={() => navigate(`/tuskers/${tusker.id.toLowerCase()}/add-sighting`)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[10px] bg-accent hover:bg-accent-hover text-primary font-sans text-[0.85rem] font-bold transition-all shadow-sm hover:shadow shrink-0 cursor-pointer border-none"
-              >
-                <Plus size={16} />
-                <span>Add Sighting Record</span>
-              </button>
+              {canAddSighting && (
+                <button
+                  onClick={() => navigate(`/tuskers/${tusker.id.toLowerCase()}/add-sighting`)}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[10px] bg-accent hover:bg-accent-hover text-primary font-sans text-[0.85rem] font-bold transition-all shadow-sm hover:shadow shrink-0 cursor-pointer border-none"
+                >
+                  <Plus size={16} />
+                  <span>Add Sighting Record</span>
+                </button>
+              )}
             </div>
 
             {/* Table Container - Dynamic height matching Header + Row 1, scrollable vertically for subsequent rows */}
@@ -3044,6 +3047,8 @@ export default function TuskerProfile() {
             <TuskerSightingsMap
               tusker={tusker}
               onPreviewPhoto={setPreviewModalPhoto}
+              onEditSighting={(info) => setEditingSighting(info)}
+              onEditTusker={() => navigate(`/admin/edit-tusker/${tusker.id.toLowerCase()}`)}
             />
 
             {/* Photographic & Ear Biometric Comparisons Management (Admin View) */}
@@ -3293,10 +3298,12 @@ export default function TuskerProfile() {
 
       {/* Risk Assessment Modal */}
       {showRiskModal && (
-        <RiskAssessmentModal
-          tusker={tusker}
-          onClose={() => setShowRiskModal(false)}
-        />
+        <Suspense fallback={null}>
+          <RiskAssessmentModal
+            tusker={tusker}
+            onClose={() => setShowRiskModal(false)}
+          />
+        </Suspense>
       )}
 
             {/* Gallery-Style Comparison Photo Lightbox with Zoom & Fullscreen */}

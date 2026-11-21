@@ -228,7 +228,7 @@
   {
     "id": "T041",
     "name": "Wasaba",
-    "location": "Minneriya / Kaudulla / Eco park",
+    "location": "Minneriya / Kaudulla / Hurulu Eco Park",
     "riskScore": "66.5",
     "threatLevel": "High"
   },
@@ -357,7 +357,7 @@
   {
     "id": "T064",
     "name": "Mangala",
-    "location": "Kala Wewa / Galgamuwa / Thirappane"
+    "location": "Kala Wewa / Galgamuwa / Tirappane"
   },
   {
     "id": "T065",
@@ -446,7 +446,7 @@
   {
     "id": "T080",
     "name": "Rahula",
-    "location": "Kala Wewa / Galgamuwa / Thirappane"
+    "location": "Kala Wewa / Galgamuwa / Tirappane"
   },
   {
     "id": "T081",
@@ -528,24 +528,24 @@
   {
     "id": "T096",
     "name": "Agbo",
-    "location": "Thirapane / Mannakkattiya / Kanadarawa",
+    "location": "Tirappane / Mannankattiya / Kanadarawa",
     "riskScore": "96.7",
     "threatLevel": "Critical"
   },
   {
     "id": "T097",
     "name": "Meth",
-    "location": "Thirappane / Kala Wewa"
+    "location": "Tirappane / Kala Wewa"
   },
   {
     "id": "T098",
     "name": "Deegayu",
-    "location": "Thirappane / Kala Wewa"
+    "location": "Tirappane / Kala Wewa"
   },
   {
     "id": "T099",
     "name": "Dappula",
-    "location": "Thirappane / Kala Wewa"
+    "location": "Tirappane / Kala Wewa"
   },
   {
     "id": "T100",
@@ -555,22 +555,22 @@
   {
     "id": "T101",
     "name": "Vasu",
-    "location": "Kala Wewa / Galgamuwa / Thirappane"
+    "location": "Kala Wewa / Galgamuwa / Tirappane"
   },
   {
     "id": "T102",
     "name": "Isuru",
-    "location": "Kala Wewa / Galgamuwa / Thirappane"
+    "location": "Kala Wewa / Galgamuwa / Tirappane"
   },
   {
     "id": "T103",
     "name": "Mithra",
-    "location": "Kala Wewa / Galgamuwa / Thirappane"
+    "location": "Kala Wewa / Galgamuwa / Tirappane"
   },
   {
     "id": "T104",
     "name": "Rawana / Hambegamuwe Raja",
-    "location": "Udawalawa"
+    "location": "Udawalawe"
   },
   {
     "id": "T105",
@@ -580,7 +580,7 @@
   {
     "id": "T106",
     "name": "Indra",
-    "location": "Wilpattu / Eluwankulam / Karuwagaswewa / Tabbowa / Puttalam"
+    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam"
   },
   {
     "id": "T107",
@@ -590,63 +590,63 @@
   {
     "id": "T108",
     "name": "Ananda",
-    "location": "Kala wewa / Thirappane",
+    "location": "Kala Wewa / Tirappane",
     "riskScore": "60.5",
     "threatLevel": "High"
   },
   {
     "id": "T109",
     "name": "Denzil",
-    "location": "Udawalawa"
+    "location": "Udawalawe"
   },
   {
     "id": "T110",
     "name": "Anura",
-    "location": "Udawalawa"
+    "location": "Udawalawe"
   },
   {
     "id": "T111",
     "name": "Mugalan",
-    "location": "Udawalawa"
+    "location": "Udawalawe"
   },
   {
     "id": "T112",
     "name": "Aravinda",
-    "location": "Udawalawa"
+    "location": "Udawalawe"
   },
   {
     "id": "T113",
     "name": "Anura",
-    "location": "Udawalawa"
+    "location": "Udawalawe"
   },
   {
     "id": "T114",
     "name": "Sumedha",
-    "location": "Udawalawa",
+    "location": "Udawalawe",
     "riskScore": "71.8",
     "threatLevel": "High"
   },
   {
     "id": "T115",
     "name": "Chandi",
-    "location": "Udawalawa"
+    "location": "Udawalawe"
   },
   {
     "id": "T116",
     "name": "Bullet / Senadhi",
-    "location": "Udawalawa",
+    "location": "Udawalawe",
     "riskScore": "60.6",
     "threatLevel": "High"
   },
   {
     "id": "T117",
     "name": "Walawe Raja",
-    "location": "Udawalawa"
+    "location": "Udawalawe"
   },
   {
     "id": "T118",
     "name": "Vishwa",
-    "location": "Udawalawa"
+    "location": "Udawalawe"
   },
   {
     "id": "T119",
@@ -658,7 +658,7 @@
   {
     "id": "T120",
     "name": "Mangala",
-    "location": "Wilpattu / Eluwankulam / Karuwagaswewa / Tabbowa / Puttalam"
+    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam"
   },
   {
     "id": "T121",
@@ -680,7 +680,7 @@
   {
     "id": "T124",
     "name": "Keshara",
-    "location": "Wilpattu / Eluwankulam / Karuwagaswewa / Tabbowa / Puttalam"
+    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam"
   },
   {
     "id": "T125",
@@ -719,7 +719,7 @@
   {
     "id": "T131",
     "name": "Pushpa",
-    "location": "Wilpattu / Eluwankulam / Karuwagaswewa / Tabbowa / Puttalam"
+    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam"
   },
   {
     "id": "T132",
@@ -763,46 +763,46 @@
   {
     "id": "T139",
     "name": "Theva",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa"
+    "location": "Anuradhapura / Maha Kanadarawa / Kebithigollewa"
   },
   {
     "id": "T140",
     "name": "Pandu",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale"
+    "location": "Anuradhapura / Maha Kanadarawa / Kebithigollewa / Tantirimale"
   },
   {
     "id": "T141",
     "name": "Setta",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale"
+    "location": "Anuradhapura / Maha Kanadarawa / Kebithigollewa / Tantirimale"
   },
   {
     "id": "T142",
     "name": "Bahula",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale"
+    "location": "Anuradhapura / Maha Kanadarawa / Kebithigollewa / Tantirimale"
   },
   {
     "id": "T143",
     "name": "Binara",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
+    "location": "Anuradhapura / Maha Kanadarawa / Kebithigollewa / Tantirimale",
     "sinhala": "බිනර"
   },
   {
     "id": "T144",
     "name": "Welusumana",
-    "location": "Nawagathegama / Karuwalgaswewa / Puttalam / Tabbowa",
+    "location": "Nawagattegama / Karuwalagaswewa / Puttalam / Tabbowa",
     "riskScore": "64.5",
     "threatLevel": "High"
   },
   {
     "id": "T145",
     "name": "Kalladi dala kota",
-    "location": "Nawagathegama / Karuwalgaswewa / Puttalam / Tabbowa",
+    "location": "Nawagattegama / Karuwalagaswewa / Puttalam / Tabbowa",
     "sinhala": "කල්අඩි දළ කොටා"
   },
   {
     "id": "T146",
     "name": "Hemal",
-    "location": "Wasgamuwa / Anganmadiila",
+    "location": "Wasgamuwa / Angammedilla",
     "sinhala": "හේමාල්",
     "riskScore": "65.1",
     "threatLevel": "High"
@@ -810,7 +810,7 @@
   {
     "id": "T147",
     "name": "Aloka",
-    "location": "Wasgamuwa / Anganmadiila",
+    "location": "Wasgamuwa / Angammedilla",
     "sinhala": "ආලෝක",
     "riskScore": "63.9",
     "threatLevel": "High"
@@ -818,31 +818,31 @@
   {
     "id": "T148",
     "name": "Wijaya",
-    "location": "Wasgamuwa / Anganmadiila",
+    "location": "Wasgamuwa / Angammedilla",
     "sinhala": "විජය"
   },
   {
     "id": "T149",
     "name": "Chula",
-    "location": "Maduru oya / Ampara / Toppigala / Chenkaladi",
+    "location": "Maduru Oya / Ampara / Thoppigala / Chenkaladi",
     "sinhala": "චුල"
   },
   {
     "id": "T150",
     "name": "Aditya",
-    "location": "Maduru oya / Ampara / Toppigala / Chenkaladi",
+    "location": "Maduru Oya / Ampara / Thoppigala / Chenkaladi",
     "sinhala": "ආදිත්‍ය"
   },
   {
     "id": "T151",
     "name": "Migara",
-    "location": "Maduru oya / Ampara / Toppigala / Chenkaladi",
+    "location": "Maduru Oya / Ampara / Thoppigala / Chenkaladi",
     "sinhala": "මිගාර"
   },
   {
     "id": "T152",
     "name": "Maha",
-    "location": "Maduru oya / Ampara / Toppigala / Chenkaladi",
+    "location": "Maduru Oya / Ampara / Thoppigala / Chenkaladi",
     "sinhala": "මහ",
     "riskScore": "76.1",
     "threatLevel": "High"
@@ -856,7 +856,7 @@
   {
     "id": "T154",
     "name": "Sumitta",
-    "location": "Wilpattu / Eluwankulam / Karuwagaswewa / Tabbowa / Puttalam",
+    "location": "Wilpattu / Eluwankulam / Karuwalagaswewa / Tabbowa / Puttalam",
     "sinhala": "සුමිත්ත",
     "riskScore": "57.1",
     "threatLevel": "Medium"
@@ -872,37 +872,37 @@
   {
     "id": "T156",
     "name": "Hendrick",
-    "location": "Kala Wewa / Galgamuwa / Thirappane",
+    "location": "Kala Wewa / Galgamuwa / Tirappane",
     "sinhala": "හෙන්ද්‍රික්"
   },
   {
     "id": "T157",
     "name": "Pankaja",
-    "location": "Kala Wewa / Galgamuwa / Thirappane",
+    "location": "Kala Wewa / Galgamuwa / Tirappane",
     "sinhala": "පංකජ"
   },
   {
     "id": "T158",
     "name": "Kumudu",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
+    "location": "Anuradhapura / Maha Kanadarawa / Kebithigollewa / Tantirimale",
     "sinhala": "කුමුදු"
   },
   {
     "id": "T159",
     "name": "Kiran",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
+    "location": "Anuradhapura / Maha Kanadarawa / Kebithigollewa / Tantirimale",
     "sinhala": "කිරාන්"
   },
   {
     "id": "T160",
     "name": "Dharshana",
-    "location": "Minneriya / Kaudulla / Eco park / Polonnaruwa",
+    "location": "Minneriya / Kaudulla / Hurulu Eco Park / Polonnaruwa",
     "sinhala": "දර්ශන"
   },
   {
     "id": "T161",
     "name": "Ashoka",
-    "location": "Minneriya / Kaudulla / Eco park / Polonnaruwa",
+    "location": "Minneriya / Kaudulla / Hurulu Eco Park / Polonnaruwa",
     "sinhala": "අශෝක"
   },
   {
@@ -926,13 +926,13 @@
   {
     "id": "T165",
     "name": "Mahakanadarawa Tusker",
-    "location": "Mahakanadarawa",
+    "location": "Maha Kanadarawa",
     "sinhala": "මහකනදරාච ඇත්දළයා"
   },
   {
     "id": "T166",
     "name": "Walagamba",
-    "location": "Kala wewa",
+    "location": "Kala Wewa",
     "sinhala": "වලගම්බා"
   },
   {
@@ -961,7 +961,7 @@
   {
     "id": "T171",
     "name": "Kelum",
-    "location": "Udawalawa",
+    "location": "Udawalawe",
     "sinhala": "කැලුම්"
   },
   {
@@ -991,13 +991,13 @@
   {
     "id": "T176",
     "name": "Bhathikabaya",
-    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala",
+    "location": "Nawagattegama / Anamaduwa / Mahakumbukkadawala",
     "sinhala": "භාතිකබය"
   },
   {
     "id": "T177",
     "name": "Wasala",
-    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala",
+    "location": "Nawagattegama / Anamaduwa / Mahakumbukkadawala",
     "sinhala": "වාසල",
     "riskScore": "95",
     "threatLevel": "Critical"
@@ -1005,7 +1005,7 @@
   {
     "id": "T178",
     "name": "Maheshakya / Bindula",
-    "location": "Kabithigollewa",
+    "location": "Kebithigollewa",
     "sinhala": "මහේශාක්‍ය / බින්දුල"
   },
   {
@@ -1037,7 +1037,7 @@
   {
     "id": "T183",
     "name": "Diksanda",
-    "location": "Mahakanadarawa / Thirappane",
+    "location": "Maha Kanadarawa / Tirappane",
     "sinhala": "දික්සඳ"
   },
   {
@@ -1071,7 +1071,7 @@
   {
     "id": "T188",
     "name": "Kanchadeva",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
+    "location": "Anuradhapura / Maha Kanadarawa / Kebithigollewa / Tantirimale",
     "sinhala": "කන්චදේව",
     "riskScore": "69.8",
     "threatLevel": "High"
@@ -1079,7 +1079,7 @@
   {
     "id": "T189",
     "name": "Koliya",
-    "location": "Minneriya / Kaudulla / Eco park",
+    "location": "Minneriya / Kaudulla / Hurulu Eco Park",
     "sinhala": "කෝලිය"
   },
   {
@@ -1103,13 +1103,13 @@
   {
     "id": "T193",
     "name": "Nanda",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
+    "location": "Anuradhapura / Maha Kanadarawa / Kebithigollewa / Tantirimale",
     "sinhala": "නන්ද"
   },
   {
     "id": "T194",
     "name": "Rukmal",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
+    "location": "Anuradhapura / Maha Kanadarawa / Kebithigollewa / Tantirimale",
     "sinhala": "රුක්මල්"
   },
   {
@@ -1121,31 +1121,31 @@
   {
     "id": "T196",
     "name": "Asela / Megawarna",
-    "location": "Minneriya / Kaudulla / Eco park",
+    "location": "Minneriya / Kaudulla / Hurulu Eco Park",
     "sinhala": "අසේල / මේඝවර්ණ"
   },
   {
     "id": "T197",
     "name": "Mihindu",
-    "location": "Minneriya / Kaudulla / Eco park",
+    "location": "Minneriya / Kaudulla / Hurulu Eco Park",
     "sinhala": "මිහිඳු"
   },
   {
     "id": "T198",
     "name": "Akil",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
+    "location": "Anuradhapura / Maha Kanadarawa / Kebithigollewa / Tantirimale",
     "sinhala": "අකිල්"
   },
   {
     "id": "T199",
     "name": "Vinayaga",
-    "location": "Ampara / Thoppigala / Chenkaladi / Baticoloa",
+    "location": "Ampara / Thoppigala / Chenkaladi / Batticaloa",
     "sinhala": "விநாயகர்"
   },
   {
     "id": "T200",
     "name": "Ganesha",
-    "location": "Ampara / Thoppigala / Chenkaladi / Baticoloa",
+    "location": "Ampara / Thoppigala / Chenkaladi / Batticaloa",
     "sinhala": "கணேஷா"
   },
   {
@@ -1157,13 +1157,13 @@
   {
     "id": "T202",
     "name": "Kanaka",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
+    "location": "Anuradhapura / Maha Kanadarawa / Kebithigollewa / Tantirimale",
     "sinhala": "කනක"
   },
   {
     "id": "T203",
     "name": "Chandra",
-    "location": "Anuradhapura / Mahakandarawa / Kebathigollewa / Tanthirimale",
+    "location": "Anuradhapura / Maha Kanadarawa / Kebithigollewa / Tantirimale",
     "sinhala": "චන්ද්‍ර"
   },
   {
@@ -1181,13 +1181,13 @@
   {
     "id": "T206",
     "name": "Hasthi",
-    "location": "Kabithigollewa",
+    "location": "Kebithigollewa",
     "sinhala": "හස්ති"
   },
   {
     "id": "T207",
     "name": "Buwaneka",
-    "location": "Kabithigollewa",
+    "location": "Kebithigollewa",
     "sinhala": "බුවනෙක"
   },
   {
@@ -1205,37 +1205,37 @@
   {
     "id": "T210",
     "name": "Vibhitha",
-    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala",
+    "location": "Nawagattegama / Anamaduwa / Mahakumbukkadawala",
     "sinhala": "විභීත"
   },
   {
     "id": "T211",
     "name": "Rakkha",
-    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala",
+    "location": "Nawagattegama / Anamaduwa / Mahakumbukkadawala",
     "sinhala": "රක්ඛ"
   },
   {
     "id": "T212",
     "name": "Subahu",
-    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala",
+    "location": "Nawagattegama / Anamaduwa / Mahakumbukkadawala",
     "sinhala": "සුබාහු"
   },
   {
     "id": "T213",
     "name": "Rakkhitha",
-    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala",
+    "location": "Nawagattegama / Anamaduwa / Mahakumbukkadawala",
     "sinhala": "රක්ඛිත"
   },
   {
     "id": "T214",
     "name": "Ravidewa",
-    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala",
+    "location": "Nawagattegama / Anamaduwa / Mahakumbukkadawala",
     "sinhala": "රවිදේව"
   },
   {
     "id": "T215",
     "name": "Bhusura",
-    "location": "Nawagaththegama / Anamaduwa / Mahakubukkadawala",
+    "location": "Nawagattegama / Anamaduwa / Mahakumbukkadawala",
     "sinhala": "භූසුර"
   },
   {
@@ -1249,7 +1249,7 @@
   {
     "id": "T217",
     "name": "Jayabahu",
-    "location": "Kala Wewa / Galgamuwa / Thirappane",
+    "location": "Kala Wewa / Galgamuwa / Tirappane",
     "sinhala": "ජයබාහු"
   },
   {
@@ -1319,19 +1319,19 @@
   {
     "id": "T228",
     "name": "Vijitha",
-    "location": "Udawalawa",
+    "location": "Udawalawe",
     "sinhala": "විජිත"
   },
   {
     "id": "T229",
     "name": "Gamini",
-    "location": "Ampara / Bundangala",
+    "location": "Ampara / Buddhangala",
     "sinhala": "ගාමිණී"
   },
   {
     "id": "T230",
     "name": "Barana",
-    "location": "Kanadarawa / Willacchiya / Kebithigollewa",
+    "location": "Kanadarawa / Wilachchiya / Kebithigollewa",
     "sinhala": "බරණ"
   },
   {
@@ -1343,7 +1343,7 @@
   {
     "id": "T232",
     "name": "Gajabahu",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "location": "Padaviya / Wahalkada / Kebithigollewa / Yan Oya",
     "sinhala": "ගජබාහු",
     "riskScore": "78.9",
     "threatLevel": "High"
@@ -1351,7 +1351,7 @@
   {
     "id": "T233",
     "name": "Gamendra",
-    "location": "Ampara / Thoppigala / Chenkaladi / Baticoloa",
+    "location": "Ampara / Thoppigala / Chenkaladi / Batticaloa",
     "sinhala": "ගාමේන්ද්‍ර"
   },
   {
@@ -1363,7 +1363,7 @@
   {
     "id": "T235",
     "name": "Deegayu",
-    "location": "Ampara / Thoppigala / Chenkaladi / Baticoloa",
+    "location": "Ampara / Thoppigala / Chenkaladi / Batticaloa",
     "sinhala": "දීඝායු"
   },
   {
@@ -1409,13 +1409,13 @@
   {
     "id": "T242",
     "name": "Deeghabaya",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "location": "Padaviya / Wahalkada / Kebithigollewa / Yan Oya",
     "sinhala": "දීඝාභය"
   },
   {
     "id": "T243",
     "name": "Megha",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "location": "Padaviya / Wahalkada / Kebithigollewa / Yan Oya",
     "sinhala": "මේඝ",
     "riskScore": "71.7",
     "threatLevel": "High"
@@ -1423,7 +1423,7 @@
   {
     "id": "T244",
     "name": "Mahosha",
-    "location": "Kala wewa / Mahakanadarawa / Thirappane",
+    "location": "Kala Wewa / Maha Kanadarawa / Tirappane",
     "sinhala": "මහෝෂ"
   },
   {
@@ -1497,13 +1497,13 @@
   {
     "id": "T256",
     "name": "Revatha 2",
-    "location": "Saagama / Deegawapi",
+    "location": "Sagama / Deeghavapi",
     "sinhala": "දෙවන රේවත"
   },
   {
     "id": "T257",
     "name": "Devendra",
-    "location": "Medawachchiya / Mahakanadarawa",
+    "location": "Medawachchiya / Maha Kanadarawa",
     "sinhala": "දේවේන්ද්‍ර"
   },
   {
@@ -1527,13 +1527,13 @@
   {
     "id": "T261",
     "name": "Kenul",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "location": "Padaviya / Wahalkada / Kebithigollewa / Yan Oya",
     "sinhala": "කෙනුල්"
   },
   {
     "id": "T262",
     "name": "Vessagiri",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "location": "Padaviya / Wahalkada / Kebithigollewa / Yan Oya",
     "sinhala": "වෙස්සගිරී"
   },
   {
@@ -1545,7 +1545,7 @@
   {
     "id": "T264",
     "name": "Eka Dantha",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "location": "Padaviya / Wahalkada / Kebithigollewa / Yan Oya",
     "sinhala": "ඒක දන්ත",
     "riskScore": "63.8",
     "threatLevel": "High"
@@ -1553,7 +1553,7 @@
   {
     "id": "T265",
     "name": "Kovida",
-    "location": "Minneriya / Kaudulla / Eco park",
+    "location": "Minneriya / Kaudulla / Hurulu Eco Park",
     "sinhala": "කෝවිද"
   },
   {
@@ -1571,13 +1571,13 @@
   {
     "id": "T268",
     "name": "Dathiya",
-    "location": "Minneriya / Kaudulla / Eco park",
+    "location": "Minneriya / Kaudulla / Hurulu Eco Park",
     "sinhala": "දාඨිය"
   },
   {
     "id": "T269",
     "name": "Sankadathu",
-    "location": "Wilpattu / Pomparippu / Silavathura",
+    "location": "Wilpattu / Pomparippu / Silavathurai",
     "sinhala": "සංඛදතු",
     "riskScore": "55.5",
     "threatLevel": "Medium"
@@ -1585,19 +1585,19 @@
   {
     "id": "T270",
     "name": "Neelagiri",
-    "location": "Lahugala / Sengamuwa / Pothuvil",
+    "location": "Lahugala / Sengamuwa / Pottuvil",
     "sinhala": "නීලගිරි"
   },
   {
     "id": "T271",
     "name": "Shiva",
-    "location": "Minneriya / Kaudulla / Eco park",
+    "location": "Minneriya / Kaudulla / Hurulu Eco Park",
     "sinhala": "ශිව"
   },
   {
     "id": "T272",
     "name": "Vibhishana",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "location": "Padaviya / Wahalkada / Kebithigollewa / Yan Oya",
     "sinhala": "විභීෂණ"
   },
   {
@@ -1615,19 +1615,19 @@
   {
     "id": "T275",
     "name": "Buddhi",
-    "location": "Minneriya / Kaudulla / Eco park",
+    "location": "Minneriya / Kaudulla / Hurulu Eco Park",
     "sinhala": "බුද්ධි"
   },
   {
     "id": "T276",
     "name": "Ranadheera",
-    "location": "Wilpattu / Pomparippu / Silavathura",
+    "location": "Wilpattu / Pomparippu / Silavathurai",
     "sinhala": "රණධීර"
   },
   {
     "id": "T277",
     "name": "Rakhitha",
-    "location": "Thirappane / Nachchaduwa",
+    "location": "Tirappane / Nachchaduwa",
     "sinhala": "රඛිත"
   },
   {
@@ -1651,19 +1651,19 @@
   {
     "id": "T281",
     "name": "Harshana",
-    "location": "Wasgamuwa / Anganmadiila",
+    "location": "Wasgamuwa / Angammedilla",
     "sinhala": "හර්ශණ"
   },
   {
     "id": "T282",
     "name": "Ilanaga",
-    "location": "Wasgamuwa / Anganmadiila",
+    "location": "Wasgamuwa / Angammedilla",
     "sinhala": "ඉලනාග"
   },
   {
     "id": "T283",
     "name": "Kuwera",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "location": "Padaviya / Wahalkada / Kebithigollewa / Yan Oya",
     "sinhala": "කුවේර"
   },
   {
@@ -1681,7 +1681,7 @@
   {
     "id": "T286",
     "name": "Vibodhi",
-    "location": "Thirappane / Nachchaduwa",
+    "location": "Tirappane / Nachchaduwa",
     "sinhala": "විබෝධි"
   },
   {
@@ -1701,7 +1701,7 @@
   {
     "id": "T289",
     "name": "Prathapa",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "location": "Padaviya / Wahalkada / Kebithigollewa / Yan Oya",
     "sinhala": "ප්‍රතාප",
     "riskScore": "60.2",
     "threatLevel": "High"
@@ -1715,13 +1715,13 @@
   {
     "id": "T291",
     "name": "Shakya",
-    "location": "Mahakanadara / Wilachchiya / Mihintale",
+    "location": "Maha Kanadarawa / Wilachchiya / Mihintale",
     "sinhala": "ශාක්‍ය"
   },
   {
     "id": "T292",
     "name": "Giriba",
-    "location": "Padaviya / Wahalkada / Kabithigollewa / Yan Oya",
+    "location": "Padaviya / Wahalkada / Kebithigollewa / Yan Oya",
     "sinhala": "ගිරිබා",
     "riskScore": "60.2",
     "threatLevel": "High"
@@ -1729,7 +1729,7 @@
   {
     "id": "T293",
     "name": "Veedhiya",
-    "location": "Mannankattiya / Mihinthale / Mahakanadara / Thirappane",
+    "location": "Mannankattiya / Mihintale / Maha Kanadarawa / Tirappane",
     "sinhala": "වීදිය"
   },
   {
@@ -1741,7 +1741,7 @@
   {
     "id": "T295",
     "name": "Lankeshwara",
-    "location": "Mannankattiya / Mihinthale / Mahakanadara / Thirappane",
+    "location": "Mannankattiya / Mihintale / Maha Kanadarawa / Tirappane",
     "sinhala": "ලංකේශ්වර",
     "riskScore": "63.7",
     "threatLevel": "High"
@@ -1749,19 +1749,19 @@
   {
     "id": "T296",
     "name": "Sandagiri",
-    "location": "Mannankattiya / Mihinthale / Mahakanadara / Thirappane",
+    "location": "Mannankattiya / Mihintale / Maha Kanadarawa / Tirappane",
     "sinhala": "සඳගිරි"
   },
   {
     "id": "T297",
     "name": "Arya",
-    "location": "Wilpattu / Eluwankulama / Pomparippu / Silavathura",
+    "location": "Wilpattu / Eluwankulama / Pomparippu / Silavathurai",
     "sinhala": "ආර්ය"
   },
   {
     "id": "T298",
     "name": "Madulu",
-    "location": "Galoya / Iginiyagala",
+    "location": "Galoya / Inginiyagala",
     "sinhala": "මවුලු"
   },
   {
@@ -1783,7 +1783,7 @@
   {
     "id": "T301",
     "name": "Prahastha",
-    "location": "Pothana / Eluwankulama / Willpatthu / Thabbowa",
+    "location": "Pothana / Eluwankulama / Wilpattu / Tabbowa",
     "sinhala": "ප්‍රහස්ථ"
   },
   {
@@ -1795,7 +1795,7 @@
   {
     "id": "T303",
     "name": "Rudhraja",
-    "location": "Horowpathana / Kahatagasdigiliya / Kabithigollewa",
+    "location": "Horowpathana / Kahatagasdigiliya / Kebithigollewa",
     "sinhala": "රුද්‍රජ"
   },
   {
@@ -1819,7 +1819,7 @@
   {
     "id": "T307",
     "name": "Girikula",
-    "location": "Udawalawa / Mawara",
+    "location": "Udawalawe / Mau Ara",
     "sinhala": "ගිරිකුල"
   },
   {
@@ -1831,13 +1831,13 @@
   {
     "id": "T309",
     "name": "Jagadvijaya",
-    "location": "Eluwankulama / Thabbowa / Karuwalagaswewa",
+    "location": "Eluwankulama / Tabbowa / Karuwalagaswewa",
     "sinhala": "ජගද්විජය"
   },
   {
     "id": "T310",
     "name": "Bulatha",
-    "location": "Galenbindunuwewa / Mihinthale",
+    "location": "Galenbindunuwewa / Mihintale",
     "sinhala": "බුලතා",
     "riskScore": "64",
     "threatLevel": "High"
@@ -1851,7 +1851,7 @@
   {
     "id": "T312",
     "name": "Kambili",
-    "location": "Kabithigollewa / Kahatagasdigiliya",
+    "location": "Kebithigollewa / Kahatagasdigiliya",
     "sinhala": "කම්බිලි",
     "riskScore": "73.2",
     "threatLevel": "High"
@@ -1859,7 +1859,7 @@
   {
     "id": "T313",
     "name": "Dasakantha",
-    "location": "Kabithigollewa / Kahatagasdigiliya",
+    "location": "Kebithigollewa / Kahatagasdigiliya",
     "sinhala": "දශකන්ථ"
   },
   {
@@ -1879,7 +1879,7 @@
   {
     "id": "T316",
     "name": "Rangha",
-    "location": "Galenbindunuwewa / Mihinthale",
+    "location": "Galenbindunuwewa / Mihintale",
     "sinhala": "රංග",
     "recordedBy": "Binura Hasaranga",
     "nicknameGivenBy": "Binura Hasaranga",
@@ -1942,7 +1942,7 @@
   {
     "id": "T322",
     "name": "Theja",
-    "location": "Udawalawa",
+    "location": "Udawalawe",
     "sinhala": "තේජ",
     "recordedBy": "Saranga Deva de Alwis, Danuja Palihawadana, Dakshina Palihawadana",
     "nicknameGivenBy": "Saranga Deva de Alwis, Danuja Palihawadana, Dakshina Palihawadana",
@@ -1952,7 +1952,7 @@
   {
     "id": "T323",
     "name": "Meghadutha",
-    "location": "Athimale",
+    "location": "Ethimale",
     "sinhala": "මේඝදූත",
     "recordedBy": "Niklesh Mahanama",
     "nicknameGivenBy": "Niklesh Mahanama",
@@ -1963,7 +1963,7 @@
   {
     "id": "T324",
     "name": "Dhanuraja",
-    "location": "Butthala / Wellawaya / Okkampitiya",
+    "location": "Buttala / Wellawaya / Okkampitiya",
     "sinhala": "ධනුරාජ",
     "recordedBy": "Maduranga Bandara",
     "nicknameGivenBy": "Maduranga Bandara",
@@ -1972,7 +1972,7 @@
   {
     "id": "T325",
     "name": "Veerabahu",
-    "location": "Butthala / Wellawaya / Okkampitiya",
+    "location": "Buttala / Wellawaya / Okkampitiya",
     "sinhala": "වීරබාහු",
     "recordedBy": "Maduranga Bandara",
     "nicknameGivenBy": "Maduranga Bandara",
@@ -1981,7 +1981,7 @@
   {
     "id": "T326",
     "name": "Chandragiri",
-    "location": "Butthala / Wellawaya / Handapanagala",
+    "location": "Buttala / Wellawaya / Handapanagala",
     "sinhala": "චන්ද්‍රගිරි",
     "recordedBy": "Maduranga Bandara",
     "nicknameGivenBy": "Maduranga Bandara",
@@ -1993,7 +1993,7 @@
   {
     "id": "T327",
     "name": "Sahas",
-    "location": "Butthala / Wellawaya / Lunugamvehera",
+    "location": "Buttala / Wellawaya / Lunugamvehera",
     "sinhala": "සහස්",
     "recordedBy": "Maduranga Bandara",
     "nicknameGivenBy": "Maduranga Bandara",
@@ -2003,7 +2003,7 @@
   {
     "id": "T328",
     "name": "Prabash",
-    "location": "Maha Kanadarawa / Mihinthale / Rambawa",
+    "location": "Maha Kanadarawa / Mihintale / Rambawa",
     "sinhala": "ප්‍රභාෂ්",
     "recordedBy": "Binura Warnakulasooriya",
     "nicknameGivenBy": "Binura Warnakulasooriya",

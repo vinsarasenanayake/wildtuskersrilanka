@@ -22,7 +22,7 @@ const ESRI_CREDIT = 'Imagery &copy; Esri, Maxar, Earthstar Geographics, and the 
  * Satellite is shown by default.
  * Returns { satellite: LayerGroup, map: TileLayer, control }.
  */
-export function addBaseLayers(L, map, { position = 'topright' } = {}) {
+export function addBaseLayers(L, map, { position = 'topright', showControl = false } = {}) {
   // Satellite imagery; if a Clarity tile is missing, use the standard imagery tile
   const imagery = L.tileLayer(ESRI_CLARITY, { maxZoom: 19, maxNativeZoom: 18, attribution: ESRI_CREDIT });
   imagery.on('tileerror', (e) => {
@@ -44,9 +44,14 @@ export function addBaseLayers(L, map, { position = 'topright' } = {}) {
       })
     : L.tileLayer(OSM_STANDARD, { maxZoom: 19, attribution: osmCredit });
 
+  // Default to satellite on every map
   satellite.addTo(map);
-  const control = L.control
-    .layers({ Satellite: satellite, Map: street }, null, { position, collapsed: false })
-    .addTo(map);
+
+  let control = null;
+  if (showControl) {
+    control = L.control
+      .layers({ Satellite: satellite, Map: street }, null, { position, collapsed: false })
+      .addTo(map);
+  }
   return { satellite, map: street, control };
 }

@@ -17,6 +17,7 @@ const STATUS_COLORS = { Alive: '#16a34a', 'No Recent Record': '#d97706', Decease
 const statusColor = (s) => STATUS_COLORS[s] || '#0b2518';
 
 function areaNameFor(t) {
+  // 1. Latest verified field sighting (Row 2+):
   const list = [...(t.sightings || [])].sort((a, b) =>
     String(b.captureDate || '').localeCompare(String(a.captureDate || '')) || (b.id || 0) - (a.id || 0)
   );
@@ -24,10 +25,20 @@ function areaNameFor(t) {
     const loc = cleanAreaName(parseSightingDetails(s).location);
     if (loc) return { name: loc, source: 'Latest sighting', date: s.captureDate };
   }
-  const last = cleanAreaName(t.lastSeenArea);
-  if (last) return { name: last, source: 'Last seen area' };
-  const reg = cleanAreaName(t.location);
-  if (reg) return { name: reg, source: 'Registered location' };
+
+  // 2. Recorded Last Seen Area (t.lastSeenArea):
+  const lastArea = cleanAreaName(t.lastSeenArea);
+  if (lastArea) {
+    const isDeceased = t.livingStatus === 'Deceased';
+    return {
+      name: lastArea,
+      source: isDeceased ? 'Last seen / Final location' : 'Last seen area',
+      date: isDeceased ? (t.deathYear ? String(t.deathYear) : t.lastSeen) : t.lastSeen,
+    };
+  }
+
+  // 3. NO baseline location (t.location) or roaming corridor on full map:
+  // If neither latest sighting nor lastSeenArea is available, do NOT show him on the map!
   return null;
 }
 
@@ -96,7 +107,7 @@ export default function TuskerMap() {
     if (!withArea.length) return undefined;
     let active = true;
     const names = new Map();
-    withArea.forEach(({ area }) => { if (area) names.set(areaKey(area.name), area.name); });
+    withArea.forEach(({ area }) => { if (area?.name) names.set(areaKey(area.name), area.name); });
 
     const initial = {};
     names.forEach((name, key) => { initial[key] = instantAreaShape(name); });
@@ -315,16 +326,20 @@ export default function TuskerMap() {
                     <span className="text-accent font-mono text-xs mr-1.5">{t.id}</span>{t.name}
                   </span>
                   <span className={`block text-[0.72rem] truncate ${group ? 'text-[#7a8a82]' : 'text-[#b0bab4] italic'}`}>
-                    {group ? group.title : area ? `${area.name} · not found on map` : 'No area recorded'}
+                    {group
+                      ? `${group.title} · ${area?.source || 'Last location'}`
+                      : 'No last seen location recorded · Not on map'}
                   </span>
                 </span>
               </button>
             ))}
             {!loading && tuskerRows.length === 0 && <p className="p-4 text-sm text-[#7a8a82]">No tuskers match these filters.</p>}
             {unplaced.length > 0 && (
-              <p className="px-4 py-3 text-[0.7rem] text-[#8a9b92] m-0">
-                {unplaced.length === 1 ? '1 tusker is' : `${unplaced.length} tuskers are`} not on the map (no area recorded, or the area could not be found).
-              </p>
+              <div className="p-3 text-[0.72rem] text-[#8a9b92] bg-[#f9faf9] border-t border-[#edf2ef]">
+                <p className="m-0 leading-relaxed">
+                  {unplaced.length} {unplaced.length === 1 ? 'tusker has' : 'tuskers have'} no verified last location recorded (awaiting field sighting).
+                </p>
+              </div>
             )}
           </div>
         </aside>
