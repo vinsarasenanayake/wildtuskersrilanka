@@ -156,6 +156,7 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
     keyboardShortcuts: false,
     clickableIcons: false,
     gestureHandling,
+    isFractionalZoomEnabled: true, // smoother wheel/trackpad zoom where Google supports it
   });
   // Google draws a grey "can't load Google Maps correctly" box on errors
   // (quota reached, key problems). Spot it and switch to the free maps.
@@ -314,14 +315,26 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
 }
 
 /* ── Leaflet implementation (free fallback) ───────────────────────── */
-function createLeafletMap(L, container, { center, zoom, gestureHandling }) {
+function createLeafletMap(L, container, { center, zoom, gestureHandling: _gestureHandling }) {
   if (container._leaflet_id) delete container._leaflet_id;
   const map = L.map(container, {
     center,
     zoom,
     zoomControl: true,
     attributionControl: false,
-    scrollWheelZoom: gestureHandling !== 'cooperative',
+    preferCanvas: true, // Hardware-accelerated GPU canvas for vector polygons and paths
+    zoomSnap: 0.5,      // Fluid zoom step increments
+    zoomDelta: 0.5,      // Responsive zooming
+    wheelPxPerZoomLevel: 55, // Responsive mouse wheel zooming
+    wheelDebounceTime: 15,
+    scrollWheelZoom: true,
+    inertia: true,
+    inertiaDeceleration: 3000,
+    inertiaMaxSpeed: 2000,
+    zoomAnimation: true,
+    zoomAnimationThreshold: 4,
+    fadeAnimation: true,
+    markerZoomAnimation: true,
   });
   addBaseLayers(L, map, { defaultLayer: 'satellite', showControl: false });
   const areaLayer = L.layerGroup().addTo(map);
