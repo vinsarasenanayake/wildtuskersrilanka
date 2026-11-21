@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { X, CheckCircle2, Save, MapPin, Camera, Calendar, UserCheck } from 'lucide-react';
 import TuskerMultiSelect from './TuskerMultiSelect';
 import LocationSearchInput from './LocationSearchInput';
+import { todayLocalISO } from '../../utils/localDate';
 
 /**
  * EditGalleryPhotoModal
@@ -19,7 +20,7 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
     location: photo?.location || '',
     photographer: photo?.photographer || '',
     photographerContact: photo?.photographerContact || '',
-    date: photo?.date || new Date().toISOString().split('T')[0],
+    date: photo?.date || todayLocalISO(),
     status: photo?.status || 'approved',
   });
 

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Search, MapPin, X, ChevronDown, ArrowRight, PlusCircle, Radar, ArrowUpDown, Check } from 'lucide-react';
 import { useTuskerList } from '../../controllers/useTusker';
 import { useAuth } from '../../controllers/useAuth';
@@ -17,7 +17,6 @@ const SORT_OPTIONS = [
 ];
 
 export default function WildTuskersList() {
-  const navigate = useNavigate();
   const { isAdmin } = useAuth();
   const {
     filtered,
@@ -130,7 +129,7 @@ export default function WildTuskersList() {
               onFocus={() => nameQuery && setShowNameSugg(true)}
             />
             {nameQuery && (
-              <button className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]" onClick={clearFilters}>
+              <button aria-label="Clear name search" className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]" onClick={clearFilters}>
                 <X size={14} />
               </button>
             )}
@@ -193,7 +192,7 @@ export default function WildTuskersList() {
                   <MapPin size={12} className="text-accent shrink-0" />
                   <span className="flex-1 text-[#111111] font-medium">{loc}</span>
                   <span className="ml-auto text-[0.78rem] text-[#aaaaaa]">
-                    {countInArea(loc)} tuskers
+                    {countInArea(loc)} {countInArea(loc) === 1 ? 'tusker' : 'tuskers'}
                   </span>
                 </li>
               ))}
@@ -309,10 +308,10 @@ export default function WildTuskersList() {
       ) : filtered.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-8 min-h-[60vh] content-start">
           {filtered.map(tusker => (
-            <div
+            <Link
               key={tusker.id}
-              className="flex flex-col gap-2.5 cursor-pointer group content-auto"
-              onClick={() => navigate(`/tuskers/${tusker.id.toLowerCase()}`)}
+              to={`/tuskers/${tusker.id.toLowerCase()}`}
+              className="flex flex-col gap-2.5 cursor-pointer group content-auto no-underline text-inherit"
             >
               <div className="w-full aspect-square bg-[#e8e8e8] rounded-[6px] relative overflow-hidden flex flex-col items-center justify-center gap-1 transition-opacity duration-200 group-hover:opacity-82">
                 {tusker.livingStatus && tusker.livingStatus !== 'Alive' && (
@@ -352,7 +351,7 @@ export default function WildTuskersList() {
                   <span className="truncate">{tusker.location || 'Location not recorded'}</span>
                 </p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       ) : (

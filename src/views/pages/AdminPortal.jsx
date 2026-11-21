@@ -19,6 +19,7 @@ import StatusBadge from '../components/StatusBadge';
 import ImageUploadBox from '../components/ImageUploadBox';
 import EditGalleryPhotoModal from '../components/EditGalleryPhotoModal';
 import LocationSearchInput from '../components/LocationSearchInput';
+import { todayLocalISO } from '../../utils/localDate';
 
 /* ==============================================================
    CENTRAL ADMINISTRATIVE CONSOLE COMPONENT
@@ -59,7 +60,7 @@ export default function AdminPortal() {
   const [unlistedFormData, setUnlistedFormData] = useState({
     id: '',
     location: '',
-    listedDate: new Date().toISOString().split('T')[0],
+    listedDate: todayLocalISO(),
     recordedBy: 'WTS Admin',
     description: '',
     specialMarks: '',
@@ -279,7 +280,7 @@ export default function AdminPortal() {
       setUnlistedFormData({
         id: '',
         location: '',
-        listedDate: new Date().toISOString().split('T')[0],
+        listedDate: todayLocalISO(),
         recordedBy: 'WTS Admin',
         description: '',
         specialMarks: '',
@@ -1005,11 +1006,21 @@ export default function AdminPortal() {
                                 to="/projects"
                                 className="p-1.5 rounded-lg text-[#5a6c63] hover:text-[#0b2518] hover:bg-[#eef3f0] transition-all"
                                 title="View in feed"
+                                aria-label="View in feed"
                               >
                                 <Eye size={16} />
                               </Link>
+                              <Link
+                                to={`/admin/edit-event/${e.id}`}
+                                className="p-1.5 rounded-lg text-[#5a6c63] hover:text-[#0b2518] hover:bg-[#eef3f0] transition-all"
+                                title="Edit event"
+                                aria-label="Edit event"
+                              >
+                                <Edit3 size={16} />
+                              </Link>
                               <button
                                 onClick={() => handleDeleteEvent(e.id, e.title)}
+                                aria-label="Delete event"
                                 className="p-1.5 rounded-lg text-[#dc2626] hover:bg-[#fee2e2] transition-all border-none bg-transparent cursor-pointer"
                                 title="Delete event"
                               >

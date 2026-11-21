@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, CalendarPlus } from 'lucide-react';
 import { useEventForm } from '../../controllers/useProjects';
 import { useAuth } from '../../controllers/useAuth';
@@ -7,6 +7,8 @@ import ImageUploadBox from '../components/ImageUploadBox';
 
 export default function EventForm() {
   const navigate = useNavigate();
+  const { id: eventId } = useParams();
+  const isEdit = Boolean(eventId);
 
   const {
     formData,
@@ -14,12 +16,13 @@ export default function EventForm() {
     handleChange,
     handleImagesChange,
     createEvent,
-  } = useEventForm();
+    loadingEvent,
+  } = useEventForm(eventId);
   const { isAdmin, authLoading } = useAuth();
 
   useEffect(() => {
-    document.title = 'Wild Tuskers Sri Lanka | Create Event';
-  }, []);
+    document.title = `Wild Tuskers Sri Lanka | ${isEdit ? 'Edit Event' : 'Create Event'}`;
+  }, [isEdit]);
 
   useEffect(() => {
     // Admin check inside view
@@ -48,7 +51,7 @@ export default function EventForm() {
             <div className="w-[50px] h-[50px] rounded-[12px] bg-accent/12 text-accent flex items-center justify-center mb-1">
               <CalendarPlus size={20} />
             </div>
-            <h1 className="font-sans text-[1.6rem] font-bold text-[#111111] m-0">Create New Event</h1>
+            <h1 className="font-sans text-[1.6rem] font-bold text-[#111111] m-0">{isEdit ? 'Edit Event' : 'Create New Event'}</h1>
             <p className="font-sans text-[0.88rem] text-[#777777] max-w-[480px] leading-6 m-0">Add a past or upcoming event to the WTS projects timeline</p>
           </div>
 
@@ -146,9 +149,9 @@ export default function EventForm() {
               <button type="button" className="bg-none border-1.5 border-[#e8e8e8] text-[#555555] font-sans text-[0.88rem] font-semibold rounded-[10px] px-6 py-3 cursor-pointer hover:bg-[#f7f7f8] hover:text-[#222222] transition-all" onClick={() => navigate(-1)}>
                 Cancel
               </button>
-              <button type="submit" className="bg-primary text-white border-none font-sans text-[0.88rem] font-semibold rounded-[10px] px-7 py-3 cursor-pointer flex items-center gap-1.5 shadow-[0_4px_14px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-primary-light hover:shadow-[0_6px_20px_rgba(11,37,24,0.25)] transition-all">
+              <button type="submit" disabled={loadingEvent} className="disabled:opacity-60 bg-primary text-white border-none font-sans text-[0.88rem] font-semibold rounded-[10px] px-7 py-3 cursor-pointer flex items-center gap-1.5 shadow-[0_4px_14px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-primary-light hover:shadow-[0_6px_20px_rgba(11,37,24,0.25)] transition-all">
                 <Save size={16} />
-                <span>Create Event</span>
+                <span>{isEdit ? 'Save Changes' : 'Create Event'}</span>
               </button>
             </div>
           </form>

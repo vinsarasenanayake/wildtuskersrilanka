@@ -9,6 +9,8 @@ import {
 } from '../models/GalleryModel';
 import { useAuth } from './useAuth';
 import { uploadMediaFile } from '../utils/storageUpload';
+import { todayLocalISO } from '../utils/localDate';
+import { friendlyError } from '../utils/friendlyError';
 
 export function useGallery() {
   const [photos, setPhotos] = useState([]);
@@ -110,7 +112,7 @@ export function useGallerySubmit(onSuccess) {
     title: '',
     tuskerName: '',
     location: '',
-    date: new Date().toISOString().split('T')[0],
+    date: todayLocalISO(),
     photographer: '',
     photographerContact: '',
     image: null,
@@ -202,6 +204,10 @@ export function useGallerySubmit(onSuccess) {
       setError("Please provide the photographer's name.");
       return;
     }
+    if ((formData.tuskerName || '').length > 200) {
+      setError('Too many tuskers selected for one photo. Please select fewer tuskers.');
+      return;
+    }
 
     try {
       setSubmitting(true);
@@ -219,7 +225,7 @@ export function useGallerySubmit(onSuccess) {
       setSuccessMsg(true);
       if (onSuccess) onSuccess();
     } catch (err) {
-      setError(err.message || 'Failed to submit photo(s).');
+      setError(friendlyError(err) || 'Failed to submit photo(s).');
     } finally {
       setSubmitting(false);
     }
@@ -230,7 +236,7 @@ export function useGallerySubmit(onSuccess) {
       title: '',
       tuskerName: '',
       location: '',
-      date: new Date().toISOString().split('T')[0],
+      date: todayLocalISO(),
       photographer: '',
       photographerContact: '',
       image: null,

@@ -8,6 +8,7 @@ import {
 } from '../models/SpecialObservationsModel';
 import { useAuth } from './useAuth';
 import { uploadMediaFile } from '../utils/storageUpload';
+import { todayLocalISO } from '../utils/localDate';
 
 /* ==============================================================
    SECTION 1: SPECIAL OBSERVATIONS PUBLIC FEED CONTROLLER
@@ -102,7 +103,7 @@ export function useSpecialObservationForm(id) {
   const [formData, setFormData] = useState({
     title: '',
     tuskerName: '',
-    date: new Date().toISOString().split('T')[0],
+    date: todayLocalISO(),
     location: '',
     description: '',
     images: [],

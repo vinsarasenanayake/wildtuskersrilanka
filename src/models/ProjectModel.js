@@ -29,3 +29,20 @@ export async function addEvent(event, type) {
 export async function deleteEvent(id) {
   unwrap(await supabase.from('events').delete().eq('id', Number(id)));
 }
+
+export async function getEventById(id) {
+  const { data, error } = await supabase.from('events').select('*').eq('id', Number(id)).maybeSingle();
+  if (error) throw error;
+  return data ? fromRow(data) : null;
+}
+
+export async function updateEvent(id, event, type) {
+  unwrap(await supabase.from('events').update({
+    type: type === 'upcoming' ? 'upcoming' : 'past',
+    date: event.date,
+    title: event.title,
+    description: event.description,
+    shared_by: event.sharedBy,
+    image: event.image || null,
+  }).eq('id', Number(id)));
+}

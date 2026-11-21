@@ -151,6 +151,7 @@ export default function FieldNoteForm() {
                 <input
                   type="text"
                   name="author"
+                  maxLength={200}
                   required
                   className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15"
                   placeholder="Enter your name"
@@ -197,6 +198,7 @@ export default function FieldNoteForm() {
                   <input
                     type="time"
                     name="time"
+                  maxLength={50}
                     required
                     className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15"
                     value={formData.time || ''}
@@ -212,6 +214,7 @@ export default function FieldNoteForm() {
                   <input
                     type="text"
                     name="title"
+                  maxLength={300}
                     required
                     className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15"
                     placeholder="e.g. Minneriya National Park - Sighting of Tusker Mahasen"
@@ -228,6 +231,7 @@ export default function FieldNoteForm() {
                 </label>
                 <textarea
                   name="description"
+                  maxLength={20000}
                   required
                   className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15 resize-y leading-relaxed"
                   rows="6"

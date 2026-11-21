@@ -8,6 +8,8 @@ import {
 } from '../models/FieldNotesModel';
 import { useAuth } from './useAuth';
 import { uploadMediaFile } from '../utils/storageUpload';
+import { todayLocalISO } from '../utils/localDate';
+import { friendlyError } from '../utils/friendlyError';
 
 /* ==============================================================
    SECTION 1: FIELD NOTES PUBLIC FEED & ADMIN REVIEW CONTROLLER
@@ -97,7 +99,7 @@ export function useFieldNoteForm() {
     author: isAdmin ? 'WTS Admin' : '',
     authorContact: '',
     title: '',
-    date: new Date().toISOString().split('T')[0],
+    date: todayLocalISO(),
     time: '',
     description: '',
     specialNote: '',
@@ -194,7 +196,7 @@ export function useFieldNoteForm() {
         status
       });
     } catch (err) {
-      setError(`Could not submit your field note: ${err.message}`);
+      setError(`Could not submit your field note: ${friendlyError(err)}`);
       return null;
     } finally {
       setSubmitting(false);

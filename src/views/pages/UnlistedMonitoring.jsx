@@ -5,6 +5,7 @@ import { Search, MapPin, X, ChevronDown, PlusCircle, Trash2, ShieldAlert } from 
 import { useUnlistedTuskers } from '../../controllers/useUnlistedTuskers';
 import ImageUploadBox from '../components/ImageUploadBox';
 import LocationSearchInput from '../components/LocationSearchInput';
+import { todayLocalISO } from '../../utils/localDate';
 
 export default function UnlistedMonitoring() {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ export default function UnlistedMonitoring() {
   const [newFormData, setNewFormData] = useState({
     id: '',
     location: '',
-    listedDate: new Date().toISOString().split('T')[0],
+    listedDate: todayLocalISO(),
     recordedBy: 'WTS Admin',
     description: '',
     specialMarks: '',
@@ -92,7 +93,7 @@ export default function UnlistedMonitoring() {
     setNewFormData({
       id: '',
       location: 'Yala',
-      listedDate: new Date().toISOString().split('T')[0],
+      listedDate: todayLocalISO(),
       recordedBy: 'WTS Admin',
       description: '',
       specialMarks: '',
@@ -149,7 +150,7 @@ export default function UnlistedMonitoring() {
             Unlisted Monitoring
           </h1>
           <p className="font-sans text-[0.95rem] text-[#777777] max-w-[640px] leading-relaxed">
-            {tuskers.length} unlisted tuskers under active observation across Sri Lanka
+            {tuskers.length} unlisted {tuskers.length === 1 ? 'tusker' : 'tuskers'} under active observation across Sri Lanka
           </p>
         </div>
 

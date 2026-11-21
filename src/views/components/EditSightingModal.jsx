@@ -5,6 +5,7 @@ import LocationSearchInput from './LocationSearchInput';
 import ImageUploadBox from './ImageUploadBox';
 import { parseSightingDetails, THREAT_LEVELS } from '../../models/TuskerModel';
 import { getLocationCoordinates } from '../../utils/sriLankaLocations';
+import { todayLocalISO } from '../../utils/localDate';
 
 const INPUT_CLASS =
   'w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.9rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12';
@@ -19,7 +20,7 @@ function getInitialFormData(sightingObj) {
     return {
       imageUrl: '',
       images: [],
-      captureDate: new Date().toISOString().split('T')[0],
+      captureDate: todayLocalISO(),
       author: 'WTS Admin',
       location: '',
       healthCondition: 'Good',
@@ -60,7 +61,7 @@ function getInitialFormData(sightingObj) {
     }
   }
   if (!captureDate) {
-    captureDate = new Date().toISOString().split('T')[0];
+    captureDate = todayLocalISO();
   }
 
   // Extract location
@@ -229,7 +230,7 @@ export default function EditSightingModal({
               </h3>
             </div>
           </div>
-          <button
+          <button aria-label="Close"
             type="button"
             onClick={onClose}
             className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border-none cursor-pointer transition-colors"

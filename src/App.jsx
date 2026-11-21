@@ -71,6 +71,7 @@ function App() {
           <Route path="/admin/edit-observation/:id" element={<RequireAdmin><SpecialObservationForm /></RequireAdmin>} />
           <Route path="/admin/tusker-map" element={<RequireAdmin><TuskerMap /></RequireAdmin>} />
           <Route path="/admin/create-event" element={<RequireAdmin><EventForm /></RequireAdmin>} />
+          <Route path="/admin/edit-event/:id" element={<RequireAdmin><EventForm /></RequireAdmin>} />
 
           {/* Anything else */}
           <Route path="*" element={<NotFound />} />

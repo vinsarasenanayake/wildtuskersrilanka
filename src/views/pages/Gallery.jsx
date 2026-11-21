@@ -162,7 +162,7 @@ function normalizeTuskerName(str) {
   };
 
   useEffect(() => {
-    document.title = 'Wild Tuskers Sri Lanka | Wild Tuskers Sri Lanka Gallery';
+    document.title = 'Wild Tuskers Sri Lanka | Gallery';
   }, []);
 
   return (
@@ -799,7 +799,7 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
               Contribute your field photography to the Wild Tuskers Sri Lanka gallery.
             </p>
           </div>
-          <button
+          <button aria-label="Close"
             onClick={onClose}
             className="w-8 h-8 rounded-full bg-[#f4f4f4] hover:bg-[#e8e8e8] text-[#555555] flex items-center justify-center border-none cursor-pointer transition-colors"
           >
@@ -888,6 +888,7 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
                 <input
                   type="text"
                   name="photographer"
+                  maxLength={200}
                   placeholder="Enter your name"
                   value={formData.photographer}
                   onChange={handleChange}

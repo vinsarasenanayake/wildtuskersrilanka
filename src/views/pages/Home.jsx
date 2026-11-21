@@ -59,13 +59,13 @@ export default function Home() {
         <div className="w-full max-w-[620px] flex flex-col items-center gap-2.5 sm:gap-3 lg:gap-3.5 ml-auto">
           
           {/* 1. Logo (Enlarged to fill space above and below) */}
-          <div className="flex justify-center items-center w-full">
+          <h1 className="flex justify-center items-center w-full m-0 p-0 text-[0px] leading-none">
             <img
               src={wtsLogo}
-              alt="Wild Tusker Sri Lanka"
+              alt="Wild Tuskers Sri Lanka"
               className="w-full max-w-[480px] sm:max-w-[560px] md:max-w-[600px] lg:max-w-[620px] max-h-[260px] sm:max-h-[290px] lg:max-h-[330px] h-auto object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.85)]"
             />
-          </div>
+          </h1>
 
           {/* 2. Mission Statement (Enlarged and center-aligned) */}
           <div className="text-center w-full m-0 px-1 flex flex-col gap-2">

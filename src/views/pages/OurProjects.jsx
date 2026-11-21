@@ -70,9 +70,17 @@ export default function OurProjects() {
                       Organized by <strong>{event.sharedBy}</strong>
                     </p>
                   </div>
-                  <button className="bg-none border border-[#e0e0e0] rounded-[6px] px-2 py-1.5 text-[#888888] cursor-pointer shrink-0 hover:bg-[#f5f5f5] hover:text-[#333333] transition-colors self-center flex items-center justify-center" aria-label="More options">
-                    <ChevronRight size={18} />
-                  </button>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      className="bg-none border border-[#e0e0e0] rounded-[6px] px-2 py-1.5 text-[#888888] cursor-pointer shrink-0 hover:bg-[#f5f5f5] hover:text-[#333333] transition-colors self-center flex items-center justify-center"
+                      aria-label={`Edit event: ${event.title}`}
+                      title="Edit event"
+                      onClick={() => navigate(`/admin/edit-event/${event.id}`)}
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -128,9 +136,17 @@ export default function OurProjects() {
                     </p>
                   </div>
 
-                  <button className="bg-none border border-[#e0e0e0] rounded-[6px] px-2 py-1.5 text-[#888888] cursor-pointer shrink-0 hover:bg-[#f5f5f5] hover:text-[#333333] transition-colors self-center flex items-center justify-center" aria-label="More options">
-                    <ChevronRight size={18} />
-                  </button>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      className="bg-none border border-[#e0e0e0] rounded-[6px] px-2 py-1.5 text-[#888888] cursor-pointer shrink-0 hover:bg-[#f5f5f5] hover:text-[#333333] transition-colors self-center flex items-center justify-center"
+                      aria-label={`Edit event: ${event.title}`}
+                      title="Edit event"
+                      onClick={() => navigate(`/admin/edit-event/${event.id}`)}
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>

@@ -12,10 +12,28 @@ import {
 } from '../models/TuskerModel';
 import { useAuth } from './useAuth';
 import { getLocationCoordinates } from '../utils/sriLankaLocations';
+import { todayLocalISO } from '../utils/localDate';
 
 /* ==============================================================
    SECTION 1: WILD TUSKERS DIRECTORY & SEARCH CONTROLLER
 ============================================================== */
+// Whole-name check: a tusker is in an area only when one of its listed
+// places IS that area (not merely contains the same letters, so "Madu"
+// no longer matches "Maduru Oya" and "Yala Block 3" no longer matches
+// every Yala tusker). "Yala" still includes its numbered blocks.
+const sameArea = (aLow, targetLower) => {
+  if (aLow === targetLower) return true;
+  if (aLow === targetLower + 'a' || targetLower === aLow + 'a') return true;
+  if (aLow.startsWith('yala block') && targetLower.startsWith('block') && aLow.endsWith(targetLower)) return true;
+  if (targetLower.startsWith('yala block') && aLow.startsWith('block') && targetLower.endsWith(aLow)) return true;
+  if (targetLower === 'yala' && aLow.startsWith('yala block')) return true;
+  if (aLow === 'maha kanadarawa' && targetLower === 'kanadarawa') return true;
+  if (targetLower === 'maha kanadarawa' && aLow === 'kanadarawa') return true;
+  if (aLow === 'horowpathana' && targetLower === 'horopathana ehg') return true;
+  if (targetLower === 'horowpathana' && aLow === 'horopathana ehg') return true;
+  return false;
+};
+
 export function useTuskerList() {
   const [tuskers, setTuskers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,8 +80,9 @@ export function useTuskerList() {
     return map;
   }, [tuskers]);
 
-  // Fast check whether tusker roams in target area (O(1) array check, no regex)
-  const tuskerRoamsIn = useCallback((t, area) => {
+  // partial = true while the visitor is still typing (e.g. "Thab"), so any
+  // place name containing the typed letters matches.
+  const tuskerRoamsIn = useCallback((t, area, partial = false) => {
     if (!area) return true;
     const targetLower = area.toLowerCase().trim();
     if (!targetLower) return true;
@@ -72,19 +91,7 @@ export function useTuskerList() {
       ...splitAreas(t.lastSeenArea),
     ].map(a => a.toLowerCase().trim());
 
-    return areas.some(aLow => {
-      if (aLow === targetLower) return true;
-      if (aLow.includes(targetLower)) return true;
-      if (targetLower.includes(aLow) && aLow.length >= 3) return true;
-      if (aLow === targetLower + 'a' || targetLower === aLow + 'a') return true;
-      if (aLow.startsWith('yala block') && targetLower.startsWith('block') && aLow.endsWith(targetLower)) return true;
-      if (targetLower.startsWith('yala block') && aLow.startsWith('block') && targetLower.endsWith(aLow)) return true;
-      if (aLow === 'maha kanadarawa' && targetLower === 'kanadarawa') return true;
-      if (targetLower === 'maha kanadarawa' && aLow === 'kanadarawa') return true;
-      if (aLow === 'horowpathana' && targetLower === 'horopathana ehg') return true;
-      if (targetLower === 'horowpathana' && aLow === 'horopathana ehg') return true;
-      return false;
-    });
+    return areas.some(aLow => sameArea(aLow, targetLower) || (partial && aLow.includes(targetLower)));
   }, [tuskerAreasMap]);
 
   // Pre-aggregate distinct locations, compute counts, and pre-sort once per dataset change
@@ -278,7 +285,7 @@ export function useTuskerList() {
     }
     const activeLoc = selectedLocation || locationQuery.trim();
     if (activeLoc) {
-      list = list.filter(t => tuskerRoamsIn(t, activeLoc));
+      list = list.filter(t => tuskerRoamsIn(t, activeLoc, !selectedLocation));
     }
     if (statusFilter !== 'ALL') {
       list = list.filter(t => t.livingStatus === statusFilter);
@@ -396,7 +403,7 @@ export function useSightingForm(tuskerId) {
   const [formData, setFormData] = useState({
     imageUrl: '',
     imageUrls: [],
-    captureDate: new Date().toISOString().split('T')[0],
+    captureDate: todayLocalISO(),
     author: isAdmin ? 'WTS Admin' : 'WTS Researcher',
     note: '',
     lastSeenArea: '',
@@ -475,6 +482,10 @@ export function useSightingForm(tuskerId) {
 
     if (finalUrls.length === 0 || !captureDate) {
       setError('Please provide at least one photo and capture date.');
+      return false;
+    }
+    if (!String(formData.lastSeenArea || '').trim()) {
+      setError('Please add the location where this sighting was recorded.');
       return false;
     }
 
@@ -642,6 +653,10 @@ export function useTuskerForm(id) {
 
     if (!f.id || !f.name) {
       setError('Please fill in the Tusker ID and Name.');
+      return false;
+    }
+    if (!String(f.location || '').trim()) {
+      setError('Please add at least one roaming area.');
       return false;
     }
     if (f.deathYear && !/^\d{4}$/.test(f.deathYear)) {

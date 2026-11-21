@@ -1,5 +1,6 @@
 import { supabase, fromRow, toRow } from '../lib/supabaseClient';
 import { uploadMediaFile } from '../utils/storageUpload';
+import { todayLocalISO } from '../utils/localDate';
 
 /* ==============================================================
    SECTION 1: STARTER SEED PHOTOS (Fallback if table is empty)
@@ -7,8 +8,8 @@ import { uploadMediaFile } from '../utils/storageUpload';
 export const DEFAULT_GALLERY = [
   {
     id: 1,
-    title: 'T048 - Abhaya',
-    tuskerName: 'T048 - Abhaya',
+    title: 'T048 - Abaya',
+    tuskerName: 'T048 - Abaya',
     location: 'Kaudulla',
     date: '2026-11-15',
     photographer: 'WTS Admin',
@@ -167,8 +168,8 @@ export const DEFAULT_GALLERY = [
   },
   {
     id: 17,
-    title: 'T107 - Gajabahu',
-    tuskerName: 'T107 - Gajabahu',
+    title: 'T107 - Gajaba',
+    tuskerName: 'T107 - Gajaba',
     location: 'Yan Oya',
     date: '2026-11-15',
     photographer: 'WTS Admin',
@@ -177,8 +178,8 @@ export const DEFAULT_GALLERY = [
   },
   {
     id: 18,
-    title: 'T074 - Puttuwa',
-    tuskerName: 'T074 - Puttuwa',
+    title: 'T074 - Galgamuwa Puttuwa',
+    tuskerName: 'T074 - Galgamuwa Puttuwa',
     location: 'Galgamuwa',
     date: '2026-11-15',
     photographer: 'WTS Admin',
@@ -187,8 +188,8 @@ export const DEFAULT_GALLERY = [
   },
   {
     id: 19,
-    title: 'T012 - Gamunu',
-    tuskerName: 'T012 - Gamunu',
+    title: 'T012 - Gemunu',
+    tuskerName: 'T012 - Gemunu',
     location: 'Yala',
     date: '2026-11-15',
     photographer: 'WTS Admin',
@@ -237,8 +238,8 @@ export const DEFAULT_GALLERY = [
   },
   {
     id: 24,
-    title: 'T075 - Kawanthissa',
-    tuskerName: 'T075 - Kawanthissa',
+    title: 'T075 - Kawantissa / Gajaba',
+    tuskerName: 'T075 - Kawantissa / Gajaba',
     location: 'Galgamuwa',
     date: '2026-11-15',
     photographer: 'WTS Admin',
@@ -287,8 +288,8 @@ export const DEFAULT_GALLERY = [
   },
   {
     id: 29,
-    title: 'T037 - Mahasen',
-    tuskerName: 'T037 - Mahasen',
+    title: 'T037 - Mahasen / Enigma',
+    tuskerName: 'T037 - Mahasen / Enigma',
     location: 'Minneriya',
     date: '2026-11-15',
     photographer: 'WTS Admin',
@@ -397,8 +398,8 @@ export const DEFAULT_GALLERY = [
   },
   {
     id: 40,
-    title: 'T017 - Podi Dananjaya',
-    tuskerName: 'T017 - Podi Dananjaya',
+    title: 'T017 - Podi Dhananjaya',
+    tuskerName: 'T017 - Podi Dhananjaya',
     location: 'Yala',
     date: '2026-11-15',
     photographer: 'WTS Admin',
@@ -437,8 +438,8 @@ export const DEFAULT_GALLERY = [
   },
   {
     id: 44,
-    title: 'T056 - Revatha',
-    tuskerName: 'T056 - Revatha',
+    title: 'T056 - Rewatha',
+    tuskerName: 'T056 - Rewatha',
     location: 'Kala Wewa',
     date: '2026-11-15',
     photographer: 'WTS Admin',
@@ -507,8 +508,8 @@ export const DEFAULT_GALLERY = [
   },
   {
     id: 51,
-    title: 'T039 - Unicorn',
-    tuskerName: 'T039 - Unicorn',
+    title: 'T039 - Single Tusker (Unicorn)',
+    tuskerName: 'T039 - Single Tusker (Unicorn)',
     location: 'Minneriya',
     date: '2026-11-15',
     photographer: 'WTS Admin',
@@ -619,7 +620,7 @@ export async function submitGalleryPhoto(form) {
     title: form.title,
     tusker_name: form.tuskerName || null,
     location: form.location || null,
-    date: form.date || new Date().toISOString().split('T')[0],
+    date: form.date || todayLocalISO(),
     photographer: form.photographer,
     photographer_contact: form.photographerContact || null,
     status: 'pending',

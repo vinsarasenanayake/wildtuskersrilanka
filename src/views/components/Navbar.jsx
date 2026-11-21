@@ -70,12 +70,14 @@ export default function Navbar() {
         {/* Brand / Logo */}
         <Link to="/" className="flex items-center gap-[0.75rem] shrink-0">
           <div className="flex items-center justify-center">
-            <img src={wtsLogo} className="block h-[52px] w-auto object-contain" alt="Wild Tusker Sri Lanka Logo" />
+            <img src={wtsLogo} className="block h-[52px] w-auto object-contain" alt="Wild Tuskers Sri Lanka Logo" />
           </div>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center flex-1 justify-center px-4">
+        {/* Full menu only when it fits on one line (wider for admins, who
+            have two buttons on the right); narrower screens use the ☰ menu. */}
+        <nav className={`hidden ${isAdmin ? 'min-[1536px]:flex' : 'min-[1440px]:flex'} items-center flex-1 justify-center px-4`}>
           <ul className="flex list-none items-center gap-4 lg:gap-5 xl:gap-7 2xl:gap-8">
             {visibleNavItems.map((item) => {
               const IconComponent = item.icon;
@@ -165,7 +167,7 @@ export default function Navbar() {
           )}
 
           <button
-            className="flex lg:hidden items-center justify-center p-2 text-white opacity-85 hover:opacity-100 transition-opacity duration-200"
+            className={`flex ${isAdmin ? 'min-[1536px]:hidden' : 'min-[1440px]:hidden'} items-center justify-center p-2 text-white opacity-85 hover:opacity-100 transition-opacity duration-200`}
             onClick={toggleMenu}
             aria-label="Toggle Navigation"
           >
@@ -193,6 +195,7 @@ export default function Navbar() {
           <button
             className="flex items-center justify-center p-1.5 text-text-dark rounded-[4px] hover:bg-border transition-colors cursor-pointer"
             onClick={closeMenu}
+            aria-label="Close navigation"
           >
             <X size={24} />
           </button>
@@ -278,7 +281,7 @@ export default function Navbar() {
               <span>Admin Login</span>
             </Link>
           )}
-          <p className="font-sans text-[0.75rem] text-text-muted text-center mb-0">© 2026 Wild Tusker Sri Lanka</p>
+          <p className="font-sans text-[0.75rem] text-text-muted text-center mb-0">© 2026 Wild Tuskers Sri Lanka</p>
         </div>
       </div>
     </header>

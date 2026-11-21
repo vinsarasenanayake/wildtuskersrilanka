@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getEvents, addEvent } from '../models/ProjectModel';
+import { getEvents, addEvent, getEventById, updateEvent } from '../models/ProjectModel';
 import { useAuth } from './useAuth';
 
 /* ==============================================================
@@ -30,7 +30,7 @@ export function useProjectFeed() {
 /* ==============================================================
    SECTION 2: EVENT CREATION FORM CONTROLLER
 ============================================================== */
-export function useEventForm() {
+export function useEventForm(eventId) {
   const [formData, setFormData] = useState({
     title: '',
     date: '',
@@ -41,6 +41,31 @@ export function useEventForm() {
     images: [],
   });
   const [error, setError] = useState('');
+  const [loadingEvent, setLoadingEvent] = useState(Boolean(eventId));
+
+  // Editing: load the saved event into the form
+  useEffect(() => {
+    if (!eventId) return;
+    let active = true;
+    getEventById(eventId)
+      .then(ev => {
+        if (!active) return;
+        if (!ev) { setError('This event could not be found.'); return; }
+        const images = ev.image ? ev.image.split(',').map(s => s.trim()).filter(Boolean) : [];
+        setFormData({
+          title: ev.title || '',
+          date: ev.date || '',
+          type: ev.type === 'past' ? 'past' : 'upcoming',
+          description: ev.description || '',
+          sharedBy: ev.sharedBy || '',
+          image: ev.image || '',
+          images,
+        });
+      })
+      .catch(err => { if (active) setError(`Could not load event: ${err.message}`); })
+      .finally(() => { if (active) setLoadingEvent(false); });
+    return () => { active = false; };
+  }, [eventId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -69,13 +94,9 @@ export function useEventForm() {
       : (image ? image : null);
 
     try {
-      await addEvent({
-        title,
-        date,
-        description,
-        sharedBy,
-        image: finalImage,
-      }, type);
+      const payload = { title, date, description, sharedBy, image: finalImage };
+      if (eventId) await updateEvent(eventId, payload, type);
+      else await addEvent(payload, type);
     } catch (err) {
       setError(`Could not save event: ${err.message}`);
       return false;
@@ -91,5 +112,6 @@ export function useEventForm() {
     handleChange,
     handleImagesChange,
     createEvent,
+    loadingEvent,
   };
 }

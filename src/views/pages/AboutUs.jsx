@@ -284,7 +284,7 @@ export default function AboutUs() {
                   >
                     Cancel
                   </button>
-                  <button
+                  <button aria-label="Save"
                     type="submit"
                     disabled={saving}
                     className="px-6 py-2.5 text-xs font-bold text-white bg-primary hover:bg-primary-light rounded-lg border-none shadow-sm cursor-pointer flex items-center gap-1.5 disabled:opacity-60"

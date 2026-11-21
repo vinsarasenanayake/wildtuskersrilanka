@@ -3136,7 +3136,7 @@ export default function TuskerProfile() {
                       </span>
                     </div>
                     <span className="text-[0.72rem] font-bold px-2 py-0.5 rounded-full bg-white border border-[#d5d5d5] text-[#555555]">
-                      {Array.isArray(tusker.photographicComparison) ? tusker.photographicComparison.length : 0} records
+                      {Array.isArray(tusker.photographicComparison) ? tusker.photographicComparison.length : 0} {Array.isArray(tusker.photographicComparison) && tusker.photographicComparison.length === 1 ? 'record' : 'records'}
                     </span>
                   </div>
 
@@ -3232,7 +3232,7 @@ export default function TuskerProfile() {
                       </span>
                     </div>
                     <span className="text-[0.72rem] font-bold px-2 py-0.5 rounded-full bg-white border border-[#d5d5d5] text-[#555555]">
-                      {Array.isArray(tusker.earComparison) ? tusker.earComparison.length : 0} records
+                      {Array.isArray(tusker.earComparison) ? tusker.earComparison.length : 0} {Array.isArray(tusker.earComparison) && tusker.earComparison.length === 1 ? 'record' : 'records'}
                     </span>
                   </div>
 

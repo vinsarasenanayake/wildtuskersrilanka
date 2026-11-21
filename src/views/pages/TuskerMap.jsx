@@ -255,7 +255,7 @@ export default function TuskerMap() {
               <MapPin size={18} className="text-accent" /> Tusker Map
             </h1>
             <p className="text-xs text-[#6a7c73] m-0 mt-1">
-              {loading ? 'Loading tuskers…' : `${filtered.length} tuskers · ${shownCount} on the map across ${groups.length} areas`}
+              {loading ? 'Loading tuskers…' : `${filtered.length} ${filtered.length === 1 ? 'tusker' : 'tuskers'} · ${shownCount} on the map across ${groups.length} ${groups.length === 1 ? 'area' : 'areas'}`}
             </p>
 
             <div className="relative mt-3">

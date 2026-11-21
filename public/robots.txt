@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /unlisted
+
+Sitemap: https://wildtuskersrilanka.vercel.app/sitemap.xml
