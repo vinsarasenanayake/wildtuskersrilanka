@@ -21,7 +21,7 @@ let googlePromise = null;
 // If Google refuses the key (demo limit reached, key expired, billing off…)
 // we remember it for a few hours and use the free maps instead.
 const BROKEN_FLAG = 'wts_google_maps_failed_at';
-const RETRY_AFTER_MS = 6 * 60 * 60 * 1000; // try Google again after 6 hours
+const RETRY_AFTER_MS = 30 * 60 * 1000; // try Google again after 30 minutes
 
 function readBrokenFlag() {
   try {
