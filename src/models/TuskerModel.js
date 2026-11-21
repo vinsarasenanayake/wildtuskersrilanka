@@ -276,15 +276,42 @@ async function queryTuskers(build) {
   return unwrap(res);
 }
 
-export async function getTuskers() {
-  const rows = await queryTuskers((q) => q);
-  return rows.map(mapTusker).sort((a, b) => compareTuskerId(a.id, b.id));
+let tuskersCache = null;
+let tuskersCacheTime = 0;
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5-minute memory cache for instant navigation
+
+export function invalidateTuskersCache() {
+  tuskersCache = null;
+  tuskersCacheTime = 0;
 }
 
-export async function getTuskerById(id) {
+export async function getTuskers(forceRefresh = false) {
+  const now = Date.now();
+  if (!forceRefresh && tuskersCache && (now - tuskersCacheTime < CACHE_TTL_MS)) {
+    return tuskersCache;
+  }
+  const rows = await queryTuskers((q) => q);
+  const result = rows.map(mapTusker).sort((a, b) => compareTuskerId(a.id, b.id));
+  tuskersCache = result;
+  tuskersCacheTime = now;
+  return result;
+}
+
+export async function getTuskerById(id, forceRefresh = false) {
   if (!id) return null;
-  const row = await queryTuskers((q) => q.eq('id', id.toUpperCase()).maybeSingle());
-  return row ? mapTusker(row) : null;
+  const upper = id.toUpperCase();
+  if (!forceRefresh && tuskersCache) {
+    const cached = tuskersCache.find(t => t.id === upper);
+    if (cached) return cached;
+  }
+  const row = await queryTuskers((q) => q.eq('id', upper).maybeSingle());
+  const mapped = row ? mapTusker(row) : null;
+  if (mapped && tuskersCache) {
+    const idx = tuskersCache.findIndex(t => t.id === upper);
+    if (idx >= 0) tuskersCache[idx] = mapped;
+    else tuskersCache.push(mapped);
+  }
+  return mapped;
 }
 
 export async function tuskerExists(id) {
@@ -303,6 +330,7 @@ export async function addTusker(tusker) {
   }
   const row = toRow(payload, TUSKER_FIELDS);
   unwrap(await supabase.from('tuskers').insert(row));
+  invalidateTuskersCache();
 }
 
 export async function updateTusker(id, updated) {
@@ -313,10 +341,12 @@ export async function updateTusker(id, updated) {
   }
   const row = toRow(payload, TUSKER_FIELDS.filter(f => f !== 'id'));
   unwrap(await supabase.from('tuskers').update(row).eq('id', id.toUpperCase()));
+  invalidateTuskersCache();
 }
 
 export async function deleteTusker(id) {
   unwrap(await supabase.from('tuskers').delete().eq('id', id.toUpperCase()));
+  invalidateTuskersCache();
 }
 
 export async function addSightingToTusker(tuskerId, sighting) {
@@ -332,6 +362,7 @@ export async function addSightingToTusker(tuskerId, sighting) {
   if (row?.id && pin) {
     await saveSightingLocation(row.id, pin, locationNameFromNote(note));
   }
+  invalidateTuskersCache();
 }
 
 export async function updateSighting(sightingId, sighting) {
@@ -347,10 +378,12 @@ export async function updateSighting(sightingId, sighting) {
   if (sighting.author !== undefined) payload.author = sighting.author;
   unwrap(await supabase.from('tusker_sightings').update(payload).eq('id', sightingId));
   await saveSightingLocation(sightingId, pin, locationNameFromNote(payload.note));
+  invalidateTuskersCache();
 }
 
 export async function deleteSighting(sightingId) {
   unwrap(await supabase.from('tusker_sightings').delete().eq('id', sightingId));
+  invalidateTuskersCache();
 }
 
 /* ==============================================================

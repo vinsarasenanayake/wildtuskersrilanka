@@ -159,11 +159,28 @@ export default function WildTuskersList() {
               value={locationQuery}
               onChange={e => handleLocInput(e.target.value)}
               onFocus={focusLocation}
+              onClick={() => setShowLocDrop(true)}
             />
-            {locationQuery
-              ? <button type="button" aria-label="Clear location filter" className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]" onMouseDown={clearLocation}><X size={14} /></button>
-              : <button type="button" aria-label="Toggle location list" className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]" onClick={() => { if (showLocDrop) setShowLocDrop(false); else focusLocation(); }}><ChevronDown size={14} /></button>
-            }
+            <div className="flex items-center gap-1.5 shrink-0">
+              {locationQuery && (
+                <button
+                  type="button"
+                  aria-label="Clear location filter"
+                  className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]"
+                  onMouseDown={clearLocation}
+                >
+                  <X size={14} />
+                </button>
+              )}
+              <button
+                type="button"
+                aria-label="Toggle location list"
+                className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]"
+                onClick={() => setShowLocDrop(prev => !prev)}
+              >
+                <ChevronDown size={14} className={`transition-transform duration-200 ${showLocDrop ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
           </div>
           {showLocDrop && locSuggestions.length > 0 && (
             <ul className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white border-1.5 border-[#e8e8e8] rounded-[10px] shadow-[0_8px_24px_rgba(0,0,0,0.1)] z-[200] list-none m-0 py-1.5 max-h-[320px] overflow-y-auto">
@@ -294,7 +311,7 @@ export default function WildTuskersList() {
           {filtered.map(tusker => (
             <div
               key={tusker.id}
-              className="flex flex-col gap-2.5 cursor-pointer group"
+              className="flex flex-col gap-2.5 cursor-pointer group content-auto"
               onClick={() => navigate(`/tuskers/${tusker.id.toLowerCase()}`)}
             >
               <div className="w-full aspect-square bg-[#e8e8e8] rounded-[6px] relative overflow-hidden flex flex-col items-center justify-center gap-1 transition-opacity duration-200 group-hover:opacity-82">
@@ -307,11 +324,6 @@ export default function WildTuskersList() {
                 )}
                 {tusker.photos && tusker.photos[0] ? (
                   <img
-                    ref={(el) => {
-                      if (el && el.complete && el.naturalWidth > 0 && el.naturalHeight > 0) {
-                        setCachedAspect(tusker.photos[0], el.naturalHeight > el.naturalWidth);
-                      }
-                    }}
                     src={thumbUrl(tusker.photos[0])}
                     alt={tusker.name}
                     loading="lazy"

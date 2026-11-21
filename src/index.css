@@ -18,7 +18,7 @@
 
 @layer base {
   html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto; /* Fast, responsive 1:1 hardware scroll */
   }
   body {
     font-family: var(--font-sans);
@@ -61,6 +61,12 @@
 
   .animate-fade-in {
     animation: fade-in 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  /* GPU-efficient offscreen rendering containment */
+  .content-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 320px;
   }
 }
 

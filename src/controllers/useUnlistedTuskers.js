@@ -40,9 +40,10 @@ export function useUnlistedTuskers() {
 
   const locSuggestions = useMemo(() => {
     const q = locationQuery.trim().toLowerCase();
-    if (!q) return allLocations;
+    const isBrowsingAll = !q || (selectedLocation && q === selectedLocation.toLowerCase().trim());
+    if (isBrowsingAll) return allLocations;
     return allLocations.filter(loc => loc.toLowerCase().includes(q));
-  }, [allLocations, locationQuery]);
+  }, [allLocations, locationQuery, selectedLocation]);
 
   const handleSearchInput = (val) => {
     setSearchQuery(val);

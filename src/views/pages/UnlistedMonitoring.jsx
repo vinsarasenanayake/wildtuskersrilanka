@@ -201,17 +201,28 @@ export default function UnlistedMonitoring() {
               value={locationQuery}
               onChange={e => handleLocInput(e.target.value)}
               onFocus={focusLocation}
+              onClick={() => setShowLocDrop(true)}
             />
-            {locationQuery ? (
+            <div className="flex items-center gap-1.5 shrink-0">
+              {locationQuery && (
+                <button
+                  type="button"
+                  aria-label="Clear location filter"
+                  className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]"
+                  onMouseDown={clearLocation}
+                >
+                  <X size={14} />
+                </button>
+              )}
               <button
+                type="button"
+                aria-label="Toggle location list"
                 className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]"
-                onMouseDown={clearLocation}
+                onClick={() => setShowLocDrop(prev => !prev)}
               >
-                <X size={14} />
+                <ChevronDown size={14} className={`transition-transform duration-200 ${showLocDrop ? 'rotate-180' : ''}`} />
               </button>
-            ) : (
-              <ChevronDown size={14} className="text-[#aaaaaa] shrink-0 pointer-events-none" />
-            )}
+            </div>
           </div>
 
           {showLocDrop && locSuggestions.length > 0 && (
@@ -256,7 +267,7 @@ export default function UnlistedMonitoring() {
           {filtered.map(item => (
             <div
               key={item.id}
-              className="flex flex-col gap-2.5 cursor-pointer group relative"
+              className="flex flex-col gap-2.5 cursor-pointer group relative content-auto"
               onClick={() => navigate('/unlisted/' + encodeURIComponent(item.id.toLowerCase().replace(/\s+/g, '-')))}
             >
               {/* Square Image / Placeholder */}
@@ -265,6 +276,8 @@ export default function UnlistedMonitoring() {
                   <img
                     src={item.photos[0]}
                     alt={item.id}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover absolute inset-0"
                   />
                 ) : null}

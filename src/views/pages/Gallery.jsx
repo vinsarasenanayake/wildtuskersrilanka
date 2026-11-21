@@ -249,7 +249,7 @@ function normalizeTuskerName(str) {
               <div
                 key={item.id}
                 onClick={() => setActivePhoto(item)}
-                className="group relative aspect-[3/4] sm:aspect-[4/5] rounded-[22px] overflow-hidden cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.15)] transition-all duration-300 bg-[#e8ece9]"
+                className="group relative aspect-[3/4] sm:aspect-[4/5] rounded-[22px] overflow-hidden cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.15)] transition-all duration-300 bg-[#e8ece9] content-auto"
               >
                 {/* Edge-to-edge photo filling entire card */}
                 <img
@@ -257,6 +257,7 @@ function normalizeTuskerName(str) {
                   alt={item.title}
                   className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                   loading="lazy"
+                  decoding="async"
                 />
 
                 {/* Subtle Hover Gradient Overlay with details */}

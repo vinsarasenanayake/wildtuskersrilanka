@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   getTuskers,
   getTuskerById,
@@ -30,49 +30,106 @@ export function useTuskerList() {
     return () => { active = false; };
   }, []);
 
-  // Roaming areas are often combined ("Minneriya / Kaudulla") or
-  // list multiple park blocks ("Yala Block 3,5"), so expand blocks and
-  // split them into individual areas for the filter.
+  // Roaming areas and last-seen locations are often combined corridors
+  // (e.g. "Anuradhapura / Maha Kanadarawa / Kebithigollewa / Tantirimale")
+  // or list multiple park blocks ("Yala Block 3,5"), so expand blocks and
+  // split them into discrete individual locations for filtering.
   const splitAreas = (loc) => {
-    if (!loc) return [];
-    const normalized = loc.replace(
-      /(\b(?:Yala\s+)?Block\s+)(\d+)\s*,\s*(\d+)/gi,
-      (_, prefix, n1, n2) => `${prefix}${n1} / ${prefix}${n2}`
+    if (!loc || loc === 'null') return [];
+    const expanded = String(loc).replace(
+      /(\b(?:Yala\s+)?Block\s+)(\d+)(?:\s*,\s*(\d+))+/gi,
+      (match, prefix) => {
+        const nums = match.match(/\d+/g) || [];
+        return nums.map(n => prefix.trim() + ' ' + n).join(' / ');
+      }
     );
-    return normalized
-      .split(/[/,]/)
-      .map((a) => a.trim())
+    return expanded
+      .split(/[/,;]/)
+      .map((a) => a.replace(/\(.*?\)/g, '').trim())
       .filter((a) => Boolean(a) && !/^\d+$/.test(a));
   };
 
-  const allLocations = useMemo(() => {
-    const byKey = new Map();
-    // 1. Gather all areas documented across tuskers (both location and lastSeenArea)
+  // 1. Pre-index each tusker's separated areas once when dataset updates
+  const tuskerAreasMap = useMemo(() => {
+    const map = new Map();
     tuskers.forEach(t => {
-      splitAreas(t.location).forEach(a => {
-        const key = a.toLowerCase();
-        if (!byKey.has(key)) byKey.set(key, a);
-      });
-      splitAreas(t.lastSeenArea).forEach(a => {
-        const key = a.toLowerCase();
-        if (!byKey.has(key)) byKey.set(key, a);
-      });
+      const areas = [
+        ...splitAreas(t.location),
+        ...splitAreas(t.lastSeenArea),
+      ].map(a => a.toLowerCase().trim());
+      map.set(t.id, areas);
     });
-    return [...byKey.values()].sort((a, b) => a.localeCompare(b));
+    return map;
   }, [tuskers]);
 
-  const tuskerRoamsIn = (t, area) => {
+  // Fast check whether tusker roams in target area (O(1) array check, no regex)
+  const tuskerRoamsIn = useCallback((t, area) => {
     if (!area) return true;
-    const target = area.toLowerCase().trim();
-    const areas = [
+    const targetLower = area.toLowerCase().trim();
+    if (!targetLower) return true;
+    const areas = tuskerAreasMap.get(t.id) || [
       ...splitAreas(t.location),
       ...splitAreas(t.lastSeenArea),
-    ];
-    return areas.some(a => {
-      const aLow = a.toLowerCase().trim();
-      return aLow === target || aLow.includes(target) || target.includes(aLow);
+    ].map(a => a.toLowerCase().trim());
+
+    return areas.some(aLow => {
+      if (aLow === targetLower) return true;
+      if (aLow.includes(targetLower)) return true;
+      if (targetLower.includes(aLow) && aLow.length >= 3) return true;
+      if (aLow === targetLower + 'a' || targetLower === aLow + 'a') return true;
+      if (aLow.startsWith('yala block') && targetLower.startsWith('block') && aLow.endsWith(targetLower)) return true;
+      if (targetLower.startsWith('yala block') && aLow.startsWith('block') && targetLower.endsWith(aLow)) return true;
+      if (aLow === 'maha kanadarawa' && targetLower === 'kanadarawa') return true;
+      if (targetLower === 'maha kanadarawa' && aLow === 'kanadarawa') return true;
+      if (aLow === 'horowpathana' && targetLower === 'horopathana ehg') return true;
+      if (targetLower === 'horowpathana' && aLow === 'horopathana ehg') return true;
+      return false;
     });
-  };
+  }, [tuskerAreasMap]);
+
+  // Pre-aggregate distinct locations, compute counts, and pre-sort once per dataset change
+  const { allLocations, locationCounts } = useMemo(() => {
+    const byKey = new Map();
+    tuskers.forEach(t => {
+      splitAreas(t.location).forEach(a => {
+        const k = a.toLowerCase().trim();
+        if (!byKey.has(k) || (/^[A-Z]/.test(a) && !/^[A-Z]/.test(byKey.get(k)))) byKey.set(k, a);
+      });
+      splitAreas(t.lastSeenArea).forEach(a => {
+        const k = a.toLowerCase().trim();
+        if (!byKey.has(k) || (/^[A-Z]/.test(a) && !/^[A-Z]/.test(byKey.get(k)))) byKey.set(k, a);
+      });
+    });
+
+    const counts = new Map();
+    byKey.forEach((label, k) => {
+      let count = 0;
+      for (const t of tuskers) {
+        if (tuskerRoamsIn(t, k)) count++;
+      }
+      counts.set(k, count);
+    });
+
+    const sorted = [...byKey.values()].sort((a, b) => {
+      const countA = counts.get(a.toLowerCase().trim()) || 0;
+      const countB = counts.get(b.toLowerCase().trim()) || 0;
+      if (countA > 0 && countB === 0) return -1;
+      if (countB > 0 && countA === 0) return 1;
+      if (countA !== countB) return countB - countA;
+      return a.localeCompare(b);
+    });
+
+    return { allLocations: sorted, locationCounts: counts };
+  }, [tuskers, tuskerRoamsIn]);
+
+  // O(1) instant count lookup
+  const countInArea = useCallback(
+    (area) => {
+      if (!area) return 0;
+      return locationCounts.get(area.toLowerCase().trim()) || 0;
+    },
+    [locationCounts]
+  );
 
   const statusCounts = useMemo(() => {
     const counts = { ALL: tuskers.length };
@@ -107,7 +164,14 @@ export function useTuskerList() {
     try { return sessionStorage.getItem('wts_selectedLoc') || ''; } catch { return ''; }
   });
   const [showLocDrop, setShowLocDrop] = useState(false);
-  const [locSuggestions, setLocSugg] = useState([]);
+
+  // Instant single-pass substring filter on pre-sorted array (sub-millisecond, preserves count order)
+  const locSuggestions = useMemo(() => {
+    const q = (locationQuery || '').trim().toLowerCase();
+    const isBrowsingAll = !q || (selectedLocation && q === selectedLocation.toLowerCase().trim());
+    if (isBrowsingAll) return allLocations;
+    return allLocations.filter(loc => loc.toLowerCase().includes(q));
+  }, [allLocations, locationQuery, selectedLocation]);
 
   /* ── Persist Filter & Sort State across Navigation & Reload ── */
   useEffect(() => {
@@ -165,31 +229,19 @@ export function useTuskerList() {
 
   const handleLocInput = (val) => {
     setLocationQuery(val);
-    const q = val.toLowerCase();
-    const filtered = allLocations.filter(loc => loc.toLowerCase().includes(q));
-    filtered.sort((a, b) => {
-      const countA = countInArea(a);
-      const countB = countInArea(b);
-      if (countA > 0 && countB === 0) return -1;
-      if (countB > 0 && countA === 0) return 1;
-      if (countA !== countB) return countB - countA;
-      return a.localeCompare(b);
-    });
-    setLocSugg(filtered);
+    setSelectedLoc('');
     setShowLocDrop(true);
   };
 
   const pickLocation = (loc) => {
     setSelectedLoc(loc);
     setLocationQuery(loc);
-    setLocSugg([]);
     setShowLocDrop(false);
   };
 
   const clearLocation = () => {
     setSelectedLoc('');
     setLocationQuery('');
-    setLocSugg([]);
     setShowLocDrop(false);
     try {
       sessionStorage.removeItem('wts_selectedLoc');
@@ -202,6 +254,8 @@ export function useTuskerList() {
     setLocationQuery('');
     setStatusFilter('ALL');
     setSortOrder('ID_DESC');
+    setShowLocDrop(false);
+    setShowNameSugg(false);
     try {
       sessionStorage.removeItem('wts_nameQuery');
       sessionStorage.removeItem('wts_statusFilter');
@@ -212,15 +266,6 @@ export function useTuskerList() {
   };
 
   const focusLocation = () => {
-    const sorted = [...allLocations].sort((a, b) => {
-      const countA = countInArea(a);
-      const countB = countInArea(b);
-      if (countA > 0 && countB === 0) return -1;
-      if (countB > 0 && countA === 0) return 1;
-      if (countA !== countB) return countB - countA;
-      return a.localeCompare(b);
-    });
-    setLocSugg(sorted);
     setShowLocDrop(true);
   };
 
@@ -250,7 +295,7 @@ export function useTuskerList() {
       list.sort((a, b) => compareTuskerId(b.id, a.id));
     }
     return list;
-  }, [nameQuery, selectedLocation, locationQuery, statusFilter, sortOrder, tuskers]);
+  }, [nameQuery, selectedLocation, locationQuery, statusFilter, sortOrder, tuskers, tuskerRoamsIn]);
 
   return {
     tuskers,
@@ -261,7 +306,7 @@ export function useTuskerList() {
     statusCounts,
     sortOrder,
     setSortOrder,
-    countInArea: (area) => tuskers.filter(t => tuskerRoamsIn(t, area)).length,
+    countInArea,
     nameQuery,
     nameSuggestions,
     showNameSugg,
