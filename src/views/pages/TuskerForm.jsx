@@ -1,3 +1,10 @@
+/**
+ * @file TuskerForm.jsx
+ * @description Admin form interface for creating new wild tusker profiles or editing
+ * existing registry records. Handles biometrics, geographical tagging, conservation zones,
+ * living status, photographic uploads, and navigation history management.
+ */
+
 import React, { useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Save, PlusCircle, Sparkles } from 'lucide-react';

@@ -1,3 +1,8 @@
+/**
+ * @file GalleryModel.js
+ * @description Data access model for community and archival gallery photos in Supabase PostgreSQL.
+ */
+
 import { supabase, fromRow, toRow } from '../lib/supabaseClient';
 import { uploadMediaFile } from '../utils/storageUpload';
 import { todayLocalISO } from '../utils/localDate';

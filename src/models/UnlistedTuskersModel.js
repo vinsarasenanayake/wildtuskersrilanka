@@ -1,3 +1,8 @@
+/**
+ * @file UnlistedTuskersModel.js
+ * @description Data access model for unlisted tusker monitoring records in Supabase PostgreSQL.
+ */
+
 import { supabase, fromRow, toRow, unwrap } from '../lib/supabaseClient';
 
 /* ==============================================================

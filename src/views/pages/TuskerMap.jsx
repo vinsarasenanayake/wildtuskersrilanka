@@ -1,3 +1,10 @@
+/**
+ * @file TuskerMap.jsx
+ * @description WTS Conservation Landscapes & Strategic Regional Zones Interactive Map.
+ * Renders the 4 official WTS Conservation Zones (Zone 1, Zone 2, Zone 3, Zone 4) on an interactive
+ * canvas with zone details, covered districts, and categorized wild tusker directories.
+ */
+
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {

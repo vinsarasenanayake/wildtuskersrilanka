@@ -1,3 +1,9 @@
+/**
+ * @file FieldNoteForm.jsx
+ * @description Form interface for wildlife photographers, researchers, and visitors
+ * to submit wild tusker field observations for verification and archiving.
+ */
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {

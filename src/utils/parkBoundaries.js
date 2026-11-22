@@ -1,11 +1,9 @@
-/* ── Real park, sanctuary and Yala block boundaries ──────────────────
-   Official boundaries come from OpenStreetMap (© OpenStreetMap
-   contributors, ODbL), looked up by their OSM id through Nominatim in
-   ONE request, then saved in the browser for 30 days.
+/**
+ * @file parkBoundaries.js
+ * @description Official boundary polygon loader and local cache for national parks,
+ * nature reserves, and Yala blocks.
+ */
 
-   A place that matches a park here is drawn with its real boundary
-   (no circle). "Yala" means all Yala blocks together, "Yala Block 3"
-   only that block, and so on. */
 import polygonClipping from './vendor/polygonClipping';
 
 const CACHE_KEY = 'wts_parks_v1';

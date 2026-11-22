@@ -1,3 +1,10 @@
+/**
+ * @file SpecialObservations.jsx
+ * @description In-depth annual field observations documenting significant behaviors,
+ * musth cycles, physical developments, and health records of Sri Lanka's wild tuskers.
+ * Features year filtering, text searching, admin create/edit/delete, and photo lightbox integration.
+ */
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {

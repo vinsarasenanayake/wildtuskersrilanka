@@ -1,3 +1,8 @@
+/**
+ * @file TeamModel.js
+ * @description Data access model for WTS conservation team members in Supabase PostgreSQL.
+ */
+
 import { supabase, fromRow, toRow, unwrap } from '../lib/supabaseClient';
 
 const TEAM_FIELDS = ['name', 'role', 'badge', 'bio', 'image', 'displayOrder', 'facebookUrl'];

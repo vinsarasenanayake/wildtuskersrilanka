@@ -1,3 +1,9 @@
+/**
+ * @file supabaseClient.js
+ * @description Central Supabase client initialization, storage bucket constants,
+ * and database snake_case to frontend camelCase record mapping transformations.
+ */
+
 import { createClient } from '@supabase/supabase-js';
 
 /* ==============================================================

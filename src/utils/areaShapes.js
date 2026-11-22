@@ -1,10 +1,10 @@
-/* ── Area outlines for the Tusker Map ─────────────────────────────────
-   Turns an area name ("Yala", "Kala Wewa", "Habarana") into a shape:
-     • a real boundary polygon (national park, sanctuary, forest, tank)
-       from OpenStreetMap (Nominatim), or
-     • a ~4 km circle around the place when no boundary exists.
-   Results are cached in the browser for 30 days, and lookups are spaced
-   1.1 s apart to respect Nominatim's free-use policy. */
+/**
+ * @file areaShapes.js
+ * @description Outlines and boundary shapes for the WTS Map Engine.
+ * Converts wildlife areas, national parks, and sanctuary names into spatial polygon boundaries
+ * clipped to Sri Lanka land boundaries with town centres and urban areas excluded.
+ */
+
 import { getLocationCoordinates } from './sriLankaLocations';
 import polygonClipping from './vendor/polygonClipping';
 import SRI_LANKA_LAND from '../data/sriLankaLand.json';

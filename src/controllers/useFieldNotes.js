@@ -1,3 +1,9 @@
+/**
+ * @file useFieldNotes.js
+ * @description Controller hooks for field notes feed, submission, and admin review.
+ * Manages chronological sorting, year grouping, image uploads, and approval lifecycles.
+ */
+
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   getFieldNotes,

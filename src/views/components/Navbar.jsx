@@ -1,9 +1,16 @@
+/**
+ * @file Navbar.jsx
+ * @description Global responsive navigation bar. Features logo, active route highlighting,
+ * social links, mobile drawer navigation, and administrative session controls.
+ */
+
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, LogOut, Home, Info, Database, BookOpen, Binoculars, Calendar, Shield, Camera } from 'lucide-react';
 import { SITE_ASSETS } from '../../constants/siteAssets';
-const wtsLogo = SITE_ASSETS.wtsLogo;
 import { useAuth } from '../../controllers/useAuth';
+
+const wtsLogo = SITE_ASSETS.wtsLogo;
 
 // Official Facebook Brand Logo (Blue Circle with white 'f')
 const Facebook = ({ size = 26, className = '' }) => (

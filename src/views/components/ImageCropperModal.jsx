@@ -1,3 +1,9 @@
+/**
+ * @file ImageCropperModal.jsx
+ * @description Canvas-based image cropper modal. Supports freeform and locked aspect ratios,
+ * rotation, grid guides, and high-DPI canvas exports for ear and profile biometrics.
+ */
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {

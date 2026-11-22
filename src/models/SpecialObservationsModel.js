@@ -1,3 +1,8 @@
+/**
+ * @file SpecialObservationsModel.js
+ * @description Data access model for annual special observations in Supabase PostgreSQL.
+ */
+
 import { supabase, fromRow, toRow, unwrap } from '../lib/supabaseClient';
 import { uploadMediaFile } from '../utils/storageUpload';
 

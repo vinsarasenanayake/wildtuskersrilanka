@@ -1,3 +1,10 @@
+/**
+ * @file TuskerModel.js
+ * @description Master data access model for public.tuskers in Supabase PostgreSQL.
+ * Defines database schema mappings, biometrics, age calculations, sighting parsers,
+ * geographical constants (provinces, districts, zones), and CRUD operations.
+ */
+
 import { supabase, fromRow, toRow, unwrap } from '../lib/supabaseClient';
 
 /* ==============================================================

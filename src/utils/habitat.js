@@ -1,3 +1,9 @@
+/**
+ * @file habitat.js
+ * @description Wild elephant habitat and range definitions. Differentiates urban district
+ * administrative centres from actual wild tusker roaming habitats and corridors.
+ */
+
 import ELEPHANT_RANGE from '../data/sriLankaElephantRange.json';
 import TOWN_CENTRES from '../data/sriLankaTownCentres.json';
 /* ── Towns vs. wildlife habitat ───────────────────────────────────────

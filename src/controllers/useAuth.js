@@ -1,3 +1,9 @@
+/**
+ * @file useAuth.js
+ * @description Central authentication state hook and store. Subscribes to Supabase Auth
+ * session events and synchronizes administrative privileges with public.admin_users table.
+ */
+
 import { useState, useEffect, useSyncExternalStore } from 'react';
 import { supabase } from '../lib/supabaseClient';
 

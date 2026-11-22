@@ -1,3 +1,9 @@
+/**
+ * @file UnlistedMonitoring.jsx
+ * @description Admin portal for tracking unlisted, tentative, or newly spotted wild tuskers
+ * prior to official registry catalogue assignment.
+ */
+
 import React, { useRef, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, Link } from 'react-router-dom';

@@ -1,3 +1,9 @@
+/**
+ * @file AboutUs.jsx
+ * @description Wild Tuskers Sri Lanka organizational overview, mission, core objectives,
+ * conservation leadership team, and admin team member management.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { PlusCircle, Edit2, Trash2, X, Save, Shield, ExternalLink, Loader2 } from 'lucide-react';

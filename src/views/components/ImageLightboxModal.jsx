@@ -1,3 +1,11 @@
+/**
+ * @file ImageLightboxModal.jsx
+ * @description Unified high-resolution image lightbox modal. Supports smooth mouse wheel
+ * and double-click zoom (1x-5x), cursor-drag panning, background scroll locking,
+ * admin moderation actions (Edit, Approve, Delete), and multi-tusker registry profile navigation.
+ * Used identically across Gallery, Special Observations, and Field Notes.
+ */
+
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';

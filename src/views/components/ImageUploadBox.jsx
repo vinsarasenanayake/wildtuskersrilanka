@@ -1,3 +1,9 @@
+/**
+ * @file ImageUploadBox.jsx
+ * @description Universal direct image upload component. Handles drag-and-drop,
+ * client compression, cropping integration, reordering, and direct storage uploads.
+ */
+
 import React, { useRef, useState, useMemo } from 'react';
 import { UploadCloud, Camera, Trash2, Loader2, CheckCircle2, Plus, Image as ImageIcon, GripVertical, Crop } from 'lucide-react';
 import { uploadMediaFile } from '../../utils/storageUpload';

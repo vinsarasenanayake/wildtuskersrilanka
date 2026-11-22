@@ -1,3 +1,8 @@
+/**
+ * @file useUnlistedTuskers.js
+ * @description Controller hooks for managing unlisted tusker records and search filters.
+ */
+
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   getUnlistedTuskers,

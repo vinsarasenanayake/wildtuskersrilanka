@@ -1,3 +1,8 @@
+/**
+ * @file riskFramework.js
+ * @description Multi-factorial risk evaluation framework and score resolver for wild tuskers.
+ */
+
 import riskData from '../data/tuskerRiskScores.json';
 
 export const RISK_BANDS = [

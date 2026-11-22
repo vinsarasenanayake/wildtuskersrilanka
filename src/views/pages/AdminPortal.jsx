@@ -1,10 +1,17 @@
+/**
+ * @file AdminPortal.jsx
+ * @description Central administrative management portal.
+ * Features tabs for managing wild tuskers, unlisted monitoring records, special observations,
+ * community field note reviews, project/expedition events, photo gallery moderation, and team members.
+ */
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
-import { Map as MapIcon } from 'lucide-react';
 import {
   Shield, PlusCircle, Trash2, Edit3, Eye, FileText, Binoculars, Calendar,
-  Radar, Database, CheckCircle2, XCircle, Search, LogOut, RefreshCw, AlertCircle, Check, Users, ExternalLink, Save, X, Layers
+  Radar, Database, CheckCircle2, XCircle, Search, LogOut, RefreshCw, AlertCircle, Check, Users, ExternalLink, Save, X, Layers,
+  Map as MapIcon,
 } from 'lucide-react';
 import { getTuskers, deleteTusker } from '../../models/TuskerModel';
 import { getUnlistedTuskers, deleteUnlistedTusker, addUnlistedTusker } from '../../models/UnlistedTuskersModel';

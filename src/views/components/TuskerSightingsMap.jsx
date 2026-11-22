@@ -1,3 +1,10 @@
+/**
+ * @file TuskerSightingsMap.jsx
+ * @description Interactive geospatial sightings map rendered within individual tusker profiles.
+ * Visualizes verified chronological encounters, dynamic home range polygon clipping,
+ * and the specific WTS Conservation Zone boundary assigned to the individual tusker.
+ */
+
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   MapPin,

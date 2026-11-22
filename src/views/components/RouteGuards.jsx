@@ -1,3 +1,9 @@
+/**
+ * @file RouteGuards.jsx
+ * @description Higher-order route guards for role-based access control.
+ * Restricts administrative pages to authenticated admins, and visitor submission forms to public users.
+ */
+
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../controllers/useAuth';

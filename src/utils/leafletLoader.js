@@ -1,7 +1,8 @@
-/* ── Leaflet loader (bundled from npm, loaded on demand) ──────────────
-   Leaflet ships inside our own build, so no third-party script CDN is
-   involved. It is still code-split: the chunk only downloads the first
-   time a map is shown. */
+/**
+ * @file leafletLoader.js
+ * @description Dynamic on-demand code-splitting loader for the Leaflet mapping engine.
+ */
+
 let leafletPromise = null;
 
 export function loadLeaflet() {

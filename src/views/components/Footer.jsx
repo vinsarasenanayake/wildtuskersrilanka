@@ -1,3 +1,8 @@
+/**
+ * @file Footer.jsx
+ * @description Standardized site-wide footer component with copyright notice and attribution.
+ */
+
 import React from 'react';
 
 export default function Footer({ className = '' }) {

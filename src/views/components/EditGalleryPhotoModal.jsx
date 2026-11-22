@@ -1,3 +1,9 @@
+/**
+ * @file EditGalleryPhotoModal.jsx
+ * @description Admin modal dialog for updating gallery photo metadata, photographer details,
+ * location tagging, encounter date, and moderation status.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CheckCircle2, Save, MapPin, Camera, Calendar, UserCheck } from 'lucide-react';

@@ -1,3 +1,9 @@
+/**
+ * @file App.jsx
+ * @description Main application routing configuration, top-level layout,
+ * navigation scroll restoration, and global crash fallback error boundary.
+ */
+
 import React, { useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigationType, Navigate } from 'react-router-dom';
 
@@ -92,40 +98,41 @@ function App() {
       <main key={location.pathname} className="animate-fade-in">
         <ErrorBoundary>
           <Routes>
-          {/* Public Core Routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<AboutUs />} />
-          <Route path="/tuskers" element={<WildTuskersList />} />
-          <Route path="/tuskers/:id" element={<TuskerProfile />} />
-          <Route path="/tuskers/:id/add-sighting" element={<RequireAdmin><AddTuskerSighting /></RequireAdmin>} />
-          <Route path="/projects" element={<OurProjects />} />
-          <Route path="/field-notes" element={<FieldNotes />} />
-          <Route path="/add-field-note" element={<VisitorOnly adminTo="/field-notes"><FieldNoteForm /></VisitorOnly>} />
-          <Route path="/observations" element={<SpecialObservations />} />
-          <Route path="/gallery" element={<Gallery />} />
-          {/* AI Re-identification routes hidden until separate app launch */}
-          <Route path="/ai-app" element={<Navigate to="/" replace />} />
-          <Route path="/ai-reidentification" element={<Navigate to="/" replace />} />
+            {/* Public Core Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/tuskers" element={<WildTuskersList />} />
+            <Route path="/tuskers/:id" element={<TuskerProfile />} />
+            <Route path="/tuskers/:id/add-sighting" element={<RequireAdmin><AddTuskerSighting /></RequireAdmin>} />
+            <Route path="/projects" element={<OurProjects />} />
+            <Route path="/field-notes" element={<FieldNotes />} />
+            <Route path="/add-field-note" element={<VisitorOnly adminTo="/field-notes"><FieldNoteForm /></VisitorOnly>} />
+            <Route path="/observations" element={<SpecialObservations />} />
+            <Route path="/gallery" element={<Gallery />} />
 
-          {/* Unlisted Monitoring Routes (Admin Protected) */}
-          <Route path="/unlisted" element={<UnlistedMonitoring />} />
-          <Route path="/unlisted/:id" element={<UnlistedTuskerProfile />} />
+            {/* AI Re-identification routes hidden until separate standalone app release */}
+            <Route path="/ai-app" element={<Navigate to="/" replace />} />
+            <Route path="/ai-reidentification" element={<Navigate to="/" replace />} />
 
-          {/* Authentication & Admin Portal Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Navigate to="/login" replace />} />
-          <Route path="/admin" element={<AdminPortal />} />
-          <Route path="/admin/add-tusker" element={<RequireAdmin><TuskerForm /></RequireAdmin>} />
-          <Route path="/admin/edit-tusker/:id" element={<RequireAdmin><TuskerForm /></RequireAdmin>} />
-          <Route path="/admin/add-observation" element={<RequireAdmin><SpecialObservationForm /></RequireAdmin>} />
-          <Route path="/admin/edit-observation/:id" element={<RequireAdmin><SpecialObservationForm /></RequireAdmin>} />
-          <Route path="/admin/tusker-map" element={<RequireAdmin><TuskerMap /></RequireAdmin>} />
-          <Route path="/admin/create-event" element={<RequireAdmin><EventForm /></RequireAdmin>} />
-          <Route path="/admin/edit-event/:id" element={<RequireAdmin><EventForm /></RequireAdmin>} />
+            {/* Unlisted Monitoring Routes (Admin Protected) */}
+            <Route path="/unlisted" element={<UnlistedMonitoring />} />
+            <Route path="/unlisted/:id" element={<UnlistedTuskerProfile />} />
 
-          {/* Anything else */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            {/* Authentication & Admin Portal Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Navigate to="/login" replace />} />
+            <Route path="/admin" element={<AdminPortal />} />
+            <Route path="/admin/add-tusker" element={<RequireAdmin><TuskerForm /></RequireAdmin>} />
+            <Route path="/admin/edit-tusker/:id" element={<RequireAdmin><TuskerForm /></RequireAdmin>} />
+            <Route path="/admin/add-observation" element={<RequireAdmin><SpecialObservationForm /></RequireAdmin>} />
+            <Route path="/admin/edit-observation/:id" element={<RequireAdmin><SpecialObservationForm /></RequireAdmin>} />
+            <Route path="/admin/tusker-map" element={<RequireAdmin><TuskerMap /></RequireAdmin>} />
+            <Route path="/admin/create-event" element={<RequireAdmin><EventForm /></RequireAdmin>} />
+            <Route path="/admin/edit-event/:id" element={<RequireAdmin><EventForm /></RequireAdmin>} />
+
+            {/* 404 Catch-All */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </ErrorBoundary>
       </main>
     </>

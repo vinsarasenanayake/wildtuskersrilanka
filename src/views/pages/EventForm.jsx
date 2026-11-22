@@ -1,3 +1,9 @@
+/**
+ * @file EventForm.jsx
+ * @description Admin form for recording upcoming or past WTS conservation projects,
+ * field expeditions, and awareness outreach events.
+ */
+
 import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, CalendarPlus } from 'lucide-react';

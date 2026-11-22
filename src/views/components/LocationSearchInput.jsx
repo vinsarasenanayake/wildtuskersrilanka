@@ -1,3 +1,9 @@
+/**
+ * @file LocationSearchInput.jsx
+ * @description Multi-location search input with auto-suggestions from the comprehensive
+ * Sri Lanka wildlife database, live geocoding, and an interactive click-to-pick map modal.
+ */
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { MapPin, Search, X, Map, Check, Navigation, Loader2, Info } from 'lucide-react';

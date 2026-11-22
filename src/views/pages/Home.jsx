@@ -1,10 +1,18 @@
+/**
+ * @file Home.jsx
+ * @description Wild Tuskers Sri Lanka homepage. Features full-screen responsive
+ * photographic hero backdrop, mission overview, real-time registry statistics,
+ * and quick-access navigation pillars.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { SITE_ASSETS } from '../../constants/siteAssets';
 import hero960 from '../../assets/images/hero-bg-960.webp';
 import hero1600 from '../../assets/images/hero-bg-1600.webp';
 import hero2400 from '../../assets/images/hero-bg-2400.webp';
-const wtsLogo = SITE_ASSETS.wtsLogo;
 import { getTuskers } from '../../models/TuskerModel';
+
+const wtsLogo = SITE_ASSETS.wtsLogo;
 
 export default function Home() {
   const [stats, setStats] = useState(() => {

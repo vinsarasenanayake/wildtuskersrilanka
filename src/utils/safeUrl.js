@@ -1,3 +1,8 @@
+/**
+ * @file safeUrl.js
+ * @description URL sanitizer preventing untrusted schemes from being rendered as actionable links.
+ */
+
 /* Returns the URL only if it is a normal web link (http/https); otherwise undefined.
    Stops links like "javascript:…" from ever being clickable. */
 export function safeUrl(url) {

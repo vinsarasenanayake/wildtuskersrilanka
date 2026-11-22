@@ -1,3 +1,10 @@
+/**
+ * @file WildTuskersList.jsx
+ * @description Master catalog and registry directory for identified Sri Lankan wild tuskers.
+ * Features multi-parameter filtering (status, location, name/ID search, sorting),
+ * session-based scroll & card focus restoration, and admin creation shortcuts.
+ */
+
 import React, { useRef, useEffect, useLayoutEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, MapPin, X, ChevronDown, PlusCircle, Radar, ArrowUpDown, Check } from 'lucide-react';

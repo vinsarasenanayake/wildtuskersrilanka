@@ -1,3 +1,8 @@
+/**
+ * @file friendlyError.js
+ * @description Database error parser to provide clear, actionable user-facing messages.
+ */
+
 /** Turns a database error into a message a visitor can act on. */
 export function friendlyError(err) {
   const msg = (err && err.message) || String(err || '');

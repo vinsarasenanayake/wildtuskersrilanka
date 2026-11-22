@@ -1,3 +1,9 @@
+/**
+ * @file mapLayers.js
+ * @description Base map tile layers configuration (Esri Clarity high-res satellite imagery,
+ * reference labels, CARTO Voyager and OpenStreetMap tiles).
+ */
+
 /* ── Shared base maps ─────────────────────────────────────────────────
    Satellite (default): Esri Clarity imagery + place names
    Map: CARTO Voyager when VITE_CARTO_API_KEY is set, otherwise OpenStreetMap

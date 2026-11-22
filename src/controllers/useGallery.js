@@ -1,3 +1,9 @@
+/**
+ * @file useGallery.js
+ * @description Controller hooks for photographic gallery feed, filtering, and submissions.
+ * Handles photo uploads, status filtering, and admin moderation workflows.
+ */
+
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   getGalleryPhotos,

@@ -1,3 +1,9 @@
+/**
+ * @file storageUpload.js
+ * @description Supabase Storage (wts-media bucket) upload utility.
+ * Compresses images client-side into responsive WebP web and thumbnail variants.
+ */
+
 import { supabase, MEDIA_BUCKET } from '../lib/supabaseClient';
 import { compressImage } from './imageCompress';
 

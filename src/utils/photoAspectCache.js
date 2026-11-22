@@ -1,3 +1,8 @@
+/**
+ * @file photoAspectCache.js
+ * @description Global in-memory aspect ratio cache mapping photo URLs to orientation (portrait vs landscape).
+ */
+
 // Global aspect ratio cache mapping photo URL -> boolean (true = portrait, false = landscape/square)
 const aspectCache = new Map();
 

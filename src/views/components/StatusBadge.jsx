@@ -1,3 +1,8 @@
+/**
+ * @file StatusBadge.jsx
+ * @description Standardized living status badge component (Alive, No Recent Record, Deceased).
+ */
+
 import React from 'react';
 
 /* ── Living status badge (Alive / No Recent Record / Deceased) ── */

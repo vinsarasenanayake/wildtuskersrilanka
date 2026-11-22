@@ -1,3 +1,8 @@
+/**
+ * @file NotFound.jsx
+ * @description 404 error page displayed when a requested path is not recognized.
+ */
+
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';

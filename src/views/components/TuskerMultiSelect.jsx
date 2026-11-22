@@ -1,3 +1,9 @@
+/**
+ * @file TuskerMultiSelect.jsx
+ * @description Searchable multi-tusker selection dropdown supporting single or multiple
+ * tusker associations with natural text joiners ('&', 'vs', ',').
+ */
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Search, X, Plus, Check } from 'lucide-react';
 import { getTuskers } from '../../models/TuskerModel';

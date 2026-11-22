@@ -1,3 +1,9 @@
+/**
+ * @file FieldNotesModel.js
+ * @description Data access model for field notes in Supabase PostgreSQL.
+ * Enforces column privileges, public view projections, and media file uploads.
+ */
+
 import { supabase, fromRow, unwrap } from '../lib/supabaseClient';
 import { uploadMediaFile } from '../utils/storageUpload';
 

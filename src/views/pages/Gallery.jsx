@@ -1,3 +1,10 @@
+/**
+ * @file Gallery.jsx
+ * @description Wild Tuskers Sri Lanka Community & Archive Photographic Gallery.
+ * Features approved wildlife photos, community submission modal, admin moderation,
+ * multi-tusker tagging, location tagging, and full-screen zoomable lightbox.
+ */
+
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Camera,

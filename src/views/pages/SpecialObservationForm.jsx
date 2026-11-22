@@ -1,3 +1,9 @@
+/**
+ * @file SpecialObservationForm.jsx
+ * @description Admin form for creating and editing in-depth annual special observations,
+ * tusker behavioral records, musth status, and photographic documentation.
+ */
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {

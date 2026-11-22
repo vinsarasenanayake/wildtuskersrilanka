@@ -1,3 +1,9 @@
+/**
+ * @file useTusker.js
+ * @description Master controller hooks for wild tuskers directory search, filtering,
+ * individual profile data loading, sightings management, and admin forms.
+ */
+
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   getTuskers,

@@ -1,9 +1,16 @@
+/**
+ * @file Login.jsx
+ * @description Administrator authentication interface. Validates credentials with Supabase
+ * auth and handles redirects for authenticated administrative users.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Shield, Lock, Mail, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { SITE_ASSETS } from '../../constants/siteAssets';
-const wtsLogo = SITE_ASSETS.wtsLogo;
 import { useAuth } from '../../controllers/useAuth';
+
+const wtsLogo = SITE_ASSETS.wtsLogo;
 
 export default function Login() {
   const [email, setEmail] = useState('');

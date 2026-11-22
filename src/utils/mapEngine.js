@@ -1,17 +1,10 @@
-/* ── Map engine ───────────────────────────────────────────────────────
-   One small API used by every map on the site.
+/**
+ * @file mapEngine.js
+ * @description Core dual-engine mapping abstraction. Transparently switches between Google Maps
+ * (when API key is configured and valid) and Leaflet (with Esri Satellite / CARTO Voyager tiles)
+ * when offline or without Google credentials.
+ */
 
-   • With VITE_GOOGLE_MAPS_API_KEY set  → real Google Maps (satellite +
-     labels by default, Map/Satellite switch).
-   • Without a key, or if Google refuses the key → Leaflet with free
-     Esri satellite / street maps (see mapLayers.js).
-
-   Usage:
-     const map = await createMap(el, { center: [lat, lng], zoom: 8 });
-     const pin = map.addMarker([lat, lng], { html, popup, onClick });
-     map.onClick(({ lat, lng }) => …);
-     map.destroy();
-*/
 import { loadLeaflet } from './leafletLoader';
 import { addBaseLayers } from './mapLayers';
 

@@ -1,3 +1,9 @@
+/**
+ * @file EditSightingModal.jsx
+ * @description Admin modal dialog for editing existing tusker sighting records,
+ * photos, encounter dates, location coordinates, and health status biometrics.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Save, MapPin, Camera, Calendar, UserCheck, HeartPulse, ShieldAlert, FileText } from 'lucide-react';

@@ -1,3 +1,9 @@
+/**
+ * @file AddTuskerSighting.jsx
+ * @description Admin form interface for adding verified chronological sighting encounters
+ * with photographic evidence, GPS coordinates, location names, and health condition notes.
+ */
+
 import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Image as ImageIcon, MapPin, Activity, ShieldAlert, Sparkles, AlertCircle } from 'lucide-react';

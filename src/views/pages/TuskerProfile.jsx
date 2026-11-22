@@ -1,3 +1,10 @@
+/**
+ * @file TuskerProfile.jsx
+ * @description Comprehensive individual wild tusker profile dossier.
+ * Displays photographic identification comparisons, ear-notch milestones, biographical narrative,
+ * biometrics, conservation status, risk assessments, and interactive chronological sightings map.
+ */
+
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';

@@ -1,9 +1,7 @@
-/* ==============================================================
-   CLIENT-SIDE IMAGE COMPRESSION
-   Shrinks photos in the browser before they are uploaded, so a
-   6 MB camera photo becomes ~200–400 KB. Keeps Supabase Storage
-   (1 GB on the free plan) and bandwidth usage low.
-============================================================== */
+/**
+ * @file imageCompress.js
+ * @description Client-side image resizing and WebP compression before uploading to storage.
+ */
 
 const MAX_EDGE = 1920;     // px — long edge; plenty for full-screen viewing
 const QUALITY = 0.82;      // visually lossless for photos

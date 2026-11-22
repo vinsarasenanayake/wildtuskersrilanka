@@ -1,3 +1,9 @@
+/**
+ * @file UnlistedTuskerProfile.jsx
+ * @description Dossier view for an unlisted tusker under monitoring.
+ * Features photo comparison galleries, ear-notch milestones, notes, and admin record controls.
+ */
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate, Link } from 'react-router-dom';

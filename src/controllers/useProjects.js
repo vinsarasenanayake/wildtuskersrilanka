@@ -1,3 +1,8 @@
+/**
+ * @file useProjects.js
+ * @description Controller hooks for conservation projects, outreach events, and event forms.
+ */
+
 import { useState, useEffect } from 'react';
 import { getEvents, addEvent, getEventById, updateEvent } from '../models/ProjectModel';
 import { useAuth } from './useAuth';

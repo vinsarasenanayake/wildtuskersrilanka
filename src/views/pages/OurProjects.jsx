@@ -1,3 +1,9 @@
+/**
+ * @file OurProjects.jsx
+ * @description Conservation projects, outreach initiatives, and expedition timelines
+ * conducted by the Wild Tuskers Sri Lanka team. Displays upcoming and past events.
+ */
+
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjectFeed } from '../../controllers/useProjects';

@@ -1,3 +1,10 @@
+/**
+ * @file FieldNotes.jsx
+ * @description Field Notes portal documenting on-the-ground encounters with Sri Lanka's wild tuskers.
+ * Features community submissions, year-by-year archives, admin pending review & approval,
+ * photo lightbox integration, and direct tusker profile links.
+ */
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {

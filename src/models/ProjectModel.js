@@ -1,3 +1,8 @@
+/**
+ * @file ProjectModel.js
+ * @description Data access model for conservation projects and events in Supabase PostgreSQL.
+ */
+
 import { supabase, fromRow, unwrap } from '../lib/supabaseClient';
 
 /* ==============================================================

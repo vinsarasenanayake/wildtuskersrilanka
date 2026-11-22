@@ -1,3 +1,9 @@
+/**
+ * @file sriLankaLocations.js
+ * @description Comprehensive geospatial catalog of Sri Lankan districts, protected wildlife reserves,
+ * national parks, ancient tanks, corridors, and town centres with offline and online geocoding.
+ */
+
 import { isGoogleMapsEnabled, loadGoogleMaps } from './mapEngine.js';
 /* ── Comprehensive Sri Lanka Locations Database (Districts, Cities, Wildlife Reserves, Tanks & Roaming Areas) ── */
 export const SRI_LANKA_WILDLIFE_LOCATIONS = [

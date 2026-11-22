@@ -1,3 +1,8 @@
+/**
+ * @file useSpecialObservations.js
+ * @description Controller hooks for special observations feed, filtering, and admin editing.
+ */
+
 import { useState, useMemo, useEffect } from 'react';
 import {
   getSpecialObservations,
