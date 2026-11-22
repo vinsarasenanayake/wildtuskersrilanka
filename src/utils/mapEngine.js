@@ -259,6 +259,7 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
 
   return {
     engine: 'google',
+    closePopup() { info.close(); },
     setView(pos, z, { animate = true } = {}) {
       if (animate) { map.panTo({ lat: pos[0], lng: pos[1] }); map.setZoom(z); }
       else { map.setCenter({ lat: pos[0], lng: pos[1] }); map.setZoom(z); }
@@ -391,6 +392,7 @@ function createLeafletMap(L, container, { center, zoom, gestureHandling: _gestur
       };
     },
     clearMarkers() { layer.clearLayers(); },
+    closePopup() { map.closePopup(); },
     addArea(shape, { fill = '#f59e0b', fillOpacity = 0.3, stroke = '#fbbf24', strokeWeight = 1.5, onClick } = {}) {
       const style = { color: stroke, weight: strokeWeight, opacity: 0.9, fillColor: fill, fillOpacity };
       const obj = shape.kind === 'circle'

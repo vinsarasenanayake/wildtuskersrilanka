@@ -18,8 +18,22 @@ import { isDistrictTown, habitatFor, townCentrePolygons, ELEPHANT_RANGE_COORDS }
 import { loadParkBoundaries, parkBoundaryFor, hasParkBoundary } from '../../utils/parkBoundaries';
 import polygonClipping from '../../utils/vendor/polygonClipping';
 import SRI_LANKA_LAND from '../../data/sriLankaLand.json';
+import WTS_CONSERVATION_ZONES from '../../data/wtsConservationZones.json';
 
 const SRI_LANKA_CENTER = [7.8731, 80.7718];
+
+/** Resolves zone definition from tusker.zone */
+function getZoneData(zoneKey) {
+  if (!zoneKey) return null;
+  const clean = String(zoneKey).trim();
+  if (WTS_CONSERVATION_ZONES[clean]) return WTS_CONSERVATION_ZONES[clean];
+  const m = clean.match(/Zone\s*([1-4])/i);
+  if (m) {
+    const k = `Zone ${m[1]}`;
+    return WTS_CONSERVATION_ZONES[k] || null;
+  }
+  return null;
+}
 
 /** A circle polygon ([[ring]]) of `km` around a point. */
 function circlePolygon(pt, km) {
@@ -212,6 +226,11 @@ export default function TuskerSightingsMap({
 
   const isDeceased = tusker?.livingStatus === 'Deceased';
   const statusTheme = useMemo(() => getStatusTheme(tusker?.livingStatus), [tusker?.livingStatus]);
+  const tuskerZoneName = useMemo(() => {
+    const raw = tusker?.zone ? String(tusker.zone).trim() : '';
+    const m = raw.match(/Zone\s*([1-4])/i);
+    return m ? `Zone ${m[1]}` : raw;
+  }, [tusker?.zone]);
 
   // Asynchronously resolve coordinates for LOCATION corridor areas and sightings
   useEffect(() => {
@@ -364,47 +383,56 @@ export default function TuskerSightingsMap({
       }
     }
 
-    // ── 3. Build the home range from real places ──
-    //   Parks / sanctuaries / Yala blocks → their real boundaries.
-    //   Other places → the elephant land around them.
-    //   The last-seen place and field sightings are added when nearby.
-    const parkPolygons = [];
-    const placeCoords = [];
-    let locParts = splitLocationParts(rawLoc);
-    // "Yala / Yala Block 3,5" → only Blocks 3 and 5, not the whole of Yala
-    if (locParts.some((p) => /^yala\s+block\s*\d/i.test(p))) {
-      locParts = locParts.filter((p) => !/^(yala|yala national park|ruhuna national park)$/i.test(p.trim()));
-    }
-    const listsWildArea = locParts.some((p) => !isDistrictTown(p));
-    const waitingForParks = !parkBoundaries && !parksFailed && locParts.some((p) => hasParkBoundary(habitatFor(p)));
-    locParts.forEach((part) => {
-      if (listsWildArea && isDistrictTown(part)) return;
-      const place = habitatFor(part);
-      if (hasParkBoundary(place)) {
-        const polys = parkBoundaryFor(place, parkBoundaries);
-        if (polys) { polys.forEach((poly) => parkPolygons.push(poly)); return; }
-      }
-      const c = getLocationCoordinates(place);
-      if (c) placeCoords.push({ lat: Number(c.lat), lng: Number(c.lng) });
-    });
-    const addIfNearby = (raw) => {
-      const pt = raw ? { lat: Number(raw.lat), lng: Number(raw.lng) } : null;
-      if (!pt || !Number.isFinite(pt.lat) || !Number.isFinite(pt.lng)) return;
-      if (parkPolygons.length && pointInPolygons(pt, parkPolygons)) return; // already inside a park
-      if (!anchors.length || anchors.some((a) => distanceKm(a, pt) <= NEARBY_RANGE_KM)) placeCoords.push(pt);
-    };
-    const lastSeenPark = lastSeenAreaName && hasParkBoundary(habitatFor(lastSeenAreaName))
-      ? parkBoundaryFor(habitatFor(lastSeenAreaName), parkBoundaries)
-      : null;
-    if (lastSeenPark && lastSeenCoords && (!anchors.length || anchors.some((a) => distanceKm(a, lastSeenCoords) <= NEARBY_RANGE_KM))) {
-      lastSeenPark.forEach((poly) => parkPolygons.push(poly));
+    // ── 3. Build the home range from WTS Conservation Zones (Zones 1-4) ──
+    const zoneData = getZoneData(tusker?.zone);
+    let shape = null;
+
+    if (zoneData) {
+      shape = {
+        kind: 'polygon',
+        zoneData,
+        geojson: {
+          type: 'MultiPolygon',
+          coordinates: zoneData.coordinates,
+        },
+      };
     } else {
-      addIfNearby(lastSeenCoords);
+      // Fallback: build home range from listed wildlife places & parks
+      const parkPolygons = [];
+      const placeCoords = [];
+      let locParts = splitLocationParts(rawLoc);
+      if (locParts.some((p) => /^yala\s+block\s*\d/i.test(p))) {
+        locParts = locParts.filter((p) => !/^(yala|yala national park|ruhuna national park)$/i.test(p.trim()));
+      }
+      const listsWildArea = locParts.some((p) => !isDistrictTown(p));
+      const waitingForParks = !parkBoundaries && !parksFailed && locParts.some((p) => hasParkBoundary(habitatFor(p)));
+      locParts.forEach((part) => {
+        if (listsWildArea && isDistrictTown(part)) return;
+        const place = habitatFor(part);
+        if (hasParkBoundary(place)) {
+          const polys = parkBoundaryFor(place, parkBoundaries);
+          if (polys) { polys.forEach((poly) => parkPolygons.push(poly)); return; }
+        }
+        const c = getLocationCoordinates(place);
+        if (c) placeCoords.push({ lat: Number(c.lat), lng: Number(c.lng) });
+      });
+      const addIfNearby = (raw) => {
+        const pt = raw ? { lat: Number(raw.lat), lng: Number(raw.lng) } : null;
+        if (!pt || !Number.isFinite(pt.lat) || !Number.isFinite(pt.lng)) return;
+        if (parkPolygons.length && pointInPolygons(pt, parkPolygons)) return;
+        if (!anchors.length || anchors.some((a) => distanceKm(a, pt) <= NEARBY_RANGE_KM)) placeCoords.push(pt);
+      };
+      const lastSeenPark = lastSeenAreaName && hasParkBoundary(habitatFor(lastSeenAreaName))
+        ? parkBoundaryFor(habitatFor(lastSeenAreaName), parkBoundaries)
+        : null;
+      if (lastSeenPark && lastSeenCoords && (!anchors.length || anchors.some((a) => distanceKm(a, lastSeenCoords) <= NEARBY_RANGE_KM))) {
+        lastSeenPark.forEach((poly) => parkPolygons.push(poly));
+      } else {
+        addIfNearby(lastSeenCoords);
+      }
+      sightings.forEach((sp) => addIfNearby(sp.coords));
+      shape = waitingForParks ? null : buildHomeRange(parkPolygons, placeCoords);
     }
-    sightings.forEach((sp) => addIfNearby(sp.coords));
-    // While park boundaries are still loading, show nothing rather than a
-    // temporary circle.
-    const shape = waitingForParks ? null : buildHomeRange(parkPolygons, placeCoords);
 
     const lastSeen = (lastSeenAreaName && lastSeenCoords)
       ? {
@@ -446,6 +474,12 @@ export default function TuskerSightingsMap({
     setSelectedPoint(null);
     const map = mapRef.current;
     if (!map) return;
+    map.closePopup?.();
+
+    if (homeRangeShape?.zoneData?.bbox) {
+      map.fitBounds(homeRangeShape.zoneData.bbox, { padding: 40 });
+      return;
+    }
 
     const allPts = [];
     // Ensure the entire polygon perimeter is included so the full home range is always visible
@@ -534,9 +568,6 @@ export default function TuskerSightingsMap({
     displayedSightings.forEach((p) => {
       if (p.coords) allPts.push([p.coords.lat, p.coords.lng]);
     });
-    if (lastSeenPoint?.coords && (!selectedPoint || selectedPoint.id === 'last-seen-pin')) {
-      allPts.push([lastSeenPoint.coords.lat, lastSeenPoint.coords.lng]);
-    }
 
     if (allPts.length === 0) {
       map.setView(SRI_LANKA_CENTER, 8);
@@ -554,50 +585,28 @@ export default function TuskerSightingsMap({
       }
     });
 
-    // ── 1. Render Unified Home Range Shape (Red for Deceased, Green for Alive, Yellow for No Recent Records) ──
+    // ── 1. Render Unified Home Range / Conservation Zone Shape ──
     if (homeRangeShape) {
-      map.addArea(homeRangeShape, {
-        fill: statusTheme.fill,
-        fillOpacity: selectedPoint && selectedPoint.id !== 'last-seen-pin' ? 0.10 : 0.20,
-        stroke: statusTheme.stroke,
-        strokeWeight: selectedPoint && selectedPoint.id !== 'last-seen-pin' ? 1.5 : 2.2,
-      });
+      try {
+        const zData = homeRangeShape.zoneData;
+        const fillColor = zData ? zData.fillColor : statusTheme.fill;
+        const strokeColor = zData ? zData.strokeColor : statusTheme.stroke;
+
+        map.addArea(homeRangeShape, {
+          fill: fillColor,
+          fillOpacity: selectedPoint && selectedPoint.id !== 'last-seen-pin' ? 0.08 : 0.20,
+          stroke: strokeColor,
+          strokeWeight: selectedPoint && selectedPoint.id !== 'last-seen-pin' ? 1.5 : 2.5,
+        });
+      } catch (err) {
+        console.warn('[map] could not add home range area:', err);
+      }
     }
 
     const latLngs = [];
     let lastPin = null;
 
-    // ── 2. Render Last Seen Location Pin (Exact Name marked) ──
-    if (lastSeenPoint && (!selectedPoint || selectedPoint.id === 'last-seen-pin')) {
-      const pos = [lastSeenPoint.coords.lat, lastSeenPoint.coords.lng];
-      latLngs.push(pos);
-
-      const markerHtml = `
-        <div title="${escapeHtml(lastSeenPoint.name)}" style="width: 14px; height: 14px; border-radius: 50%; background: ${statusTheme.pinFill}; border: 2.5px solid #ffffff; box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.6); cursor: pointer; transition: transform 0.15s ease;"></div>
-      `;
-
-      const m = map.addMarker(pos, {
-        html: markerHtml,
-        height: 14,
-        centered: true,
-        popup: {
-          badge: isDeceased ? 'Last Known Location' : 'Last Seen Location',
-          date: lastSeenPoint.date || 'Registered baseline',
-          title: lastSeenPoint.name,
-          lines: [
-            tusker?.location ? `Roaming Range: ${tusker.location}` : '',
-            tusker?.livingStatus ? `Living Status: ${tusker.livingStatus}` : '',
-          ].filter(Boolean),
-        },
-        onClick: () => handleSelectPoint(lastSeenPoint),
-      });
-
-      if (selectedPoint?.id === 'last-seen-pin') {
-        lastPin = m;
-      }
-    }
-
-    // ── 3. Render Field Sightings (Row 2+) if any exist ──
+    // ── 2. Render Field Sightings (Row 2+) if any exist ──
     displayedSightings.forEach((point) => {
       if (!point.coords) return;
       const pos = [point.coords.lat, point.coords.lng];
@@ -632,12 +641,14 @@ export default function TuskerSightingsMap({
     if (selectedPoint && lastPin) {
       map.setView([selectedPoint.coords.lat, selectedPoint.coords.lng], 12, { animate: true });
       lastPin.openPopup();
+    } else if (homeRangeShape?.zoneData?.bbox) {
+      map.fitBounds(homeRangeShape.zoneData.bbox, { padding: 40 });
     } else if (uniquePts.length === 1) {
       map.setView(uniquePts[0], 10, { animate: true });
     } else if (uniquePts.length > 1) {
       map.fitBounds(uniquePts, { padding: 45, maxZoom: selectedPoint ? 12 : 11 });
     }
-  }, [displayedSightings, isMapLoaded, selectedPoint, homeRangeShape, statusTheme, anchorCoords, lastSeenPoint, isDeceased, handleSelectPoint, tusker?.location, tusker?.livingStatus]);
+  }, [displayedSightings, isMapLoaded, selectedPoint, homeRangeShape, statusTheme, anchorCoords, isDeceased, handleSelectPoint, handleViewHomeRange, tusker?.location, tusker?.livingStatus, tusker?.zone, tuskerZoneName]);
 
   return (
     <div className="mt-8 bg-white border border-[#e2e8e0] rounded-[16px] overflow-hidden shadow-xs font-sans">
@@ -645,19 +656,37 @@ export default function TuskerSightingsMap({
       <div className="p-4 sm:p-5 bg-[#fafaf8] border-b border-[#e8ece9] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            {/* Roaming Area / Home Range Pill */}
-            {tusker?.location && (
-              <span className={`inline-flex items-center gap-1.5 text-[0.72rem] font-bold border px-2.5 py-0.5 rounded-full shadow-2xs ${statusTheme.pillBg}`}>
-                <span className={`w-2 h-2 rounded-full ${statusTheme.dotBg} animate-pulse`} />
-                <span>{statusTheme.label}: {tusker.location}</span>
+            {/* WTS Conservation Zone Pill */}
+            {homeRangeShape?.zoneData && (
+              <span
+                className="inline-flex items-center gap-1.5 text-[0.72rem] font-bold border px-2.5 py-0.5 rounded-full shadow-2xs"
+                style={{
+                  backgroundColor: `${homeRangeShape.zoneData.color}15`,
+                  borderColor: `${homeRangeShape.zoneData.color}50`,
+                  color: homeRangeShape.zoneData.strokeColor,
+                }}
+              >
+                <span
+                  className="w-2 h-2 rounded-full animate-pulse"
+                  style={{ backgroundColor: homeRangeShape.zoneData.color }}
+                />
+                <span>{homeRangeShape.zoneData.name}</span>
               </span>
             )}
 
-            {/* Last Seen / Last Known Location Pill */}
+            {/* Home Range Pill */}
+            {tusker?.location && (
+              <span className={`inline-flex items-center gap-1.5 text-[0.72rem] font-bold border px-2.5 py-0.5 rounded-full shadow-2xs ${statusTheme.pillBg}`}>
+                <span className={`w-2 h-2 rounded-full ${statusTheme.dotBg} animate-pulse`} />
+                <span>Home range: {tusker.location}</span>
+              </span>
+            )}
+
+            {/* Last Seen / Final Spotted Location Pill */}
             {lastSeenPoint && (
               <span className={`inline-flex items-center gap-1.5 text-[0.72rem] font-bold border px-2.5 py-0.5 rounded-full shadow-2xs ${statusTheme.pillBg}`}>
                 <span className={`w-2 h-2 rounded-full ${statusTheme.dotBg}`} />
-                <span>{isDeceased ? 'Last Known' : 'Last Seen'}: {lastSeenPoint.name}</span>
+                <span>{isDeceased ? 'Final Spotted' : 'Last Seen'}: {lastSeenPoint.name}</span>
               </span>
             )}
 
@@ -671,18 +700,26 @@ export default function TuskerSightingsMap({
             <span className="text-xs font-semibold text-[#777777]">
               {selectedPoint
                 ? `1 of ${activeSightings.length} Field Sighting Focused`
-                : (isDeceased ? 'Historical Habitat Mapped' : 'Home Range Mapped')}
+                : homeRangeShape?.zoneData
+                  ? 'WTS Conservation Zone Mapped'
+                  : (isDeceased ? 'Historical Habitat Mapped' : 'Home Range Mapped')}
             </span>
           </div>
 
           <h3 className="font-sans text-[1.15rem] font-bold text-[#111111] m-0 flex items-center gap-2">
             <Compass size={18} className="text-accent" />
-            <span>{isDeceased ? `${tusker?.name || 'Tusker'}'s Historical Habitat Map` : `${tusker?.name || 'Tusker'}'s Home Range & Habitat Map`}</span>
+            <span>
+              {homeRangeShape?.zoneData
+                ? `${tusker?.name || 'Tusker'}'s Conservation Landscape: ${homeRangeShape.zoneData.title}`
+                : (isDeceased ? `${tusker?.name || 'Tusker'}'s Historical Habitat Map` : `${tusker?.name || 'Tusker'}'s Home Range & Habitat Map`)}
+            </span>
           </h3>
           <p className="font-sans text-xs text-[#666666] m-0 mt-0.5">
-            {isDeceased
-              ? `(Disclaimer: The shaded polygon outlines ${tusker?.name}'s ${statusTheme.disclaimerText} across ${tusker?.location || 'registered area'}.)`
-              : `(Disclaimer: The shaded polygon outlines ${tusker?.name}'s ${statusTheme.disclaimerText} across ${tusker?.location || 'registered area'}. ${sightingPoints.length > 0 ? 'Individual field sightings are plotted within.' : ''})`}
+            {homeRangeShape?.zoneData
+              ? `(The shaded boundary represents ${tusker?.name}'s assigned WTS Conservation Landscape: ${homeRangeShape.zoneData.name}, encompassing ${homeRangeShape.zoneData.districts}. Home range: ${tusker?.location || '—'}.)`
+              : (isDeceased
+                  ? `(Disclaimer: The shaded polygon outlines ${tusker?.name}'s ${statusTheme.disclaimerText} across ${tusker?.location || 'registered area'}.)`
+                  : `(Disclaimer: The shaded polygon outlines ${tusker?.name}'s ${statusTheme.disclaimerText} across ${tusker?.location || 'registered area'}. ${sightingPoints.length > 0 ? 'Individual field sightings are plotted within.' : ''})`)}
           </p>
         </div>
 
@@ -696,10 +733,10 @@ export default function TuskerSightingsMap({
                 ? 'bg-emerald-50 text-emerald-900 border-emerald-300 shadow-xs cursor-default'
                 : 'bg-white text-gray-700 border-gray-200 hover:bg-emerald-50/50 hover:text-emerald-900 shadow-2xs'
             }`}
-            title="Display full home range on map"
+            title="Display full conservation landscape on map"
           >
             <Eye size={14} className="text-emerald-600" />
-            <span>View Home Range</span>
+            <span>{homeRangeShape?.zoneData ? 'View Full Zone' : 'View Home Range'}</span>
           </button>
         </div>
       </div>
@@ -827,7 +864,7 @@ export default function TuskerSightingsMap({
       {/* ── Points Registry Strip below Map ── */}
       <div className="p-4 bg-[#fafaf8] border-t border-[#e8ece9]">
         <div className="text-xs font-bold text-[#666666] uppercase tracking-wider mb-2.5 flex items-center justify-between">
-          <span>Home Range &amp; Sightings Registry</span>
+          <span>{homeRangeShape?.zoneData ? 'Conservation Landscape & Sightings Registry' : 'Home Range & Sightings Registry'}</span>
           {sightingPoints.length > 0 && (
             <span className="font-normal lowercase text-[#888888]">
               click any sighting to isolate &amp; focus
@@ -836,8 +873,37 @@ export default function TuskerSightingsMap({
         </div>
 
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
-          {/* Main Home Range Pill (As a Whole) */}
-          {tusker?.location && (
+          {/* Main Conservation Zone / Range Pill */}
+          {homeRangeShape?.zoneData ? (
+            <div
+              onClick={handleViewHomeRange}
+              className="shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs cursor-pointer transition-all select-none shadow-xs"
+              style={{
+                backgroundColor: !selectedPoint ? `${homeRangeShape.zoneData.color}15` : '#ffffff',
+                borderColor: !selectedPoint ? homeRangeShape.zoneData.color : '#e5e7eb',
+                color: !selectedPoint ? homeRangeShape.zoneData.strokeColor : '#374151',
+              }}
+            >
+              <div
+                className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-2xs"
+                style={{ backgroundColor: homeRangeShape.zoneData.color }}
+              >
+                ●
+              </div>
+              <div>
+                <div className="font-bold flex items-center gap-1">
+                  <span>{homeRangeShape.zoneData.name}</span>
+                </div>
+                <div className="text-[11px] truncate max-w-[260px] opacity-80">
+                  {homeRangeShape.zoneData.districts}
+                </div>
+              </div>
+              <Check
+                size={12}
+                className={!selectedPoint ? 'text-current' : 'text-gray-400'}
+              />
+            </div>
+          ) : tusker?.location ? (
             <div
               onClick={handleViewHomeRange}
               className={`shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs cursor-pointer transition-all select-none ${
@@ -859,36 +925,7 @@ export default function TuskerSightingsMap({
               </div>
               <Check size={12} className={!selectedPoint ? statusTheme.checkColor : 'text-gray-400'} />
             </div>
-          )}
-
-          {/* Last Seen / Last Known Location Pin Card */}
-          {lastSeenPoint && (
-            <div
-              onClick={() => handleSelectPoint(lastSeenPoint)}
-              className={`shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs cursor-pointer transition-all select-none ${
-                selectedPoint?.id === 'last-seen-pin'
-                  ? `${statusTheme.cardActive} shadow-xs`
-                  : `${statusTheme.cardInactive} shadow-2xs`
-              }`}
-            >
-              <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${statusTheme.dotBg} text-white shadow-2xs`}>
-                ●
-              </div>
-              <div>
-                <div className="font-bold flex items-center gap-1">
-                  <span>{isDeceased ? 'Last Known Location' : 'Last Seen Location'}</span>
-                </div>
-                <div className={`text-[11px] truncate max-w-[180px] ${selectedPoint?.id === 'last-seen-pin' ? statusTheme.subtextColor : 'text-[#666666]'}`}>
-                  {lastSeenPoint.name}
-                </div>
-              </div>
-              {selectedPoint?.id === 'last-seen-pin' ? (
-                <Check size={12} className={statusTheme.checkColor} />
-              ) : (
-                <MapPin size={12} className="text-gray-400" />
-              )}
-            </div>
-          )}
+          ) : null}
 
           {/* Sighting Points (Row 2+) */}
           {sightingPoints.map((point) => {

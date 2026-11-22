@@ -1,174 +1,99 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Search, MapPin, X, Loader2 } from 'lucide-react';
-import { getTuskers, parseSightingDetails, LIVING_STATUSES, ZONES, PROVINCES } from '../../models/TuskerModel';
+import {
+  ArrowLeft, Search, Layers, X
+} from 'lucide-react';
+import { getTuskers, LIVING_STATUSES } from '../../models/TuskerModel';
 import { createMap } from '../../utils/mapEngine';
-import { cleanAreaName, areaKey, instantAreaShape, resolveAreaShape, shapeBoundsPoints } from '../../utils/areaShapes';
-import { escapeHtml } from '../../utils/escapeHtml';
+import { cleanAreaName } from '../../utils/areaShapes';
+import WTS_CONSERVATION_ZONES from '../../data/wtsConservationZones.json';
 
-/* Admin-only page: how many tuskers are in each area.
-   Each area (national park, sanctuary, tank, village…) is shaded with its
-   real outline where one exists, and labelled with the number of tuskers.
-   Area = place of the latest sighting, otherwise last seen area,
-   otherwise the registered location. */
+/* WTS Conservation Landscapes & Zones Map:
+   - Visualizes all 4 WTS Conservation Landscapes (Zone 1, Zone 2, Zone 3, Zone 4)
+   - Clean map display focused solely on the 4 strategic regional boundaries
+   - Interactive zone selection with district breakdowns and registered tuskers list */
 
 const SRI_LANKA_CENTER = [7.8731, 80.7718];
 const STATUS_COLORS = { Alive: '#16a34a', 'No Recent Record': '#d97706', Deceased: '#6b7280' };
 const statusColor = (s) => STATUS_COLORS[s] || '#0b2518';
 
-function areaNameFor(t) {
-  // 1. Latest verified field sighting (Row 2+):
-  const list = [...(t.sightings || [])].sort((a, b) =>
-    String(b.captureDate || '').localeCompare(String(a.captureDate || '')) || (b.id || 0) - (a.id || 0)
-  );
-  for (const s of list) {
-    const loc = cleanAreaName(parseSightingDetails(s).location);
-    if (loc) return { name: loc, source: 'Latest sighting', date: s.captureDate };
-  }
-
-  // 2. Recorded Last Seen Area (t.lastSeenArea):
-  const lastArea = cleanAreaName(t.lastSeenArea);
-  if (lastArea) {
-    const isDeceased = t.livingStatus === 'Deceased';
+function tuskerAreaInfo(t) {
+  const isDeceased = t.livingStatus === 'Deceased';
+  const area = cleanAreaName(t.lastSeenArea);
+  if (area) {
     return {
-      name: lastArea,
-      source: isDeceased ? 'Last seen / Final location' : 'Last seen area',
+      name: area,
+      label: isDeceased ? 'Final spotted location' : 'Last seen area',
       date: isDeceased ? (t.deathYear ? String(t.deathYear) : t.lastSeen) : t.lastSeen,
     };
   }
-
-  // 3. NO baseline location (t.location) or roaming corridor on full map:
-  // If neither latest sighting nor lastSeenArea is available, do NOT show him on the map!
+  if (t.location) {
+    return {
+      name: t.location.split('/')[0].trim(),
+      label: 'Roaming corridor',
+      date: t.listedDate,
+    };
+  }
   return null;
-}
-
-// More tuskers → stronger shading
-function intensity(count) {
-  if (count >= 20) return 0.6;
-  if (count >= 10) return 0.5;
-  if (count >= 5) return 0.42;
-  if (count >= 2) return 0.33;
-  return 0.25;
-}
-
-function badgeHtml(count, selected, name, status) {
-  const isSingle = count === 1;
-  const pinColor = isSingle ? statusColor(status || 'Alive') : '#0b2518';
-  const strokeColor = selected ? '#ffffff' : (isSingle ? '#ffffff' : '#c69b55');
-  const textColor = '#ffffff';
-  const strokeWidth = selected ? 2.8 : 2;
-  const pinWidth = isSingle ? 30 : (count >= 10 ? 36 : 32);
-  const pinHeight = isSingle ? 38 : (count >= 10 ? 44 : 40);
-  const fontSize = count >= 100 ? 10 : (count >= 10 ? 11.5 : 13);
-  const dropShadow = selected
-    ? 'filter:drop-shadow(0 0 6px rgba(198,155,85,0.95)) drop-shadow(0 3px 6px rgba(0,0,0,0.6));'
-    : 'filter:drop-shadow(0 2px 5px rgba(0,0,0,0.55));';
-  const tooltip = `${name} · ${count} ${count === 1 ? 'tusker' : 'tuskers'}`;
-
-  return `
-    <div title="${escapeHtml(tooltip)}" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer;${dropShadow}">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 44" width="${pinWidth}" height="${pinHeight}">
-        <path d="M18 0C8.06 0 0 8.06 0 18c0 13.5 18 26 18 26s18-12.5 18-26C36 8.06 27.94 0 18 0z" fill="${pinColor}" stroke="${strokeColor}" stroke-width="${strokeWidth}"/>
-        <circle cx="18" cy="18" r="11" fill="${pinColor}"/>
-        <text x="18" y="22.5" font-size="${fontSize}" font-weight="800" fill="${textColor}" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif">${escapeHtml(count)}</text>
-      </svg>
-    </div>`;
 }
 
 export default function TuskerMap() {
   const [tuskers, setTuskers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
-  const [shapes, setShapes] = useState({}); // areaKey -> shape | null
-  const [lookingUp, setLookingUp] = useState(0);
 
+  const [selectedZone, setSelectedZone] = useState(null); // 'Zone 1' | 'Zone 2' | 'Zone 3' | 'Zone 4' | null
   const [query, setQuery] = useState('');
-  const [statuses, setStatuses] = useState(() => new Set(LIVING_STATUSES));
-  const [zone, setZone] = useState('');
-  const [province, setProvince] = useState('');
-  const [selectedId, setSelectedId] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('');
 
   const hostRef = useRef(null);
   const mapRef = useRef(null);
   const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
-    document.title = 'Wild Tuskers Sri Lanka | Tusker Map';
+    document.title = 'Wild Tuskers Sri Lanka | WTS Conservation Zones';
     getTuskers()
       .then(setTuskers)
       .catch((err) => setLoadError(err.message || 'Could not load tuskers'))
       .finally(() => setLoading(false));
   }, []);
 
-  const withArea = useMemo(() => tuskers.map((t) => ({ tusker: t, area: areaNameFor(t) })), [tuskers]);
-
-  // Instant shapes from cache / built-in list, then real outlines in the background
-  useEffect(() => {
-    if (!withArea.length) return undefined;
-    let active = true;
-    const names = new Map();
-    withArea.forEach(({ area }) => { if (area?.name) names.set(areaKey(area.name), area.name); });
-
-    const initial = {};
-    names.forEach((name, key) => { initial[key] = instantAreaShape(name); });
-    setShapes(initial);
-
-    const todo = [...names].filter(([key]) => !initial[key] || initial[key].provisional);
-    setLookingUp(todo.length);
-    (async () => {
-      for (const [key, name] of todo) {
-        const shape = await resolveAreaShape(name);
-        if (!active) return;
-        setShapes((prev) => ({ ...prev, [key]: shape || prev[key] || null }));
-        setLookingUp((n) => Math.max(0, n - 1));
-      }
-    })();
-    return () => { active = false; };
-  }, [withArea]);
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return withArea.filter(({ tusker: t, area }) =>
-      statuses.has(t.livingStatus || 'Alive') &&
-      (!zone || t.zone === zone) &&
-      (!province || t.province === province) &&
-      (!q || `${t.id} ${t.name || ''} ${t.sinhala || ''} ${area?.name || ''}`.toLowerCase().includes(q))
-    );
-  }, [withArea, query, statuses, zone, province]);
-
-  // One group per area outline (names that resolve to the same park are merged)
-  const { groups, unplaced } = useMemo(() => {
-    const byId = new Map();
-    const none = [];
-    filtered.forEach((item) => {
-      const shape = item.area ? shapes[areaKey(item.area.name)] : null;
-      const ok = shape && Number.isFinite(Number(shape.label?.lat)) && Number.isFinite(Number(shape.label?.lng));
-      if (!ok) { none.push(item); return; }
-      if (!byId.has(shape.id)) byId.set(shape.id, { id: shape.id, shape, names: new Set(), items: [] });
-      const g = byId.get(shape.id);
-      g.names.add(item.area.name);
-      g.items.push(item);
+  const zoneStats = useMemo(() => {
+    const counts = { 'Zone 1': 0, 'Zone 2': 0, 'Zone 3': 0, 'Zone 4': 0 };
+    tuskers.forEach((t) => {
+      const raw = t.zone ? String(t.zone).trim() : '';
+      const m = raw.match(/Zone\s*([1-4])/i);
+      const k = m ? `Zone ${m[1]}` : raw;
+      if (counts[k] !== undefined) counts[k]++;
     });
-    const list = [...byId.values()].map((g) => ({
-      ...g,
-      title: g.shape.kind === 'polygon' ? g.shape.name : [...g.names][0],
-    }));
-    list.sort((a, b) => b.items.length - a.items.length);
-    return { groups: list, unplaced: none };
-  }, [filtered, shapes]);
+    return counts;
+  }, [tuskers]);
 
-  const selected = groups.find((g) => g.id === selectedId) || null;
+  // Filter tuskers for sidebar list
+  const filteredTuskers = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return tuskers.filter((t) => {
+      // Zone match
+      if (selectedZone) {
+        const raw = t.zone ? String(t.zone).trim() : '';
+        const m = raw.match(/Zone\s*([1-4])/i);
+        const k = m ? `Zone ${m[1]}` : raw;
+        if (k !== selectedZone) return false;
+      }
+      // Status match
+      if (statusFilter && (t.livingStatus || 'Alive') !== statusFilter) {
+        return false;
+      }
+      // Query match
+      if (q) {
+        const hay = `${t.id} ${t.name || ''} ${t.sinhala || ''} ${t.lastSeenArea || ''} ${t.location || ''} ${t.district || ''}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    }).sort((a, b) => String(a.id).localeCompare(String(b.id), undefined, { numeric: true }));
+  }, [tuskers, selectedZone, statusFilter, query]);
 
-  // Side list: every filtered tusker, with the area it is counted in
-  const tuskerRows = useMemo(() => {
-    const groupOf = new Map();
-    groups.forEach((g) => g.items.forEach((i) => groupOf.set(i.tusker.id, g)));
-    return filtered
-      .map((item) => ({ ...item, group: groupOf.get(item.tusker.id) || null }))
-      .sort((a, b) => String(a.tusker.id).localeCompare(String(b.tusker.id), undefined, { numeric: true }));
-  }, [filtered, groups]);
-
-  // Map
+  // Initialize Map
   useEffect(() => {
     let active = true;
     let created = null;
@@ -187,201 +112,324 @@ export default function TuskerMap() {
     };
   }, []);
 
-  // Draw shaded areas + count badges
-  const fittedRef = useRef(false);
+  // Draw ONLY the 4 Conservation Zones on the map (no last seen pins, no overlap pins)
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
     map.clearAreas();
     map.clearMarkers();
-    groups.forEach((g) => {
+
+    Object.values(WTS_CONSERVATION_ZONES).forEach((zoneObj) => {
+      const isZoneActive = selectedZone === zoneObj.shortName;
       try {
-      const isSel = g.id === selectedId;
-      const select = () => setSelectedId(g.id);
-      map.addArea(g.shape, {
-        fill: '#f59e0b',
-        fillOpacity: isSel ? 0.55 : intensity(g.items.length),
-        stroke: isSel ? '#ffffff' : '#fbbf24',
-        strokeWeight: isSel ? 3 : 1.5,
-        onClick: select,
-      });
-      const firstTusker = g.items[0]?.tusker;
-      const pinHeight = g.items.length === 1 ? 38 : (g.items.length >= 10 ? 44 : 40);
-      map.addMarker([Number(g.shape.label.lat), Number(g.shape.label.lng)], {
-        html: badgeHtml(g.items.length, isSel, g.title, firstTusker?.livingStatus),
-        height: pinHeight,
-        onClick: select,
-      });
+        map.addArea(
+          {
+            kind: 'polygon',
+            geojson: {
+              type: zoneObj.type || 'MultiPolygon',
+              coordinates: zoneObj.coordinates,
+            },
+          },
+          {
+            fill: zoneObj.color,
+            fillOpacity: isZoneActive ? 0.35 : 0.18,
+            stroke: zoneObj.strokeColor,
+            strokeWeight: isZoneActive ? 3.5 : 2.0,
+            onClick: () => {
+              setSelectedZone((prev) => (prev === zoneObj.shortName ? null : zoneObj.shortName));
+              if (zoneObj.bbox) {
+                map.fitBounds(zoneObj.bbox, { padding: 45 });
+              }
+            },
+          }
+        );
       } catch (err) {
-        console.error('[tusker map] could not draw area', g.title, err);
+        console.warn('[map] could not add conservation zone:', zoneObj.shortName, err);
       }
     });
-    if (!fittedRef.current && groups.length > 1 && lookingUp === 0) {
+
+    // If no zone selected, fit full Sri Lanka bounds
+    if (!selectedZone) {
       try {
-        map.fitBounds(groups.flatMap((g) => shapeBoundsPoints(g.shape)), { padding: 40, maxZoom: 10 });
+        map.fitBounds([[5.95, 79.6], [9.85, 81.9]], { padding: 30, maxZoom: 9 });
       } catch (err) {
-        console.error('[tusker map] fit failed', err);
+        console.error('[map] initial fit failed', err);
       }
-      fittedRef.current = true;
     }
-  }, [groups, mapReady, selectedId, lookingUp]);
+  }, [mapReady, selectedZone]);
 
-  const focusGroup = (g) => {
-    setSelectedId(g.id);
-    const pts = shapeBoundsPoints(g.shape);
-    if (mapRef.current && pts.length) mapRef.current.fitBounds(pts, { padding: 60, maxZoom: 12 });
+  const handleSelectZone = (zoneKey) => {
+    if (selectedZone === zoneKey) {
+      setSelectedZone(null);
+      if (mapRef.current) {
+        mapRef.current.fitBounds([[5.95, 79.6], [9.85, 81.9]], { padding: 30, maxZoom: 9 });
+      }
+    } else {
+      setSelectedZone(zoneKey);
+      const zoneObj = WTS_CONSERVATION_ZONES[zoneKey];
+      if (mapRef.current && zoneObj?.bbox) {
+        mapRef.current.fitBounds(zoneObj.bbox, { padding: 45 });
+      }
+    }
   };
 
-  const toggleStatus = (s) => {
-    setStatuses((prev) => {
-      const next = new Set(prev);
-      if (next.has(s)) next.delete(s); else next.add(s);
-      return next;
-    });
+  const handleResetView = () => {
+    setSelectedZone(null);
+    if (mapRef.current) {
+      mapRef.current.fitBounds([[5.95, 79.6], [9.85, 81.9]], { padding: 30, maxZoom: 9 });
+    }
   };
-
-  const shownCount = groups.reduce((n, g) => n + g.items.length, 0);
 
   return (
     <div className="pt-[70px] h-screen flex flex-col bg-[#0b2518] font-sans">
       <div className="flex-1 min-h-0 flex">
-        {/* ── Side panel: areas ranked by tusker count ── */}
-        <aside className="w-[360px] shrink-0 bg-white border-r border-[#e2e8e4] flex flex-col min-h-0">
+        {/* ── Side panel ── */}
+        <aside className="w-[390px] shrink-0 bg-white border-r border-[#e2e8e4] flex flex-col min-h-0">
           <div className="p-4 border-b border-[#edf2ef]">
-            <Link to="/admin" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#6a7c73] hover:text-accent no-underline mb-3">
+            <Link to="/admin" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#6a7c73] hover:text-accent no-underline mb-2.5">
               <ArrowLeft size={14} /> Admin Portal
             </Link>
-            <h1 className="text-lg font-bold text-[#0b2518] m-0 flex items-center gap-2">
-              <MapPin size={18} className="text-accent" /> Tusker Map
-            </h1>
-            <p className="text-xs text-[#6a7c73] m-0 mt-1">
-              {loading ? 'Loading tuskers…' : `${filtered.length} ${filtered.length === 1 ? 'tusker' : 'tuskers'} · ${shownCount} on the map across ${groups.length} ${groups.length === 1 ? 'area' : 'areas'}`}
+
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <h1 className="text-lg font-bold text-[#0b2518] m-0 flex items-center gap-2">
+                <Layers size={18} className="text-accent" /> WTS Conservation Zones
+              </h1>
+              {selectedZone && (
+                <button
+                  type="button"
+                  onClick={handleResetView}
+                  className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 cursor-pointer"
+                >
+                  All 4 Zones
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-[#6a7c73] m-0 mt-0.5">
+              {loading ? 'Loading tuskers…' : `4 Strategic Elephant Landscapes across Sri Lanka · ${tuskers.length} Registered Tuskers`}
             </p>
 
-            <div className="relative mt-3">
+            {/* The 4 Strategic Conservation Zones Cards */}
+            <div className="grid grid-cols-2 gap-2 mt-3 mb-3">
+              {Object.values(WTS_CONSERVATION_ZONES).map((zObj) => {
+                const isSelected = selectedZone === zObj.shortName;
+                const count = zoneStats[zObj.shortName] || 0;
+
+                return (
+                  <button
+                    key={zObj.shortName}
+                    type="button"
+                    onClick={() => handleSelectZone(zObj.shortName)}
+                    className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
+                      isSelected
+                        ? 'bg-emerald-50/80 border-emerald-600 ring-2 ring-emerald-500/30 shadow-xs'
+                        : 'bg-[#fafbfa] hover:bg-white border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-1 w-full mb-1">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{ backgroundColor: zObj.color }}
+                        />
+                        <span className="font-bold text-xs text-[#0b2518] truncate">
+                          {zObj.shortName}
+                        </span>
+                      </div>
+                      <span
+                        className="text-[10px] font-bold px-1.5 py-0.2 rounded-full shrink-0"
+                        style={{
+                          backgroundColor: `${zObj.color}20`,
+                          color: zObj.strokeColor,
+                        }}
+                      >
+                        {count}
+                      </span>
+                    </div>
+                    <div className="text-[10.5px] text-gray-600 font-medium truncate leading-tight">
+                      {zObj.title}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Search Input */}
+            <div className="relative">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9aa8a0]" />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search tusker name, ID or area…"
-                className="w-full box-border pl-9 pr-8 py-2 text-sm bg-[#f7f8f7] border border-[#e2e8e4] rounded-lg outline-none focus:border-accent"
+                placeholder={selectedZone ? `Search in ${selectedZone}…` : 'Search registered tuskers…'}
+                className="w-full pl-8 pr-8 py-2 text-xs bg-[#f4f7f5] border border-[#dce3df] rounded-lg text-[#0b2518] placeholder:text-[#9aa8a0] focus:outline-none focus:border-accent focus:bg-white"
               />
               {query && (
-                <button type="button" onClick={() => setQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-[#9aa8a0] p-0" aria-label="Clear search">
-                  <X size={14} />
+                <button
+                  type="button"
+                  onClick={() => setQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9aa8a0] hover:text-[#0b2518] bg-transparent border-none p-0 cursor-pointer"
+                  aria-label="Clear search"
+                >
+                  <X size={13} />
                 </button>
               )}
             </div>
 
-            <div className="flex flex-wrap gap-1.5 mt-3">
-              {LIVING_STATUSES.map((s) => (
+            {/* Status Filter Chips */}
+            <div className="flex items-center gap-1.5 mt-2.5 overflow-x-auto pb-0.5 scrollbar-thin">
+              <button
+                type="button"
+                onClick={() => setStatusFilter('')}
+                className={`px-2 py-0.5 rounded-full text-[10.5px] font-semibold border cursor-pointer transition-all ${
+                  statusFilter === ''
+                    ? 'bg-[#0b2518] text-white border-[#0b2518]'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                All Statuses
+              </button>
+              {LIVING_STATUSES.map((status) => (
                 <button
-                  key={s}
+                  key={status}
                   type="button"
-                  onClick={() => toggleStatus(s)}
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[0.72rem] font-semibold border cursor-pointer transition-colors ${
-                    statuses.has(s) ? 'bg-[#0b2518] text-white border-[#0b2518]' : 'bg-white text-[#6a7c73] border-[#d8e0db]'
+                  onClick={() => setStatusFilter(statusFilter === status ? '' : status)}
+                  className={`px-2 py-0.5 rounded-full text-[10.5px] font-semibold border cursor-pointer transition-all whitespace-nowrap ${
+                    statusFilter === status
+                      ? 'bg-[#0b2518] text-white border-[#0b2518]'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  <span className="w-2 h-2 rounded-full" style={{ background: statusColor(s) }} />
-                  {s}
+                  {status}
                 </button>
               ))}
             </div>
+          </div>
 
-            <div className="grid grid-cols-2 gap-2 mt-3">
-              <select value={zone} onChange={(e) => setZone(e.target.value)} className="text-xs py-1.5 px-2 border border-[#e2e8e4] rounded-lg bg-white">
-                <option value="">All zones</option>
-                {ZONES.map((z) => <option key={z} value={z}>{z}</option>)}
-              </select>
-              <select value={province} onChange={(e) => setProvince(e.target.value)} className="text-xs py-1.5 px-2 border border-[#e2e8e4] rounded-lg bg-white">
-                <option value="">All provinces</option>
-                {PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
-              </select>
+          {/* ── Scrollable Tusker List ── */}
+          <div className="flex-1 overflow-y-auto divide-y divide-[#f0f3f1]">
+            <div className="px-4 py-2 bg-[#f8faf9] text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between">
+              <span>{selectedZone ? `${selectedZone} Tuskers` : 'All Registered Tuskers'}</span>
+              <span>{filteredTuskers.length}</span>
             </div>
 
-            {lookingUp > 0 && (
-              <div className="flex items-center gap-1.5 text-[0.7rem] text-[#8a9b92] mt-2">
-                <Loader2 size={12} className="animate-spin" /> Drawing area outlines… {lookingUp} left (first visit only)
+            {loadError && (
+              <div className="p-4 text-xs text-red-600 bg-red-50">{loadError}</div>
+            )}
+
+            {filteredTuskers.length === 0 && !loading && (
+              <div className="p-6 text-center text-xs text-gray-500">
+                No tuskers match the current filters.
               </div>
             )}
-          </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto">
-            {loadError && <p className="p-4 text-sm text-rose-600">{loadError}</p>}
-            {tuskerRows.map(({ tusker: t, area, group }) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => group && focusGroup(group)}
-                disabled={!group}
-                className={`w-full text-left flex items-center gap-2.5 px-4 py-2.5 border-0 border-b border-[#f0f3f1] cursor-pointer disabled:cursor-default ${
-                  group && group.id === selectedId ? 'bg-[#faf5ec]' : 'bg-white hover:bg-[#f7faf8]'
-                }`}
-              >
-                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: statusColor(t.livingStatus) }} />
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold text-[#111] truncate">
-                    <span className="text-accent font-mono text-xs mr-1.5">{t.id}</span>{t.name}
-                  </span>
-                  <span className={`block text-[0.72rem] truncate ${group ? 'text-[#7a8a82]' : 'text-[#b0bab4] italic'}`}>
-                    {group
-                      ? `${group.title} · ${area?.source || 'Last location'}`
-                      : 'No last seen location recorded · Not on map'}
-                  </span>
-                </span>
-              </button>
-            ))}
-            {!loading && tuskerRows.length === 0 && <p className="p-4 text-sm text-[#7a8a82]">No tuskers match these filters.</p>}
-            {unplaced.length > 0 && (
-              <div className="p-3 text-[0.72rem] text-[#8a9b92] bg-[#f9faf9] border-t border-[#edf2ef]">
-                <p className="m-0 leading-relaxed">
-                  {unplaced.length} {unplaced.length === 1 ? 'tusker has' : 'tuskers have'} no verified last location recorded (awaiting field sighting).
-                </p>
-              </div>
-            )}
-          </div>
-        </aside>
+            {filteredTuskers.map((t) => {
+              const areaInfo = tuskerAreaInfo(t);
+              const zKey = t.zone?.match(/Zone\s*([1-4])/i) ? `Zone ${t.zone.match(/Zone\s*([1-4])/i)[1]}` : t.zone;
+              const zColor = WTS_CONSERVATION_ZONES[zKey]?.color || '#9ca3af';
 
-        {/* ── Map ── */}
-        <div className="relative flex-1 min-w-0 bg-[#0e1210]">
-          <div ref={hostRef} className="absolute inset-0" />
-
-          {/* Selected area card */}
-          {selected && (
-            <div className="absolute top-3 left-3 z-[5] w-[310px] max-h-[70%] overflow-y-auto bg-[#0d1612]/95 rounded-xl shadow-2xl border border-[#c69b55]/40 text-white">
-              <div className="flex items-start justify-between gap-2 px-3.5 pt-3 pb-2 border-b border-white/10">
-                <div className="min-w-0">
-                  <div className="text-sm font-bold text-white">{selected.title}</div>
-                  <div className="text-[0.7rem] text-[#9ca3af]">
-                    {selected.items.length} tusker{selected.items.length === 1 ? '' : 's'}
-                    {selected.names.size > 1 ? ` · recorded as ${[...selected.names].join(', ')}` : ''}
-                  </div>
-                </div>
-                <button type="button" onClick={() => setSelectedId(null)} className="bg-transparent border-none cursor-pointer text-[#9ca3af] hover:text-white p-0.5" aria-label="Close">
-                  <X size={16} />
-                </button>
-              </div>
-              {selected.items.map(({ tusker: t, area }) => (
+              return (
                 <Link
                   key={t.id}
                   to={`/tuskers/${t.id.toLowerCase()}`}
-                  className="flex items-center gap-2.5 px-3.5 py-2 no-underline hover:bg-white/10 border-b border-white/5"
+                  state={{ from: '/admin/tusker-map' }}
+                  className="flex items-center gap-3 px-4 py-3 no-underline hover:bg-[#f6f9f7] transition-colors group"
                 >
-                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: statusColor(t.livingStatus) }} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-semibold text-white truncate">
-                      <span className="text-accent font-mono text-xs mr-1.5">{t.id}</span>{t.name}
+                  <span
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                    style={{ background: statusColor(t.livingStatus) }}
+                    title={t.livingStatus || 'Alive'}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-mono text-xs font-bold text-accent">{t.id}</span>
+                      <span className="text-xs font-bold text-[#0b2518] truncate group-hover:text-emerald-800">
+                        {t.name}
+                      </span>
+                      {t.sinhala && (
+                        <span className="text-[11px] text-[#7a8a81] truncate">({t.sinhala})</span>
+                      )}
+                    </div>
+                    <div className="text-[11px] text-[#6a7c73] truncate mt-0.5 flex items-center gap-1">
+                      {areaInfo ? (
+                        <span>{areaInfo.label}: {areaInfo.name}</span>
+                      ) : (
+                        <span>{t.district || t.province || 'Sri Lanka'}</span>
+                      )}
+                    </div>
+                  </div>
+                  {zKey && (
+                    <span
+                      className="text-[9.5px] font-bold px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap"
+                      style={{
+                        backgroundColor: `${zColor}18`,
+                        color: zColor,
+                      }}
+                    >
+                      {zKey}
                     </span>
-                    <span className="block text-[0.7rem] text-[#9ca3af]">
-                      {t.livingStatus || 'Alive'} · {area.source}{area.date ? ` · ${area.date}` : ''}
-                    </span>
-                  </span>
+                  )}
                 </Link>
-              ))}
+              );
+            })}
+          </div>
+        </aside>
+
+        {/* ── Map Viewport ── */}
+        <div className="relative flex-1 min-w-0 bg-[#0e1210]">
+          <div ref={hostRef} className="absolute inset-0" />
+
+          {/* Floating Selected Zone Overlay Card on Map */}
+          {selectedZone && (
+            <div className="absolute top-4 left-4 z-[5] w-[320px] bg-[#0d1612]/95 backdrop-blur-md rounded-xl shadow-2xl border border-emerald-500/40 text-white p-4 animate-in fade-in">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span
+                    className="w-3.5 h-3.5 rounded-full shrink-0"
+                    style={{ backgroundColor: WTS_CONSERVATION_ZONES[selectedZone]?.color }}
+                  />
+                  <div className="text-sm font-bold text-white truncate">
+                    {WTS_CONSERVATION_ZONES[selectedZone]?.name}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleResetView}
+                  className="bg-transparent border-none cursor-pointer text-[#9ca3af] hover:text-white p-0.5"
+                  aria-label="Close"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="text-xs text-gray-300 leading-relaxed mb-3">
+                <strong className="text-white">Districts:</strong> {WTS_CONSERVATION_ZONES[selectedZone]?.districts}
+              </div>
+
+              <div className="flex items-center justify-between text-xs pt-2.5 border-t border-white/10">
+                <span className="text-emerald-400 font-bold">
+                  {zoneStats[selectedZone] || 0} Registered Tuskers
+                </span>
+                <span className="text-[11px] text-gray-400">
+                  Select zone on sidebar to view all
+                </span>
+              </div>
             </div>
           )}
+
+          {/* Map Legend Overlay at Bottom Right */}
+          <div className="absolute bottom-5 right-5 z-[5] bg-[#0d1612]/90 backdrop-blur-md rounded-xl shadow-xl border border-white/10 text-white p-3 pointer-events-none hidden sm:block">
+            <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+              4 Conservation Landscapes
+            </div>
+            <div className="space-y-1.5">
+              {Object.values(WTS_CONSERVATION_ZONES).map((z) => (
+                <div key={z.shortName} className="flex items-center gap-2 text-xs">
+                  <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: z.color }} />
+                  <span className="text-gray-200">{z.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>

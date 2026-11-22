@@ -11,7 +11,7 @@ export default function StatusBadge({ status, deathYear, className = '' }) {
   if (!status) return null;
   const label = status === 'Deceased' && deathYear ? `Deceased · ${deathYear}` : status;
   return (
-    <span className={`inline-flex items-center font-sans font-semibold rounded-full border ${STATUS_STYLES[status] || ''} ${className}`}>
+    <span className={`inline-flex items-center font-sans font-semibold rounded-full border whitespace-nowrap shrink-0 ${STATUS_STYLES[status] || ''} ${className}`}>
       {label}
     </span>
   );

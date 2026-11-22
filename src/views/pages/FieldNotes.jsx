@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
   FileText,
@@ -15,6 +14,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { useFieldNotesFeed } from '../../controllers/useFieldNotes';
+import ImageLightboxModal from '../components/ImageLightboxModal';
 
 export default function FieldNotes() {
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ export default function FieldNotes() {
   // Active view: either a specific year or 'pending' for admin review
   const [activeTab, setActiveTab] = useState(null);
   const [actionNotice, setActionNotice] = useState(null);
-  const [lightboxImg, setLightboxImg] = useState(null);
+  const [activeLightboxPhoto, setActiveLightboxPhoto] = useState(null);
 
   useEffect(() => {
     document.title = 'Wild Tuskers Sri Lanka | Field Notes';
@@ -85,7 +85,7 @@ export default function FieldNotes() {
 
   return (
     <div className="bg-[#f0f2f5] min-h-screen pt-[calc(80px+2.5rem)] pb-20">
-      <div className="max-w-[1000px] mx-auto px-6 flex flex-col gap-6">
+      <div className="max-w-[1100px] mx-auto px-6 flex flex-col gap-6">
 
         {/* Action Notice Toast */}
         {actionNotice && (
@@ -302,7 +302,21 @@ export default function FieldNotes() {
                           {note.images.map((img, i) => (
                             <div
                               key={i}
-                              onClick={() => setLightboxImg(img)}
+                              onClick={() =>
+                                setActiveLightboxPhoto({
+                                  imageUrl: img,
+                                  title: note.title,
+                                  tuskerName: note.specialNote || note.title,
+                                  specialNote: note.specialNote,
+                                  description: note.description,
+                                  location: note.location,
+                                  date: note.date,
+                                  author: note.author,
+                                  status: 'pending',
+                                  id: note.id,
+                                  note: note,
+                                })
+                              }
                               className="rounded-lg overflow-hidden aspect-[4/3] bg-black/5 cursor-pointer group relative border border-gray-200"
                             >
                               <img
@@ -409,7 +423,20 @@ export default function FieldNotes() {
                         {note.images.map((img, i) => (
                           <div
                             key={i}
-                            onClick={() => setLightboxImg(img)}
+                            onClick={() =>
+                              setActiveLightboxPhoto({
+                                imageUrl: img,
+                                title: note.title,
+                                tuskerName: note.specialNote || note.title,
+                                specialNote: note.specialNote,
+                                description: note.description,
+                                location: note.location,
+                                date: note.date,
+                                author: note.author,
+                                id: note.id,
+                                note: note,
+                              })
+                            }
                             className="rounded-[6px] overflow-hidden aspect-[4/3] bg-black/5 cursor-pointer group relative shadow-sm"
                           >
                             <img
@@ -458,28 +485,33 @@ export default function FieldNotes() {
 
       </div>
 
-      {/* Image Lightbox Modal */}
-      {lightboxImg && createPortal(
-        <div
-          className="fixed inset-0 z-[9999] bg-black/85 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in"
-          onClick={() => setLightboxImg(null)}
-        >
-          <div className="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
-            <button
-              onClick={() => setLightboxImg(null)}
-              className="absolute -top-10 right-0 text-white/80 hover:text-white bg-transparent border-none cursor-pointer p-1"
-            >
-              <X size={26} />
-            </button>
-            <img
-              src={lightboxImg}
-              alt="Enlarged observation"
-              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
-        </div>,
-        document.body
+      {/* Image Lightbox Modal with Zoom, Admin Moderation & Tusker Profiles */}
+      {activeLightboxPhoto && (
+        <ImageLightboxModal
+          photo={activeLightboxPhoto}
+          isAdmin={isAdmin}
+          onApprove={
+            activeLightboxPhoto.status === 'pending'
+              ? () => {
+                  const noteToApprove = activeLightboxPhoto.note;
+                  setActiveLightboxPhoto(null);
+                  handleApprove(noteToApprove);
+                }
+              : undefined
+          }
+          onDelete={() => {
+            const noteObj = activeLightboxPhoto.note;
+            const noteId = activeLightboxPhoto.id;
+            setActiveLightboxPhoto(null);
+            if (activeLightboxPhoto.status === 'pending') {
+              rejectNote(noteId);
+            } else {
+              handleDeleteApproved(noteObj);
+            }
+          }}
+          onClose={() => setActiveLightboxPhoto(null)}
+          fromPath="/field-notes"
+        />
       )}
 
     </div>

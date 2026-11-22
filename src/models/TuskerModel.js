@@ -285,6 +285,14 @@ export function invalidateTuskersCache() {
   tuskersCacheTime = 0;
 }
 
+export function getCachedTuskers() {
+  const now = Date.now();
+  if (tuskersCache && (now - tuskersCacheTime < CACHE_TTL_MS)) {
+    return tuskersCache;
+  }
+  return null;
+}
+
 export async function getTuskers(forceRefresh = false) {
   const now = Date.now();
   if (!forceRefresh && tuskersCache && (now - tuskersCacheTime < CACHE_TTL_MS)) {

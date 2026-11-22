@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { ScanSearch } from 'lucide-react';
 import { SITE_ASSETS } from '../../constants/siteAssets';
 import hero960 from '../../assets/images/hero-bg-960.webp';
 import hero1600 from '../../assets/images/hero-bg-1600.webp';
@@ -133,26 +131,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 4. AI Wild Tusker Identification Box (Centered text, balanced spacing to icon and button, mobile responsive) */}
-          <div className="w-full rounded-2xl bg-gradient-to-r from-[#0e3a24]/92 via-[#0b2b1a]/94 to-[#071d12]/96 backdrop-blur-xl border border-white/20 shadow-[0_16px_40px_rgba(0,0,0,0.45),inset_0_1px_1px_rgba(255,255,255,0.25)] px-3 sm:px-5 py-2.5 sm:py-3 flex items-center justify-between gap-2.5 sm:gap-4 transition-transform duration-300 hover:scale-[1.01]">
-            {/* Left: Circular Icon Badge */}
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white shadow-md flex items-center justify-center text-[#0b2b1a] shrink-0">
-              <ScanSearch size={18} strokeWidth={2.2} className="sm:w-5 sm:h-5" />
-            </div>
-
-            {/* Center: Title Text Centered with Equal Breathing Space */}
-            <span className="font-sans text-[0.78rem] xs:text-[0.84rem] sm:text-[0.98rem] md:text-[1.04rem] font-semibold text-white tracking-tight drop-shadow-sm text-center flex-1 px-1.5 sm:px-3 leading-snug sm:leading-normal">
-              AI assisted individual wild tusker re-identification
-            </span>
-
-            {/* Right: Explore Pill Button */}
-            <Link
-              to="/ai-app"
-              className="shrink-0 py-1.5 sm:py-2 px-3.5 sm:px-6 rounded-full bg-white hover:bg-white/95 text-[#0b2b1a] font-bold text-[0.76rem] sm:text-[0.86rem] tracking-wide text-center shadow-[0_4px_14px_rgba(0,0,0,0.25)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.35)] transition-all no-underline inline-flex items-center justify-center cursor-pointer"
-            >
-              Explore
-            </Link>
-          </div>
+          {/* 4. AI Wild Tusker Identification Box temporarily hidden until standalone app launch */}
 
         </div>
       </div>

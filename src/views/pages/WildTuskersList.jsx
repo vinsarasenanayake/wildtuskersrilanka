@@ -1,6 +1,6 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useLayoutEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, MapPin, X, ChevronDown, ArrowRight, PlusCircle, Radar, ArrowUpDown, Check } from 'lucide-react';
+import { Search, MapPin, X, ChevronDown, PlusCircle, Radar, ArrowUpDown, Check } from 'lucide-react';
 import { useTuskerList } from '../../controllers/useTusker';
 import { useAuth } from '../../controllers/useAuth';
 import { LIVING_STATUSES } from '../../models/TuskerModel';
@@ -51,6 +51,45 @@ export default function WildTuskersList() {
   const locationRef = useRef(null);
   const sortRef     = useRef(null);
   const [showSortDrop, setShowSortDrop] = useState(false);
+
+  /* ── Restore Scroll & Card Position on Return ─────── */
+  useLayoutEffect(() => {
+    const savedId = sessionStorage.getItem('wts_last_tusker_id');
+    const savedScroll = sessionStorage.getItem('wts_last_tusker_scroll');
+
+    if (!savedId && !savedScroll) return;
+
+    const restore = () => {
+      if (savedId) {
+        const el = document.getElementById(`tusker-card-${savedId}`);
+        if (el) {
+          el.scrollIntoView({ block: 'center', behavior: 'instant' });
+          return true;
+        }
+      }
+      if (savedScroll !== null) {
+        const y = parseInt(savedScroll, 10);
+        if (!isNaN(y) && y > 0) {
+          window.scrollTo({ top: y, behavior: 'instant' });
+          return true;
+        }
+      }
+      return false;
+    };
+
+    restore();
+    const frameId = requestAnimationFrame(restore);
+    const t1 = setTimeout(restore, 50);
+    const t2 = setTimeout(restore, 150);
+    const t3 = setTimeout(restore, 300);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [loading, filtered.length]);
 
   /* ── Click Outside to Close ────────────────── */
   useEffect(() => {
@@ -152,38 +191,25 @@ export default function WildTuskersList() {
           </p>
         </div>
 
-        {/* Action Buttons: On mobile: Add Tusker & Unlisted in 1 row with AI App below; On desktop: All 3 in a row */}
-        <div className="flex flex-col md:flex-row items-center gap-2.5 sm:gap-3 shrink-0 w-full md:w-auto">
-          {isAdmin && (
-            <div className="flex items-center gap-2 sm:gap-2.5 w-full sm:w-auto justify-center md:justify-end">
-              <Link
-                to="/admin/add-tusker"
-                className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-accent hover:bg-accent-hover text-primary font-semibold text-[0.78rem] sm:text-[0.88rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0 whitespace-nowrap"
-              >
-                <PlusCircle size={15} />
-                <span>Add a New Tusker</span>
-              </Link>
-              <Link
-                to="/unlisted"
-                className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#faf5ec] hover:bg-[#f3ebd9] text-primary border border-accent/40 font-semibold text-[0.78rem] sm:text-[0.88rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0 whitespace-nowrap"
-              >
-                <Radar size={15} className="text-accent" />
-                <span>Unlisted Monitoring</span>
-              </Link>
-            </div>
-          )}
-          <div className="flex justify-center md:justify-end w-full md:w-auto">
+        {/* Action Buttons: Add Tusker & Unlisted Monitoring for Admin */}
+        {isAdmin && (
+          <div className="flex items-center gap-2 sm:gap-2.5 w-full sm:w-auto justify-center md:justify-end shrink-0">
             <Link
-              to="/ai-app"
-              className={`inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#16402b] hover:bg-[#1f593c] text-white font-medium text-[0.78rem] sm:text-[0.88rem] shadow-sm hover:shadow-md border border-[#2d8056]/30 transition-all duration-200 group no-underline shrink-0 ${
-                isAdmin ? 'w-full md:w-auto' : ''
-              }`}
+              to="/admin/add-tusker"
+              className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-accent hover:bg-accent-hover text-primary font-semibold text-[0.78rem] sm:text-[0.88rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0 whitespace-nowrap"
             >
-              <span>AI Re-Identification App</span>
-              <ArrowRight size={14} className="text-white transition-transform duration-200 group-hover:translate-x-1" />
+              <PlusCircle size={15} />
+              <span>Add a New Tusker</span>
+            </Link>
+            <Link
+              to="/unlisted"
+              className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#faf5ec] hover:bg-[#f3ebd9] text-primary border border-accent/40 font-semibold text-[0.78rem] sm:text-[0.88rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0 whitespace-nowrap"
+            >
+              <Radar size={15} className="text-accent" />
+              <span>Unlisted Monitoring</span>
             </Link>
           </div>
-        </div>
+        )}
       </div>
 
       {/* ── Search Toolbar: On mobile Sort by is placed directly below Filter by Location ── */}
@@ -325,8 +351,16 @@ export default function WildTuskersList() {
           {filtered.map(tusker => (
             <Link
               key={tusker.id}
+              id={`tusker-card-${tusker.id.toLowerCase()}`}
               to={`/tuskers/${tusker.id.toLowerCase()}`}
-              className="flex flex-col gap-2.5 cursor-pointer group content-auto no-underline text-inherit"
+              state={{ from: '/tuskers' }}
+              onClick={() => {
+                try {
+                  sessionStorage.setItem('wts_last_tusker_id', tusker.id.toLowerCase());
+                  sessionStorage.setItem('wts_last_tusker_scroll', String(window.scrollY));
+                } catch {}
+              }}
+              className="flex flex-col gap-2.5 cursor-pointer group no-underline text-inherit"
             >
               <div className="w-full aspect-square bg-[#e8e8e8] rounded-[6px] relative overflow-hidden flex flex-col items-center justify-center gap-1 transition-opacity duration-200 group-hover:opacity-82">
                 {tusker.livingStatus && tusker.livingStatus !== 'Alive' && (

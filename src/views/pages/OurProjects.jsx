@@ -21,7 +21,7 @@ export default function OurProjects() {
 
   return (
     <div className="bg-[#f0f2f5] min-h-screen pt-[calc(80px+2.5rem)] pb-20">
-      <div className="max-w-[820px] mx-auto px-6 flex flex-col gap-6">
+      <div className="max-w-[1100px] mx-auto px-6 flex flex-col gap-6">
 
         {/* Page Title */}
         <div className="text-center mb-2">

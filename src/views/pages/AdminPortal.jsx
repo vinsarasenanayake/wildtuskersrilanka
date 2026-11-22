@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Map as MapIcon } from 'lucide-react';
 import {
   Shield, PlusCircle, Trash2, Edit3, Eye, FileText, Binoculars, Calendar,
-  Radar, Database, CheckCircle2, XCircle, Search, LogOut, RefreshCw, AlertCircle, Check, Users, ExternalLink, Save, X
+  Radar, Database, CheckCircle2, XCircle, Search, LogOut, RefreshCw, AlertCircle, Check, Users, ExternalLink, Save, X, Layers
 } from 'lucide-react';
 import { getTuskers, deleteTusker } from '../../models/TuskerModel';
 import { getUnlistedTuskers, deleteUnlistedTusker, addUnlistedTusker } from '../../models/UnlistedTuskersModel';
@@ -517,19 +517,35 @@ export default function AdminPortal() {
             </button>
           </div>
 
-          <Link
-            to="/admin/tusker-map"
-            className="flex items-center gap-3 p-3.5 mb-3 rounded-xl bg-gradient-to-r from-[#0b2518] to-[#16402b] hover:from-[#16402b] hover:to-[#1d5236] text-white transition-all shadow-sm group border border-[#c69b55]/40 no-underline"
-          >
-            <div className="w-9 h-9 rounded-lg bg-[#c69b55]/20 text-[#c69b55] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-              <MapIcon size={18} />
-            </div>
-            <div className="overflow-hidden flex-1">
-              <div className="font-semibold text-sm leading-tight">Tusker Map</div>
-              <div className="text-[0.75rem] text-white/70 truncate">All tuskers on one satellite map, with exact sighting pins</div>
-            </div>
-            <span className="text-[#c69b55] text-xs font-semibold shrink-0">Open →</span>
-          </Link>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+            <Link
+              to="/admin/tusker-map"
+              className="flex items-center gap-3 p-3.5 rounded-xl bg-gradient-to-r from-[#0b2518] to-[#16402b] hover:from-[#16402b] hover:to-[#1d5236] text-white transition-all shadow-sm group border border-[#c69b55]/40 no-underline"
+            >
+              <div className="w-9 h-9 rounded-lg bg-[#c69b55]/20 text-[#c69b55] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <MapIcon size={18} />
+              </div>
+              <div className="overflow-hidden flex-1">
+                <div className="font-semibold text-sm leading-tight">Tusker Map</div>
+                <div className="text-[0.75rem] text-white/70 truncate">All tuskers on one satellite map, with exact sighting pins</div>
+              </div>
+              <span className="text-[#c69b55] text-xs font-semibold shrink-0">Open →</span>
+            </Link>
+
+            <Link
+              to="/admin/tusker-map?view=zones"
+              className="flex items-center gap-3 p-3.5 rounded-xl bg-gradient-to-r from-[#082015] to-[#0f3422] hover:from-[#0f3422] hover:to-[#17482f] text-white transition-all shadow-sm group border border-amber-500/30 no-underline"
+            >
+              <div className="w-9 h-9 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <Layers size={18} />
+              </div>
+              <div className="overflow-hidden flex-1">
+                <div className="font-semibold text-sm leading-tight">WTS Conservation Zones</div>
+                <div className="text-[0.75rem] text-white/70 truncate">4 Landscape Zones & 7 Overlap Gathering Areas</div>
+              </div>
+              <span className="text-amber-400 text-xs font-semibold shrink-0">Explore →</span>
+            </Link>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <Link
@@ -716,12 +732,12 @@ export default function AdminPortal() {
                 <table className="w-full text-left text-sm border-collapse">
                   <thead>
                     <tr className="bg-[#f4f7f5] text-[#4d5f56] text-xs font-bold uppercase tracking-wider border-b border-[#e8eee9]">
-                      <th className="py-3 px-4">Tusker ID</th>
-                      <th className="py-3 px-4">Name</th>
-                      <th className="py-3 px-4">Location</th>
-                      <th className="py-3 px-4">Status</th>
-                      <th className="py-3 px-4">Sightings</th>
-                      <th className="py-3 px-4 text-right">Actions</th>
+                      <th className="py-3 px-4 min-w-[95px] whitespace-nowrap">Tusker ID</th>
+                      <th className="py-3 px-4 min-w-[140px] whitespace-nowrap">Name</th>
+                      <th className="py-3 px-4 min-w-[140px] whitespace-nowrap">Location</th>
+                      <th className="py-3 px-4 min-w-[125px] whitespace-nowrap">Status</th>
+                      <th className="py-3 px-4 min-w-[115px] whitespace-nowrap">Sightings</th>
+                      <th className="py-3 px-4 text-right min-w-[90px] whitespace-nowrap">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#eef3f0]">
@@ -734,7 +750,7 @@ export default function AdminPortal() {
                     ) : (
                       filteredTuskers.map((t) => (
                         <tr key={t.id} className="hover:bg-[#fbfcfb] transition-colors">
-                          <td className="py-3 px-4 font-mono font-bold text-[#0b2518]">{t.id}</td>
+                          <td className="py-3 px-4 font-mono font-bold text-[#0b2518] whitespace-nowrap">{t.id}</td>
                           <td className="py-3 px-4 font-semibold text-[#182620]">
                             {t.name}{t.sinhala && <span className="text-xs text-[#7e9087] font-normal"> ({t.sinhala})</span>}
                           </td>
@@ -743,7 +759,7 @@ export default function AdminPortal() {
                             <StatusBadge status={t.livingStatus} deathYear={t.deathYear} className="px-2 py-0.5 text-[0.7rem]" />
                           </td>
                           <td className="py-3 px-4">
-                            <span className="px-2 py-0.5 rounded-full bg-[#eef5f1] text-[#0b2518] font-bold text-xs">
+                            <span className="inline-block px-2.5 py-0.5 rounded-full bg-[#eef5f1] text-[#0b2518] font-bold text-xs whitespace-nowrap shrink-0">
                               {t.sightings?.length || 0} sightings
                             </span>
                           </td>
@@ -751,6 +767,7 @@ export default function AdminPortal() {
                             <div className="inline-flex items-center gap-1.5 justify-end">
                               <Link
                                 to={`/tuskers/${t.id.toLowerCase()}`}
+                                state={{ from: '/admin' }}
                                 className="p-1.5 rounded-lg text-[#5a6c63] hover:text-[#0b2518] hover:bg-[#eef3f0] transition-all"
                                 title="View public profile"
                               >
@@ -969,11 +986,11 @@ export default function AdminPortal() {
                 <table className="w-full text-left text-sm border-collapse">
                   <thead>
                     <tr className="bg-[#f4f7f5] text-[#4d5f56] text-xs font-bold uppercase tracking-wider border-b border-[#e8eee9]">
-                      <th className="py-3 px-4">Date</th>
-                      <th className="py-3 px-4">Type</th>
-                      <th className="py-3 px-4">Title</th>
-                      <th className="py-3 px-4">Shared By</th>
-                      <th className="py-3 px-4 text-right">Actions</th>
+                      <th className="py-3 px-4 min-w-[100px] whitespace-nowrap">Date</th>
+                      <th className="py-3 px-4 min-w-[105px] whitespace-nowrap">Type</th>
+                      <th className="py-3 px-4 min-w-[200px] whitespace-nowrap">Title</th>
+                      <th className="py-3 px-4 min-w-[130px] whitespace-nowrap">Shared By</th>
+                      <th className="py-3 px-4 text-right min-w-[90px] whitespace-nowrap">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#eef3f0]">
@@ -989,7 +1006,7 @@ export default function AdminPortal() {
                           <td className="py-3 px-4 font-mono text-xs text-[#7e9087] whitespace-nowrap">{e.date}</td>
                           <td className="py-3 px-4">
                             <span
-                              className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                              className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 ${
                                 e.eventCategory === 'Upcoming'
                                   ? 'bg-blue-100 text-blue-800'
                                   : 'bg-gray-100 text-gray-700'

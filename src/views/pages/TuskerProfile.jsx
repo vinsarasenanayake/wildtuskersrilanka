@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
 import { createPortal } from 'react-dom';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   MapPin,
   User,
@@ -637,6 +637,20 @@ const THREAT_STYLES = {
   High: 'bg-[#fdecea] text-[#c0392b]',
   Critical: 'bg-[#c0392b] text-white',
   Highest: 'bg-[#c0392b] text-white',
+};
+
+const getHealthStyle = (cond) => {
+  const c = String(cond || '').toLowerCase().trim();
+  if (!c || c === 'good') {
+    return 'bg-[#e8f5ec] text-[#1f7a3d] border border-[#bfe3cb]';
+  }
+  if (c.includes('critical') || c.includes('danger') || c.includes('deceased') || c.includes('fatal')) {
+    return 'bg-[#fee2e2] text-[#991b1b] border border-[#fca5a5]';
+  }
+  if (c.includes('not good') || c.includes('poor') || c.includes('injured') || c.includes('wound') || c.includes('bad') || c.includes('fair')) {
+    return 'bg-[#fef3c7] text-[#92400e] border border-[#fde68a]';
+  }
+  return 'bg-gray-100 text-gray-700 border border-gray-200';
 };
 
 function formatDate(dateStr) {
@@ -1932,6 +1946,18 @@ function SightingPhotoLightbox({
 export default function TuskerProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const fromPath = location.state?.from;
+  const isFromList = fromPath === '/tuskers' || !fromPath;
+
+  const handleBack = useCallback(() => {
+    if (fromPath && !fromPath.includes('/edit-tusker') && !fromPath.includes('/add-sighting')) {
+      navigate(fromPath);
+    } else {
+      navigate('/tuskers');
+    }
+  }, [navigate, fromPath]);
 
   const {
     tusker,
@@ -2316,10 +2342,14 @@ export default function TuskerProfile() {
       <div className="min-h-[80vh] flex flex-col items-center justify-center gap-6 font-sans text-[#888888] pt-[80px]">
         <h2>Tusker not found</h2>
         <button
+          type="button"
           className="inline-flex items-center gap-1.5 font-sans text-[0.88rem] font-medium text-[#888888] bg-none border-none cursor-pointer p-0 mb-8 transition-colors hover:text-accent"
-          onClick={() => navigate('/tuskers')}
+          onClick={handleBack}
+          aria-label={isFromList ? "Back to List" : "Back"}
+          title={isFromList ? "Back to List" : "Back"}
         >
-          <ArrowLeft size={16} /> Back to list
+          <ArrowLeft size={16} />
+          {isFromList && <span>Back to List</span>}
         </button>
       </div>
     );
@@ -2339,13 +2369,14 @@ export default function TuskerProfile() {
         {/* Back and Edit Bar */}
         <div className="flex justify-between items-center mb-8">
           <button
+            type="button"
             className="inline-flex items-center gap-1.5 font-sans text-[0.88rem] font-medium text-[#888888] bg-none border-none cursor-pointer p-0 transition-colors hover:text-accent"
-            onClick={() => navigate('/tuskers')}
-            aria-label="Back to List"
-            title="Back to List"
+            onClick={handleBack}
+            aria-label={isFromList ? "Back to List" : "Back"}
+            title={isFromList ? "Back to List" : "Back"}
           >
-            <ArrowLeft size={16} />
-            <span className="hidden sm:inline">Back to List</span>
+            <ArrowLeft size={18} />
+            {isFromList && <span className="hidden sm:inline">Back to List</span>}
           </button>
           <div className="flex items-center gap-3">
             {canAddSighting && (
@@ -2359,7 +2390,7 @@ export default function TuskerProfile() {
             {isAdmin && (
               <button
                 className="bg-primary text-white font-sans text-[0.88rem] font-semibold rounded-[8px] px-5 py-2.5 shadow-[0_4px_10px_rgba(11,37,24,0.12)] hover:-translate-y-[0.5px] hover:bg-primary-light hover:shadow-[0_6px_15px_rgba(11,37,24,0.22)] transition-all cursor-pointer border-none"
-                onClick={() => navigate(`/admin/edit-tusker/${tusker.id.toLowerCase()}`)}
+                onClick={() => navigate(`/admin/edit-tusker/${tusker.id.toLowerCase()}`, { state: { from: fromPath || '/tuskers', fromProfile: true } })}
               >
                 Edit Profile
               </button>
@@ -2404,7 +2435,17 @@ export default function TuskerProfile() {
 
             {/* Description */}
             {tusker.description && (
-              <p className="font-sans text-[0.95rem] leading-[1.75] text-[#444444] m-0 whitespace-pre-line">{tusker.description}</p>
+              <div className="flex flex-col gap-4 font-sans text-[0.95rem] leading-[1.75] text-[#444444]">
+                {tusker.description
+                  .split(/\r?\n\s*\r?\n/)
+                  .map((para) => para.trim())
+                  .filter(Boolean)
+                  .map((para, pIdx) => (
+                    <p key={pIdx} className="m-0 leading-[1.75] text-justify whitespace-pre-line">
+                      {para}
+                    </p>
+                  ))}
+              </div>
             )}
 
             <div className="h-px bg-[#f0f0f0]" />
@@ -2556,7 +2597,7 @@ export default function TuskerProfile() {
               {tusker.lastSeenArea && (
                 <DetailRow
                   icon={<Eye size={16} />}
-                  label={isDeceased ? "Last Documented Area" : "Last Seen"}
+                  label={isDeceased ? "Final Spotted Location" : "Last Seen"}
                   value={[tusker.lastSeenArea, formatMonth(tusker.lastSeen)].filter(Boolean).join(' · ')}
                 />
               )}
@@ -2809,15 +2850,15 @@ export default function TuskerProfile() {
                   className="sticky top-0 z-10 bg-[#f8f9fa] shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
                 >
                   <tr className="border-b border-[#e5e7eb] text-[0.74rem] uppercase font-bold tracking-[0.6px] text-[#555555]">
-                    <th className="py-3.5 px-4 w-[130px] bg-[#f8f9fa]">Record #</th>
-                    <th className="py-3.5 px-4 w-[115px] bg-[#f8f9fa]">Date / Year</th>
-                    <th className="py-3.5 px-4 w-[170px] bg-[#f8f9fa]">Observer / Recorder</th>
-                    <th className="py-3.5 px-4 w-[160px] bg-[#f8f9fa]">Location / Area</th>
-                    <th className="py-3.5 px-4 w-[120px] bg-[#f8f9fa]">Health</th>
-                    <th className="py-3.5 px-4 w-[110px] bg-[#f8f9fa]">Life Threat</th>
-                    <th className="py-3.5 px-4 w-[190px] bg-[#f8f9fa]">Special Marks &amp; Wounds</th>
-                    <th className="py-3.5 px-4 w-[90px] text-center bg-[#f8f9fa]">Photo</th>
-                    <th className="py-3.5 px-4 w-[65px] text-center bg-[#f8f9fa]">Actions</th>
+                    <th className="py-3.5 px-4 w-[130px] min-w-[130px] bg-[#f8f9fa] whitespace-nowrap">Record #</th>
+                    <th className="py-3.5 px-4 w-[115px] min-w-[115px] bg-[#f8f9fa] whitespace-nowrap">Date / Year</th>
+                    <th className="py-3.5 px-4 w-[170px] min-w-[170px] bg-[#f8f9fa] whitespace-nowrap">Observer / Recorder</th>
+                    <th className="py-3.5 px-4 w-[160px] min-w-[160px] bg-[#f8f9fa] whitespace-nowrap">Location / Area</th>
+                    <th className="py-3.5 px-4 w-[135px] min-w-[135px] bg-[#f8f9fa] whitespace-nowrap">Health</th>
+                    <th className="py-3.5 px-4 w-[115px] min-w-[115px] bg-[#f8f9fa] whitespace-nowrap">Life Threat</th>
+                    <th className="py-3.5 px-4 w-[190px] min-w-[190px] bg-[#f8f9fa] whitespace-nowrap">Special Marks &amp; Wounds</th>
+                    <th className="py-3.5 px-4 w-[90px] min-w-[90px] text-center bg-[#f8f9fa] whitespace-nowrap">Photo</th>
+                    <th className="py-3.5 px-4 w-[65px] min-w-[65px] text-center bg-[#f8f9fa] whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#edf0f2] font-sans text-[0.84rem] text-[#222222]">
@@ -2828,21 +2869,21 @@ export default function TuskerProfile() {
                   >
                     <td className="py-3.5 px-4">
                       <div className="flex flex-col gap-1">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.72rem] font-bold bg-[#0b2518] text-[#c69b55] w-fit">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.72rem] font-bold bg-[#0b2518] text-[#c69b55] w-fit whitespace-nowrap">
                           <Shield size={11} /> Row 1
                         </span>
-                        <span className="text-[0.72rem] font-bold text-[#0b2518] uppercase tracking-wide">
+                        <span className="text-[0.72rem] font-bold text-[#0b2518] uppercase tracking-wide whitespace-nowrap">
                           1st Record
                         </span>
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4 font-semibold text-[#111111]">
+                    <td className="py-3.5 px-4 font-semibold text-[#111111] whitespace-nowrap">
                       {formatDate(tusker.listedDate) || tusker.listedDate || 'Initial'}
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <div className="font-bold text-[#111111] flex items-center gap-1.5">
+                      <div className="font-bold text-[#111111] flex items-center gap-1.5 whitespace-nowrap">
                         <User size={13} className="text-accent shrink-0" />
                         <span>{tusker.recordedBy || 'WTS Admin'}</span>
                       </div>
@@ -2861,14 +2902,14 @@ export default function TuskerProfile() {
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.74rem] font-semibold bg-[#e8f5ec] text-[#1f7a3d]">
-                        <HeartPulse size={11} /> {tusker.healthCondition || 'Good'}
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[0.74rem] font-semibold whitespace-nowrap shrink-0 ${getHealthStyle(tusker.healthCondition || 'Good')}`}>
+                        <HeartPulse size={12} className="shrink-0" /> <span>{tusker.healthCondition || 'Good'}</span>
                       </span>
                     </td>
 
                     <td className="py-3.5 px-4">
                       {tusker.threatLevel ? (
-                        <span className={`inline-block px-2 py-0.5 rounded text-[0.72rem] font-bold ${THREAT_STYLES[tusker.threatLevel] || 'bg-gray-100 text-gray-700'}`}>
+                        <span className={`inline-block px-2 py-0.5 rounded text-[0.72rem] font-bold whitespace-nowrap shrink-0 ${THREAT_STYLES[tusker.threatLevel] || 'bg-gray-100 text-gray-700'}`}>
                           {tusker.threatLevel}
                         </span>
                       ) : (
@@ -2961,8 +3002,8 @@ export default function TuskerProfile() {
 
                         <td className="py-3.5 px-4">
                           {details.healthCondition ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.74rem] font-semibold bg-[#e8f5ec] text-[#1f7a3d]">
-                              <HeartPulse size={11} /> {details.healthCondition}
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[0.74rem] font-semibold whitespace-nowrap shrink-0 ${getHealthStyle(details.healthCondition)}`}>
+                              <HeartPulse size={12} className="shrink-0" /> <span>{details.healthCondition}</span>
                             </span>
                           ) : (
                             <span className="text-[#999999]">—</span>
@@ -2971,7 +3012,7 @@ export default function TuskerProfile() {
 
                         <td className="py-3.5 px-4">
                           {details.threatLevel ? (
-                            <span className={`inline-block px-2 py-0.5 rounded text-[0.72rem] font-bold ${THREAT_STYLES[details.threatLevel] || 'bg-gray-100 text-gray-700'}`}>
+                            <span className={`inline-block px-2 py-0.5 rounded text-[0.72rem] font-bold whitespace-nowrap shrink-0 ${THREAT_STYLES[details.threatLevel] || 'bg-gray-100 text-gray-700'}`}>
                               {details.threatLevel}
                             </span>
                           ) : (
@@ -3089,7 +3130,7 @@ export default function TuskerProfile() {
               tusker={tusker}
               onPreviewPhoto={setPreviewModalPhoto}
               onEditSighting={(info) => setEditingSighting(info)}
-              onEditTusker={() => navigate(`/admin/edit-tusker/${tusker.id.toLowerCase()}`)}
+              onEditTusker={() => navigate(`/admin/edit-tusker/${tusker.id.toLowerCase()}`, { state: { from: fromPath || '/tuskers', fromProfile: true } })}
             />
 
             {/* Photographic & Ear Biometric Comparisons Management (Admin View) */}

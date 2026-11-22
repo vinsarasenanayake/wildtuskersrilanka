@@ -11,7 +11,7 @@ import SRI_LANKA_LAND from '../data/sriLankaLand.json';
 import { townCentrePolygons, habitatFor, ELEPHANT_RANGE_COORDS } from './habitat';
 import { hasParkBoundary, loadParkBoundaries, parkBoundaryFor } from './parkBoundaries';
 
-const CACHE_PREFIX = 'wts_area_v8_';
+const CACHE_PREFIX = 'wts_area_v9_';
 const CACHE_DAYS = 30;
 const CIRCLE_RADIUS_M = 4000;
 
@@ -170,6 +170,13 @@ export async function resolveAreaShape(rawName) {
         return shape;
       }
     }
+  }
+
+  // If we already have a trusted Sri Lankan coordinate from our database, use it directly!
+  if (knownCenter) {
+    const shape = landCircle(key, base, knownCenter);
+    writeCache(key, shape);
+    return shape;
   }
 
   const hasType = /national park|sanctuary|reserve|wewa|tank|forest/i.test(base);

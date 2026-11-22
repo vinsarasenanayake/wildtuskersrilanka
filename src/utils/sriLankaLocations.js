@@ -93,6 +93,9 @@ export const SRI_LANKA_WILDLIFE_LOCATIONS = [
   { name: 'Eluwankulama Wewa', type: 'Reservoir / Tank', region: 'Wilpattu South Border, Puttalam', lat: 8.2750, lng: 79.8667 },
   { name: 'Mahawilachchiya Wewa', type: 'Reservoir / Tank', region: 'Wilpattu East Border, Anuradhapura', lat: 8.4167, lng: 80.2000 },
   { name: 'Thabbowa Wewa', type: 'Historic Reservoir', region: 'Puttalam District', lat: 8.0167, lng: 79.9167 },
+  { name: 'Thuththaneri Wewa', type: 'Reservoir / Tank', region: 'Puttalam District', lat: 8.2042, lng: 79.9397 },
+  { name: 'Thuththaneriya Wewa', type: 'Reservoir / Tank', region: 'Puttalam District', lat: 8.2042, lng: 79.9397 },
+  { name: 'Gambirs Gas Wewa', type: 'Reservoir / Tank', region: 'Wilpattu South Border, Puttalam', lat: 8.2038, lng: 79.9540 },
   { name: 'Inginimitiya Reservoir', type: 'Reservoir', region: 'Puttalam District', lat: 8.0000, lng: 80.1500 },
   { name: 'Palukadawala Wewa', type: 'Historic Reservoir', region: 'Kurunegala District', lat: 8.0167, lng: 80.2500 },
   { name: 'Makalanegama Wewa', type: 'Reservoir', region: 'Kurunegala District', lat: 7.9833, lng: 80.2667 },
@@ -138,6 +141,50 @@ export const SRI_LANKA_WILDLIFE_LOCATIONS = [
   { name: 'Rambakan Oya Reservoir', type: 'Reservoir', region: 'Maha Oya, Ampara', lat: 7.5500, lng: 81.4000 },
   { name: 'Allai Tank', type: 'Historic Reservoir', region: 'Trincomalee District', lat: 8.4333, lng: 81.3000 },
   { name: 'Mahakanadarawa Wewa', type: 'Historic Reservoir', region: 'Anuradhapura District', lat: 8.3952, lng: 80.5522 },
+
+  // ── Core Elephant Towns, Habitats & Corridor Basins ──
+  { name: 'Thalawa', type: 'Town & Elephant Habitat', region: 'Anuradhapura District, North Central Province', lat: 8.2435, lng: 80.3789 },
+  { name: 'Galgamuwa', type: 'Town & Elephant Habitat', region: 'Kurunegala District, North Western Province', lat: 7.9863, lng: 80.2797 },
+  { name: 'Karuwalagaswewa', type: 'Town & Elephant Habitat', region: 'Puttalam District, North Western Province', lat: 8.0167, lng: 79.9833 },
+  { name: 'Anamaduwa', type: 'Town & Elephant Habitat', region: 'Puttalam District, North Western Province', lat: 7.9000, lng: 79.9833 },
+  { name: 'Nawagattegama', type: 'Town & Elephant Habitat', region: 'Puttalam District, North Western Province', lat: 7.9833, lng: 80.1333 },
+  { name: 'Mahakumbukkadawala', type: 'Town & Elephant Habitat', region: 'Puttalam District, North Western Province', lat: 7.8500, lng: 79.9167 },
+  { name: 'Kukulkatuwa', type: 'Wildlife Sanctuary / Corridor', region: 'Puttalam District, North Western Province', lat: 8.0833, lng: 80.1167 },
+  { name: 'Melsiripura', type: 'Town & Elephant Habitat', region: 'Kurunegala District, North Western Province', lat: 7.6333, lng: 80.5000 },
+  { name: 'Vidataltivu', type: 'Nature Reserve', region: 'Mannar District, Northern Province', lat: 8.9800, lng: 80.0200 },
+  { name: 'Kekirawa', type: 'Town & Elephant Corridor', region: 'Anuradhapura District, North Central Province', lat: 8.0461, lng: 80.5108 },
+
+  { name: 'Buttala', type: 'Town & Elephant Habitat', region: 'Monaragala District, Uva Province', lat: 6.7583, lng: 81.2483 },
+  { name: 'Wellawaya', type: 'Town & Elephant Habitat', region: 'Monaragala District, Uva Province', lat: 6.7408, lng: 81.1017 },
+  { name: 'Ethimale', type: 'Wildlife Area & Tank', region: 'Monaragala District, Uva Province', lat: 6.7500, lng: 81.3800 },
+  { name: 'Galge', type: 'Corridor Sanctuary', region: 'Yala Buffer, Southern / Uva Province', lat: 6.5500, lng: 81.3833 },
+  { name: 'Situlpawwa', type: 'Wildlife Sanctuary', region: 'Yala National Park, Southern Province', lat: 6.3667, lng: 81.4333 },
+
+  { name: 'Damana', type: 'Town & Elephant Habitat', region: 'Ampara District, Eastern Province', lat: 7.2000, lng: 81.6500 },
+  { name: 'Deegavapiya', type: 'Historic Sanctuary & Plains', region: 'Ampara District, Eastern Province', lat: 7.2167, lng: 81.7500 },
+  { name: 'Hulannuge', type: 'Elephant Corridor', region: 'Ampara District, Eastern Province', lat: 6.9667, lng: 81.7333 },
+  { name: 'Lahugala', type: 'National Park', region: 'Ampara District, Eastern Province', lat: 6.9333, lng: 81.7167 },
+  { name: 'Panama', type: 'Sanctuary & Coastal Wetland', region: 'Ampara District, Eastern Province', lat: 6.7500, lng: 81.8000 },
+  { name: 'Nuwaragala', type: 'Sanctuary & Forest Reserve', region: 'Ampara District, Eastern Province', lat: 7.5000, lng: 81.3333 },
+  { name: 'Kossapola', type: 'Wildlife Corridor', region: 'Wasgamuwa / Matale District', lat: 7.6833, lng: 80.8833 },
+
+  { name: 'Kebithigollewa', type: 'Town & Tank Cascade', region: 'Anuradhapura District, North Central Province', lat: 8.6333, lng: 80.7000 },
+  { name: 'Medawachchiya', type: 'Town & Elephant Corridor', region: 'Anuradhapura District, North Central Province', lat: 8.5333, lng: 80.5000 },
+  { name: 'Kahatagasdigiliya', type: 'Town & Forest Buffer', region: 'Anuradhapura District, North Central Province', lat: 8.4167, lng: 80.6500 },
+  { name: 'Galenbindunuwewa', type: 'Town & Elephant Habitat', region: 'Anuradhapura District, North Central Province', lat: 8.2167, lng: 80.6167 },
+  { name: 'Mihintale', type: 'Sanctuary & Forest', region: 'Anuradhapura District, North Central Province', lat: 8.3500, lng: 80.5000 },
+  { name: 'Thirappane', type: 'Town & Tank Cascade', region: 'Anuradhapura District, North Central Province', lat: 8.2167, lng: 80.5333 },
+  { name: 'Thanthirimale', type: 'Historic Sanctuary & Forest', region: 'Anuradhapura District, North Central Province', lat: 8.5833, lng: 80.4000 },
+  { name: 'Manankattiya', type: 'Tank & Roaming Area', region: 'Anuradhapura District, North Central Province', lat: 8.5000, lng: 80.6833 },
+  { name: 'Habarana', type: 'Elephant Migration Hub', region: 'Anuradhapura District, North Central Province', lat: 8.0333, lng: 80.7500 },
+  { name: 'Diganpathaha', type: 'Corridor & Buffer Zone', region: 'Matale / North Central Border', lat: 8.0100, lng: 80.7000 },
+  { name: 'Palugaswewa', type: 'Tank Cascade & Forest', region: 'Anuradhapura District, North Central Province', lat: 8.0833, lng: 80.7000 },
+  { name: 'Gomarankadawala', type: 'Forest Reserve & Basin', region: 'Trincomalee District, Eastern Province', lat: 8.6833, lng: 81.0500 },
+  { name: 'Sooriyapura', type: 'Corridor & Buffer', region: 'Trincomalee District, Eastern Province', lat: 8.3833, lng: 81.1000 },
+  { name: 'Welikanda', type: 'Town & Floodplain Plains', region: 'Polonnaruwa District, North Central Province', lat: 7.9167, lng: 81.2333 },
+  { name: 'Yan Oya', type: 'River Basin & Reservoir', region: 'North Central / Eastern Border', lat: 8.7167, lng: 80.8500 },
+  { name: 'Thoppigala', type: 'Sanctuary & Jungle Reserve', region: 'Batticaloa District, Eastern Province', lat: 7.6833, lng: 81.3333 },
+  { name: 'Horowpathana', type: 'Sanctuary & Holding Ground', region: 'Anuradhapura District, North Central Province', lat: 8.5333, lng: 80.8500 },
 ];
 
 /** Clean string for matching by removing generic suffixes like Tank, Wewa, Reservoir, etc. */
@@ -347,7 +394,24 @@ export async function reverseGeocodeCoordinatesAsync(lat, lng) {
 
   const fallbackCoordName = `Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
 
-  // 0. Google Geocoding when Google Maps is configured
+  // 0. Check if point is very close (within ~1.2 km) to a registered lake, tank, or wildlife area
+  const R = 6371;
+  const nearbyKnown = SRI_LANKA_WILDLIFE_LOCATIONS.find((loc) => {
+    if (typeof loc.lat !== 'number' || typeof loc.lng !== 'number') return false;
+    const dLat = ((loc.lat - lat) * Math.PI) / 180;
+    const dLng = ((loc.lng - lng) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos((lat * Math.PI) / 180) * Math.cos((loc.lat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+    const dist = 2 * R * Math.asin(Math.sqrt(a));
+    return dist <= 1.2;
+  });
+  if (nearbyKnown) {
+    const formatted = nearbyKnown.region ? `${nearbyKnown.name}, ${nearbyKnown.region}` : nearbyKnown.name;
+    return { name: formatted, fullAddress: formatted, region: nearbyKnown.region || 'Sri Lanka' };
+  }
+
+  // 1. Google Geocoding when Google Maps is configured
   if (isGoogleMapsEnabled()) {
     try {
       const g = await googleReverseGeocode(lat, lng);
@@ -357,8 +421,11 @@ export async function reverseGeocodeCoordinatesAsync(lat, lng) {
     }
   }
 
-  // 1. Try Nominatim reverse geocoder
+  // 2. Nominatim + Photon reverse geocoder with intelligent feature detection
   if (typeof fetch !== 'undefined') {
+    let nomResult = null;
+    let nomIsBroadBoundary = false;
+
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
@@ -368,8 +435,8 @@ export async function reverseGeocodeCoordinatesAsync(lat, lng) {
         const data = await res.json();
         const addr = data.address || {};
 
-        // Find the most specific place name (tank, village, hamlet, suburb, town, city, road, natural feature)
-        const primary =
+        // Find specific local place (tank, water body, village, hamlet, suburb, town, city, road, natural feature)
+        const specific =
           addr.leisure ||
           addr.natural ||
           addr.water ||
@@ -378,18 +445,23 @@ export async function reverseGeocodeCoordinatesAsync(lat, lng) {
           addr.suburb ||
           addr.town ||
           addr.city ||
-          addr.road ||
-          data.name ||
-          (data.display_name ? data.display_name.split(',')[0].trim() : null);
+          addr.road;
 
+        nomIsBroadBoundary =
+          !specific &&
+          (data.addresstype === 'state_district' ||
+            data.addresstype === 'state' ||
+            data.addresstype === 'country' ||
+            data.class === 'boundary');
+
+        const primary = specific || data.name || (data.display_name ? data.display_name.split(',')[0].trim() : null);
         const district = addr.state_district || addr.county || addr.district || addr.state || 'Sri Lanka';
 
-        if (primary) {
+        if (primary && !nomIsBroadBoundary) {
           const formatted = district && !primary.toLowerCase().includes(district.toLowerCase())
             ? `${primary}, ${district}`
             : primary;
 
-          // Auto-cache the resolved coordinates
           cacheLocationCoordinates(primary, { lat, lng });
           cacheLocationCoordinates(formatted, { lat, lng });
 
@@ -398,13 +470,20 @@ export async function reverseGeocodeCoordinatesAsync(lat, lng) {
             fullAddress: data.display_name || formatted,
             region: district,
           };
+        } else if (primary) {
+          // Keep broad boundary as fallback if Photon has nothing better
+          nomResult = {
+            name: primary,
+            fullAddress: data.display_name || primary,
+            region: district,
+          };
         }
       }
     } catch (err) {
-      console.warn('Reverse geocode failed:', err);
+      console.warn('Nominatim reverse geocode failed:', err);
     }
 
-    // 2. Fallback to Photon reverse
+    // 3. Photon reverse search (especially powerful for natural features, tanks, and rural reservoirs)
     try {
       const photonRes = await fetch(
         `https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}`,
@@ -415,11 +494,13 @@ export async function reverseGeocodeCoordinatesAsync(lat, lng) {
         const feat = pData.features && pData.features[0];
         if (feat && feat.properties) {
           const props = feat.properties;
-          const name = props.name || props.street || props.city || props.district;
-          const district = props.district || props.state || 'Sri Lanka';
-          if (name) {
-            const formatted = district ? `${name}, ${district}` : name;
-            cacheLocationCoordinates(name, { lat, lng });
+          const specificName = props.name || props.street || (!nomResult ? props.city || props.district : null);
+          const district = props.county || props.district || props.state || 'Sri Lanka';
+          if (specificName) {
+            const formatted = district && !specificName.toLowerCase().includes(district.toLowerCase())
+              ? `${specificName}, ${district}`
+              : specificName;
+            cacheLocationCoordinates(specificName, { lat, lng });
             cacheLocationCoordinates(formatted, { lat, lng });
             return {
               name: formatted,
@@ -430,6 +511,11 @@ export async function reverseGeocodeCoordinatesAsync(lat, lng) {
       }
     } catch {
       /* ignore */
+    }
+
+    // If Nominatim had at least an administrative district name, return it now
+    if (nomResult) {
+      return nomResult;
     }
   }
 

@@ -1,17 +1,13 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Camera,
   Upload,
   X,
-  MapPin,
   CheckCircle2,
   Clock,
   Trash2,
   ShieldCheck,
   PlusCircle,
-  ExternalLink,
   Pencil,
 } from 'lucide-react';
 import { useGallery, useGallerySubmit } from '../../controllers/useGallery';
@@ -19,6 +15,7 @@ import { getTuskers } from '../../models/TuskerModel';
 import ImageUploadBox from '../components/ImageUploadBox';
 import TuskerMultiSelect from '../components/TuskerMultiSelect';
 import EditGalleryPhotoModal from '../components/EditGalleryPhotoModal';
+import ImageLightboxModal from '../components/ImageLightboxModal';
 import LocationSearchInput from '../components/LocationSearchInput';
 import Footer from '../components/Footer';
 
@@ -327,7 +324,7 @@ function normalizeTuskerName(str) {
 
       {/* ── Tusker Profile & Photo Lightbox Modal (Centered, Side-by-Side, No Scroll) ── */}
       {activePhoto && (
-        <TuskerPhotoLightbox
+        <ImageLightboxModal
           photo={activePhoto}
           tusker={matchedTusker}
           tuskers={tuskers}
@@ -336,6 +333,7 @@ function normalizeTuskerName(str) {
           onApprove={handleApprove}
           onDelete={handleDelete}
           onEdit={(p) => setEditingPhoto(p)}
+          fromPath="/gallery"
         />
       )}
 
@@ -470,285 +468,7 @@ function CoverflowCarousel({ items, onSelectPhoto, getTuskerDisplayName }) {
   );
 }
 
-/* ── Tusker Photo Full-Screen Lightbox Component ──────────────── */
-function TuskerPhotoLightbox({
-  photo,
-  tusker,
-  tuskers = [],
-  onClose,
-  isAdmin,
-  onApprove,
-  onDelete,
-  onEdit,
-}) {
-  const [scale, setScale] = useState(1);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStartRef = useRef({ x: 0, y: 0 });
-  const hasDraggedRef = useRef(false);
-  const rafRef = useRef(null);
 
-  const resetZoom = useCallback(() => {
-    setScale(1);
-    setPosition({ x: 0, y: 0 });
-    setIsDragging(false);
-  }, []);
-
-  const toggleZoom = useCallback((e) => {
-    e?.stopPropagation();
-    if (scale > 1) {
-      resetZoom();
-    } else {
-      setScale(2.5);
-    }
-  }, [scale, resetZoom]);
-
-  const handleWheel = (e) => {
-    e.preventDefault();
-    const delta = e.deltaY * -0.0045;
-    setScale((prev) => {
-      const nextScale = Math.min(Math.max(prev + delta, 1), 5);
-      if (nextScale === 1) setPosition({ x: 0, y: 0 });
-      return nextScale;
-    });
-  };
-
-  const handleMouseDown = (e) => {
-    if (scale <= 1) return;
-    if (e.button !== 0) return;
-    setIsDragging(true);
-    hasDraggedRef.current = false;
-    dragStartRef.current = {
-      x: e.clientX - position.x,
-      y: e.clientY - position.y,
-    };
-  };
-
-  const handleMouseMove = (e) => {
-    if (!isDragging || scale <= 1) return;
-    const newX = e.clientX - dragStartRef.current.x;
-    const newY = e.clientY - dragStartRef.current.y;
-    if (Math.abs(newX - position.x) > 2 || Math.abs(newY - position.y) > 2) {
-      hasDraggedRef.current = true;
-    }
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(() => {
-      setPosition({ x: newX, y: newY });
-    });
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  // Prevent background scrolling while modal is open
-  useEffect(() => {
-    const prevOverflow = document.body.style.overflow;
-    const prevPaddingRight = document.body.style.paddingRight;
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    document.body.style.overflow = 'hidden';
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
-    return () => {
-      document.body.style.overflow = prevOverflow === 'hidden' ? '' : (prevOverflow || '');
-      document.body.style.paddingRight = prevPaddingRight || '';
-    };
-  }, []);
-
-  // Keyboard escape listener to close modal or reset zoom
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        if (scale > 1) {
-          resetZoom();
-        } else {
-          onClose();
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose, scale, resetZoom]);
-
-  // Match all tuskers if multiple are featured in this photograph
-  const allMatchedTuskers = useMemo(() => {
-    if (!tuskers || !tuskers.length || !photo) return tusker ? [tusker] : [];
-    const text = `${photo?.tuskerName || ''} ${photo?.title || ''}`;
-    const ids = Array.from(text.matchAll(/\b(T\d{2,4})\b/gi)).map((m) => m[1].toUpperCase());
-    const uniqueIds = Array.from(new Set(ids));
-    const list = uniqueIds
-      .map((id) => tuskers.find((t) => t.id.toUpperCase() === id))
-      .filter(Boolean);
-    return list.length > 0 ? list : (tusker ? [tusker] : []);
-  }, [tuskers, photo, tusker]);
-
-  if (!photo) return null;
-
-  // Resolve T-Number and Name (supports multi-tusker lists with commas and &)
-  const hasMultiple =
-    (photo.tuskerName && (photo.tuskerName.includes('&') || photo.tuskerName.includes(','))) ||
-    (photo.title && (photo.title.includes('&') || photo.title.includes(',')));
-
-  const tuskerDisplayName = hasMultiple
-    ? (photo.tuskerName || photo.title)
-    : tusker
-    ? `${tusker.id} - ${tusker.name}`
-    : (photo.tuskerName || photo.title || 'Wild Tusker');
-
-  const locationTaken = photo.location || tusker?.location || 'Sri Lanka';
-  const photographerName = photo.photographer === 'WTS Research Team' || photo.photographer === 'WTS Team'
-    ? 'WTS Admin'
-    : (photo.photographer || 'WTS Admin');
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 md:p-8 overflow-hidden select-none animate-fade-in"
-      onClick={onClose}
-    >
-      {/* ── Top Bar: Close Button ── */}
-      <div className="w-full flex justify-end items-center z-50">
-        <button
-          onClick={onClose}
-          className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border border-white/20 backdrop-blur-md cursor-pointer transition-all shadow-lg hover:scale-105 active:scale-95"
-          title="Close (Esc)"
-          aria-label="Close photo view"
-        >
-          <X size={20} />
-        </button>
-      </div>
-
-      {/* ── Center Area: Full View Photo (Both landscape & portrait visible fully in center) ── */}
-      <div
-        className="flex-1 w-full flex items-center justify-center min-h-0 my-auto py-2 relative overflow-hidden select-none"
-        style={{
-          cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
-        }}
-        onWheel={handleWheel}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            if (scale === 1) onClose();
-            else resetZoom();
-            return;
-          }
-          e.stopPropagation();
-          if (hasDraggedRef.current) {
-            hasDraggedRef.current = false;
-            return;
-          }
-          if (scale === 1) setScale(2.5);
-        }}
-        onDoubleClick={(e) => {
-          e.stopPropagation();
-          toggleZoom(e);
-        }}
-      >
-        <img
-          src={photo.imageUrl}
-          alt={tuskerDisplayName}
-          draggable={false}
-          className="max-w-full max-h-[75vh] sm:max-h-[80vh] w-auto h-auto object-contain rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] select-none border border-white/10 will-change-transform"
-          style={{
-            transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
-            transformOrigin: 'center center',
-            transition: isDragging ? 'none' : 'transform 0.15s cubic-bezier(0.2, 0, 0, 1)',
-          }}
-        />
-      </div>
-
-      {/* ── Bottom Bar: T-Number & Name, Location Taken, Photographer Name ── */}
-      <div
-        className="w-full max-w-[860px] mx-auto z-50 mt-2"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="bg-gradient-to-r from-black/85 via-[#0b1c14]/90 to-black/85 backdrop-blur-xl border border-white/15 rounded-2xl px-5 sm:px-7 py-3.5 sm:py-4 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-
-          {/* Left: T-Number & Name of Tusker */}
-          <div className="flex flex-col gap-0.5 min-w-0">
-            <h2 className="font-serif text-lg sm:text-[1.35rem] font-bold text-white tracking-wide m-0 truncate drop-shadow-sm">
-              {tuskerDisplayName}
-            </h2>
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1 text-xs sm:text-[0.85rem] text-[#d4ded8] font-sans">
-              {/* Location Taken */}
-              <span className="flex items-center gap-1.5">
-                <MapPin size={14} className="text-accent shrink-0" />
-                <span>{locationTaken}</span>
-              </span>
-
-              {/* Photographer Name */}
-              <span className="flex items-center gap-1.5">
-                <Camera size={14} className="text-accent shrink-0" />
-                <span>
-                  Photo by <strong className="text-white font-semibold">{photographerName}</strong>
-                </span>
-              </span>
-            </div>
-          </div>
-
-          {/* Right: Quick Actions (Admin Moderation or View Tusker Link) */}
-          <div className="flex items-center gap-2.5 shrink-0">
-            {isAdmin && (
-              <>
-                {onEdit && (
-                  <button
-                    onClick={() => onEdit(photo)}
-                    className="bg-amber-600 hover:bg-amber-700 text-white font-sans text-xs font-semibold py-2 px-3 rounded-lg border-none cursor-pointer flex items-center gap-1.5 shadow-sm transition-colors"
-                    title="Edit photo details"
-                  >
-                    <Pencil size={13} />
-                    <span>Edit</span>
-                  </button>
-                )}
-                {photo.status === 'pending' && onApprove && (
-                  <button
-                    onClick={() => {
-                      onApprove(photo.id);
-                      onClose();
-                    }}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-sans text-xs font-semibold py-2 px-3.5 rounded-lg border-none cursor-pointer flex items-center gap-1 shadow-sm transition-colors"
-                  >
-                    <CheckCircle2 size={13} />
-                    <span>Approve</span>
-                  </button>
-                )}
-                {onDelete && (
-                  <button
-                    onClick={() => {
-                      onDelete(photo.id);
-                      onClose();
-                    }}
-                    className="bg-rose-600 hover:bg-rose-700 text-white font-sans text-xs font-semibold py-2 px-3 rounded-lg border-none cursor-pointer flex items-center gap-1 shadow-sm transition-colors"
-                    title="Delete photo"
-                  >
-                    <Trash2 size={13} />
-                    <span>Delete</span>
-                  </button>
-                )}
-              </>
-            )}
-
-            {allMatchedTuskers.map((t) => (
-              <Link
-                key={t.id}
-                to={`/tuskers/${t.id.toLowerCase()}`}
-                className="bg-white/10 hover:bg-white/20 text-[#f5ecd7] hover:text-white font-sans text-xs font-semibold py-2 px-3.5 rounded-lg border border-white/20 transition-all flex items-center gap-1.5 no-underline shadow-xs shrink-0"
-              >
-                <span>{allMatchedTuskers.length > 1 ? `${t.id} Profile` : 'Tusker Profile'}</span>
-                <ExternalLink size={12} />
-              </Link>
-            ))}
-          </div>
-
-        </div>
-      </div>
-    </div>,
-    document.body
-  );
-}
 
 /* ── Submit Photo Modal Component ─────────────────────────────── */
 function SubmitPhotoModal({ onClose, onSuccess }) {

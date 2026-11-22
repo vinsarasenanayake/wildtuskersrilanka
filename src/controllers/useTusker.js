@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   getTuskers,
+  getCachedTuskers,
   getTuskerById,
   tuskerExists,
   addTusker,
@@ -35,18 +36,19 @@ const sameArea = (aLow, targetLower) => {
 };
 
 export function useTuskerList() {
-  const [tuskers, setTuskers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const initialCache = getCachedTuskers();
+  const [tuskers, setTuskers] = useState(() => initialCache || []);
+  const [loading, setLoading] = useState(() => !initialCache);
   const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     let active = true;
     getTuskers()
       .then(list => { if (active) setTuskers(list); })
-      .catch(err => { if (active) setLoadError(err.message); })
+      .catch(err => { if (active && !initialCache) setLoadError(err.message); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, []);
+  }, [initialCache]);
 
   // Roaming areas and last-seen locations are often combined corridors
   // (e.g. "Anuradhapura / Maha Kanadarawa / Kebithigollewa / Thanthirimale")

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Save, PlusCircle, Sparkles } from 'lucide-react';
 import { useTuskerForm } from '../../controllers/useTusker';
 import { useAuth } from '../../controllers/useAuth';
@@ -41,6 +41,7 @@ function SectionTitle({ children }) {
 export default function TuskerForm() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const {
     formData,
@@ -88,9 +89,21 @@ export default function TuskerForm() {
     const savedId = await saveProfile();
     if (savedId) {
       if (isEditMode) {
-        navigate(`/tuskers/${savedId.toLowerCase()}`);
+        if (location.state?.fromProfile) {
+          // Returning to profile: navigate(-1) pops edit form from history
+          // so clicking Back on profile returns to the list/admin instead of edit form.
+          navigate(-1);
+        } else {
+          navigate(`/tuskers/${savedId.toLowerCase()}`, {
+            replace: true,
+            state: { from: location.state?.from || '/admin' },
+          });
+        }
       } else {
-        navigate('/tuskers');
+        navigate(`/tuskers/${savedId.toLowerCase()}`, {
+          replace: true,
+          state: { from: '/tuskers' },
+        });
       }
     }
   };

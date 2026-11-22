@@ -10,10 +10,10 @@ import {
   Edit3,
   User,
   Image as ImageIcon,
-  ExternalLink,
-  X
+  ExternalLink
 } from 'lucide-react';
 import { useSpecialObservationsFeed } from '../../controllers/useSpecialObservations';
+import ImageLightboxModal from '../components/ImageLightboxModal';
 
 export default function SpecialObservations() {
   const navigate = useNavigate();
@@ -30,7 +30,7 @@ export default function SpecialObservations() {
     handleDelete,
   } = useSpecialObservationsFeed();
 
-  const [lightboxImage, setLightboxImage] = useState(null);
+  const [activeLightboxPhoto, setActiveLightboxPhoto] = useState(null);
 
   useEffect(() => {
     document.title = 'Wild Tuskers Sri Lanka | Special Observations';
@@ -200,7 +200,18 @@ export default function SpecialObservations() {
                       {item.images.map((imgUrl, i) => (
                         <div
                           key={i}
-                          onClick={() => setLightboxImage(imgUrl)}
+                          onClick={() =>
+                            setActiveLightboxPhoto({
+                              imageUrl: imgUrl,
+                              title: item.title,
+                              tuskerName: item.tuskerName,
+                              location: item.location,
+                              date: item.date,
+                              author: item.author,
+                              id: item.id,
+                              item: item,
+                            })
+                          }
                           className="relative aspect-[4/3] rounded-xl overflow-hidden bg-[#e8e8e8] border border-[#e0e0e0] cursor-pointer group shadow-xs"
                         >
                           <img
@@ -255,28 +266,24 @@ export default function SpecialObservations() {
 
       </div>
 
-      {/* Lightbox Modal */}
-      {lightboxImage && (
-        <div
-          className="fixed inset-0 z-[2000] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setLightboxImage(null)}
-        >
-          <div className="relative max-w-[90vw] max-h-[90vh]">
-            <button
-              onClick={() => setLightboxImage(null)}
-              className="absolute -top-10 right-0 text-white hover:text-accent p-1 cursor-pointer border-none bg-none"
-              aria-label="Close"
-            >
-              <X size={28} />
-            </button>
-            <img
-              src={lightboxImage}
-              alt="Observation Full Preview"
-              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
-        </div>
+      {/* Lightbox Modal with Zoom, Edit, Delete and Tusker Profiles */}
+      {activeLightboxPhoto && (
+        <ImageLightboxModal
+          photo={activeLightboxPhoto}
+          isAdmin={isAdmin}
+          onEdit={() => {
+            const itemId = activeLightboxPhoto.id;
+            setActiveLightboxPhoto(null);
+            navigate(`/admin/edit-observation/${itemId}`);
+          }}
+          onDelete={() => {
+            const itemId = activeLightboxPhoto.id;
+            setActiveLightboxPhoto(null);
+            handleDelete(itemId);
+          }}
+          onClose={() => setActiveLightboxPhoto(null)}
+          fromPath="/observations"
+        />
       )}
     </div>
   );
