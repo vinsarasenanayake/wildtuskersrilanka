@@ -93,7 +93,7 @@ function buildPopup({ badge, date, title, lines = [] } = {}, onClose) {
 
   const top = document.createElement('div');
   top.style.cssText =
-    'display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;';
+    'display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;padding-right:24px;';
 
   const leftMeta = document.createElement('div');
   leftMeta.style.cssText = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;';
@@ -112,6 +112,7 @@ function buildPopup({ badge, date, title, lines = [] } = {}, onClose) {
     leftMeta.appendChild(d);
   }
   top.appendChild(leftMeta);
+  root.appendChild(top);
 
   if (onClose) {
     const closeBtn = document.createElement('button');
@@ -119,7 +120,7 @@ function buildPopup({ badge, date, title, lines = [] } = {}, onClose) {
     closeBtn.setAttribute('aria-label', 'Close popup');
     closeBtn.textContent = '✕';
     closeBtn.style.cssText =
-      'background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#d1d5db;font-size:11px;font-weight:700;cursor:pointer;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.15s ease;margin-left:auto;padding:0;line-height:1;flex-shrink:0;';
+      'position:absolute;top:1px;right:-3px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:#d1d5db;font-size:11px;font-weight:700;cursor:pointer;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.15s ease;padding:0;line-height:1;flex-shrink:0;z-index:10;';
     closeBtn.onmouseenter = () => { closeBtn.style.backgroundColor = 'rgba(255,255,255,0.22)'; closeBtn.style.color = '#ffffff'; };
     closeBtn.onmouseleave = () => { closeBtn.style.backgroundColor = 'rgba(255,255,255,0.08)'; closeBtn.style.color = '#d1d5db'; };
     closeBtn.onclick = (e) => {
@@ -127,10 +128,8 @@ function buildPopup({ badge, date, title, lines = [] } = {}, onClose) {
       e.preventDefault();
       onClose();
     };
-    top.appendChild(closeBtn);
+    root.appendChild(closeBtn);
   }
-
-  root.appendChild(top);
 
   if (title) {
     const t = document.createElement('div');

@@ -160,6 +160,10 @@ a[title*="Report errors"] {
   background-color: #0d1612 !important;
   color: #f3f4f6 !important;
 }
+.leaflet-popup-content {
+  margin: 6px 6px 8px 8px !important;
+  line-height: 1.4 !important;
+}
 .leaflet-popup-tip {
   background: #0d1612 !important;
   box-shadow: 0 3px 14px rgba(0,0,0,0.4) !important;

@@ -9,11 +9,14 @@ const wtsLogo = SITE_ASSETS.wtsLogo;
 import { getTuskers } from '../../models/TuskerModel';
 
 export default function Home() {
-  const [stats, setStats] = useState({
-    total: 328,
-    living: 188,
-    missing: 93,
-    deceased: 47,
+  const [stats, setStats] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem('wts_home_stats');
+      if (cached) return JSON.parse(cached);
+    } catch {
+      // ignore
+    }
+    return null;
   });
 
   useEffect(() => {
@@ -26,7 +29,13 @@ export default function Home() {
         const living = tuskers.filter((t) => t.livingStatus === 'Alive').length;
         const missing = tuskers.filter((t) => t.livingStatus === 'No Recent Record').length;
         const deceased = tuskers.filter((t) => t.livingStatus === 'Deceased').length;
-        setStats({ total, living, missing, deceased });
+        const nextStats = { total, living, missing, deceased };
+        setStats(nextStats);
+        try {
+          sessionStorage.setItem('wts_home_stats', JSON.stringify(nextStats));
+        } catch {
+          // ignore
+        }
       })
       .catch((err) => console.warn('[Home] Could not load dynamic counts:', err));
     return () => {
@@ -84,7 +93,7 @@ export default function Home() {
               {/* 1. Total Recorded */}
               <div className="flex flex-col items-center justify-center text-center py-2.5 sm:py-3 px-1.5 sm:px-2 min-h-[80px] sm:min-h-[88px]">
                 <span className="font-sans text-[1.65rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
-                  {stats.total}
+                  {stats?.total ?? '—'}
                 </span>
                 <p className="font-sans text-[0.6rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
                   Total Recorded
@@ -94,7 +103,7 @@ export default function Home() {
               {/* 2. Living */}
               <div className="flex flex-col items-center justify-center text-center py-2.5 sm:py-3 px-1.5 sm:px-2 min-h-[80px] sm:min-h-[88px]">
                 <span className="font-sans text-[1.65rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
-                  {stats.living}
+                  {stats?.living ?? '—'}
                 </span>
                 <p className="font-sans text-[0.6rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
                   Living
@@ -104,7 +113,7 @@ export default function Home() {
               {/* 3. Missing */}
               <div className="flex flex-col items-center justify-center text-center py-2.5 sm:py-3 px-1.5 sm:px-2 min-h-[80px] sm:min-h-[88px]">
                 <span className="font-sans text-[1.65rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
-                  {stats.missing}
+                  {stats?.missing ?? '—'}
                 </span>
                 <p className="font-sans text-[0.6rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
                   Missing
@@ -114,7 +123,7 @@ export default function Home() {
               {/* 4. Deceased */}
               <div className="flex flex-col items-center justify-center text-center py-2.5 sm:py-3 px-1.5 sm:px-2 min-h-[80px] sm:min-h-[88px]">
                 <span className="font-sans text-[1.65rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
-                  {stats.deceased}
+                  {stats?.deceased ?? '—'}
                 </span>
                 <p className="font-sans text-[0.6rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
                   Deceased

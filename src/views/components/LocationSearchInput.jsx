@@ -64,7 +64,10 @@ export default function LocationSearchInput({
   useEffect(() => {
     const q = modalSearch.trim().toLowerCase();
     if (!q) {
-      setModalSuggestions([]);
+      const topParks = SRI_LANKA_WILDLIFE_LOCATIONS.filter(
+        (loc) => loc.type === 'National Park' || loc.type === 'Sanctuary'
+      ).slice(0, 8);
+      setModalSuggestions(topParks);
       return;
     }
 
@@ -185,15 +188,19 @@ export default function LocationSearchInput({
       const q = query.trim().toLowerCase();
       if (!q || q.length < 1) {
         // Default: show top national parks when user focuses empty input
-        const defaultParks = SRI_LANKA_WILDLIFE_LOCATIONS.slice(0, 7).map((p) => ({
-          title: p.name,
-          subtitle: `${p.type} • ${p.region}`,
-          full: `${p.name}, Sri Lanka`,
-          source: 'wts_database',
-          badge: p.type,
-          lat: p.lat,
-          lng: p.lng,
-        }));
+        const defaultParks = SRI_LANKA_WILDLIFE_LOCATIONS.filter(
+          (p) => p.type === 'National Park' || p.type === 'Sanctuary'
+        )
+          .slice(0, 8)
+          .map((p) => ({
+            title: p.name,
+            subtitle: `${p.type} • ${p.region}`,
+            full: `${p.name}, Sri Lanka`,
+            source: 'wts_database',
+            badge: p.type,
+            lat: p.lat,
+            lng: p.lng,
+          }));
         setSuggestions(defaultParks);
         return;
       }

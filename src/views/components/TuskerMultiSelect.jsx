@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Search, X, Plus, Check } from 'lucide-react';
 import { getTuskers } from '../../models/TuskerModel';
-import defaultTuskers from '../../data/tuskers_db.json';
 
 /**
  * Reusable Searchable Multi-Tusker Dropdown Selector
@@ -27,7 +26,7 @@ export default function TuskerMultiSelect({
   onConnectorChange,
   helperText,
 }) {
-  const [tuskersList, setTuskersList] = useState(defaultTuskers || []);
+  const [tuskersList, setTuskersList] = useState([]);
   const [selectedTuskers, setSelectedTuskers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -42,8 +41,8 @@ export default function TuskerMultiSelect({
           setTuskersList(data);
         }
       })
-      .catch(() => {
-        // Keep defaultTuskers
+      .catch((err) => {
+        console.warn('[TuskerMultiSelect] Could not fetch tuskers:', err);
       });
     return () => {
       active = false;
