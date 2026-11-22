@@ -382,12 +382,12 @@ function createLeafletMap(L, container, { center, zoom, gestureHandling: _gestur
         : iconFor(html, height);
       const m = L.marker(pos, { icon }).addTo(layer);
       const closePopup = () => map.closePopup();
-      if (popup) m.bindPopup(buildPopup(popup, closePopup));
+      if (popup) m.bindPopup(buildPopup(popup, closePopup), { closeButton: false });
       if (onClick) m.on('click', onClick);
       return {
         setPosition(p) { m.setLatLng(p); },
         setHtml(h) { m.setIcon(iconFor(h, height)); },
-        openPopup(p) { if (p) m.bindPopup(buildPopup(p, closePopup)); m.openPopup(); },
+        openPopup(p) { if (p) m.bindPopup(buildPopup(p, closePopup), { closeButton: false }); m.openPopup(); },
         remove() { layer.removeLayer(m); },
       };
     },

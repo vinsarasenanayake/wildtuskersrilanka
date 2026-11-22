@@ -148,21 +148,7 @@ a[title*="Report errors"] {
   background: #0d1612 !important;
 }
 .gm-style .gm-ui-hover-effect {
-  top: 4px !important;
-  right: 4px !important;
-  width: 24px !important;
-  height: 24px !important;
-  border-radius: 50% !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  opacity: 0.75 !important;
-  filter: invert(1) brightness(1.2) !important;
-  transition: all 0.2s ease !important;
-}
-.gm-style .gm-ui-hover-effect:hover {
-  background-color: rgba(255, 255, 255, 0.15) !important;
-  opacity: 1 !important;
+  display: none !important;
 }
 
 /* Leaflet Popup Dark Theme */
@@ -179,20 +165,7 @@ a[title*="Report errors"] {
   box-shadow: 0 3px 14px rgba(0,0,0,0.4) !important;
 }
 .leaflet-container a.leaflet-popup-close-button {
-  top: 6px !important;
-  right: 6px !important;
-  color: #9ca3af !important;
-  border-radius: 50% !important;
-  width: 20px !important;
-  height: 20px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  font-size: 16px !important;
-}
-.leaflet-container a.leaflet-popup-close-button:hover {
-  color: #ffffff !important;
-  background-color: rgba(255, 255, 255, 0.15) !important;
+  display: none !important;
 }
 
 /* Hide Leaflet layer switch control (satellite is kept as permanent default) */

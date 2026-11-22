@@ -14,97 +14,79 @@ import { parseSightingDetails } from '../../models/TuskerModel';
 import { getLocationCoordinates, resolveLocationCoordinatesAsync } from '../../utils/sriLankaLocations';
 import { createMap } from '../../utils/mapEngine';
 import { escapeHtml } from '../../utils/escapeHtml';
+import { isDistrictTown, habitatFor, townCentrePolygons, ELEPHANT_RANGE_COORDS } from '../../utils/habitat';
+import { loadParkBoundaries, parkBoundaryFor, hasParkBoundary } from '../../utils/parkBoundaries';
 import polygonClipping from '../../utils/vendor/polygonClipping';
 import SRI_LANKA_LAND from '../../data/sriLankaLand.json';
 
 const SRI_LANKA_CENTER = [7.8731, 80.7718];
 
-/**
- * 2D Cross product of OA and OB vectors (O = origin).
- * Returns > 0 for counter-clockwise turn, < 0 for clockwise, = 0 for collinear.
- */
-function cross(o, a, b) {
-  return (a.lng - o.lng) * (b.lat - o.lat) - (a.lat - o.lat) * (b.lng - o.lng);
+/** A circle polygon ([[ring]]) of `km` around a point. */
+function circlePolygon(pt, km) {
+  const dLat = km / 111;
+  const dLng = dLat / Math.cos((pt.lat * Math.PI) / 180);
+  const ring = [];
+  for (let i = 0; i < 48; i++) {
+    const t = (i * 2 * Math.PI) / 48;
+    ring.push([pt.lng + Math.cos(t) * dLng, pt.lat + Math.sin(t) * dLat]);
+  }
+  ring.push(ring[0]);
+  return [ring];
 }
 
 /**
- * Computes 2D Convex Hull of an array of {lat, lng} points using Monotone Chain.
- * Returns points in counter-clockwise order.
+ * Builds a tusker's home range from real places, not circles:
+ *  • Parks, sanctuaries and Yala blocks use their real boundaries.
+ *  • Other places (villages, tanks, corridors) cover the elephant land
+ *    around them (≈6 km), cut to where wild elephants actually roam.
+ *  • Everything is cut to the coastline, and busy town centres are removed.
  */
-function computeConvexHull(points) {
-  if (!points || points.length <= 2) return points || [];
-  const sorted = [...points].sort((a, b) => a.lng - b.lng || a.lat - b.lat);
-  const lower = [];
-  for (const p of sorted) {
-    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) {
-      lower.pop();
-    }
-    lower.push(p);
-  }
-  const upper = [];
-  for (let i = sorted.length - 1; i >= 0; i--) {
-    const p = sorted[i];
-    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) {
-      upper.pop();
-    }
-    upper.push(p);
-  }
-  lower.pop();
-  upper.pop();
-  return lower.concat(upper);
-}
-
-/**
- * Generates a unified home range shape strictly restricted to land.
- * 1. Draws a 10 km circle around every anchor location.
- * 2. Wraps them in one smooth outline (convex hull).
- * 3. Cuts that outline to Sri Lanka's real coastline, so the sea and coastal
- *    lagoons (e.g. Puttalam Lagoon) are removed. Inland tanks, wewas, rivers
- *    and reservoirs are part of the land outline, so they stay inside.
- * The result can be several pieces (e.g. mainland + Kalpitiya peninsula).
- */
-function createBufferedShape(anchorCoords, bufferKm = 10) {
-  if (!anchorCoords || anchorCoords.length === 0) return null;
-
-  const radialPoints = [];
-  const numSamples = 48;
-  const LAT_DEG_PER_KM = 1 / 111.0;
-
-  anchorCoords.forEach((pt) => {
-    const LNG_DEG_PER_KM = 1 / (111.0 * Math.cos((pt.lat * Math.PI) / 180));
-    for (let i = 0; i < numSamples; i++) {
-      const theta = (i * 2 * Math.PI) / numSamples;
-      radialPoints.push({
-        lat: pt.lat + Math.sin(theta) * bufferKm * LAT_DEG_PER_KM,
-        lng: pt.lng + Math.cos(theta) * bufferKm * LNG_DEG_PER_KM,
-      });
-    }
-  });
-
-  const hull = computeConvexHull(radialPoints);
-  const ring = hull.map((p) => [p.lng, p.lat]);
-  if (ring.length < 3) return null;
-  ring.push([ring[0][0], ring[0][1]]); // Close polygon loop
-
+function buildHomeRange(parkPolygons = [], placeCoords = [], placeKm = 6) {
+  if (!parkPolygons.length && !placeCoords.length) return null;
   let pieces = [];
   try {
-    pieces = polygonClipping.intersection([ring], SRI_LANKA_LAND.coordinates);
+    const towns = townCentrePolygons();
+    const parts = [];
+    if (parkPolygons.length) {
+      const parks = polygonClipping.intersection(polygonClipping.union(...parkPolygons), SRI_LANKA_LAND.coordinates);
+      if (parks.length) parts.push(parks);
+    }
+    if (placeCoords.length) {
+      const blobs = polygonClipping.union(...placeCoords.map((pt) => circlePolygon(pt, placeKm)));
+      const onLand = polygonClipping.intersection(blobs, SRI_LANKA_LAND.coordinates);
+      const inRange = onLand.length ? polygonClipping.intersection(onLand, ELEPHANT_RANGE_COORDS) : [];
+      const base = inRange.length ? inRange : onLand;
+      if (base.length) parts.push(base);
+    }
+    if (parts.length) {
+      const all = parts.length > 1 ? polygonClipping.union(...parts) : parts[0];
+      pieces = polygonClipping.difference(all, ...towns);
+    }
   } catch (err) {
-    console.warn('[TuskerSightingsMap] could not cut home range to the coastline', err);
+    console.warn('[TuskerSightingsMap] could not shape the home range', err);
   }
-
+  if (!pieces.length) return null;
   const round = (poly) => poly.map((r) => r.map(([lng, lat]) => [Number(lng.toFixed(5)), Number(lat.toFixed(5))]));
-  if (!pieces.length) {
-    // The whole area is out at sea (wrong coordinates): draw no shaded area
-    // rather than one in the ocean. The pins still show.
-    return null;
-  }
   return {
     kind: 'polygon',
     geojson: pieces.length === 1
       ? { type: 'Polygon', coordinates: round(pieces[0]) }
       : { type: 'MultiPolygon', coordinates: pieces.map(round) },
   };
+}
+
+/** Ray-casting test: is a {lat, lng} point inside polygon coordinates? */
+function pointInPolygons(pt, polygons) {
+  const inRing = (ring) => {
+    let c = false;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [xi, yi] = ring[i];
+      const [xj, yj] = ring[j];
+      if (((yi > pt.lat) !== (yj > pt.lat)) && (pt.lng < ((xj - xi) * (pt.lat - yi)) / (yj - yi) + xi)) c = !c;
+    }
+    return c;
+  };
+  return polygons.some((poly) => inRing(poly[0]) && !poly.slice(1).some(inRing));
 }
 
 /** Every outer-edge point of a Polygon or MultiPolygon, as [lng, lat]. */
@@ -224,6 +206,9 @@ export default function TuskerSightingsMap({
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [resolvedCoordsMap, setResolvedCoordsMap] = useState({});
+  // Real park / sanctuary / Yala block boundaries (loaded once, cached)
+  const [parkBoundaries, setParkBoundaries] = useState(null);
+  const [parksFailed, setParksFailed] = useState(false);
 
   const isDeceased = tusker?.livingStatus === 'Deceased';
   const statusTheme = useMemo(() => getStatusTheme(tusker?.livingStatus), [tusker?.livingStatus]);
@@ -276,6 +261,16 @@ export default function TuskerSightingsMap({
     };
   }, [tusker?.location, tusker?.sightings, tusker?.lastSeenArea, resolvedCoordsMap]);
 
+  // Load the real park and Yala block boundaries once
+  useEffect(() => {
+    let isMounted = true;
+    loadParkBoundaries().then((b) => {
+      if (!isMounted) return;
+      if (b) setParkBoundaries(b); else setParksFailed(true);
+    });
+    return () => { isMounted = false; };
+  }, []);
+
   // Assemble habitat anchors (from LOCATION field), Last Seen pin, and field sightings (Row 2+)
   const { anchorCoords, sightingPoints, homeRangeShape, lastSeenPoint } = useMemo(() => {
     if (!tusker) return { anchorCoords: [], sightingPoints: [], homeRangeShape: null, lastSeenPoint: null };
@@ -285,7 +280,17 @@ export default function TuskerSightingsMap({
     const anchors = [];
     if (rawLoc) {
       const parts = splitLocationParts(rawLoc);
+      // District towns (Anuradhapura, Ampara…) are not elephant habitat: leave
+      // them out when real wildlife areas are listed, otherwise use the
+      // wildlife area next to the town.
+      const hasWildArea = parts.some((p) => !isDistrictTown(p));
       parts.forEach((part, idx) => {
+        if (isDistrictTown(part)) {
+          if (hasWildArea) return;
+          const habitat = getLocationCoordinates(habitatFor(part));
+          if (habitat) anchors.push(habitat);
+          return;
+        }
         const key = `loc-${idx}-${part.toLowerCase()}`;
         const coords = getLocationCoordinates(part) || resolvedCoordsMap[key] || null;
         if (coords) anchors.push(coords);
@@ -342,23 +347,64 @@ export default function TuskerSightingsMap({
 
     let lastSeenCoords = null;
     if (lastSeenAreaName) {
-      lastSeenCoords = getLocationCoordinates(lastSeenAreaName) || resolvedCoordsMap['last-seen'] || null;
+      if (isDistrictTown(lastSeenAreaName)) {
+        // "Last seen: Trincomalee" means the Trincomalee area, not the town
+        // centre: pin the tusker's nearest wildlife place, or the wildlife
+        // area next to the town.
+        const town = getLocationCoordinates(lastSeenAreaName);
+        const nearest = town && anchors.length
+          ? anchors.reduce((best, a) => (distanceKm(a, town) < distanceKm(best, town) ? a : best), anchors[0])
+          : null;
+        lastSeenCoords = nearest || getLocationCoordinates(habitatFor(lastSeenAreaName));
+      } else {
+        lastSeenCoords = getLocationCoordinates(lastSeenAreaName) || resolvedCoordsMap['last-seen'] || null;
+      }
       if (!lastSeenCoords && anchors.length > 0) {
         lastSeenCoords = anchors[0];
       }
     }
 
-    // ── 3. Build Unified Home Range Shape over LOCATION anchors, plus the
-    //       last-seen place and field sightings when they are nearby ──
-    const rangeAnchors = [...anchors];
+    // ── 3. Build the home range from real places ──
+    //   Parks / sanctuaries / Yala blocks → their real boundaries.
+    //   Other places → the elephant land around them.
+    //   The last-seen place and field sightings are added when nearby.
+    const parkPolygons = [];
+    const placeCoords = [];
+    let locParts = splitLocationParts(rawLoc);
+    // "Yala / Yala Block 3,5" → only Blocks 3 and 5, not the whole of Yala
+    if (locParts.some((p) => /^yala\s+block\s*\d/i.test(p))) {
+      locParts = locParts.filter((p) => !/^(yala|yala national park|ruhuna national park)$/i.test(p.trim()));
+    }
+    const listsWildArea = locParts.some((p) => !isDistrictTown(p));
+    const waitingForParks = !parkBoundaries && !parksFailed && locParts.some((p) => hasParkBoundary(habitatFor(p)));
+    locParts.forEach((part) => {
+      if (listsWildArea && isDistrictTown(part)) return;
+      const place = habitatFor(part);
+      if (hasParkBoundary(place)) {
+        const polys = parkBoundaryFor(place, parkBoundaries);
+        if (polys) { polys.forEach((poly) => parkPolygons.push(poly)); return; }
+      }
+      const c = getLocationCoordinates(place);
+      if (c) placeCoords.push({ lat: Number(c.lat), lng: Number(c.lng) });
+    });
     const addIfNearby = (raw) => {
       const pt = raw ? { lat: Number(raw.lat), lng: Number(raw.lng) } : null;
       if (!pt || !Number.isFinite(pt.lat) || !Number.isFinite(pt.lng)) return;
-      if (!anchors.length || anchors.some((a) => distanceKm(a, pt) <= NEARBY_RANGE_KM)) rangeAnchors.push(pt);
+      if (parkPolygons.length && pointInPolygons(pt, parkPolygons)) return; // already inside a park
+      if (!anchors.length || anchors.some((a) => distanceKm(a, pt) <= NEARBY_RANGE_KM)) placeCoords.push(pt);
     };
-    addIfNearby(lastSeenCoords);
+    const lastSeenPark = lastSeenAreaName && hasParkBoundary(habitatFor(lastSeenAreaName))
+      ? parkBoundaryFor(habitatFor(lastSeenAreaName), parkBoundaries)
+      : null;
+    if (lastSeenPark && lastSeenCoords && (!anchors.length || anchors.some((a) => distanceKm(a, lastSeenCoords) <= NEARBY_RANGE_KM))) {
+      lastSeenPark.forEach((poly) => parkPolygons.push(poly));
+    } else {
+      addIfNearby(lastSeenCoords);
+    }
     sightings.forEach((sp) => addIfNearby(sp.coords));
-    const shape = createBufferedShape(rangeAnchors, 10);
+    // While park boundaries are still loading, show nothing rather than a
+    // temporary circle.
+    const shape = waitingForParks ? null : buildHomeRange(parkPolygons, placeCoords);
 
     const lastSeen = (lastSeenAreaName && lastSeenCoords)
       ? {
@@ -379,7 +425,7 @@ export default function TuskerSightingsMap({
       homeRangeShape: shape,
       lastSeenPoint: lastSeen,
     };
-  }, [tusker, resolvedCoordsMap, isDeceased]);
+  }, [tusker, resolvedCoordsMap, isDeceased, parkBoundaries, parksFailed]);
 
   // Points that have coordinates resolved
   const activeSightings = useMemo(() => {

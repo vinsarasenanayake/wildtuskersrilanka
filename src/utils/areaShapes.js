@@ -8,13 +8,16 @@
 import { getLocationCoordinates } from './sriLankaLocations';
 import polygonClipping from './vendor/polygonClipping';
 import SRI_LANKA_LAND from '../data/sriLankaLand.json';
+import { townCentrePolygons, habitatFor, ELEPHANT_RANGE_COORDS } from './habitat';
+import { hasParkBoundary, loadParkBoundaries, parkBoundaryFor } from './parkBoundaries';
 
-const CACHE_PREFIX = 'wts_area_v4_';
+const CACHE_PREFIX = 'wts_area_v8_';
 const CACHE_DAYS = 30;
 const CIRCLE_RADIUS_M = 4000;
 
 /** A ~4 km circle around a place, cut to Sri Lanka's coastline so it never
- *  covers the sea or coastal lagoons (inland tanks and rivers stay inside). */
+ *  covers the sea or coastal lagoons (inland tanks and rivers stay inside),
+ *  with busy town centres cut out. */
 function landCircle(key, name, center, extra = {}) {
   const ring = [];
   const lat = Number(center.lat), lng = Number(center.lng);
@@ -26,7 +29,12 @@ function landCircle(key, name, center, extra = {}) {
   }
   ring.push(ring[0]);
   let pieces = [];
-  try { pieces = polygonClipping.intersection([ring], SRI_LANKA_LAND.coordinates); } catch { /* keep the plain circle */ }
+  try {
+    const onLand = polygonClipping.intersection([ring], SRI_LANKA_LAND.coordinates);
+    const inRange = onLand.length ? polygonClipping.intersection(onLand, ELEPHANT_RANGE_COORDS) : [];
+    const base = inRange.length ? inRange : onLand;
+    pieces = base.length ? polygonClipping.difference(base, ...townCentrePolygons()) : [];
+  } catch { /* keep the plain circle */ }
   if (!pieces.length) {
     return { kind: 'circle', id: `circle:${key}`, name, center, radius: CIRCLE_RADIUS_M, label: center, ...extra };
   }
@@ -130,7 +138,8 @@ function pickPoint(results) {
 
 /** Resolves an area name to a shape. Never throws; returns null if nothing is found. */
 export async function resolveAreaShape(rawName) {
-  const base = cleanAreaName(rawName);
+  // District towns (e.g. Trincomalee) are drawn as the wildlife area next to them
+  const base = habitatFor(cleanAreaName(rawName));
   if (!base) return null;
   const key = areaKey(base);
   const cached = readCache(key);
@@ -138,6 +147,30 @@ export async function resolveAreaShape(rawName) {
 
   // Trusted local database first (instant and verified in Sri Lanka)
   const knownCenter = getLocationCoordinates(base) || (key === 'kekirawa' ? getLocationCoordinates('Kekirawa') : null);
+
+  // Parks, sanctuaries and Yala blocks: their real boundaries
+  if (hasParkBoundary(base)) {
+    const boundaries = await loadParkBoundaries();
+    const polys = boundaries ? parkBoundaryFor(base, boundaries) : null;
+    if (polys) {
+      let pieces = [];
+      try {
+        const onLand = polygonClipping.intersection(polys, SRI_LANKA_LAND.coordinates);
+        pieces = onLand.length ? polygonClipping.difference(onLand, ...townCentrePolygons()) : [];
+      } catch { /* fall through */ }
+      if (pieces.length) {
+        const shape = {
+          kind: 'polygon',
+          id: `park:${key}`,
+          name: base,
+          geojson: pieces.length === 1 ? { type: 'Polygon', coordinates: pieces[0] } : { type: 'MultiPolygon', coordinates: pieces },
+          label: knownCenter || { lat: pieces[0][0][0][1], lng: pieces[0][0][0][0] },
+        };
+        writeCache(key, shape);
+        return shape;
+      }
+    }
+  }
 
   const hasType = /national park|sanctuary|reserve|wewa|tank|forest/i.test(base);
   const queries = hasType ? [base] : [`${base} National Park`, base, `${base} Sanctuary`];
@@ -158,7 +191,8 @@ export async function resolveAreaShape(rawName) {
 
 /** Quick shape from the built-in location list (no network). */
 export function instantAreaShape(rawName) {
-  const base = cleanAreaName(rawName);
+  // District towns (e.g. Trincomalee) are drawn as the wildlife area next to them
+  const base = habitatFor(cleanAreaName(rawName));
   if (!base) return null;
   const key = areaKey(base);
   const cached = readCache(key);

@@ -1,0 +1,383 @@
+{
+"_source": "Town and city centres from OpenStreetMap (\u00a9 OpenStreetMap contributors, ODbL). Radius = approximate built-up centre.",
+"towns": [
+{
+"name": "Nuwara Eliya",
+"lat": 6.974,
+"lng": 80.767,
+"radiusKm": 2.0
+},
+{
+"name": "Kegalle",
+"lat": 7.2532,
+"lng": 80.3454,
+"radiusKm": 2.0
+},
+{
+"name": "Colombo",
+"lat": 6.9389,
+"lng": 79.8542,
+"radiusKm": 4.0
+},
+{
+"name": "Moratuwa",
+"lat": 6.7747,
+"lng": 79.8826,
+"radiusKm": 4.0
+},
+{
+"name": "Hambantota",
+"lat": 6.1249,
+"lng": 81.1243,
+"radiusKm": 3.0
+},
+{
+"name": "Ja-ela",
+"lat": 7.0794,
+"lng": 79.8908,
+"radiusKm": 1.5
+},
+{
+"name": "Battaramulla",
+"lat": 6.9022,
+"lng": 79.9196,
+"radiusKm": 1.5
+},
+{
+"name": "Dambulla",
+"lat": 7.8742,
+"lng": 80.6511,
+"radiusKm": 2.0
+},
+{
+"name": "Matale",
+"lat": 7.472,
+"lng": 80.6234,
+"radiusKm": 2.0
+},
+{
+"name": "Polonnaruwa",
+"lat": 7.9395,
+"lng": 81.0003,
+"radiusKm": 2.0
+},
+{
+"name": "Puttalam",
+"lat": 8.0302,
+"lng": 79.8287,
+"radiusKm": 2.0
+},
+{
+"name": "Trincomalee",
+"lat": 8.5764,
+"lng": 81.2345,
+"radiusKm": 3.0
+},
+{
+"name": "Anuradhapura",
+"lat": 8.335,
+"lng": 80.4106,
+"radiusKm": 3.0
+},
+{
+"name": "Kaduwela",
+"lat": 6.9357,
+"lng": 79.9843,
+"radiusKm": 4.0
+},
+{
+"name": "Mullaitivu",
+"lat": 9.2699,
+"lng": 80.8145,
+"radiusKm": 3.0
+},
+{
+"name": "Vavuniya",
+"lat": 8.7594,
+"lng": 80.5001,
+"radiusKm": 3.0
+},
+{
+"name": "Rambukkana",
+"lat": 7.3239,
+"lng": 80.3957,
+"radiusKm": 2.0
+},
+{
+"name": "Kilinochchi",
+"lat": 9.384,
+"lng": 80.4087,
+"radiusKm": 3.0
+},
+{
+"name": "Ratnapura",
+"lat": 6.6804,
+"lng": 80.4023,
+"radiusKm": 3.0
+},
+{
+"name": "Katunayake",
+"lat": 7.1568,
+"lng": 79.8717,
+"radiusKm": 2.0
+},
+{
+"name": "Point Pedro",
+"lat": 9.8241,
+"lng": 80.2362,
+"radiusKm": 1.5
+},
+{
+"name": "Kataragama",
+"lat": 6.4136,
+"lng": 81.3324,
+"radiusKm": 1.5
+},
+{
+"name": "Moneragala",
+"lat": 6.8725,
+"lng": 81.3507,
+"radiusKm": 3.0
+},
+{
+"name": "Alawwa",
+"lat": 7.294,
+"lng": 80.2392,
+"radiusKm": 1.5
+},
+{
+"name": "Chavakachcheri",
+"lat": 9.6579,
+"lng": 80.1643,
+"radiusKm": 1.5
+},
+{
+"name": "Chilaw",
+"lat": 7.5765,
+"lng": 79.7957,
+"radiusKm": 1.5
+},
+{
+"name": "Bentota",
+"lat": 6.4215,
+"lng": 79.9979,
+"radiusKm": 1.5
+},
+{
+"name": "Anamaduwa",
+"lat": 7.8776,
+"lng": 80.0109,
+"radiusKm": 1.5
+},
+{
+"name": "Warakapola",
+"lat": 7.225,
+"lng": 80.1965,
+"radiusKm": 1.5
+},
+{
+"name": "Wellawaya",
+"lat": 6.7318,
+"lng": 81.1018,
+"radiusKm": 1.5
+},
+{
+"name": "Kalutara",
+"lat": 6.5853,
+"lng": 79.9633,
+"radiusKm": 2.0
+},
+{
+"name": "Beruwala",
+"lat": 6.4756,
+"lng": 79.9834,
+"radiusKm": 1.5
+},
+{
+"name": "Gampola",
+"lat": 7.1636,
+"lng": 80.5703,
+"radiusKm": 1.5
+},
+{
+"name": "Wattala",
+"lat": 6.9899,
+"lng": 79.8927,
+"radiusKm": 1.5
+},
+{
+"name": "Ampara",
+"lat": 7.2978,
+"lng": 81.679,
+"radiusKm": 3.0
+},
+{
+"name": "Mannar",
+"lat": 8.9813,
+"lng": 79.9044,
+"radiusKm": 2.0
+},
+{
+"name": "Kelaniya",
+"lat": 6.9501,
+"lng": 79.9173,
+"radiusKm": 1.5
+},
+{
+"name": "Badulla",
+"lat": 6.99,
+"lng": 81.057,
+"radiusKm": 3.0
+},
+{
+"name": "Bibile",
+"lat": 7.1601,
+"lng": 81.2254,
+"radiusKm": 1.5
+},
+{
+"name": "Jaffna",
+"lat": 9.6651,
+"lng": 80.0093,
+"radiusKm": 4.0
+},
+{
+"name": "Negombo",
+"lat": 7.2094,
+"lng": 79.8331,
+"radiusKm": 3.0
+},
+{
+"name": "Kolonnawa",
+"lat": 6.9326,
+"lng": 79.8903,
+"radiusKm": 3.0
+},
+{
+"name": "Deniyaya",
+"lat": 6.3426,
+"lng": 80.5606,
+"radiusKm": 1.5
+},
+{
+"name": "Kamburupitiya",
+"lat": 6.0803,
+"lng": 80.5674,
+"radiusKm": 1.5
+},
+{
+"name": "Kurunegala",
+"lat": 7.487,
+"lng": 80.3649,
+"radiusKm": 2.0
+},
+{
+"name": "Kandy",
+"lat": 7.2931,
+"lng": 80.635,
+"radiusKm": 3.0
+},
+{
+"name": "Avissawella",
+"lat": 6.9521,
+"lng": 80.2129,
+"radiusKm": 1.5
+},
+{
+"name": "Elpitiya",
+"lat": 6.2919,
+"lng": 80.1619,
+"radiusKm": 1.5
+},
+{
+"name": "Malabe",
+"lat": 6.9041,
+"lng": 79.9546,
+"radiusKm": 2.0
+},
+{
+"name": "Sri Jayewardenepura Kotte",
+"lat": 6.8883,
+"lng": 79.9187,
+"radiusKm": 3.0
+},
+{
+"name": "Gampaha",
+"lat": 7.0926,
+"lng": 79.9951,
+"radiusKm": 2.0
+},
+{
+"name": "Kalmunai",
+"lat": 7.4132,
+"lng": 81.8269,
+"radiusKm": 1.5
+},
+{
+"name": "Matara",
+"lat": 5.9478,
+"lng": 80.5483,
+"radiusKm": 3.0
+},
+{
+"name": "Weligama",
+"lat": 5.9751,
+"lng": 80.4291,
+"radiusKm": 1.5
+},
+{
+"name": "Galle",
+"lat": 6.0328,
+"lng": 80.215,
+"radiusKm": 3.0
+},
+{
+"name": "Batticaloa",
+"lat": 7.7356,
+"lng": 81.6942,
+"radiusKm": 3.0
+},
+{
+"name": "Pilimatalawa",
+"lat": 7.2656,
+"lng": 80.5521,
+"radiusKm": 1.5
+},
+{
+"name": "Ambalangoda",
+"lat": 6.2389,
+"lng": 80.0541,
+"radiusKm": 1.5
+},
+{
+"name": "Maharagama",
+"lat": 6.8473,
+"lng": 79.9266,
+"radiusKm": 4.0
+},
+{
+"name": "Homagama",
+"lat": 6.8412,
+"lng": 80.0034,
+"radiusKm": 1.5
+},
+{
+"name": "Kesbewa",
+"lat": 6.7957,
+"lng": 79.9408,
+"radiusKm": 4.0
+},
+{
+"name": "Hikkaduwa",
+"lat": 6.1408,
+"lng": 80.1028,
+"radiusKm": 2.0
+},
+{
+"name": "Balangoda",
+"lat": 6.6501,
+"lng": 80.6986,
+"radiusKm": 1.5
+}
+]
+}
