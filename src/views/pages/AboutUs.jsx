@@ -7,6 +7,34 @@ import ImageUploadBox from '../components/ImageUploadBox';
 import { safeUrl } from '../../utils/safeUrl';
 import Footer from '../components/Footer';
 
+const OBJECTIVES = [
+  {
+    num: 1,
+    title: 'Maintain the National Tusker Identification Database',
+    desc: "Develop and maintain the most comprehensive and accurate database of Sri Lanka's tusked elephants, continuously updating profiles, distribution records, and behavioral observations.",
+  },
+  {
+    num: 2,
+    title: 'Advance Research and Monitoring',
+    desc: 'Conduct systematic field research and photographic documentation to improve understanding of tusker populations, movements, social behaviour, and conservation needs.',
+  },
+  {
+    num: 3,
+    title: 'Strengthen Conservation Advocacy',
+    desc: 'Promote evidence-based conservation policies and support initiatives aimed at protecting critical habitats and reducing threats faced by tusked elephants.',
+  },
+  {
+    num: 4,
+    title: 'Educate and Inspire the Public',
+    desc: "Increase awareness of the ecological, cultural, and historical importance of Sri Lanka's tusked elephants through educational programmes, digital storytelling, exhibitions, and media outreach.",
+  },
+  {
+    num: 5,
+    title: 'Foster Collaboration and Citizen Science',
+    desc: 'Build a strong network of researchers, wildlife photographers, conservation organisations, park guides, and local communities to contribute knowledge and support long-term monitoring efforts.',
+  },
+];
+
 export default function AboutUs() {
   const [team, setTeam] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -119,14 +147,64 @@ export default function AboutUs() {
 
   return (
     <div className="w-full max-w-[1200px] mx-auto pt-[calc(80px+2.5rem)] pb-24 px-8 min-h-screen bg-white">
-      {/* Page Header */}
-      <div className="text-center mb-14 pb-8">
-        <h1 className="font-sans text-[2.25rem] font-bold text-[#111111] mb-3">Wild Tuskers Sri Lanka Team</h1>
-        <p className="font-sans text-[0.98rem] text-[#777777] max-w-[580px] mx-auto leading-[1.7]">
-          The dedicated individuals behind Wild Tuskers Sri Lanka: researchers, photographers, and conservationists
-          united by a shared mission.
-        </p>
+      {/* Page Header / About Us Story */}
+      <div className="mb-20">
+        <h1 className="font-sans text-[2.25rem] sm:text-[2.65rem] font-bold text-[#111111] mb-8 text-center tracking-tight">
+          Wild Tuskers Sri Lanka
+        </h1>
+
+        <div className="max-w-[960px] mx-auto font-sans text-[0.98rem] sm:text-[1.02rem] text-[#374151] leading-[1.85] flex flex-col gap-6 text-justify">
+          <p className="m-0">
+            Founded in 2013, Wild Tuskers Sri Lanka was established with a clear vision: to address a critical gap in the documentation and identification of Sri Lanka's tusked elephants. At the time, there was no comprehensive island-wide database dedicated to systematically identifying and tracking individual tuskers. Recognising the urgent need to preserve information about these rare and iconic animals, a group of passionate wildlife enthusiasts, photographers, and conservationists came together to create what became Sri Lanka's first dedicated tusker identification database.
+          </p>
+
+          <p className="m-0">
+            For over a decade, Wild Tuskers Sri Lanka has worked tirelessly to document, monitor, and study tusked elephants across the island's protected areas and wilderness landscapes. Through meticulous field observations, photography, data collection, and analysis, we continue to build an accurate and evolving repository of knowledge that supports conservation efforts and raises awareness about the importance of protecting these magnificent giants.
+          </p>
+
+          <p className="m-0">
+            The Sri Lankan tusker is far more than a wildlife icon. For over 2,500 years, tusked elephants have been deeply woven into the nation's history, culture, traditions, and spiritual heritage. Revered in ancient kingdoms, celebrated in art and literature, and honoured in religious and cultural ceremonies, they represent one of Sri Lanka's most treasured natural and cultural symbols.
+          </p>
+
+          <p className="m-0">
+            Today, these extraordinary animals face increasing threats from habitat loss, human-elephant conflict, shrinking ranges, and declining numbers. Their conservation is made even more critical by the fact that only 5-6% of Sri Lanka's male elephant population bears tusks, making sightings of wild tuskers a truly rare and remarkable experience. Wild Tuskers Sri Lanka is committed to ensuring that future generations inherit a landscape where these majestic giants continue to roam free, one of Asia's most extraordinary and endangered wildlife treasures.
+          </p>
+
+          <p className="m-0 pt-2 font-medium text-[#15462d] sm:text-[1.05rem] italic">
+            Stand with us. Protect the giants. Preserve the legacy.
+          </p>
+        </div>
       </div>
+
+      {/* ── Objectives Section ── */}
+      <section className="mb-20">
+        <div className="mb-8 pb-3 border-b-2 border-[#f0f0f0]">
+          <h2 className="font-sans text-[1.35rem] sm:text-[1.5rem] font-bold text-[#111111] m-0 tracking-tight">
+            Objectives
+          </h2>
+        </div>
+
+        <div className="flex flex-col gap-4 sm:gap-5">
+          {OBJECTIVES.map((obj) => (
+            <div
+              key={obj.num}
+              className="flex items-start gap-4 p-5 sm:p-6 rounded-xl bg-[#fafbfa] border border-[#edf0ed] transition-colors hover:bg-white hover:border-[#c69b55]/40 hover:shadow-sm"
+            >
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-primary text-white font-bold text-sm sm:text-base flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                {obj.num}
+              </div>
+              <div className="flex flex-col gap-1.5 flex-1">
+                <h3 className="font-sans text-[1.05rem] sm:text-[1.1rem] font-bold text-[#111111] m-0">
+                  {obj.title}
+                </h3>
+                <p className="font-sans text-[0.92rem] sm:text-[0.96rem] text-[#555555] leading-[1.7] m-0">
+                  {obj.desc}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* ── Admins Section ── */}
       <section className="mb-16">
@@ -161,6 +239,48 @@ export default function AboutUs() {
             ))}
           </div>
         )}
+      </section>
+
+      {/* ── Copyright Information & Photographs ── */}
+      <section className="mt-20 pt-14 border-t-2 border-[#f0f0f0]">
+        <div className="max-w-[960px] mx-auto flex flex-col gap-14">
+          {/* Section 1: Copyright Information */}
+          <div className="w-full flex flex-col">
+            <h2 className="font-sans text-[1.2rem] sm:text-[1.3rem] font-bold text-[#111111] mb-6 tracking-tight text-center">
+              Copyright &copy; Information
+            </h2>
+            <div className="font-sans text-[0.92rem] sm:text-[0.96rem] text-[#444444] leading-[1.75] flex flex-col gap-3.5 text-left">
+              <p className="m-0">Copyright &copy; 2026</p>
+              <p className="m-0 font-medium text-[#222222]">Wild Tuskers of Sri Lanka</p>
+              <p className="m-0 text-[#555555] text-justify">
+                All Rights Reserved. No part of this website may be Reproduced in any form, by any means without prior written permission from the copyright holders.
+              </p>
+              <div className="mt-2 text-[#444444] leading-[1.6]">
+                <p className="m-0 font-medium text-[#222222]">Milinda Wattegedara,</p>
+                <p className="m-0">462/4/C, Lake Road, Akuregoda, Batharamulla</p>
+                <p className="m-0">
+                  Email &mdash;{' '}
+                  <a
+                    href="mailto:milindawattegedara@gmail.com"
+                    className="text-primary hover:text-primary-light hover:underline font-medium transition-colors"
+                  >
+                    milindawattegedara@gmail.com
+                  </a>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Copyright Photographs */}
+          <div className="w-full flex flex-col">
+            <h2 className="font-sans text-[1.2rem] sm:text-[1.3rem] font-bold text-[#111111] mb-5 tracking-tight text-center">
+              Copyright &copy; Photographs
+            </h2>
+            <p className="m-0 font-sans text-[0.92rem] sm:text-[0.96rem] text-[#555555] leading-[1.75] text-justify">
+              The copyrights of all the photographs displayed here are owned by Wild Tuskers Sri Lanka and the original Photographer. Unauthorised reproduction, distribution, or use of these images is prohibited without the explicit permission of the original photographer or Wild Tuskers Sri Lanka Team.
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* ── Footer Attribution ── */}
