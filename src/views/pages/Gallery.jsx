@@ -6,6 +6,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Camera,
   Upload,
@@ -514,7 +515,7 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
       onClick={onClose}
     >
       <div
-        className="relative bg-white rounded-2xl max-w-[560px] w-full p-6 sm:p-8 shadow-2xl border border-[#e8e8e8] my-auto"
+        className="relative bg-white rounded-2xl max-w-[560px] w-full p-6 sm:p-8 shadow-2xl border border-[#e8e8e8] my-auto max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center pb-4 mb-5 border-b border-[#eeeeee]">
