@@ -26,8 +26,39 @@ import { loadParkBoundaries, parkBoundaryFor, hasParkBoundary } from '../../util
 import polygonClipping from '../../utils/vendor/polygonClipping';
 import SRI_LANKA_LAND from '../../data/sriLankaLand.json';
 import WTS_CONSERVATION_ZONES from '../../data/wtsConservationZones.json';
+import SRI_LANKA_DISTRICTS_DATA from '../../data/sriLankaDistrictsData.json';
+import { getLocationDistricts } from '../../utils/locationDistricts';
 
 const SRI_LANKA_CENTER = [7.8731, 80.7718];
+
+/** Resolves district definition(s) from tusker.district or roaming areas */
+function getTuskerDistrictData(tusker) {
+  if (!tusker) return [];
+  const foundNames = new Set();
+
+  if (tusker.district) {
+    String(tusker.district).split(/[,/]/).forEach((d) => {
+      const clean = d.trim();
+      if (SRI_LANKA_DISTRICTS_DATA[clean]) foundNames.add(clean);
+    });
+  }
+
+  if (foundNames.size === 0 && tusker.lastSeenArea) {
+    const fromArea = getLocationDistricts(tusker.lastSeenArea);
+    fromArea.forEach((d) => {
+      if (SRI_LANKA_DISTRICTS_DATA[d]) foundNames.add(d);
+    });
+  }
+
+  if (foundNames.size === 0 && tusker.location) {
+    const fromLoc = getLocationDistricts(tusker.location);
+    fromLoc.forEach((d) => {
+      if (SRI_LANKA_DISTRICTS_DATA[d]) foundNames.add(d);
+    });
+  }
+
+  return Array.from(foundNames).map((name) => SRI_LANKA_DISTRICTS_DATA[name]).filter(Boolean);
+}
 
 /** Resolves zone definition from tusker.zone */
 function getZoneData(zoneKey) {
@@ -296,6 +327,11 @@ export default function TuskerSightingsMap({
     });
     return () => { isMounted = false; };
   }, []);
+
+  // Resolve tusker administrative district(s) data
+  const tuskerDistricts = useMemo(() => {
+    return getTuskerDistrictData(tusker);
+  }, [tusker?.district, tusker?.lastSeenArea, tusker?.location]);
 
   // Assemble habitat anchors (from LOCATION field), Last Seen pin, and field sightings (Row 2+)
   const { anchorCoords, sightingPoints, homeRangeShape, lastSeenPoint } = useMemo(() => {
@@ -592,6 +628,29 @@ export default function TuskerSightingsMap({
       }
     });
 
+    // ── 0. Render Administrative District Boundary Shape(s) ──
+    tuskerDistricts.forEach((dObj) => {
+      try {
+        map.addArea(
+          {
+            kind: 'polygon',
+            geojson: {
+              type: dObj.type || 'Polygon',
+              coordinates: dObj.coordinates,
+            },
+          },
+          {
+            fill: dObj.color,
+            fillOpacity: selectedPoint && selectedPoint.id !== 'last-seen-pin' ? 0.05 : 0.14,
+            stroke: dObj.strokeColor,
+            strokeWeight: 1.8,
+          }
+        );
+      } catch (err) {
+        console.warn('[map] could not add district area:', dObj.name, err);
+      }
+    });
+
     // ── 1. Render Unified Home Range / Conservation Zone Shape ──
     if (homeRangeShape) {
       try {
@@ -655,7 +714,7 @@ export default function TuskerSightingsMap({
     } else if (uniquePts.length > 1) {
       map.fitBounds(uniquePts, { padding: 45, maxZoom: selectedPoint ? 12 : 11 });
     }
-  }, [displayedSightings, isMapLoaded, selectedPoint, homeRangeShape, statusTheme, anchorCoords, isDeceased, handleSelectPoint, handleViewHomeRange, tusker?.location, tusker?.livingStatus, tusker?.zone, tuskerZoneName]);
+  }, [displayedSightings, isMapLoaded, selectedPoint, homeRangeShape, statusTheme, anchorCoords, isDeceased, handleSelectPoint, handleViewHomeRange, tusker?.location, tusker?.livingStatus, tusker?.zone, tuskerZoneName, tuskerDistricts]);
 
   return (
     <div className="mt-8 bg-white border border-[#e2e8e0] rounded-[16px] overflow-hidden shadow-xs font-sans">
@@ -680,6 +739,25 @@ export default function TuskerSightingsMap({
                 <span>{homeRangeShape.zoneData.name}</span>
               </span>
             )}
+
+            {/* Administrative District Pill(s) */}
+            {tuskerDistricts.map((dObj) => (
+              <span
+                key={dObj.name}
+                className="inline-flex items-center gap-1.5 text-[0.72rem] font-bold border px-2.5 py-0.5 rounded-full shadow-2xs"
+                style={{
+                  backgroundColor: `${dObj.color}15`,
+                  borderColor: `${dObj.color}50`,
+                  color: dObj.strokeColor,
+                }}
+              >
+                <span
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: dObj.color }}
+                />
+                <span>District: {dObj.name}</span>
+              </span>
+            ))}
 
             {/* Home Range Pill */}
             {tusker?.location && (

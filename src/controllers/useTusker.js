@@ -15,21 +15,89 @@ import {
   addSightingToTusker,
   getTuskerComparison,
   getTuskerEarComparison,
-  compareTuskerId
+  compareTuskerId,
+  DISTRICTS,
 } from '../models/TuskerModel';
 import { useAuth } from './useAuth';
 import { getLocationCoordinates } from '../utils/sriLankaLocations';
 import { todayLocalISO } from '../utils/localDate';
+import { getLocationDistricts, isLocationInDistrict } from '../utils/locationDistricts';
+
+export const normalizeDistrict = (name) => {
+  if (!name) return '';
+  const s = String(name).trim();
+  const low = s.toLowerCase();
+  if (low.includes('hamban')) return 'Hambantota';
+  if (low.includes('ratna') || low.includes('rathna')) return 'Ratnapura';
+  if (low.includes('battic')) return 'Batticaloa';
+  if (low.includes('nuwara')) return 'Nuwara Eliya';
+  return s;
+};
+
+const splitAreasBasic = (loc) => {
+  if (!loc || loc === 'null') return [];
+  return String(loc)
+    .split(/[/,;]/)
+    .map(a => a.replace(/\(.*?\)/g, '').trim())
+    .filter(Boolean);
+};
+
+export const getTuskerDistricts = (t) => {
+  if (!t) return [];
+  const set = new Set();
+  if (t.district) {
+    String(t.district)
+      .split(/[/,;]/)
+      .map(d => normalizeDistrict(d.trim()))
+      .filter(Boolean)
+      .forEach(d => set.add(d));
+  }
+  // Also infer from mapped locations
+  const areas = [t.location, t.lastSeenArea].filter(Boolean);
+  areas.forEach(raw => {
+    splitAreasBasic(raw).forEach(a => {
+      getLocationDistricts(a).forEach(d => set.add(d));
+    });
+  });
+  return Array.from(set);
+};
+
+export const tuskerIsInDistrict = (t, districtName) => {
+  if (!districtName) return true;
+  const targetNorm = normalizeDistrict(districtName).toLowerCase();
+  const districts = getTuskerDistricts(t).map(d => d.toLowerCase());
+  return districts.includes(targetNorm);
+};
 
 /* ==============================================================
    SECTION 1: WILD TUSKERS DIRECTORY & SEARCH CONTROLLER
 ============================================================== */
+export const canonicalLocationName = (name) => {
+  if (!name) return '';
+  const s = String(name).trim();
+  const low = s.toLowerCase();
+  if (low === 'horowpothana' || low === 'horowpathana') return 'Horowpathana';
+  if (low === 'kalawewa' || low === 'kala wewa') return 'Kala Wewa';
+  if (low === 'eluwankulam' || low === 'eluwankulama') return 'Eluwankulam';
+  if (low === 'tabbowa' || low === 'thabbowa') return 'Thabbowa';
+  if (low === 'tirappane' || low === 'thirappane') return 'Thirappane';
+  if (low === 'tantirimale' || low === 'thanthirimale') return 'Thanthirimale';
+  if (low === 'hambanthota' || low === 'hambantota') return 'Hambantota';
+  if (low === 'rathnapura' || low === 'ratnapura') return 'Ratnapura';
+  if (low === 'galoya' || low === 'gal oya') return 'Gal Oya';
+  if (low === 'maha kanadarawa' || low === 'kanadarawa') return 'Maha Kanadarawa';
+  return s;
+};
+
 // Whole-name check: a tusker is in an area only when one of its listed
 // places IS that area (not merely contains the same letters, so "Madu"
 // no longer matches "Maduru Oya" and "Yala Block 3" no longer matches
 // every Yala tusker). "Yala" still includes its numbered blocks.
 const sameArea = (aLow, targetLower) => {
   if (aLow === targetLower) return true;
+  const cA = canonicalLocationName(aLow).toLowerCase();
+  const cT = canonicalLocationName(targetLower).toLowerCase();
+  if (cA === cT) return true;
   if (aLow === targetLower + 'a' || targetLower === aLow + 'a') return true;
   if (aLow.startsWith('yala block') && targetLower.startsWith('block') && aLow.endsWith(targetLower)) return true;
   if (targetLower.startsWith('yala block') && aLow.startsWith('block') && targetLower.endsWith(aLow)) return true;
@@ -106,11 +174,13 @@ export function useTuskerList() {
   const { allLocations, locationCounts } = useMemo(() => {
     const byKey = new Map();
     tuskers.forEach(t => {
-      splitAreas(t.location).forEach(a => {
+      splitAreas(t.location).forEach(raw => {
+        const a = canonicalLocationName(raw);
         const k = a.toLowerCase().trim();
         if (!byKey.has(k) || (/^[A-Z]/.test(a) && !/^[A-Z]/.test(byKey.get(k)))) byKey.set(k, a);
       });
-      splitAreas(t.lastSeenArea).forEach(a => {
+      splitAreas(t.lastSeenArea).forEach(raw => {
+        const a = canonicalLocationName(raw);
         const k = a.toLowerCase().trim();
         if (!byKey.has(k) || (/^[A-Z]/.test(a) && !/^[A-Z]/.test(byKey.get(k)))) byKey.set(k, a);
       });
@@ -172,6 +242,44 @@ export function useTuskerList() {
       return 'ID_DESC';
     }
   });
+  const [selectedDistrict, setSelectedDistrict] = useState(() => {
+    try { return sessionStorage.getItem('wts_selectedDistrict') || ''; } catch { return ''; }
+  });
+  const [districtQuery, setDistrictQuery] = useState(() => {
+    try { return sessionStorage.getItem('wts_selectedDistrict') || ''; } catch { return ''; }
+  });
+  const [showDistrictDrop, setShowDistrictDrop] = useState(false);
+
+  const districtCounts = useMemo(() => {
+    const counts = new Map();
+    DISTRICTS.forEach(dist => {
+      let count = 0;
+      for (const t of tuskers) {
+        if (tuskerIsInDistrict(t, dist)) count++;
+      }
+      counts.set(dist, count);
+    });
+    return counts;
+  }, [tuskers]);
+
+  const countInDistrict = useCallback((dist) => {
+    if (!dist) return 0;
+    return districtCounts.get(normalizeDistrict(dist)) || 0;
+  }, [districtCounts]);
+
+  const districtSuggestions = useMemo(() => {
+    const q = (districtQuery || '').trim().toLowerCase();
+    const isBrowsingAll = !q || (selectedDistrict && q === selectedDistrict.toLowerCase().trim());
+    if (isBrowsingAll) return DISTRICTS;
+    return DISTRICTS.filter(d => d.toLowerCase().includes(q));
+  }, [districtQuery, selectedDistrict]);
+
+  // Valid locations for the currently selected district
+  const validLocationsForDistrict = useMemo(() => {
+    if (!selectedDistrict) return allLocations;
+    return allLocations.filter(loc => isLocationInDistrict(loc, selectedDistrict));
+  }, [selectedDistrict, allLocations]);
+
   const [selectedLocation, setSelectedLoc] = useState(() => {
     try { return sessionStorage.getItem('wts_selectedLoc') || ''; } catch { return ''; }
   });
@@ -180,15 +288,25 @@ export function useTuskerList() {
   });
   const [showLocDrop, setShowLocDrop] = useState(false);
 
-  // Instant single-pass substring filter on pre-sorted array (sub-millisecond, preserves count order)
+  // Instant single-pass substring filter on district-scoped pool
   const locSuggestions = useMemo(() => {
+    const pool = validLocationsForDistrict;
     const q = (locationQuery || '').trim().toLowerCase();
     const isBrowsingAll = !q || (selectedLocation && q === selectedLocation.toLowerCase().trim());
-    if (isBrowsingAll) return allLocations;
-    return allLocations.filter(loc => loc.toLowerCase().includes(q));
-  }, [allLocations, locationQuery, selectedLocation]);
+    if (isBrowsingAll) return pool;
+    return pool.filter(loc => loc.toLowerCase().includes(q));
+  }, [validLocationsForDistrict, locationQuery, selectedLocation]);
 
   /* ── Persist Filter & Sort State across Navigation & Reload ── */
+  useEffect(() => {
+    try {
+      if (selectedDistrict) {
+        sessionStorage.setItem('wts_selectedDistrict', selectedDistrict);
+      } else {
+        sessionStorage.removeItem('wts_selectedDistrict');
+      }
+    } catch { /* ignore */ }
+  }, [selectedDistrict]);
   useEffect(() => {
     try {
       if (sortOrder) sessionStorage.setItem('wts_sortOrder_v2', sortOrder);
@@ -242,6 +360,41 @@ export function useTuskerList() {
     setShowNameSugg(false);
   };
 
+  const handleDistrictInput = (val) => {
+    setDistrictQuery(val);
+    setSelectedDistrict('');
+    setShowDistrictDrop(true);
+  };
+
+  const pickDistrict = (dist) => {
+    setSelectedDistrict(dist);
+    setDistrictQuery(dist);
+    setShowDistrictDrop(false);
+
+    // If a location is currently selected, check if it's still valid under the new district
+    if (selectedLocation) {
+      const validSet = new Set();
+      tuskers.forEach(t => {
+        if (tuskerIsInDistrict(t, dist)) {
+          splitAreas(t.location).forEach(a => validSet.add(a.toLowerCase().trim()));
+          splitAreas(t.lastSeenArea).forEach(a => validSet.add(a.toLowerCase().trim()));
+        }
+      });
+      if (!validSet.has(selectedLocation.toLowerCase().trim())) {
+        setSelectedLoc('');
+        setLocationQuery('');
+        try { sessionStorage.removeItem('wts_selectedLoc'); } catch {}
+      }
+    }
+  };
+
+  const clearDistrict = () => {
+    setSelectedDistrict('');
+    setDistrictQuery('');
+    setShowDistrictDrop(false);
+    try { sessionStorage.removeItem('wts_selectedDistrict'); } catch {}
+  };
+
   const handleLocInput = (val) => {
     setLocationQuery(val);
     setSelectedLoc('');
@@ -265,6 +418,9 @@ export function useTuskerList() {
 
   const clearFilters = () => {
     setNameQuery('');
+    setSelectedDistrict('');
+    setDistrictQuery('');
+    setShowDistrictDrop(false);
     setSelectedLoc('');
     setLocationQuery('');
     setStatusFilter('ALL');
@@ -273,6 +429,7 @@ export function useTuskerList() {
     setShowNameSugg(false);
     try {
       sessionStorage.removeItem('wts_nameQuery');
+      sessionStorage.removeItem('wts_selectedDistrict');
       sessionStorage.removeItem('wts_statusFilter');
       sessionStorage.removeItem('wts_sortOrder');
       sessionStorage.removeItem('wts_sortOrder_v2');
@@ -290,6 +447,9 @@ export function useTuskerList() {
       const q = nameQuery.toLowerCase();
       list = list.filter(t =>
         t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q));
+    }
+    if (selectedDistrict) {
+      list = list.filter(t => tuskerIsInDistrict(t, selectedDistrict));
     }
     const activeLoc = selectedLocation || locationQuery.trim();
     if (activeLoc) {
@@ -310,7 +470,7 @@ export function useTuskerList() {
       list.sort((a, b) => compareTuskerId(b.id, a.id));
     }
     return list;
-  }, [nameQuery, selectedLocation, locationQuery, statusFilter, sortOrder, tuskers, tuskerRoamsIn]);
+  }, [nameQuery, selectedDistrict, selectedLocation, locationQuery, statusFilter, sortOrder, tuskers, tuskerRoamsIn]);
 
   return {
     tuskers,
@@ -326,6 +486,18 @@ export function useTuskerList() {
     nameSuggestions,
     showNameSugg,
     setShowNameSugg,
+    selectedDistrict,
+    setSelectedDistrict,
+    districtQuery,
+    setDistrictQuery,
+    showDistrictDrop,
+    setShowDistrictDrop,
+    districtSuggestions,
+    countInDistrict,
+    handleDistrictInput,
+    pickDistrict,
+    clearDistrict,
+    validLocationsForDistrict,
     locationQuery,
     selectedLocation,
     showLocDrop,

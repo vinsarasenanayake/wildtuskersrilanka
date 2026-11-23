@@ -47,90 +47,90 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b2518] flex flex-col lg:flex-row items-center justify-center p-4 sm:p-6 lg:p-12 gap-6 sm:gap-10 lg:gap-24 relative overflow-y-auto">
+    <div className="min-h-[100dvh] bg-[#0b2518] flex flex-col lg:flex-row items-center justify-center p-3.5 sm:p-6 lg:p-12 gap-3 sm:gap-6 lg:gap-24 relative overflow-x-hidden">
       {/* Back to Home Link */}
-      <div className="absolute top-4 left-4 sm:top-8 sm:left-8 z-20">
+      <div className="absolute top-3.5 left-3.5 sm:top-8 sm:left-8 z-20">
         <Link
           to="/"
-          className="flex items-center gap-1.5 sm:gap-2 text-white/80 hover:text-white font-medium text-xs sm:text-sm transition-colors cursor-pointer no-underline bg-black/20 hover:bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-xs"
+          className="flex items-center gap-1.5 sm:gap-2 text-white/80 hover:text-white font-medium text-xs sm:text-sm transition-colors cursor-pointer no-underline bg-black/30 hover:bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-xs"
         >
-          <ChevronLeft size={18} />
+          <ChevronLeft size={16} />
           <span>Back to Home</span>
         </Link>
       </div>
 
       {/* Brand & Mission Side */}
-      <div className="w-full max-w-[500px] flex flex-col items-center text-center mt-14 sm:mt-12 lg:mt-0">
+      <div className="w-full max-w-[500px] flex flex-col items-center text-center mt-11 sm:mt-12 lg:mt-0 shrink-0">
         <Link
           to="/"
-          className="inline-block hover:opacity-90 hover:scale-[1.02] transition-all duration-300 mb-4 sm:mb-6"
+          className="inline-block hover:opacity-90 hover:scale-[1.02] transition-all duration-300 mb-1.5 sm:mb-6"
         >
           <img
             src={wtsLogo}
             alt="Wild Tuskers Sri Lanka"
-            className="h-[6.5rem] sm:h-[9rem] md:h-[13rem] lg:h-[15rem] mx-auto filter drop-shadow-lg object-contain"
+            className="h-[3.8rem] sm:h-[7rem] md:h-[11rem] lg:h-[14rem] mx-auto filter drop-shadow-lg object-contain"
           />
         </Link>
-        <p className="font-sans text-xs sm:text-[1.02rem] text-[#b0c9bd] max-w-[480px] leading-relaxed font-normal m-0 px-2">
+        <p className="hidden sm:block font-sans text-xs sm:text-[1.02rem] text-[#b0c9bd] max-w-[480px] leading-relaxed font-normal m-0 px-2">
           Wild Tuskers Sri Lanka is dedicated to identifying, documenting, and safeguarding
           the rare tusked elephants of Sri Lanka, guardians of our natural heritage.
         </p>
       </div>
 
       {/* Admin Login Portal Card */}
-      <div className="w-full max-w-[480px] bg-white rounded-[1.5rem] sm:rounded-[2rem] p-5 sm:px-10 sm:py-9 shadow-[0_20px_60px_rgba(0,0,0,0.3)] lg:mb-0 mb-8">
-        <div className="text-center mb-5 sm:mb-6 flex flex-col items-center">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#0b2518]/8 text-[#c69b55] flex items-center justify-center mb-2.5 sm:mb-3 border border-[#0b2518]/10 shadow-sm">
-            <Shield size={24} className="sm:w-7 sm:h-7" />
+      <div className="w-full max-w-[440px] bg-white rounded-[1.25rem] sm:rounded-[2rem] p-4 sm:p-7 md:px-10 md:py-9 shadow-[0_20px_60px_rgba(0,0,0,0.3)] mb-1 sm:mb-0">
+        <div className="text-center mb-3 sm:mb-6 flex flex-col items-center">
+          <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-[#0b2518]/8 text-[#c69b55] flex items-center justify-center mb-1.5 sm:mb-3 border border-[#0b2518]/10 shadow-sm">
+            <Shield size={18} className="sm:w-7 sm:h-7" />
           </div>
-          <h1 className="font-serif text-2xl sm:text-[1.8rem] font-bold text-[#0b2518] mb-1 sm:mb-1.5 leading-tight">
+          <h1 className="font-serif text-lg sm:text-[1.8rem] font-bold text-[#0b2518] mb-0.5 sm:mb-1.5 leading-tight">
             Admin Portal
           </h1>
-          <p className="text-[#5c6c64] text-xs sm:text-[0.88rem] max-w-[360px] leading-relaxed m-0">
+          <p className="text-[#5c6c64] text-[0.76rem] sm:text-[0.88rem] max-w-[340px] leading-relaxed m-0">
             Sign in with authorized administrator credentials to manage records, notes, and observations.
           </p>
         </div>
 
         {/* Form */}
-        <form className="flex flex-col gap-4" onSubmit={handleLogin}>
+        <form className="flex flex-col gap-3 sm:gap-4" onSubmit={handleLogin}>
           {error && (
-            <div className="bg-[#fff5f5] border border-[#ffcccc] text-[#e53e3e] rounded-[10px] px-4 py-3 font-sans text-[0.82rem] font-medium leading-relaxed">
+            <div className="bg-[#fff5f5] border border-[#ffcccc] text-[#e53e3e] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.78rem] sm:text-[0.82rem] font-medium leading-relaxed">
               {error}
             </div>
           )}
 
           {/* Email */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[0.82rem] font-semibold text-[#1f2824] uppercase tracking-wider">
+          <div className="flex flex-col gap-1 sm:gap-1.5">
+            <label className="text-[0.76rem] sm:text-[0.82rem] font-semibold text-[#1f2824] uppercase tracking-wider">
               Admin Email
             </label>
             <div className="relative flex items-center">
-              <Mail size={18} className="absolute left-3.5 text-[#889990] pointer-events-none" />
+              <Mail size={16} className="absolute left-3.5 text-[#889990] pointer-events-none" />
               <input
                 type="email"
                 required
                 placeholder="admin@wildtuskers.lk"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#e3ece8] focus:border-[#c69b55] focus:outline-none focus:ring-2 focus:ring-[#c69b55]/20 transition-all bg-[#faf8f5] text-[#1f2824] placeholder:text-[#9aa8a1] text-sm"
+                className="w-full pl-10 pr-4 py-2.5 sm:py-3 rounded-xl border border-[#e3ece8] focus:border-[#c69b55] focus:outline-none focus:ring-2 focus:ring-[#c69b55]/20 transition-all bg-[#faf8f5] text-[#1f2824] placeholder:text-[#9aa8a1] text-xs sm:text-sm"
               />
             </div>
           </div>
 
           {/* Password */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[0.82rem] font-semibold text-[#1f2824] uppercase tracking-wider">
+          <div className="flex flex-col gap-1 sm:gap-1.5">
+            <label className="text-[0.76rem] sm:text-[0.82rem] font-semibold text-[#1f2824] uppercase tracking-wider">
               Password
             </label>
             <div className="relative flex items-center">
-              <Lock size={18} className="absolute left-3.5 text-[#889990] pointer-events-none" />
+              <Lock size={16} className="absolute left-3.5 text-[#889990] pointer-events-none" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-11 pr-11 py-3 rounded-xl border border-[#e3ece8] focus:border-[#c69b55] focus:outline-none focus:ring-2 focus:ring-[#c69b55]/20 transition-all bg-[#faf8f5] text-[#1f2824] placeholder:text-[#9aa8a1] text-sm"
+                className="w-full pl-10 pr-10 py-2.5 sm:py-3 rounded-xl border border-[#e3ece8] focus:border-[#c69b55] focus:outline-none focus:ring-2 focus:ring-[#c69b55]/20 transition-all bg-[#faf8f5] text-[#1f2824] placeholder:text-[#9aa8a1] text-xs sm:text-sm"
               />
               <button
                 type="button"
@@ -138,7 +138,7 @@ export default function Login() {
                 className="absolute right-3.5 bg-none border-none cursor-pointer text-[#889990] hover:text-[#1f2824] p-0 flex items-center transition-colors"
                 title={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </div>
@@ -147,10 +147,10 @@ export default function Login() {
           <button
             type="submit"
             disabled={submitting}
-            className="disabled:opacity-60 disabled:cursor-wait w-full bg-[#0b2518] text-white py-3.5 rounded-xl font-bold hover:bg-[#16402b] hover:-translate-y-[0.5px] hover:shadow-[0_6px_20px_rgba(11,37,24,0.25)] transition-all cursor-pointer mt-3 text-[0.95rem] flex items-center justify-center gap-2 border-none shadow-md"
+            className="disabled:opacity-60 disabled:cursor-wait w-full bg-[#0b2518] text-white py-3 sm:py-3.5 rounded-xl font-bold hover:bg-[#16402b] hover:-translate-y-[0.5px] hover:shadow-[0_6px_20px_rgba(11,37,24,0.25)] transition-all cursor-pointer mt-1.5 sm:mt-3 text-xs sm:text-[0.95rem] flex items-center justify-center gap-2 border-none shadow-md"
           >
             <span>{submitting ? 'Signing in…' : 'Sign In to Admin Portal'}</span>
-            <ArrowRight size={17} />
+            <ArrowRight size={16} />
           </button>
         </form>
       </div>

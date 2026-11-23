@@ -7,7 +7,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, Link } from 'react-router-dom';
-import { Search, MapPin, X, ChevronDown, PlusCircle, Trash2, ShieldAlert } from 'lucide-react';
+import { Search, MapPin, X, ChevronDown, PlusCircle, Trash2, ShieldAlert, Layers } from 'lucide-react';
 import { useUnlistedTuskers } from '../../controllers/useUnlistedTuskers';
 import ImageUploadBox from '../components/ImageUploadBox';
 import LocationSearchInput from '../components/LocationSearchInput';
@@ -19,6 +19,16 @@ export default function UnlistedMonitoring() {
     tuskers,
     filtered,
     searchQuery,
+    setSearchQuery,
+    selectedDistrict,
+    districtQuery,
+    showDistrictDrop,
+    setShowDistrictDrop,
+    districtSuggestions,
+    countInDistrict,
+    handleDistrictInput,
+    pickDistrict,
+    clearDistrict,
     locationQuery,
     selectedLocation,
     showLocDrop,
@@ -37,6 +47,7 @@ export default function UnlistedMonitoring() {
   } = useUnlistedTuskers();
 
   const searchRef = useRef(null);
+  const districtRef = useRef(null);
   const locationRef = useRef(null);
 
   // Modal states for admin adding new entries
@@ -52,16 +63,19 @@ export default function UnlistedMonitoring() {
     photos: []
   });
 
-  /* ── Click Outside to Close Location Dropdown ── */
+  /* ── Click Outside to Close Dropdowns ── */
   useEffect(() => {
     const handleOutsideClick = (e) => {
+      if (districtRef.current && !districtRef.current.contains(e.target)) {
+        setShowDistrictDrop(false);
+      }
       if (locationRef.current && !locationRef.current.contains(e.target)) {
         setShowLocDrop(false);
       }
     };
     document.addEventListener('mousedown', handleOutsideClick);
     return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, [setShowLocDrop]);
+  }, [setShowDistrictDrop, setShowLocDrop]);
 
   useEffect(() => {
     document.title = 'Wild Tuskers Sri Lanka | Unlisted Monitoring';
@@ -172,8 +186,8 @@ export default function UnlistedMonitoring() {
         </div>
       </div>
 
-      {/* ── Search Toolbar ── */}
-      <div className="flex items-center gap-4 mb-4 flex-wrap max-sm:flex-col">
+      {/* ── Search Toolbar: Search, District Filter, Location Filter ── */}
+      <div className="flex items-center gap-3 sm:gap-3.5 mb-4 flex-wrap max-sm:flex-col">
 
         {/* Search */}
         <div className="relative flex-1 min-w-[220px] max-sm:max-w-full max-sm:w-full" ref={searchRef}>
@@ -181,7 +195,7 @@ export default function UnlistedMonitoring() {
             <Search size={16} className="text-[#aaaaaa] shrink-0" />
             <input
               type="text"
-              className="border-none bg-transparent outline-none font-sans text-[0.9rem] text-[#111111] caret-[#111111] w-full placeholder:text-[#bbbbbb]"
+              className="border-none bg-transparent outline-none font-sans text-[0.88rem] sm:text-[0.9rem] text-[#111111] caret-[#111111] w-full placeholder:text-[#bbbbbb]"
               placeholder="Search unlisted ID or location..."
               value={searchQuery}
               onChange={e => handleSearchInput(e.target.value)}
@@ -197,14 +211,67 @@ export default function UnlistedMonitoring() {
           </div>
         </div>
 
-        {/* Location Filter */}
-        <div className="relative flex-1 min-w-[220px] max-w-[280px] max-md:max-w-full max-sm:max-w-full max-sm:w-full" ref={locationRef}>
+        {/* District Filter (25 Districts) */}
+        <div className="relative w-full sm:w-[230px] md:w-[245px] shrink-0" ref={districtRef}>
+          <div className="flex items-center gap-2 bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-2.5 transition-all focus-within:border-accent focus-within:bg-white focus-within:ring-3 focus-within:ring-accent/12">
+            <Layers size={16} className="text-[#aaaaaa] shrink-0 text-accent" />
+            <input
+              type="text"
+              className="border-none bg-transparent outline-none font-sans text-[0.88rem] sm:text-[0.9rem] text-[#111111] caret-[#111111] w-full placeholder:text-[#bbbbbb]"
+              placeholder="Filter by district…"
+              value={districtQuery}
+              onChange={e => handleDistrictInput(e.target.value)}
+              onFocus={() => setShowDistrictDrop(true)}
+              onClick={() => setShowDistrictDrop(true)}
+            />
+            <div className="flex items-center gap-1.5 shrink-0">
+              {districtQuery && (
+                <button
+                  type="button"
+                  aria-label="Clear district filter"
+                  className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]"
+                  onMouseDown={clearDistrict}
+                >
+                  <X size={14} />
+                </button>
+              )}
+              <button
+                type="button"
+                aria-label="Toggle district list"
+                className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]"
+                onClick={() => setShowDistrictDrop(prev => !prev)}
+              >
+                <ChevronDown size={14} className={`transition-transform duration-200 ${showDistrictDrop ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
+          </div>
+          {showDistrictDrop && districtSuggestions.length > 0 && (
+            <ul className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white border border-[#e2e8f0] rounded-[12px] shadow-[0_12px_32px_rgba(0,0,0,0.12)] z-[200] list-none m-0 py-1.5 max-h-[270px] overflow-y-auto overscroll-contain divide-y divide-[#f8f9fa]">
+              {districtSuggestions.map(dist => (
+                <li
+                  key={dist}
+                  className={`flex items-center gap-2 px-4 py-2.5 cursor-pointer font-sans text-[0.88rem] text-[#333333] transition-colors hover:bg-[#faf5ec] ${selectedDistrict === dist ? 'bg-[#faf5ec]' : ''}`}
+                  onMouseDown={() => pickDistrict(dist)}
+                >
+                  <Layers size={12} className="text-accent shrink-0" />
+                  <span className="flex-1 text-[#111111] font-medium">{dist}</span>
+                  <span className="ml-auto text-[0.78rem] text-[#aaaaaa]">
+                    {countInDistrict(dist)} {countInDistrict(dist) === 1 ? 'unlisted' : 'unlisted'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Location Filter (District-scoped) */}
+        <div className="relative w-full sm:w-[230px] md:w-[245px] shrink-0" ref={locationRef}>
           <div className="flex items-center gap-2 bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-2.5 transition-all focus-within:border-accent focus-within:bg-white focus-within:ring-3 focus-within:ring-accent/12">
             <MapPin size={16} className="text-[#aaaaaa] shrink-0 text-accent" />
             <input
               type="text"
-              className="border-none bg-transparent outline-none font-sans text-[0.9rem] text-[#111111] caret-[#111111] w-full placeholder:text-[#bbbbbb]"
-              placeholder="Filter by location..."
+              className="border-none bg-transparent outline-none font-sans text-[0.88rem] sm:text-[0.9rem] text-[#111111] caret-[#111111] w-full placeholder:text-[#bbbbbb]"
+              placeholder={selectedDistrict ? `Location in ${selectedDistrict}…` : 'Filter by location…'}
               value={locationQuery}
               onChange={e => handleLocInput(e.target.value)}
               onFocus={focusLocation}
@@ -233,7 +300,7 @@ export default function UnlistedMonitoring() {
           </div>
 
           {showLocDrop && locSuggestions.length > 0 && (
-            <ul className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white border-1.5 border-[#e8e8e8] rounded-[10px] shadow-[0_8px_24px_rgba(0,0,0,0.1)] z-[200] list-none m-0 py-1.5 overflow-hidden">
+            <ul className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white border border-[#e2e8f0] rounded-[12px] shadow-[0_12px_32px_rgba(0,0,0,0.12)] z-[200] list-none m-0 py-1.5 max-h-[270px] overflow-y-auto overscroll-contain divide-y divide-[#f8f9fa]">
               {locSuggestions.map(loc => (
                 <li
                   key={loc}
@@ -258,12 +325,14 @@ export default function UnlistedMonitoring() {
       {/* ── Results Count ── */}
       <div className="flex items-center justify-between mb-7 font-sans text-[0.85rem] text-[#888888]">
         <span>{filtered.length} {filtered.length === 1 ? 'unlisted tusker' : 'unlisted tuskers'} found</span>
-        {(searchQuery || selectedLocation) && (
+        {(searchQuery || selectedDistrict || districtQuery || selectedLocation || locationQuery) && (
           <button
-            className="bg-none border-none font-sans text-[0.85rem] text-accent cursor-pointer font-medium underline p-0 hover:text-accent-hover"
+            type="button"
+            className="bg-none border-none font-sans text-[0.85rem] text-accent cursor-pointer font-semibold underline p-0 hover:text-accent-hover inline-flex items-center gap-1 transition-colors"
             onClick={clearFilters}
           >
-            Clear filters
+            <X size={14} className="text-accent" />
+            <span>Clear filters</span>
           </button>
         )}
       </div>

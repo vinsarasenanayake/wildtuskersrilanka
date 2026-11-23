@@ -30,6 +30,7 @@ import Login from './views/pages/Login';
 // import AIApp from './views/pages/AIApp';
 import NotFound from './views/pages/NotFound';
 import TuskerMap from './views/pages/TuskerMap';
+import DistrictMap from './views/pages/DistrictMap';
 import { RequireAdmin, VisitorOnly } from './views/components/RouteGuards';
 
 /* ── Error Boundary ────────────────────────────────────────── */
@@ -127,6 +128,8 @@ function App() {
             <Route path="/admin/add-observation" element={<RequireAdmin><SpecialObservationForm /></RequireAdmin>} />
             <Route path="/admin/edit-observation/:id" element={<RequireAdmin><SpecialObservationForm /></RequireAdmin>} />
             <Route path="/admin/tusker-map" element={<RequireAdmin><TuskerMap /></RequireAdmin>} />
+            <Route path="/admin/zone-map" element={<RequireAdmin><TuskerMap /></RequireAdmin>} />
+            <Route path="/admin/district-map" element={<RequireAdmin><DistrictMap /></RequireAdmin>} />
             <Route path="/admin/create-event" element={<RequireAdmin><EventForm /></RequireAdmin>} />
             <Route path="/admin/edit-event/:id" element={<RequireAdmin><EventForm /></RequireAdmin>} />
 

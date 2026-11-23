@@ -12,10 +12,22 @@ import { supabase, fromRow, unwrap } from '../lib/supabaseClient';
 ============================================================== */
 export async function getEvents() {
   const rows = unwrap(await supabase.from('events').select('*')).map(fromRow);
-  const upcoming = rows.filter(e => e.type === 'upcoming')
-    .sort((a, b) => a.date.localeCompare(b.date));
-  const past = rows.filter(e => e.type === 'past')
-    .sort((a, b) => b.date.localeCompare(a.date));
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const todayStr = `${year}-${month}-${day}`;
+
+  // Upcoming: explicitly marked upcoming AND date is today or later
+  const upcoming = rows
+    .filter(e => e.type === 'upcoming' && (!e.date || e.date >= todayStr))
+    .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+  // Past: marked past OR date is earlier than today
+  const past = rows
+    .filter(e => e.type === 'past' || (e.date && e.date < todayStr))
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
   return { upcoming, past };
 }
 

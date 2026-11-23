@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useFieldNoteForm } from '../../controllers/useFieldNotes';
 import TuskerMultiSelect from '../components/TuskerMultiSelect';
+import LocationSearchInput from '../components/LocationSearchInput';
 
 export default function FieldNoteForm() {
   const navigate = useNavigate();
@@ -201,31 +202,37 @@ export default function FieldNoteForm() {
                     <Clock size={14} className="text-[#888888]" />
                     <span>Time of Sighting<span className="text-[#e53e3e]"> *</span></span>
                   </label>
-                  <input
-                    type="time"
-                    name="time"
-                  maxLength={50}
-                    required
-                    className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15"
-                    value={formData.time || ''}
-                    onChange={handleChange}
-                  />
+                  <div className="relative w-full">
+                    <input
+                      type="time"
+                      name="time"
+                      maxLength={50}
+                      required
+                      placeholder="--:-- --"
+                      className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15"
+                      value={formData.time || ''}
+                      onChange={handleChange}
+                    />
+                    {!formData.time && (
+                      <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 font-sans text-[0.92rem] text-[#9ca3af] select-none">
+                        --:-- --
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
                   <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center gap-1.5">
                     <MapPin size={14} className="text-[#888888]" />
-                    <span>Title / Location<span className="text-[#e53e3e]"> *</span></span>
+                    <span>Location<span className="text-[#e53e3e]"> *</span></span>
                   </label>
-                  <input
-                    type="text"
+                  <LocationSearchInput
                     name="title"
-                  maxLength={300}
                     required
-                    className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15"
-                    placeholder="e.g. Minneriya National Park - Sighting of Tusker Mahasen"
+                    placeholder="e.g. Minneriya National Park"
                     value={formData.title}
-                    onChange={handleChange}
+                    onChange={(e, val) => handleChange({ target: { name: 'title', value: val || e.target.value } })}
+                    className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15"
                   />
                 </div>
               </div>

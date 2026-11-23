@@ -1,14 +1,14 @@
 /**
  * @file TuskerMap.jsx
- * @description WTS Conservation Landscapes & Strategic Regional Zones Interactive Map.
+ * @description WTS Conservation Landscapes & Strategic Regional Zones Interactive Map (Zone Map).
  * Renders the 4 official WTS Conservation Zones (Zone 1, Zone 2, Zone 3, Zone 4) on an interactive
  * canvas with zone details, covered districts, and categorized wild tusker directories.
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, Search, Layers, X, MapPin
+  ArrowLeft, Search, Layers, X, MapPin, Compass
 } from 'lucide-react';
 import { getTuskers, LIVING_STATUSES } from '../../models/TuskerModel';
 import { createMap } from '../../utils/mapEngine';
@@ -45,6 +45,7 @@ function tuskerAreaInfo(t) {
 }
 
 export default function TuskerMap() {
+  const navigate = useNavigate();
   const [tuskers, setTuskers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -139,7 +140,12 @@ export default function TuskerMap() {
     map.clearAreas();
     map.clearMarkers();
 
-    Object.values(WTS_CONSERVATION_ZONES).forEach((zoneObj) => {
+    // When a zone is selected, zoom in and hide the other 3 zones until "View Full Map" is clicked
+    const zonesToDraw = selectedZone
+      ? Object.values(WTS_CONSERVATION_ZONES).filter((z) => z.shortName === selectedZone)
+      : Object.values(WTS_CONSERVATION_ZONES);
+
+    zonesToDraw.forEach((zoneObj) => {
       const isZoneActive = selectedZone === zoneObj.shortName;
       try {
         map.addArea(
@@ -152,7 +158,7 @@ export default function TuskerMap() {
           },
           {
             fill: zoneObj.color,
-            fillOpacity: isZoneActive ? 0.35 : 0.18,
+            fillOpacity: isZoneActive ? 0.32 : 0.18,
             stroke: zoneObj.strokeColor,
             strokeWeight: isZoneActive ? 3.5 : 2.0,
             onClick: () => {
@@ -187,15 +193,17 @@ export default function TuskerMap() {
     } else {
       setSelectedZone(zoneKey);
       setMobileTab('map');
-      const zoneObj = WTS_CONSERVATION_ZONES[zoneKey];
-      if (mapRef.current && zoneObj?.bbox) {
-        mapRef.current.fitBounds(zoneObj.bbox, { padding: 45 });
+      const zObj = WTS_CONSERVATION_ZONES[zoneKey];
+      if (zObj && zObj.bbox && mapRef.current) {
+        mapRef.current.fitBounds(zObj.bbox, { padding: 45 });
       }
     }
   };
 
   const handleResetView = () => {
     setSelectedZone(null);
+    setQuery('');
+    setStatusFilter('');
     if (mapRef.current) {
       mapRef.current.fitBounds([[5.95, 79.6], [9.85, 81.9]], { padding: 30, maxZoom: 9 });
     }
@@ -203,43 +211,50 @@ export default function TuskerMap() {
 
   return (
     <div className="pt-[64px] sm:pt-[70px] h-screen flex flex-col bg-[#0b2518] font-sans">
-      {/* Mobile & Tablet Portrait View Toggle */}
+      {/* Mobile & Tablet Portrait View Switcher */}
       <div className="portrait:flex landscape:hidden flex items-center justify-center p-2 bg-[#081b11] border-b border-white/10 shrink-0">
         <div className="flex rounded-lg bg-[#0f2d1e] p-1 border border-white/10 w-full max-w-sm text-xs font-semibold">
           <button
             type="button"
             onClick={() => setMobileTab('map')}
-            className={`flex-1 py-1.5 rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer border-none ${
-              mobileTab === 'map'
-                ? 'bg-accent text-primary font-bold shadow-xs'
-                : 'bg-transparent text-gray-300 hover:text-white'
-            }`}
+            className={`flex-1 py-1.5 rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer border-none ${mobileTab === 'map'
+              ? 'bg-accent text-primary font-bold shadow-xs'
+              : 'bg-transparent text-gray-300 hover:text-white'
+              }`}
           >
             <MapPin size={14} /> Map View
           </button>
           <button
             type="button"
             onClick={() => setMobileTab('directory')}
-            className={`flex-1 py-1.5 rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer border-none ${
-              mobileTab === 'directory'
-                ? 'bg-accent text-primary font-bold shadow-xs'
-                : 'bg-transparent text-gray-300 hover:text-white'
-            }`}
+            className={`flex-1 py-1.5 rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer border-none ${mobileTab === 'directory'
+              ? 'bg-accent text-primary font-bold shadow-xs'
+              : 'bg-transparent text-gray-300 hover:text-white'
+              }`}
           >
-            <Layers size={14} /> Zones &amp; Tuskers ({filteredTuskers.length})
+            <Layers size={14} /> Conservation Zones ({filteredTuskers.length})
           </button>
         </div>
       </div>
 
       <div className="flex-1 min-h-0 flex flex-col md:flex-row">
         {/* ── Side panel ── */}
-        <aside className={`w-full md:w-[380px] lg:w-[410px] shrink-0 bg-white border-r border-[#e2e8e4] flex flex-col min-h-0 overflow-y-auto overscroll-contain ${
-          mobileTab === 'directory' ? 'portrait:flex portrait:flex-1' : 'portrait:hidden'
-        } landscape:flex`}>
-          <div className="p-3 sm:p-4 border-b border-[#edf2ef]">
-            <Link to="/admin" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#6a7c73] hover:text-accent no-underline mb-2.5">
-              <ArrowLeft size={14} /> Admin Portal
-            </Link>
+        <aside className={`w-full md:w-[380px] lg:w-[410px] shrink-0 bg-white border-r border-[#e2e8e4] flex flex-col min-h-0 overflow-y-auto overscroll-contain ${mobileTab === 'directory' ? 'portrait:flex portrait:flex-1' : 'portrait:hidden'
+          } landscape:flex`}>
+          <div className="p-3.5 sm:p-4 border-b border-[#edf2ef]">
+            {/* Top Navigation Row */}
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <Link to="/admin" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#6a7c73] hover:text-accent no-underline">
+                <ArrowLeft size={14} /> Admin Portal
+              </Link>
+              <Link
+                to="/admin/district-map"
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent hover:text-accent-hover bg-[#faf5ec] hover:bg-[#f3ebd9] px-2 py-1 rounded-md border border-accent/40 no-underline cursor-pointer transition-all"
+              >
+                <Compass size={12} />
+                <span>Switch to District Map →</span>
+              </Link>
+            </div>
 
             <div className="flex items-center justify-between gap-2 mb-1">
               <h1 className="text-lg font-bold text-[#0b2518] m-0 flex items-center gap-2">
@@ -270,19 +285,22 @@ export default function TuskerMap() {
                     key={zObj.shortName}
                     type="button"
                     onClick={() => handleSelectZone(zObj.shortName)}
-                    className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
-                      isSelected
-                        ? 'bg-emerald-50/80 border-emerald-600 ring-2 ring-emerald-500/30 shadow-xs'
-                        : 'bg-[#fafbfa] hover:bg-white border-gray-200 hover:border-gray-300'
-                    }`}
+                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden ${isSelected
+                      ? 'border-2 shadow-sm'
+                      : 'border-gray-200 bg-white hover:bg-gray-50'
+                      }`}
+                    style={{
+                      borderColor: isSelected ? zObj.color : undefined,
+                      backgroundColor: isSelected ? `${zObj.color}10` : undefined,
+                    }}
                   >
-                    <div className="flex items-center justify-between gap-1 w-full mb-1">
+                    <div className="flex items-center justify-between gap-1 mb-1">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span
                           className="w-2.5 h-2.5 rounded-full shrink-0"
                           style={{ backgroundColor: zObj.color }}
                         />
-                        <span className="font-bold text-xs text-[#0b2518] truncate">
+                        <span className="font-bold text-xs text-gray-900 truncate">
                           {zObj.shortName}
                         </span>
                       </div>
@@ -290,13 +308,13 @@ export default function TuskerMap() {
                         className="text-[10px] font-bold px-1.5 py-0.2 rounded-full shrink-0"
                         style={{
                           backgroundColor: `${zObj.color}20`,
-                          color: zObj.strokeColor,
+                          color: zObj.color,
                         }}
                       >
                         {count}
                       </span>
                     </div>
-                    <div className="text-[10.5px] text-gray-600 font-medium truncate leading-tight">
+                    <div className="text-[11px] text-gray-600 line-clamp-1">
                       {zObj.title}
                     </div>
                   </button>
@@ -331,11 +349,10 @@ export default function TuskerMap() {
               <button
                 type="button"
                 onClick={() => setStatusFilter('')}
-                className={`px-2 py-0.5 rounded-full text-[10.5px] font-semibold border cursor-pointer transition-all ${
-                  statusFilter === ''
-                    ? 'bg-[#0b2518] text-white border-[#0b2518]'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-                }`}
+                className={`px-2 py-0.5 rounded-full text-[10.5px] font-semibold border cursor-pointer transition-all ${statusFilter === ''
+                  ? 'bg-[#0b2518] text-white border-[#0b2518]'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                  }`}
               >
                 All Statuses
               </button>
@@ -344,11 +361,10 @@ export default function TuskerMap() {
                   key={status}
                   type="button"
                   onClick={() => setStatusFilter(statusFilter === status ? '' : status)}
-                  className={`px-2 py-0.5 rounded-full text-[10.5px] font-semibold border cursor-pointer transition-all whitespace-nowrap ${
-                    statusFilter === status
-                      ? 'bg-[#0b2518] text-white border-[#0b2518]'
-                      : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`px-2 py-0.5 rounded-full text-[10.5px] font-semibold border cursor-pointer transition-all whitespace-nowrap ${statusFilter === status
+                    ? 'bg-[#0b2518] text-white border-[#0b2518]'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                    }`}
                 >
                   {status}
                 </button>
@@ -357,10 +373,12 @@ export default function TuskerMap() {
           </div>
 
           {/* ── Scrollable Tusker List ── */}
-          <div className="divide-y divide-[#f0f3f1]">
-            <div className="px-4 py-2 bg-[#f8faf9] text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between">
-              <span>{selectedZone ? `${selectedZone} Tuskers` : 'All Registered Tuskers'}</span>
-              <span>{filteredTuskers.length}</span>
+          <div className="divide-y divide-[#f0f3f1] flex-1 overflow-y-auto">
+            <div className="px-3.5 py-2 bg-[#f8faf9] text-[10.5px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between">
+              <span>
+                {selectedZone ? `${selectedZone} Tuskers` : 'All Registered Tuskers'}
+              </span>
+              <span className="font-mono text-gray-600">{filteredTuskers.length}</span>
             </div>
 
             {loadError && (
@@ -382,7 +400,7 @@ export default function TuskerMap() {
                 <Link
                   key={t.id}
                   to={`/tuskers/${t.id.toLowerCase()}`}
-                  state={{ from: '/admin/tusker-map' }}
+                  state={{ from: '/admin/zone-map' }}
                   className="flex items-center gap-3 px-4 py-3 no-underline hover:bg-[#f6f9f7] transition-colors group"
                 >
                   <span
@@ -426,9 +444,8 @@ export default function TuskerMap() {
         </aside>
 
         {/* ── Map Viewport ── */}
-        <div className={`relative flex-1 min-w-0 bg-[#0e1210] ${
-          mobileTab === 'map' ? 'portrait:flex portrait:flex-col' : 'portrait:hidden'
-        } landscape:flex landscape:flex-col`}>
+        <div className={`relative flex-1 min-w-0 bg-[#0e1210] ${mobileTab === 'map' ? 'portrait:flex portrait:flex-col' : 'portrait:hidden'
+          } landscape:flex landscape:flex-col`}>
           <div ref={hostRef} className="absolute inset-0" />
 
           {/* Floating Selected Zone Overlay Card on Map */}
@@ -462,9 +479,15 @@ export default function TuskerMap() {
                 <span className="text-emerald-400 font-bold">
                   {zoneStats[selectedZone] || 0} Registered Tuskers
                 </span>
-                <span className="text-[11px] text-gray-400">
-                  Select zone on sidebar to view all
-                </span>
+                <button
+                  type="button"
+                  onClick={handleResetView}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:text-accent-hover bg-accent/15 hover:bg-accent/25 px-2.5 py-1 rounded-md border border-accent/40 cursor-pointer transition-all"
+                  title="Restore full Sri Lanka view and show all 4 zones"
+                >
+                  <ArrowLeft size={11} />
+                  <span>View Full Map</span>
+                </button>
               </div>
             </div>
           )}

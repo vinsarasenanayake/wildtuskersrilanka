@@ -10,6 +10,9 @@ import {
   updateUnlistedTusker,
   deleteUnlistedTusker
 } from '../models/UnlistedTuskersModel';
+import { DISTRICTS } from '../models/TuskerModel';
+import { isLocationInDistrict } from '../utils/locationDistricts';
+import { canonicalLocationName } from './useTusker';
 import { useAuth } from './useAuth';
 
 export function useUnlistedTuskers() {
@@ -35,23 +38,78 @@ export function useUnlistedTuskers() {
 
   /* ── Filter & Search State ─────────────────────────────────── */
   const allLocations = useMemo(() => {
-    return [...new Set(tuskers.map(t => t.location).filter(Boolean))].sort();
+    const set = new Set();
+    tuskers.forEach(t => {
+      if (t.location) set.add(canonicalLocationName(t.location));
+    });
+    return [...set].filter(Boolean).sort();
   }, [tuskers]);
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [districtQuery, setDistrictQuery] = useState('');
+  const [showDistrictDrop, setShowDistrictDrop] = useState(false);
+
   const [locationQuery, setLocationQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
   const [showLocDrop, setShowLocDrop] = useState(false);
 
+  // District suggestions
+  const districtSuggestions = useMemo(() => {
+    const q = districtQuery.trim().toLowerCase();
+    const isBrowsingAll = !q || (selectedDistrict && q === selectedDistrict.toLowerCase().trim());
+    if (isBrowsingAll) return DISTRICTS;
+    return DISTRICTS.filter(d => d.toLowerCase().includes(q));
+  }, [districtQuery, selectedDistrict]);
+
+  // Count unlisted tuskers per district
+  const countInDistrict = useCallback((dist) => {
+    if (!dist) return 0;
+    return tuskers.filter(item =>
+      isLocationInDistrict(item.location, dist) ||
+      isLocationInDistrict(item.district, dist)
+    ).length;
+  }, [tuskers]);
+
+  // Valid locations for selected district
+  const validLocationsForDistrict = useMemo(() => {
+    if (!selectedDistrict) return allLocations;
+    return allLocations.filter(loc => isLocationInDistrict(loc, selectedDistrict));
+  }, [selectedDistrict, allLocations]);
+
   const locSuggestions = useMemo(() => {
+    const pool = validLocationsForDistrict;
     const q = locationQuery.trim().toLowerCase();
     const isBrowsingAll = !q || (selectedLocation && q === selectedLocation.toLowerCase().trim());
-    if (isBrowsingAll) return allLocations;
-    return allLocations.filter(loc => loc.toLowerCase().includes(q));
-  }, [allLocations, locationQuery, selectedLocation]);
+    if (isBrowsingAll) return pool;
+    return pool.filter(loc => loc.toLowerCase().includes(q));
+  }, [validLocationsForDistrict, locationQuery, selectedLocation]);
 
   const handleSearchInput = (val) => {
     setSearchQuery(val);
+  };
+
+  const handleDistrictInput = (val) => {
+    setDistrictQuery(val);
+    setSelectedDistrict('');
+    setShowDistrictDrop(true);
+  };
+
+  const pickDistrict = (dist) => {
+    setSelectedDistrict(dist);
+    setDistrictQuery(dist);
+    setShowDistrictDrop(false);
+    // If current location doesn't belong to newly selected district, reset it
+    if (selectedLocation && !isLocationInDistrict(selectedLocation, dist)) {
+      setSelectedLocation('');
+      setLocationQuery('');
+    }
+  };
+
+  const clearDistrict = () => {
+    setSelectedDistrict('');
+    setDistrictQuery('');
+    setShowDistrictDrop(false);
   };
 
   const handleLocInput = (val) => {
@@ -74,6 +132,9 @@ export function useUnlistedTuskers() {
 
   const clearFilters = () => {
     setSearchQuery('');
+    setSelectedDistrict('');
+    setDistrictQuery('');
+    setShowDistrictDrop(false);
     setLocationQuery('');
     setSelectedLocation('');
     setShowLocDrop(false);
@@ -93,14 +154,20 @@ export function useUnlistedTuskers() {
         item.location.toLowerCase().includes(q) ||
         (item.description && item.description.toLowerCase().includes(q));
 
-      const locFilter = selectedLocation || locationQuery.trim();
+      const matchDistrict =
+        !selectedDistrict ||
+        isLocationInDistrict(item.location, selectedDistrict) ||
+        isLocationInDistrict(item.district, selectedDistrict);
+
+      const locFilter = (selectedLocation || locationQuery.trim()).toLowerCase();
       const matchLoc =
         !locFilter ||
-        item.location.toLowerCase() === locFilter.toLowerCase();
+        canonicalLocationName(item.location).toLowerCase() === locFilter ||
+        item.location.toLowerCase() === locFilter;
 
-      return matchSearch && matchLoc;
+      return matchSearch && matchDistrict && matchLoc;
     });
-  }, [tuskers, searchQuery, selectedLocation, locationQuery]);
+  }, [tuskers, searchQuery, selectedDistrict, selectedLocation, locationQuery]);
 
   /* ── Mutation Handlers ─────────────────────────────────────── */
   const handleAdd = async (entry) => {
@@ -133,6 +200,15 @@ export function useUnlistedTuskers() {
     allLocations,
     searchQuery,
     setSearchQuery,
+    selectedDistrict,
+    districtQuery,
+    showDistrictDrop,
+    setShowDistrictDrop,
+    districtSuggestions,
+    countInDistrict,
+    handleDistrictInput,
+    pickDistrict,
+    clearDistrict,
     locationQuery,
     selectedLocation,
     showLocDrop,

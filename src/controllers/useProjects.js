@@ -4,8 +4,16 @@
  */
 
 import { useState, useEffect } from 'react';
-import { getEvents, addEvent, getEventById, updateEvent } from '../models/ProjectModel';
+import { getEvents, addEvent, getEventById, updateEvent, deleteEvent } from '../models/ProjectModel';
 import { useAuth } from './useAuth';
+
+function getTodayDateString() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 /* ==============================================================
    SECTION 1: PROJECTS & EVENTS TIMELINE CONTROLLER
@@ -14,6 +22,17 @@ export function useProjectFeed() {
   const [events, setEvents] = useState({ upcoming: [], past: [] });
   const [loading, setLoading] = useState(true);
   const { isAdmin } = useAuth();
+
+  const fetchEvents = async () => {
+    try {
+      const data = await getEvents();
+      setEvents(data);
+      return data;
+    } catch (err) {
+      console.error('Failed to load project events:', err);
+      throw err;
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -24,11 +43,18 @@ export function useProjectFeed() {
     return () => { active = false; };
   }, []);
 
+  const removeEvent = async (id) => {
+    await deleteEvent(id);
+    await fetchEvents();
+  };
+
   return {
     upcomingEvents: events.upcoming,
     pastEvents: events.past,
     loading,
     isAdmin,
+    removeEvent,
+    refreshEvents: fetchEvents,
   };
 }
 
@@ -36,6 +62,8 @@ export function useProjectFeed() {
    SECTION 2: EVENT CREATION FORM CONTROLLER
 ============================================================== */
 export function useEventForm(eventId) {
+  const todayStr = getTodayDateString();
+
   const [formData, setFormData] = useState({
     title: '',
     date: '',
@@ -57,10 +85,11 @@ export function useEventForm(eventId) {
         if (!active) return;
         if (!ev) { setError('This event could not be found.'); return; }
         const images = ev.image ? ev.image.split(',').map(s => s.trim()).filter(Boolean) : [];
+        const isPast = ev.date && ev.date < getTodayDateString();
         setFormData({
           title: ev.title || '',
           date: ev.date || '',
-          type: ev.type === 'past' ? 'past' : 'upcoming',
+          type: isPast ? 'past' : (ev.type === 'past' ? 'past' : 'upcoming'),
           description: ev.description || '',
           sharedBy: ev.sharedBy || '',
           image: ev.image || '',
@@ -72,9 +101,20 @@ export function useEventForm(eventId) {
     return () => { active = false; };
   }, [eventId]);
 
+  const isPastDate = Boolean(formData.date && formData.date < todayStr);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [name]: value };
+      if (name === 'date') {
+        const curToday = getTodayDateString();
+        if (value && value < curToday) {
+          updated.type = 'past';
+        }
+      }
+      return updated;
+    });
   };
 
   const handleImagesChange = (urls) => {
@@ -94,14 +134,17 @@ export function useEventForm(eventId) {
       return false;
     }
 
+    const curToday = getTodayDateString();
+    const effectiveType = (date && date < curToday) ? 'past' : type;
+
     const finalImage = (images && images.length > 0)
       ? images.join(', ')
       : (image ? image : null);
 
     try {
       const payload = { title, date, description, sharedBy, image: finalImage };
-      if (eventId) await updateEvent(eventId, payload, type);
-      else await addEvent(payload, type);
+      if (eventId) await updateEvent(eventId, payload, effectiveType);
+      else await addEvent(payload, effectiveType);
     } catch (err) {
       setError(`Could not save event: ${err.message}`);
       return false;
@@ -118,5 +161,6 @@ export function useEventForm(eventId) {
     handleImagesChange,
     createEvent,
     loadingEvent,
+    isPastDate,
   };
 }

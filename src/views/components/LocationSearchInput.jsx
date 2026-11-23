@@ -810,7 +810,7 @@ export default function LocationSearchInput({
               <button
                 type="button"
                 onClick={() => setShowMapModal(false)}
-                className="h-9 px-4 rounded-[10px] bg-[#242b26] hover:bg-[#2f3832] text-[#9ba8a0] hover:text-white font-sans text-xs font-semibold transition-colors border-none cursor-pointer inline-flex items-center justify-center box-border"
+                className="flex-1 sm:flex-none sm:min-w-[120px] h-10 px-5 rounded-[10px] bg-[#242b26] hover:bg-[#2f3832] text-[#9ba8a0] hover:text-white font-sans text-xs sm:text-sm font-semibold transition-colors border-none cursor-pointer inline-flex items-center justify-center box-border text-center"
               >
                 {pendingPickedLocation && !multi ? 'Cancel' : 'Done'}
               </button>
@@ -827,9 +827,9 @@ export default function LocationSearchInput({
                     setPendingPickedLocation(null);
                   }
                 }}
-                className="h-9 px-5 rounded-[10px] bg-[#0b2518] hover:bg-[#133824] text-white font-sans text-xs font-bold transition-all shadow-md border border-[#c69b55]/40 inline-flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed box-border"
+                className="flex-1 sm:flex-none sm:min-w-[160px] h-10 px-5 rounded-[10px] bg-[#0b2518] hover:bg-[#133824] text-white font-sans text-xs sm:text-sm font-bold transition-all shadow-md border border-[#c69b55]/40 inline-flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed box-border whitespace-nowrap text-center"
               >
-                <Check size={15} className="text-[#c69b55]" />
+                <Check size={15} className="text-[#c69b55] shrink-0" />
                 <span>{multi ? 'Add Location' : 'Use This Location'}</span>
               </button>
             </div>

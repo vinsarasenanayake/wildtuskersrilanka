@@ -23,6 +23,7 @@ export default function EventForm() {
     handleImagesChange,
     createEvent,
     loadingEvent,
+    isPastDate,
   } = useEventForm(eventId);
   const { isAdmin, authLoading } = useAuth();
 
@@ -96,16 +97,33 @@ export default function EventForm() {
 
               {/* Event Type */}
               <div className="flex flex-col gap-1.5">
-                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">Event Type</label>
+                <div className="flex items-center justify-between gap-2">
+                  <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">Event Type</label>
+                  {isPastDate && (
+                    <span className="text-[0.7rem] text-amber-800 font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                      Auto-set to Past
+                    </span>
+                  )}
+                </div>
                 <select
                   name="type"
-                  className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2724%27%20height%3D%2724%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%23888888%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpolyline%20points%3D%276%209%2012%2015%2018%209%27%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_12px_center] bg-[size:16px] pr-10 cursor-pointer"
-                  value={formData.type}
+                  disabled={isPastDate}
+                  className={`w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2724%27%20height%3D%2724%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%23888888%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpolyline%20points%3D%276%209%2012%2015%2018%209%27%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_12px_center] bg-[size:16px] pr-10 ${
+                    isPastDate ? 'cursor-not-allowed opacity-85 bg-gray-100 text-gray-700' : 'cursor-pointer'
+                  }`}
+                  value={isPastDate ? 'past' : formData.type}
                   onChange={handleChange}
                 >
-                  <option value="upcoming">Upcoming Event</option>
+                  <option value="upcoming" disabled={isPastDate}>
+                    Upcoming Event {isPastDate ? '(Unavailable for past dates)' : ''}
+                  </option>
                   <option value="past">Past Event</option>
                 </select>
+                {isPastDate && (
+                  <p className="text-[0.74rem] text-gray-500 m-0">
+                    Dates earlier than today cannot be registered as an upcoming event.
+                  </p>
+                )}
               </div>
 
               {/* Shared By */}

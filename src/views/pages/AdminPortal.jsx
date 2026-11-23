@@ -522,29 +522,29 @@ export default function AdminPortal() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
             <Link
-              to="/admin/tusker-map"
+              to="/admin/zone-map"
               className="flex items-center gap-3 p-3.5 rounded-xl bg-gradient-to-r from-[#0b2518] to-[#16402b] hover:from-[#16402b] hover:to-[#1d5236] text-white transition-all shadow-sm group border border-[#c69b55]/40 no-underline"
             >
               <div className="w-9 h-9 rounded-lg bg-[#c69b55]/20 text-[#c69b55] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                <MapIcon size={18} />
+                <Layers size={18} />
               </div>
               <div className="overflow-hidden flex-1">
-                <div className="font-semibold text-sm leading-tight">Tusker Map</div>
-                <div className="text-[0.75rem] text-white/70 truncate">All tuskers on one satellite map, with exact sighting pins</div>
+                <div className="font-semibold text-sm leading-tight">Zone Map</div>
+                <div className="text-[0.75rem] text-white/70 truncate">4 Landscape Zones & Regional Tusker Distribution</div>
               </div>
               <span className="text-[#c69b55] text-xs font-semibold shrink-0">Open →</span>
             </Link>
 
             <Link
-              to="/admin/tusker-map?view=zones"
+              to="/admin/district-map"
               className="flex items-center gap-3 p-3.5 rounded-xl bg-gradient-to-r from-[#082015] to-[#0f3422] hover:from-[#0f3422] hover:to-[#17482f] text-white transition-all shadow-sm group border border-amber-500/30 no-underline"
             >
               <div className="w-9 h-9 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                <Layers size={18} />
+                <MapIcon size={18} />
               </div>
               <div className="overflow-hidden flex-1">
-                <div className="font-semibold text-sm leading-tight">WTS Conservation Zones</div>
-                <div className="text-[0.75rem] text-white/70 truncate">4 Landscape Zones & 7 Overlap Gathering Areas</div>
+                <div className="font-semibold text-sm leading-tight">District Map</div>
+                <div className="text-[0.75rem] text-white/70 truncate">All 25 Sri Lankan administrative districts & tusker distribution</div>
               </div>
               <span className="text-amber-400 text-xs font-semibold shrink-0">Explore →</span>
             </Link>

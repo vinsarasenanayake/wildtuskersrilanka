@@ -211,7 +211,7 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
       this.el = document.createElement('div');
       this.anchor = centered ? '-50%' : '-100%';
       this.el.style.cssText = `position:absolute;left:0;top:0;transform:translate(-50%,${this.anchor});cursor:pointer;z-index:20;width:max-content;will-change:transform;`;
-      this.el.innerHTML = html; // our own static SVG markup
+      this.el.innerHTML = (typeof html === 'string') ? html : ''; // our own static SVG markup
       this.el.addEventListener('click', (e) => {
         e.stopPropagation();
         onClick?.();
@@ -242,7 +242,7 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
       this.draw();
     }
     setHtml(html) {
-      this.el.innerHTML = html;
+      this.el.innerHTML = (typeof html === 'string') ? html : '';
     }
   }
 
@@ -273,15 +273,23 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
       maps.event.addListenerOnce(map, 'idle', () => { if (map.getZoom() > maxZoom) map.setZoom(maxZoom); });
     },
     addMarker(pos, { html, popup, onClick, height = 42, centered = false } = {}) {
-      let current = pos;
+      const lat = Array.isArray(pos) ? pos[0] : (pos?.lat ?? 0);
+      const lng = Array.isArray(pos) ? pos[1] : (pos?.lng ?? 0);
+      const safePos = [lat, lng];
+      let current = safePos;
       let currentPopup = popup;
-      const m = new HtmlMarker(pos, html, () => {
+      const m = new HtmlMarker(safePos, html, () => {
         if (currentPopup) openPopupAt(current, currentPopup, height);
         onClick?.();
       }, centered);
       markers.add(m);
       return {
-        setPosition(p) { current = p; m.setPos(p); },
+        setPosition(p) {
+          const plat = Array.isArray(p) ? p[0] : (p?.lat ?? 0);
+          const plng = Array.isArray(p) ? p[1] : (p?.lng ?? 0);
+          current = [plat, plng];
+          m.setPos(current);
+        },
         setHtml(h) { m.setHtml(h); },
         openPopup(p) { if (p) currentPopup = p; if (currentPopup) openPopupAt(current, currentPopup, height); },
         remove() { m.setMap(null); markers.delete(m); },
@@ -387,16 +395,24 @@ function createLeafletMap(L, container, { center, zoom, gestureHandling: _gestur
       map.fitBounds(L.latLngBounds(points), { padding: [padding, padding], maxZoom, animate: true });
     },
     addMarker(pos, { html, popup, onClick, height = 42, centered = false } = {}) {
+      const lat = Array.isArray(pos) ? pos[0] : (pos?.lat ?? 0);
+      const lng = Array.isArray(pos) ? pos[1] : (pos?.lng ?? 0);
+      const safePos = [lat, lng];
+      const safeHtml = (typeof html === 'string') ? html : '';
       const icon = centered
-        ? L.divIcon({ className: 'custom-leaflet-marker', html: `<div style="position:relative;transform:translate(-50%,-50%);width:max-content">${html}</div>`, iconSize: [0, 0], iconAnchor: [0, 0] })
-        : iconFor(html, height);
-      const m = L.marker(pos, { icon }).addTo(layer);
+        ? L.divIcon({ className: 'custom-leaflet-marker', html: `<div style="position:relative;transform:translate(-50%,-50%);width:max-content">${safeHtml}</div>`, iconSize: [0, 0], iconAnchor: [0, 0] })
+        : iconFor(safeHtml, height);
+      const m = L.marker(safePos, { icon }).addTo(layer);
       const closePopup = () => map.closePopup();
       if (popup) m.bindPopup(buildPopup(popup, closePopup), { closeButton: false });
       if (onClick) m.on('click', onClick);
       return {
-        setPosition(p) { m.setLatLng(p); },
-        setHtml(h) { m.setIcon(iconFor(h, height)); },
+        setPosition(p) {
+          const plat = Array.isArray(p) ? p[0] : (p?.lat ?? 0);
+          const plng = Array.isArray(p) ? p[1] : (p?.lng ?? 0);
+          m.setLatLng([plat, plng]);
+        },
+        setHtml(h) { m.setIcon(iconFor((typeof h === 'string') ? h : '', height)); },
         openPopup(p) { if (p) m.bindPopup(buildPopup(p, closePopup), { closeButton: false }); m.openPopup(); },
         remove() { layer.removeLayer(m); },
       };

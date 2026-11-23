@@ -1,13 +1,30 @@
 /**
  * @file OurProjects.jsx
  * @description Conservation projects, outreach initiatives, and expedition timelines
- * conducted by the Wild Tuskers Sri Lanka team. Displays upcoming and past events.
+ * conducted by the Wild Tuskers Sri Lanka team. Displays upcoming and past events
+ * with professional justified typography, scrollable descriptions, dedicated photo galleries,
+ * full-screen lightbox exploration, and admin moderation controls.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjectFeed } from '../../controllers/useProjects';
-import { Calendar, ChevronRight, PlusCircle } from 'lucide-react';
+import {
+  Calendar,
+  PlusCircle,
+  Edit3,
+  Trash2,
+  User,
+  Clock,
+  CheckCircle2,
+  Image as ImageIcon,
+  ZoomIn,
+  AlertCircle,
+  X,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
+import ImageLightboxModal from '../components/ImageLightboxModal';
 
 function formatEventDate(dateStr) {
   if (!dateStr) return '';
@@ -17,37 +34,396 @@ function formatEventDate(dateStr) {
   return dateObj.toLocaleDateString('en-US', options);
 }
 
+function parseImages(imageField) {
+  if (!imageField) return [];
+  if (Array.isArray(imageField)) return imageField.filter(Boolean);
+  return String(imageField)
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+}
+
+function renderJustifiedParagraphs(text) {
+  if (!text) return null;
+  const paragraphs = text
+    .split(/\n+/)
+    .map(p => p.trim())
+    .filter(Boolean);
+
+  if (paragraphs.length === 0) {
+    return (
+      <p
+        className="font-sans text-[0.84rem] sm:text-[0.92rem] text-[#374151] leading-[1.8] text-justify m-0"
+        style={{ textAlign: 'justify', textJustify: 'inter-word' }}
+      >
+        {text}
+      </p>
+    );
+  }
+
+  return paragraphs.map((para, idx) => (
+    <p
+      key={idx}
+      className="font-sans text-[0.84rem] sm:text-[0.92rem] text-[#374151] leading-[1.8] text-justify m-0"
+      style={{ textAlign: 'justify', textJustify: 'inter-word' }}
+    >
+      {para}
+    </p>
+  ));
+}
+
+function PhotosScrollRow({ images, event, onPhotoClick }) {
+  const rowRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  // Smooth mouse drag & touch state
+  const isDraggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const scrollLeftRef = useRef(0);
+  const movedDistanceRef = useRef(0);
+  const [isGrabbing, setIsGrabbing] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = rowRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 6);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 6);
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [checkScroll, images.length]);
+
+  const scrollByAmount = (direction) => {
+    if (!rowRef.current) return;
+    const offset = direction === 'left' ? -280 : 280;
+    rowRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+    setTimeout(checkScroll, 320);
+  };
+
+  /* ── Mouse Drag-to-Scroll Handlers ── */
+  const handleMouseDown = (e) => {
+    if (e.button !== 0 || !rowRef.current) return;
+    isDraggingRef.current = true;
+    startXRef.current = e.pageX - rowRef.current.offsetLeft;
+    scrollLeftRef.current = rowRef.current.scrollLeft;
+    movedDistanceRef.current = 0;
+    setIsGrabbing(true);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDraggingRef.current || !rowRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - rowRef.current.offsetLeft;
+    const walk = (x - startXRef.current) * 1.5;
+    movedDistanceRef.current = Math.abs(x - startXRef.current);
+    rowRef.current.scrollLeft = scrollLeftRef.current - walk;
+    checkScroll();
+  };
+
+  const handleMouseUpOrLeave = () => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    setIsGrabbing(false);
+  };
+
+  const handleCardClick = (imgUrl, event) => {
+    // If the user dragged to scroll (moved > 6px), do not trigger lightbox
+    if (movedDistanceRef.current > 6) return;
+    onPhotoClick(imgUrl, event);
+  };
+
+  return (
+    <div className="pt-2 flex flex-col gap-2 relative">
+      <div className="flex items-center justify-between">
+        <span className="font-sans text-[0.72rem] sm:text-[0.78rem] font-bold text-[#777777] uppercase tracking-wider flex items-center gap-1.5">
+          <ImageIcon size={14} className="text-accent shrink-0" />
+          <span>Project Photographs ({images.length})</span>
+        </span>
+        <div className="flex items-center gap-2">
+          {images.length > 2 && (
+            <div className="hidden sm:flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => scrollByAmount('left')}
+                disabled={!canScrollLeft}
+                className="w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-25 disabled:pointer-events-none flex items-center justify-center text-gray-700 border-none cursor-pointer transition-all"
+                aria-label="Scroll photos left"
+                title="Scroll left"
+              >
+                <ChevronLeft size={13} />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollByAmount('right')}
+                disabled={!canScrollRight}
+                className="w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-25 disabled:pointer-events-none flex items-center justify-center text-gray-700 border-none cursor-pointer transition-all"
+                aria-label="Scroll photos right"
+                title="Scroll right"
+              >
+                <ChevronRight size={13} />
+              </button>
+            </div>
+          )}
+          <span className="text-[0.7rem] sm:text-[0.75rem] text-[#888888]">
+            Click to enlarge
+          </span>
+        </div>
+      </div>
+
+      {/* Horizontally scrollable photos in one line with touch and mouse drag */}
+      <div
+        ref={rowRef}
+        onScroll={checkScroll}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUpOrLeave}
+        onMouseLeave={handleMouseUpOrLeave}
+        className={`flex items-center gap-2.5 sm:gap-3 overflow-x-auto pb-2.5 pt-1 overscroll-contain select-none ${
+          isGrabbing ? 'cursor-grabbing' : 'cursor-grab'
+        }`}
+        style={{
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#c5a059 transparent',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+        }}
+      >
+        {images.map((imgUrl, idx) => (
+          <div
+            key={idx}
+            onClick={() => handleCardClick(imgUrl, event)}
+            className="group relative w-[160px] sm:w-[200px] md:w-[230px] aspect-[4/3] rounded-xl overflow-hidden bg-[#f3f4f6] border border-[#e5e7eb] shadow-2xs shrink-0 select-none"
+          >
+            <img
+              src={imgUrl}
+              alt={`${event.title} photograph ${idx + 1}`}
+              draggable={false}
+              onDragStart={(e) => e.preventDefault()}
+              className="w-full h-full object-cover pointer-events-none transition-transform duration-300 group-hover:scale-105 select-none"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white pointer-events-none">
+              <ZoomIn size={18} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProjectCard({ event, isAdmin, onEdit, onDelete, onPhotoClick }) {
+  const images = parseImages(event.image);
+  const isUpcoming = event.type === 'upcoming';
+
+  return (
+    <article className="bg-white rounded-2xl border border-[#e5e7eb] p-4 sm:p-6 md:p-7 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 flex flex-col gap-3.5 sm:gap-4 relative">
+      {/* Top Meta Bar */}
+      <div className="flex flex-col gap-2 pb-3 border-b border-[#f0f2f0]">
+        {/* Row 1: Status badge and Date */}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+            <span
+              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[0.7rem] sm:text-[0.75rem] font-bold uppercase tracking-wider ${
+                isUpcoming
+                  ? 'bg-amber-50 text-amber-800 border border-amber-200/80'
+                  : 'bg-emerald-50 text-emerald-800 border border-emerald-200/80'
+              }`}
+            >
+              {isUpcoming ? <Clock size={11} /> : <CheckCircle2 size={11} />}
+              <span>{isUpcoming ? 'Upcoming Event' : 'Completed Project'}</span>
+            </span>
+
+            <span className="inline-flex items-center gap-1.5 font-sans text-[0.75rem] sm:text-[0.82rem] font-semibold text-accent">
+              <Calendar size={13} className="shrink-0" />
+              <span>{formatEventDate(event.date)}</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Row 2: Organizer on left, Admin action buttons on right (same horizontal line on all screens) */}
+        <div className="flex items-center justify-between gap-2 w-full">
+          {event.sharedBy ? (
+            <span className="inline-flex items-center gap-1.5 font-sans text-[0.75rem] sm:text-[0.82rem] text-[#6b7280] min-w-0 truncate">
+              <User size={13} className="text-[#9ca3af] shrink-0" />
+              <span className="truncate">
+                Organized by <strong className="text-[#374151] font-semibold">{event.sharedBy}</strong>
+              </span>
+            </span>
+          ) : (
+            <span />
+          )}
+
+          {isAdmin && (
+            <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+              <button
+                type="button"
+                onClick={() => onEdit(event.id)}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-700 bg-white hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300 font-sans text-xs font-semibold transition-all cursor-pointer shadow-2xs"
+                title={`Edit "${event.title}"`}
+                aria-label={`Edit ${event.title}`}
+              >
+                <Edit3 size={13} className="shrink-0 text-accent" />
+                <span className="hidden sm:inline">Edit</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onDelete(event)}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-700 bg-white hover:bg-rose-50 hover:text-rose-600 hover:border-rose-300 font-sans text-xs font-semibold transition-all cursor-pointer shadow-2xs"
+                title={`Delete "${event.title}"`}
+                aria-label={`Delete ${event.title}`}
+              >
+                <Trash2 size={13} className="shrink-0 text-rose-500" />
+                <span className="hidden sm:inline">Delete</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Project Title */}
+      <h3 className="font-sans text-base sm:text-lg md:text-xl font-bold text-[#111827] leading-snug m-0">
+        {event.title}
+      </h3>
+
+      {/* Description: Scrollable with Justified Paragraphs */}
+      {event.description && (
+        <div
+          tabIndex={0}
+          role="region"
+          aria-label={`Description for ${event.title}`}
+          className="max-h-[190px] sm:max-h-[230px] overflow-y-auto pr-2 sm:pr-3 flex flex-col gap-2.5 overscroll-contain focus:outline-hidden"
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#c5a059 transparent',
+          }}
+        >
+          {renderJustifiedParagraphs(event.description)}
+        </div>
+      )}
+
+      {/* Images Gallery: Rendered Under the Texts (Scrollable in one line) */}
+      {images.length > 0 && (
+        <PhotosScrollRow
+          images={images}
+          event={event}
+          onPhotoClick={onPhotoClick}
+        />
+      )}
+    </article>
+  );
+}
+
 export default function OurProjects() {
   const navigate = useNavigate();
-  const { upcomingEvents, pastEvents, isAdmin } = useProjectFeed();
+  const { upcomingEvents, pastEvents, isAdmin, removeEvent } = useProjectFeed();
+
+  const [actionNotice, setActionNotice] = useState(null);
+  const [activeLightboxPhoto, setActiveLightboxPhoto] = useState(null);
 
   useEffect(() => {
     document.title = 'Wild Tuskers Sri Lanka | Our Projects';
   }, []);
 
+  const handleEdit = (id) => {
+    navigate(`/admin/edit-event/${id}`);
+  };
+
+  const handleDelete = async (event) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to permanently delete "${event.title}"?\nThis action cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    try {
+      await removeEvent(event.id);
+      setActionNotice({
+        type: 'success',
+        message: `Project "${event.title}" has been deleted successfully.`
+      });
+      setTimeout(() => setActionNotice(null), 4000);
+    } catch (err) {
+      console.error('Failed to delete event:', err);
+      setActionNotice({
+        type: 'error',
+        message: `Failed to delete project: ${err.message || 'Please try again.'}`
+      });
+      setTimeout(() => setActionNotice(null), 5000);
+    }
+  };
+
+  const handlePhotoClick = (imgUrl, event) => {
+    setActiveLightboxPhoto({
+      imageUrl: imgUrl,
+      title: event.title,
+      date: event.date,
+      author: event.sharedBy,
+      item: event,
+    });
+  };
+
   return (
     <div className="bg-[#f0f2f5] min-h-screen pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2.5rem)] pb-20">
-      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 flex flex-col gap-6">
+      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 flex flex-col gap-6 sm:gap-8">
+
+        {/* Action Notice Toast */}
+        {actionNotice && (
+          <div
+            className={`p-3.5 sm:p-4 rounded-xl flex items-center justify-between shadow-sm animate-fade-in ${
+              actionNotice.type === 'success'
+                ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
+                : 'bg-rose-50 text-rose-900 border border-rose-200'
+            }`}
+          >
+            <div className="flex items-center gap-2.5 font-sans text-xs sm:text-sm font-medium">
+              {actionNotice.type === 'success' ? (
+                <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
+              ) : (
+                <AlertCircle size={18} className="text-rose-600 shrink-0" />
+              )}
+              <span>{actionNotice.message}</span>
+            </div>
+            <button
+              onClick={() => setActionNotice(null)}
+              className="p-1 text-gray-500 hover:text-gray-800 bg-none border-none cursor-pointer"
+              aria-label="Dismiss notice"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
 
         {/* Page Title */}
-        <div className="flex flex-col items-center justify-center text-center mb-6 pb-6 border-b border-[#e5e7eb] gap-3">
-          <h1 className="font-sans text-[clamp(1.15rem,4.5vw,2.85rem)] font-bold text-[#111111] m-0 tracking-tight leading-snug whitespace-nowrap text-center">
+        <div className="flex flex-col items-center justify-center text-center pb-2 border-b border-[#e5e7eb] gap-2.5">
+          <h1 className="font-sans text-[clamp(1.25rem,4.5vw,2.75rem)] font-bold text-[#111111] m-0 tracking-tight leading-snug whitespace-nowrap text-center">
             Our Projects
           </h1>
           <p className="font-sans text-xs sm:text-[0.95rem] text-[#555555] leading-[1.75] max-w-3xl mx-auto m-0 text-center">
-            Events, expeditions, and outreach efforts by the Wild Tuskers Sri Lanka team
+            Events, field expeditions, and conservation outreach initiatives conducted by the Wild Tuskers Sri Lanka team
           </p>
         </div>
 
-        {/* Upcoming Events Card */}
-        <section className="bg-white rounded-[12px] shadow-[0_1px_4px_rgba(0,0,0,0.1)] p-4 sm:p-6">
-          <div className="flex flex-row items-center justify-between mb-5 gap-2 sm:gap-3">
-            <h2 className="font-sans text-[0.95rem] sm:text-[1.15rem] font-bold text-[#111111] m-0 whitespace-nowrap shrink-0">
-              Upcoming Events
+        {/* Upcoming Events Section */}
+        <section className="flex flex-col gap-4">
+          {/* Header Row: Maintained single-line on mobile portrait */}
+          <div className="flex flex-row items-center justify-between gap-2 sm:gap-3">
+            <h2 className="font-sans text-[0.95rem] sm:text-[1.2rem] font-bold text-[#111111] m-0 whitespace-nowrap shrink-0 flex items-center gap-2">
+              <span>Upcoming Events</span>
+              {upcomingEvents.length > 0 && (
+                <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900">
+                  {upcomingEvents.length}
+                </span>
+              )}
             </h2>
             {isAdmin && (
               <div className="flex gap-2 w-auto shrink-0">
                 <button
+                  type="button"
                   className="bg-accent text-primary font-semibold text-[0.72rem] sm:text-[0.88rem] px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-[6px] inline-flex items-center justify-center gap-1.5 border-none cursor-pointer hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap shadow-sm w-auto text-center"
                   onClick={() => navigate('/admin/create-event')}
                 >
@@ -59,112 +435,78 @@ export default function OurProjects() {
           </div>
 
           {upcomingEvents.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 sm:py-12 px-4 gap-3 sm:gap-4">
-              <div className="text-[#aaaaaa]">
-                <Calendar size={48} className="sm:w-14 sm:h-14" strokeWidth={1.2} />
+            <div className="flex flex-col items-center justify-center py-10 sm:py-12 px-4 gap-3 bg-white rounded-2xl border border-[#e5e7eb] text-center shadow-xs">
+              <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center">
+                <Calendar size={24} strokeWidth={1.5} />
               </div>
-              <p className="font-sans text-xs sm:text-[0.95rem] text-[#888888] m-0">No upcoming events.</p>
+              <p className="font-sans text-xs sm:text-[0.95rem] text-[#888888] m-0">
+                No upcoming events currently scheduled.
+              </p>
             </div>
           ) : (
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-5 sm:gap-6">
               {upcomingEvents.map(event => (
-                <div key={event.id} className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 pt-5 border-t border-[#f0f0f0] first:pt-0 first:border-t-0">
-                  <div className="w-full sm:w-[130px] h-[120px] sm:h-[90px] rounded-[8px] overflow-hidden shrink-0 bg-[#e8e8e8]">
-                    <div className="w-full h-full flex items-center justify-center text-[#aaaaaa]" style={{ backgroundColor: '#faf5ec', color: '#c69b55' }}>
-                      <Calendar size={28} strokeWidth={1.2} />
-                    </div>
-                  </div>
-                  <div className="flex-1 flex flex-col gap-1 w-full">
-                    <p className="font-sans text-[0.75rem] sm:text-[0.8rem] font-semibold text-accent m-0 uppercase tracking-[0.5px]">{formatEventDate(event.date)}</p>
-                    <h3 className="font-sans text-[1rem] sm:text-[1.05rem] font-bold text-[#111111] m-0">{event.title}</h3>
-                    <p className="font-sans text-[0.82rem] sm:text-[0.85rem] text-[#666666] m-0 leading-relaxed text-justify sm:text-left">{event.description}</p>
-                    <p className="font-sans text-[0.78rem] sm:text-[0.82rem] text-[#888888] mt-0.5">
-                      Organized by <strong>{event.sharedBy}</strong>
-                    </p>
-                  </div>
-                  {isAdmin && (
-                    <button
-                      type="button"
-                      className="bg-none border border-[#e0e0e0] rounded-[6px] px-2 py-1.5 text-[#888888] cursor-pointer shrink-0 hover:bg-[#f5f5f5] hover:text-[#333333] transition-colors self-end sm:self-center flex items-center justify-center"
-                      aria-label={`Edit event: ${event.title}`}
-                      title="Edit event"
-                      onClick={() => navigate(`/admin/edit-event/${event.id}`)}
-                    >
-                      <ChevronRight size={18} />
-                    </button>
-                  )}
-                </div>
+                <ProjectCard
+                  key={event.id}
+                  event={event}
+                  isAdmin={isAdmin}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onPhotoClick={handlePhotoClick}
+                />
               ))}
             </div>
           )}
         </section>
 
-        {/* Past Events Card */}
-        <section className="bg-white rounded-[12px] shadow-[0_1px_4px_rgba(0,0,0,0.1)] p-4 sm:p-6">
-          <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
-            <h2 className="font-sans text-base sm:text-[1.15rem] font-bold text-[#111111] m-0">Past Events</h2>
+        {/* Past Events Section */}
+        <section className="flex flex-col gap-4 pt-4 sm:pt-6 border-t border-[#e5e7eb]">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <h2 className="font-sans text-base sm:text-[1.2rem] font-bold text-[#111111] m-0 flex items-center gap-2">
+              <span>Past Events & Expeditions</span>
+              {pastEvents.length > 0 && (
+                <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900">
+                  {pastEvents.length}
+                </span>
+              )}
+            </h2>
           </div>
 
           {pastEvents.length === 0 ? (
-            <p className="font-sans text-xs sm:text-[0.95rem] text-[#888888] m-0 py-6 text-center">
-              No past events recorded yet.
-            </p>
+            <div className="flex flex-col items-center justify-center py-10 sm:py-12 px-4 gap-3 bg-white rounded-2xl border border-[#e5e7eb] text-center shadow-xs">
+              <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                <CheckCircle2 size={24} strokeWidth={1.5} />
+              </div>
+              <p className="font-sans text-xs sm:text-[0.95rem] text-[#888888] m-0">
+                No past events recorded yet.
+              </p>
+            </div>
           ) : (
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-5 sm:gap-6">
               {pastEvents.map(event => (
-                <div key={event.id} className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 pt-5 border-t border-[#f0f0f0] first:pt-0 first:border-t-0">
-                  {/* Thumbnail */}
-                  <div className="w-full sm:w-[130px] h-[140px] sm:h-[90px] rounded-[8px] overflow-hidden shrink-0 bg-[#e8e8e8] relative">
-                    {event.image ? (
-                      (() => {
-                        const imgList = event.image.includes(',')
-                          ? event.image.split(',').map(s => s.trim()).filter(Boolean)
-                          : [event.image];
-                        return (
-                          <>
-                            <img src={imgList[0]} alt={event.title} className="w-full h-full object-cover" />
-                            {imgList.length > 1 && (
-                              <span className="absolute bottom-1 right-1 bg-black/75 text-white text-[0.62rem] font-bold px-1.5 py-0.5 rounded shadow-xs">
-                                +{imgList.length - 1} photos
-                              </span>
-                            )}
-                          </>
-                        );
-                      })()
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[#aaaaaa]">
-                        <Calendar size={28} strokeWidth={1.2} />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 flex flex-col gap-1 w-full">
-                    <p className="font-sans text-[0.75rem] sm:text-[0.8rem] font-semibold text-accent m-0 uppercase tracking-[0.5px]">{formatEventDate(event.date)}</p>
-                    <h3 className="font-sans text-[1rem] sm:text-[1.05rem] font-bold text-[#111111] m-0">{event.title}</h3>
-                    <p className="font-sans text-[0.82rem] sm:text-[0.85rem] text-[#666666] m-0 leading-relaxed text-justify sm:text-left">{event.description}</p>
-                    <p className="font-sans text-[0.78rem] sm:text-[0.82rem] text-[#888888] mt-0.5">
-                      Organized by <strong>{event.sharedBy}</strong>
-                    </p>
-                  </div>
-                  {isAdmin && (
-                    <button
-                      type="button"
-                      className="bg-none border border-[#e0e0e0] rounded-[6px] px-2 py-1.5 text-[#888888] cursor-pointer shrink-0 hover:bg-[#f5f5f5] hover:text-[#333333] transition-colors self-end sm:self-center flex items-center justify-center"
-                      aria-label={`Edit event: ${event.title}`}
-                      title="Edit event"
-                      onClick={() => navigate(`/admin/edit-event/${event.id}`)}
-                    >
-                      <ChevronRight size={18} />
-                    </button>
-                  )}
-                </div>
+                <ProjectCard
+                  key={event.id}
+                  event={event}
+                  isAdmin={isAdmin}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onPhotoClick={handlePhotoClick}
+                />
               ))}
             </div>
           )}
         </section>
 
       </div>
+
+      {/* Image Lightbox Modal */}
+      {activeLightboxPhoto && (
+        <ImageLightboxModal
+          photo={activeLightboxPhoto}
+          onClose={() => setActiveLightboxPhoto(null)}
+          fromPath="/projects"
+        />
+      )}
     </div>
   );
 }

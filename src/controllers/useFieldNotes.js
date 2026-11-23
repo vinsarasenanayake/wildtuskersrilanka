@@ -169,7 +169,7 @@ export function useFieldNoteForm() {
       return null;
     }
     if (!title.trim()) {
-      setError('Please fill in the Location / Title.');
+      setError('Please fill in the Location.');
       return null;
     }
     if (!description.trim()) {

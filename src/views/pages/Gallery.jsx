@@ -609,7 +609,7 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               {/* Photographer Name */}
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1 w-full">
                 <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">
                   Photographer Name <span className="text-red-500">*</span>
                 </label>
@@ -620,12 +620,12 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
                   placeholder="Enter your name"
                   value={formData.photographer}
                   onChange={handleChange}
-                  className="bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm"
+                  className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm"
                 />
               </div>
 
               {/* Date */}
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1 w-full">
                 <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">
                   Date Taken
                 </label>
@@ -634,7 +634,7 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
                   name="date"
                   value={formData.date}
                   onChange={handleChange}
-                  className="bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm"
+                  className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm"
                 />
               </div>
             </div>
@@ -651,14 +651,14 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="h-10 bg-transparent border border-[#dddddd] text-[#666666] font-semibold rounded-lg px-4 cursor-pointer hover:bg-[#f5f5f5] inline-flex items-center justify-center box-border"
+                className="flex-1 sm:flex-none sm:min-w-[120px] h-10 bg-transparent border border-[#dddddd] text-[#666666] font-semibold rounded-lg px-5 cursor-pointer hover:bg-[#f5f5f5] inline-flex items-center justify-center box-border text-center"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting || uploading}
-                className="h-10 bg-primary hover:bg-primary-light text-white font-semibold rounded-lg px-6 border border-primary cursor-pointer disabled:opacity-60 transition-all inline-flex items-center justify-center gap-1.5 box-border"
+                className="flex-1 sm:flex-none sm:min-w-[160px] h-10 bg-primary hover:bg-primary-light text-white font-semibold rounded-lg px-6 border border-primary cursor-pointer disabled:opacity-60 transition-all inline-flex items-center justify-center gap-1.5 box-border whitespace-nowrap text-center"
               >
                 <Upload size={14} />
                 <span>

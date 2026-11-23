@@ -318,9 +318,9 @@ export default function ImageLightboxModal({
       onClick={onClose}
     >
       {/* ── Top Bar: Zoom Controls & Close Button ── */}
-      <div className="w-full flex justify-between items-center z-50 pt-1 sm:pt-0 px-1 gap-2">
+      <div className="w-full flex justify-between items-center z-50 pt-1 sm:pt-0 landscape:pt-0 px-1 gap-2">
         {/* Zoom Controls (Mobile & Desktop) */}
-        <div className="flex items-center gap-1 sm:gap-1.5 bg-black/60 backdrop-blur-md border border-white/20 rounded-full px-2 sm:px-2.5 py-1 shadow-lg" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-1 sm:gap-1.5 bg-black/60 backdrop-blur-md border border-white/20 rounded-full px-2 sm:px-2.5 py-1 landscape:py-0.5 shadow-lg" onClick={(e) => e.stopPropagation()}>
           <button
             type="button"
             onClick={zoomOut}
@@ -359,7 +359,7 @@ export default function ImageLightboxModal({
 
         <button
           onClick={onClose}
-          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border border-white/20 backdrop-blur-md cursor-pointer transition-all shadow-lg hover:scale-105 active:scale-95 shrink-0"
+          className="w-9 h-9 sm:w-10 sm:h-10 landscape:w-8 landscape:h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border border-white/20 backdrop-blur-md cursor-pointer transition-all shadow-lg hover:scale-105 active:scale-95 shrink-0"
           title="Close (Esc)"
           aria-label="Close photo view"
         >
@@ -369,7 +369,7 @@ export default function ImageLightboxModal({
 
       {/* ── Center Area: Full View Photo with Zoom and Pan ── */}
       <div
-        className="flex-1 w-full flex items-center justify-center min-h-0 my-auto py-1 sm:py-2 relative overflow-hidden select-none"
+        className="flex-1 w-full flex items-center justify-center min-h-0 my-auto py-1 sm:py-2 landscape:py-0.5 relative overflow-hidden select-none"
         style={{
           cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
           touchAction: 'none',
@@ -405,7 +405,7 @@ export default function ImageLightboxModal({
           src={photo.imageUrl}
           alt={tuskerDisplayName}
           draggable={false}
-          className="max-w-full max-h-[66vh] sm:max-h-[76vh] md:max-h-[80vh] w-auto h-auto object-contain rounded-xl sm:rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] select-none border border-white/10 will-change-transform"
+          className="max-w-full max-h-[72vh] sm:max-h-[78vh] md:max-h-[82vh] landscape:max-h-[85vh] w-auto h-auto object-contain rounded-xl sm:rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] select-none border border-white/10 will-change-transform"
           style={{
             transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
             transformOrigin: 'center center',
@@ -416,10 +416,10 @@ export default function ImageLightboxModal({
 
       {/* ── Bottom Bar: Full Names, Location, Date, Author & Tusker Profiles ── */}
       <div
-        className="w-full max-w-[1100px] mx-auto z-50 mt-1 sm:mt-2"
+        className="w-full max-w-[1100px] mx-auto z-50 mt-1 sm:mt-2 landscape:mt-0.5"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="bg-gradient-to-r from-black/92 via-[#0b1c14]/94 to-black/92 backdrop-blur-xl border border-white/15 rounded-xl sm:rounded-2xl px-4 sm:px-6 md:px-7 py-3 sm:py-4 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-2.5 sm:gap-3 text-center md:text-left">
+        <div className="bg-gradient-to-r from-black/92 via-[#0b1c14]/94 to-black/92 backdrop-blur-xl border border-white/15 rounded-xl sm:rounded-2xl px-3 sm:px-6 md:px-7 py-2 sm:py-4 landscape:py-1.5 shadow-2xl flex flex-col md:flex-row landscape:flex-row items-center justify-between gap-1.5 sm:gap-3 text-center md:text-left landscape:text-left">
 
           {/* Left: T-Numbers & Full Names of Tuskers */}
           <div className="flex flex-col gap-0.5 sm:gap-1 min-w-0 flex-1">

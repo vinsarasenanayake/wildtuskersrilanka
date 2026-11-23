@@ -7,7 +7,7 @@
 
 import React, { useRef, useEffect, useLayoutEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, MapPin, X, ChevronDown, PlusCircle, Radar, ArrowUpDown, Check } from 'lucide-react';
+import { Search, MapPin, X, ChevronDown, PlusCircle, Radar, ArrowUpDown, Check, Layers } from 'lucide-react';
 import { useTuskerList } from '../../controllers/useTusker';
 import { useAuth } from '../../controllers/useAuth';
 import { LIVING_STATUSES } from '../../models/TuskerModel';
@@ -40,6 +40,15 @@ export default function WildTuskersList() {
     nameSuggestions,
     showNameSugg,
     setShowNameSugg,
+    selectedDistrict,
+    districtQuery,
+    showDistrictDrop,
+    setShowDistrictDrop,
+    districtSuggestions,
+    countInDistrict,
+    handleDistrictInput,
+    pickDistrict,
+    clearDistrict,
     locationQuery,
     selectedLocation,
     showLocDrop,
@@ -56,6 +65,7 @@ export default function WildTuskersList() {
 
   const location = useLocation();
   const nameRef     = useRef(null);
+  const districtRef = useRef(null);
   const locationRef = useRef(null);
   const sortRef     = useRef(null);
   const [showSortDrop, setShowSortDrop] = useState(false);
@@ -109,7 +119,17 @@ export default function WildTuskersList() {
       } catch {}
     }, 300);
 
-    return () => {
+    const hasActiveFilters = Boolean(
+    nameQuery ||
+    selectedDistrict ||
+    districtQuery ||
+    selectedLocation ||
+    locationQuery ||
+    (statusFilter && statusFilter !== 'ALL') ||
+    sortOrder !== 'ID_DESC'
+  );
+
+  return () => {
       cancelAnimationFrame(frameId);
       clearTimeout(t1);
       clearTimeout(t2);
@@ -123,6 +143,9 @@ export default function WildTuskersList() {
       if (nameRef.current && !nameRef.current.contains(e.target)) {
         setShowNameSugg(false);
       }
+      if (districtRef.current && !districtRef.current.contains(e.target)) {
+        setShowDistrictDrop(false);
+      }
       if (locationRef.current && !locationRef.current.contains(e.target)) {
         setShowLocDrop(false);
       }
@@ -131,8 +154,18 @@ export default function WildTuskersList() {
       }
     };
     document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, [setShowNameSugg, setShowLocDrop]);
+    const hasActiveFilters = Boolean(
+    nameQuery ||
+    selectedDistrict ||
+    districtQuery ||
+    selectedLocation ||
+    locationQuery ||
+    (statusFilter && statusFilter !== 'ALL') ||
+    sortOrder !== 'ID_DESC'
+  );
+
+  return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [setShowNameSugg, setShowDistrictDrop, setShowLocDrop]);
 
   useEffect(() => {
     document.title = 'Wild Tuskers Sri Lanka | Wild Tuskers List';
@@ -203,6 +236,16 @@ export default function WildTuskersList() {
     </div>
   );
 
+  const hasActiveFilters = Boolean(
+    nameQuery ||
+    selectedDistrict ||
+    districtQuery ||
+    selectedLocation ||
+    locationQuery ||
+    (statusFilter && statusFilter !== 'ALL') ||
+    sortOrder !== 'ID_DESC'
+  );
+
   return (
     <div className="w-full max-w-[1280px] mx-auto pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2.5rem)] pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-white">
 
@@ -238,23 +281,23 @@ export default function WildTuskersList() {
         )}
       </div>
 
-      {/* ── Search Toolbar: On mobile Sort by is placed directly below Filter by Location ── */}
-      <div className="flex items-center gap-4 mb-4 flex-wrap max-sm:flex-col">
+      {/* ── Search Toolbar: Name Search, District Filter, Location Filter ── */}
+      <div className="flex items-center gap-3 sm:gap-3.5 mb-4 flex-wrap max-sm:flex-col">
 
-        {/* Name Search */}
-        <div className="relative flex-1 min-w-[220px] max-sm:max-w-full max-sm:w-full" ref={nameRef}>
+        {/* Name Search (Stretched to fill remaining section width) */}
+        <div className="relative flex-1 min-w-[220px] max-sm:w-full" ref={nameRef}>
           <div className="flex items-center gap-2 bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-2.5 transition-all focus-within:border-accent focus-within:bg-white focus-within:ring-3 focus-within:ring-accent/12">
             <Search size={16} className="text-[#aaaaaa] shrink-0" />
             <input
               type="text"
-              className="border-none bg-transparent outline-none font-sans text-[0.9rem] text-[#111111] caret-[#111111] w-full placeholder:text-[#bbbbbb]"
+              className="border-none bg-transparent outline-none font-sans text-[0.88rem] sm:text-[0.9rem] text-[#111111] caret-[#111111] w-full placeholder:text-[#bbbbbb]"
               placeholder="Search tusker name or ID…"
               value={nameQuery}
               onChange={e => handleNameInput(e.target.value)}
               onFocus={() => nameQuery && setShowNameSugg(true)}
             />
             {nameQuery && (
-              <button aria-label="Clear name search" className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]" onClick={clearFilters}>
+              <button aria-label="Clear name search" className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]" onClick={() => handleNameInput('')}>
                 <X size={14} />
               </button>
             )}
@@ -272,14 +315,67 @@ export default function WildTuskersList() {
           )}
         </div>
 
-        {/* Location Filter */}
-        <div className="relative flex-1 min-w-[220px] max-w-[280px] max-md:max-w-full max-sm:max-w-full max-sm:w-full" ref={locationRef}>
+        {/* District Filter (Exact length) */}
+        <div className="relative w-full sm:w-[230px] md:w-[245px] shrink-0" ref={districtRef}>
+          <div className="flex items-center gap-2 bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-2.5 transition-all focus-within:border-accent focus-within:bg-white focus-within:ring-3 focus-within:ring-accent/12">
+            <Layers size={16} className="text-[#aaaaaa] shrink-0 text-accent" />
+            <input
+              type="text"
+              className="border-none bg-transparent outline-none font-sans text-[0.88rem] sm:text-[0.9rem] text-[#111111] caret-[#111111] w-full placeholder:text-[#bbbbbb]"
+              placeholder="Filter by district…"
+              value={districtQuery}
+              onChange={e => handleDistrictInput(e.target.value)}
+              onFocus={() => setShowDistrictDrop(true)}
+              onClick={() => setShowDistrictDrop(true)}
+            />
+            <div className="flex items-center gap-1.5 shrink-0">
+              {districtQuery && (
+                <button
+                  type="button"
+                  aria-label="Clear district filter"
+                  className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]"
+                  onMouseDown={clearDistrict}
+                >
+                  <X size={14} />
+                </button>
+              )}
+              <button
+                type="button"
+                aria-label="Toggle district list"
+                className="bg-none border-none cursor-pointer text-[#aaaaaa] p-0 flex items-center shrink-0 transition-colors hover:text-[#555555]"
+                onClick={() => setShowDistrictDrop(prev => !prev)}
+              >
+                <ChevronDown size={14} className={`transition-transform duration-200 ${showDistrictDrop ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
+          </div>
+          {showDistrictDrop && districtSuggestions.length > 0 && (
+            <ul className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white border border-[#e2e8f0] rounded-[12px] shadow-[0_12px_32px_rgba(0,0,0,0.12)] z-[200] list-none m-0 py-1.5 max-h-[270px] overflow-y-auto overscroll-contain divide-y divide-[#f8f9fa]">
+              {districtSuggestions.map(dist => (
+                <li
+                  key={dist}
+                  className={`flex items-center gap-2 px-4 py-2.5 cursor-pointer font-sans text-[0.88rem] text-[#333333] transition-colors hover:bg-[#faf5ec] ${selectedDistrict === dist ? 'bg-[#faf5ec]' : ''}`}
+                  onMouseDown={() => pickDistrict(dist)}
+                >
+                  <Layers size={12} className="text-accent shrink-0" />
+                  <span className="flex-1 text-[#111111] font-medium">{dist}</span>
+                  <span className="ml-auto text-[0.78rem] text-[#aaaaaa]">
+                    {countInDistrict(dist)} {countInDistrict(dist) === 1 ? 'tusker' : 'tuskers'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Location Filter (Exact length, District-scoped) */}
+        <div className="relative w-full sm:w-[230px] md:w-[245px] shrink-0" ref={locationRef}>
           <div className="flex items-center gap-2 bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-2.5 transition-all focus-within:border-accent focus-within:bg-white focus-within:ring-3 focus-within:ring-accent/12">
             <MapPin size={16} className="text-[#aaaaaa] shrink-0 text-accent" />
             <input
               type="text"
-              className="border-none bg-transparent outline-none font-sans text-[0.9rem] text-[#111111] caret-[#111111] w-full placeholder:text-[#bbbbbb]"
-              placeholder="Filter by location…"
+              className="border-none bg-transparent outline-none font-sans text-[0.88rem] sm:text-[0.9rem] text-[#111111] caret-[#111111] w-full placeholder:text-[#bbbbbb]"
+              placeholder={selectedDistrict ? `Location in ${selectedDistrict}…` : 'Filter by location…'}
               value={locationQuery}
               onChange={e => handleLocInput(e.target.value)}
               onFocus={focusLocation}
@@ -307,7 +403,7 @@ export default function WildTuskersList() {
             </div>
           </div>
           {showLocDrop && locSuggestions.length > 0 && (
-            <ul className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white border-1.5 border-[#e8e8e8] rounded-[10px] shadow-[0_8px_24px_rgba(0,0,0,0.1)] z-[200] list-none m-0 py-1.5 max-h-[320px] overflow-y-auto">
+            <ul className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white border border-[#e2e8f0] rounded-[12px] shadow-[0_12px_32px_rgba(0,0,0,0.12)] z-[200] list-none m-0 py-1.5 max-h-[270px] overflow-y-auto overscroll-contain divide-y divide-[#f8f9fa]">
               {locSuggestions.map(loc => (
                 <li
                   key={loc}
@@ -360,9 +456,14 @@ export default function WildTuskersList() {
       {/* ── Results Count ── */}
       <div className="flex items-center justify-between mb-7 font-sans text-[0.85rem] text-[#888888]">
         <span>{filtered.length} {filtered.length === 1 ? 'tusker' : 'tuskers'} found</span>
-        {(nameQuery || selectedLocation || statusFilter !== 'ALL' || sortOrder !== 'ID_DESC') && (
-          <button className="bg-none border-none font-sans text-[0.85rem] text-accent cursor-pointer font-medium underline p-0 hover:text-accent-hover" onClick={clearFilters}>
-            Clear filters
+        {(nameQuery || selectedDistrict || districtQuery || selectedLocation || locationQuery || statusFilter !== 'ALL' || sortOrder !== 'ID_DESC') && (
+          <button
+            type="button"
+            className="bg-none border-none font-sans text-[0.85rem] text-accent cursor-pointer font-semibold underline p-0 hover:text-accent-hover inline-flex items-center gap-1 transition-colors"
+            onClick={clearFilters}
+          >
+            <X size={14} className="text-accent" />
+            <span>Clear filters</span>
           </button>
         )}
       </div>

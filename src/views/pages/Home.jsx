@@ -29,6 +29,24 @@ export default function Home() {
   useEffect(() => {
     document.title = 'Wild Tuskers Sri Lanka | Home';
     let active = true;
+
+    // Lock document scroll on Home in portrait to completely prevent any bounce/scrolling
+    const updateScrollLock = () => {
+      const isPortrait = window.matchMedia('(orientation: portrait)').matches;
+      if (isPortrait) {
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.overscrollBehavior = 'none';
+      } else {
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        document.body.style.overscrollBehavior = '';
+      }
+    };
+    updateScrollLock();
+    window.addEventListener('resize', updateScrollLock);
+    window.addEventListener('orientationchange', updateScrollLock);
+
     getTuskers()
       .then((tuskers) => {
         if (!active || !tuskers || tuskers.length === 0) return;
@@ -45,13 +63,19 @@ export default function Home() {
         }
       })
       .catch((err) => console.warn('[Home] Could not load dynamic counts:', err));
+
     return () => {
       active = false;
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      document.body.style.overscrollBehavior = '';
+      window.removeEventListener('resize', updateScrollLock);
+      window.removeEventListener('orientationchange', updateScrollLock);
     };
   }, []);
 
   return (
-    <div className="relative h-screen max-h-screen text-white bg-[#0b120e] overflow-hidden landscape:max-h-[500px]:overflow-y-auto flex flex-col justify-between">
+    <div className="relative h-[100dvh] max-h-[100dvh] text-white bg-[#0b120e] overflow-hidden landscape:max-h-[500px]:overflow-y-auto flex flex-col justify-between select-none portrait:overscroll-none">
       {/* Full-screen fixed background image eliminating any white bar or gap */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         {/* Portrait Orientation Hero Image: Barana centered (Mobile phones & Tablets in portrait) */}
@@ -82,7 +106,7 @@ export default function Home() {
       </div>
 
       {/* Main Home Content: Top Logo & Bottom Info in Portrait; Right-aligned stack in Landscape */}
-      <div className="home-hero-landscape-wrap relative z-10 w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 h-full flex flex-col justify-between portrait:justify-between portrait:items-center landscape:justify-center landscape:items-end pt-[72px] sm:pt-[76px] pb-6 sm:pb-8 lg:pb-6">
+      <div className="home-hero-landscape-wrap relative z-10 w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 h-full flex flex-col justify-between portrait:justify-between portrait:items-center landscape:justify-center landscape:items-end pt-[68px] sm:pt-[76px] pb-4 sm:pb-8 lg:pb-6">
 
         {/* 1. TOP / LOGO */}
         <div className="home-hero-landscape-logo-box w-full max-w-[620px] portrait:mx-auto flex justify-center pt-1 sm:pt-2 landscape:pt-0">
