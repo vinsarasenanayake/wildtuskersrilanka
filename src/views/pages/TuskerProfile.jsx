@@ -50,6 +50,7 @@ import TuskerSightingsMap from '../components/TuskerSightingsMap';
 import EditSightingModal from '../components/EditSightingModal';
 import ImageUploadBox from '../components/ImageUploadBox';
 import LocationSearchInput from '../components/LocationSearchInput';
+import PhotoWatermarkBadge from '../components/PhotoWatermarkBadge';
 // Loaded only when a risk assessment is opened, so the risk data is not part of the main site download
 const RiskAssessmentModal = lazy(() => import('../components/RiskAssessmentModal'));
 import { getCachedAspect, setCachedAspect, probeImageAspect } from '../../utils/photoAspectCache';
@@ -458,16 +459,21 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
               toggleZoom(e);
             }}
           >
-            <img
-              src={activePhoto}
-              alt={`${name} preview ${index + 1}`}
-              draggable={false}
-              className={`max-h-[82vh] max-w-[92vw] object-contain select-none ${isDragging || isWheeling ? '' : 'transition-transform duration-75'}`}
+            <div
+              className={`relative inline-flex items-center justify-center select-none ${isDragging || isWheeling ? '' : 'transition-transform duration-75'}`}
               style={{
                 transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
                 transformOrigin: 'center center',
               }}
-            />
+            >
+              <img
+                src={activePhoto}
+                alt={`${name} preview ${index + 1}`}
+                draggable={false}
+                className="max-h-[82vh] max-w-[92vw] object-contain select-none block"
+              />
+              <PhotoWatermarkBadge size="lg" />
+            </div>
           </div>
         )}
       </div>
@@ -607,6 +613,9 @@ function PhotoSlideshow({ photos, name, tuskerId, current, prev, next, setCurren
             <span className="font-sans text-[0.82rem] text-[#cccccc]">Photo {current + 1}</span>
           </div>
         )}
+
+        {/* Top-Left WTS Brand Watermark */}
+        {currentPhoto && <PhotoWatermarkBadge size="md" />}
 
         {/* Top-Right Expand Button */}
         {currentPhoto && (
@@ -2056,16 +2065,21 @@ function SightingPhotoLightbox({
               toggleZoom(e);
             }}
           >
-            <img
-              src={activeUrl}
-              alt={photo.title || 'Sighting'}
-              draggable={false}
-              className={`max-h-[70vh] sm:max-h-[74vh] max-w-[92vw] w-auto h-auto object-contain rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10 select-none ${isDragging || isWheeling ? '' : 'transition-transform duration-75'}`}
+            <div
+              className={`relative inline-flex items-center justify-center select-none ${isDragging || isWheeling ? '' : 'transition-transform duration-75'}`}
               style={{
                 transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
                 transformOrigin: 'center center',
               }}
-            />
+            >
+              <img
+                src={activeUrl}
+                alt={photo.title || 'Sighting'}
+                draggable={false}
+                className="max-h-[70vh] sm:max-h-[74vh] max-w-[92vw] w-auto h-auto object-contain rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10 select-none block"
+              />
+              <PhotoWatermarkBadge size="md" />
+            </div>
           </div>
         )}
       </div>

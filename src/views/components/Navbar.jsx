@@ -249,14 +249,14 @@ export default function Navbar() {
           {/* Mobile Full-Height Drawer with Solid Opaque Professional Curved Left Edge */}
           <div
             ref={drawerRef}
-            className={`fixed top-0 right-0 bottom-0 h-screen h-[100dvh] w-[310px] sm:w-[350px] max-w-[86vw] bg-[#0b2518] bg-gradient-to-b from-[#081d13] via-[#0b2619] to-[#081d13] z-[9999] flex flex-col justify-between p-4 sm:p-6 pb-7 sm:pb-6 rounded-l-[26px] sm:rounded-l-[36px] shadow-[-20px_0_60px_rgba(0,0,0,0.85)] border-l border-white/15 text-white transition-all duration-300 ease-out overflow-y-auto overscroll-contain ${
+            className={`fixed top-0 right-0 bottom-0 h-screen h-[100dvh] w-[310px] sm:w-[350px] max-w-[86vw] bg-[#0b2518] bg-gradient-to-b from-[#081d13] via-[#0b2619] to-[#081d13] z-[9999] flex flex-col p-4 sm:p-6 pb-28 sm:pb-8 rounded-l-[26px] sm:rounded-l-[36px] shadow-[-20px_0_60px_rgba(0,0,0,0.85)] border-l border-white/15 text-white transition-all duration-300 ease-out overflow-y-auto overscroll-contain ${
               isOpen ? 'translate-x-0 opacity-100 pointer-events-auto' : 'translate-x-full opacity-0 pointer-events-none'
             }`}
             style={{ WebkitOverflowScrolling: 'touch' }}
           >
             {/* Top: Brand Header & Close Button */}
             <div>
-              <div className="flex items-center justify-between pb-3 mb-2.5 sm:pb-4 sm:mb-4 border-b border-white/10">
+              <div className="flex items-center justify-between pb-3 mb-2 sm:pb-4 sm:mb-4 border-b border-white/10">
                 <Link to="/" onClick={closeMenu} className="flex items-center gap-2.5">
                   <img src={wtsLogo} className="h-8 sm:h-9 w-auto object-contain" alt="Wild Tuskers Sri Lanka" />
                   <div className="flex flex-col">
@@ -311,7 +311,7 @@ export default function Navbar() {
             </div>
 
             {/* Bottom Actions - Glassy Quick Controls & Social Link */}
-            <div className="mt-3 sm:mt-6 pt-3 sm:pt-4 border-t border-white/10 flex flex-col gap-2.5 sm:gap-3">
+            <div className="mt-4 pt-3 border-t border-white/10 flex flex-col gap-2.5">
               {!isAdmin && (
                 <div className="flex items-center justify-between px-2">
                   <span className="font-sans text-[0.72rem] sm:text-xs text-white/60 font-medium">Join Community</span>
@@ -329,7 +329,7 @@ export default function Navbar() {
               )}
 
               {isAdmin ? (
-                <div className="flex flex-col gap-1.5 sm:gap-2">
+                <div className="flex flex-col gap-1.5">
                   <Link
                     to="/admin"
                     onClick={closeMenu}

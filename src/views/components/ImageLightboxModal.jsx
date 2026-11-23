@@ -11,6 +11,7 @@ import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { X, MapPin, Camera, Calendar, Pencil, Trash2, CheckCircle2, ExternalLink, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { getTuskers } from '../../models/TuskerModel';
+import PhotoWatermarkBadge from './PhotoWatermarkBadge';
 
 function formatDisplayDate(dateStr) {
   if (!dateStr) return '';
@@ -401,17 +402,22 @@ export default function ImageLightboxModal({
           toggleZoom(e);
         }}
       >
-        <img
-          src={photo.imageUrl}
-          alt={tuskerDisplayName}
-          draggable={false}
-          className="max-w-full max-h-[72vh] sm:max-h-[78vh] md:max-h-[82vh] landscape:max-h-[85vh] w-auto h-auto object-contain rounded-xl sm:rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] select-none border border-white/10 will-change-transform"
+        <div
+          className="relative inline-flex items-center justify-center max-w-full max-h-full select-none"
           style={{
             transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
             transformOrigin: 'center center',
             transition: isDragging ? 'none' : 'transform 0.15s cubic-bezier(0.2, 0, 0, 1)',
           }}
-        />
+        >
+          <img
+            src={photo.imageUrl}
+            alt={tuskerDisplayName}
+            draggable={false}
+            className="max-w-full max-h-full w-auto h-auto object-contain rounded-xl sm:rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] select-none border border-white/10 block"
+          />
+          <PhotoWatermarkBadge size="lg" />
+        </div>
       </div>
 
       {/* ── Bottom Bar: Full Names, Location, Date, Author & Tusker Profiles ── */}

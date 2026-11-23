@@ -32,6 +32,7 @@ import { useAuth } from '../../controllers/useAuth';
 import { getCachedAspect, setCachedAspect, probeImageAspect } from '../../utils/photoAspectCache';
 import ImageUploadBox from '../components/ImageUploadBox';
 import LocationSearchInput from '../components/LocationSearchInput';
+import PhotoWatermarkBadge from '../components/PhotoWatermarkBadge';
 
 /* ── Photo Slideshow Component ───────────────────────────────── */
 function PhotoSlideshow({ photos = [], id, current, prev, next, setCurrent }) {
@@ -115,6 +116,9 @@ function PhotoSlideshow({ photos = [], id, current, prev, next, setCurrent }) {
             </span>
           </div>
         )}
+
+        {/* Top-Left WTS Brand Watermark */}
+        {currentPhoto && <PhotoWatermarkBadge size="md" />}
 
         {photoList.length > 1 && (
           <>
