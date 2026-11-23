@@ -403,7 +403,7 @@ export default function ImageLightboxModal({
         }}
       >
         <div
-          className="relative inline-flex items-center justify-center max-w-full max-h-full select-none"
+          className="relative inline-flex items-center justify-center max-w-full max-h-[70vh] sm:max-h-[76vh] md:max-h-[80vh] landscape:max-h-[calc(100dvh-115px)] landscape:sm:max-h-[80vh] select-none"
           style={{
             transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
             transformOrigin: 'center center',
@@ -414,7 +414,7 @@ export default function ImageLightboxModal({
             src={photo.imageUrl}
             alt={tuskerDisplayName}
             draggable={false}
-            className="max-w-full max-h-full w-auto h-auto object-contain rounded-xl sm:rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] select-none border border-white/10 block"
+            className="max-w-full max-h-[70vh] sm:max-h-[76vh] md:max-h-[80vh] landscape:max-h-[calc(100dvh-115px)] landscape:sm:max-h-[80vh] w-auto h-auto object-contain rounded-xl sm:rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] select-none border border-white/10 block"
           />
           <PhotoWatermarkBadge size="lg" />
         </div>

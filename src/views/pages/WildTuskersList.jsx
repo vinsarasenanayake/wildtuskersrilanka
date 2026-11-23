@@ -450,7 +450,7 @@ export default function WildTuskersList() {
         </div>
 
         {/* Desktop-only Sort Dropdown: directly below Filter by Location */}
-        {renderSortDropdown('hidden sm:block relative flex-1 min-w-[220px] max-w-[280px] max-md:max-w-full max-sm:max-w-full max-sm:w-full ml-auto')}
+        {renderSortDropdown('hidden sm:block relative sm:w-[230px] md:w-[245px] shrink-0 ml-auto')}
       </div>
 
       {/* ── Results Count ── */}

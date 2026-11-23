@@ -470,7 +470,7 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
                 src={activePhoto}
                 alt={`${name} preview ${index + 1}`}
                 draggable={false}
-                className="max-h-[82vh] max-w-[92vw] object-contain select-none block"
+                className="max-h-[75vh] sm:max-h-[82vh] landscape:max-h-[calc(100dvh-130px)] landscape:sm:max-h-[82vh] max-w-[92vw] w-auto h-auto object-contain select-none block"
               />
               <PhotoWatermarkBadge size="lg" />
             </div>
@@ -2076,7 +2076,7 @@ function SightingPhotoLightbox({
                 src={activeUrl}
                 alt={photo.title || 'Sighting'}
                 draggable={false}
-                className="max-h-[70vh] sm:max-h-[74vh] max-w-[92vw] w-auto h-auto object-contain rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10 select-none block"
+                className="max-h-[70vh] sm:max-h-[74vh] landscape:max-h-[calc(100dvh-120px)] landscape:sm:max-h-[74vh] max-w-[92vw] w-auto h-auto object-contain rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10 select-none block"
               />
               <PhotoWatermarkBadge size="md" />
             </div>

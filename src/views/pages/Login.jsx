@@ -60,7 +60,7 @@ export default function Login() {
       </div>
 
       {/* Brand & Mission Side */}
-      <div className="w-full max-w-[500px] flex flex-col items-center text-center mt-11 sm:mt-12 lg:mt-0 shrink-0">
+      <div className="w-full max-w-[500px] flex flex-col items-center text-center mt-9 sm:mt-12 lg:mt-0 shrink-0">
         <Link
           to="/"
           className="inline-block hover:opacity-90 hover:scale-[1.02] transition-all duration-300 mb-1.5 sm:mb-6"
@@ -68,7 +68,7 @@ export default function Login() {
           <img
             src={wtsLogo}
             alt="Wild Tuskers Sri Lanka"
-            className="h-[3.8rem] sm:h-[7rem] md:h-[11rem] lg:h-[14rem] mx-auto filter drop-shadow-lg object-contain"
+            className="h-[5.8rem] sm:h-[7.5rem] md:h-[11rem] lg:h-[14rem] mx-auto filter drop-shadow-lg object-contain"
           />
         </Link>
         <p className="hidden sm:block font-sans text-xs sm:text-[1.02rem] text-[#b0c9bd] max-w-[480px] leading-relaxed font-normal m-0 px-2">

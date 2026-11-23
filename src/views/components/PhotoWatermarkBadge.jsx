@@ -8,10 +8,10 @@ import wtsLogo from '../../assets/images/wtslogo.png';
  */
 export default function PhotoWatermarkBadge({ className = '', size = 'md' }) {
   const sizeClasses = {
-    sm: 'h-7 sm:h-8.5',
-    md: 'h-8.5 sm:h-11',
-    lg: 'h-10 sm:h-13',
-  }[size] || 'h-8.5 sm:h-11';
+    sm: 'h-8 sm:h-8.5',
+    md: 'h-9.5 sm:h-11',
+    lg: 'h-11 sm:h-13',
+  }[size] || 'h-9.5 sm:h-11';
 
   return (
     <div
