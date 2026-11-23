@@ -239,6 +239,72 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
     setIsDragging(false);
   };
 
+  const touchStartDistRef = useRef(0);
+  const touchStartScaleRef = useRef(1);
+  const lastTapRef = useRef(0);
+
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 2) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      touchStartDistRef.current = dist;
+      touchStartScaleRef.current = scale;
+      setIsDragging(false);
+    } else if (e.touches.length === 1) {
+      const now = Date.now();
+      if (now - lastTapRef.current < 300) {
+        toggleZoom(e);
+        lastTapRef.current = 0;
+        return;
+      }
+      lastTapRef.current = now;
+
+      if (scale > 1) {
+        setIsDragging(true);
+        hasDraggedRef.current = false;
+        dragStartRef.current = {
+          x: e.touches[0].clientX - position.x,
+          y: e.touches[0].clientY - position.y,
+        };
+      }
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches.length === 2 && touchStartDistRef.current > 0) {
+      if (e.cancelable) e.preventDefault();
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const factor = dist / touchStartDistRef.current;
+      const nextScale = Math.min(Math.max(touchStartScaleRef.current * factor, 1), 4);
+      if (nextScale === 1) setPosition({ x: 0, y: 0 });
+      setScale(nextScale);
+    } else if (e.touches.length === 1 && isDragging && scale > 1) {
+      if (e.cancelable) e.preventDefault();
+      const newX = e.touches[0].clientX - dragStartRef.current.x;
+      const newY = e.touches[0].clientY - dragStartRef.current.y;
+      if (Math.abs(newX - position.x) > 3 || Math.abs(newY - position.y) > 3) {
+        hasDraggedRef.current = true;
+      }
+      pendingPosRef.current = { x: newX, y: newY };
+      if (!moveFrameRef.current) {
+        moveFrameRef.current = requestAnimationFrame(() => {
+          moveFrameRef.current = 0;
+          if (pendingPosRef.current) setPosition(pendingPosRef.current);
+        });
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    touchStartDistRef.current = 0;
+  };
+
   const activePhoto = photos && photos[index];
 
   return createPortal(
@@ -362,8 +428,13 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
             className="w-full h-full flex items-center justify-center select-none"
             style={{
               cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
+              touchAction: 'none',
             }}
             onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 if (scale === 1) {
@@ -838,20 +909,20 @@ function ComparisonFormModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-[20px] max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-[#e5e7eb] flex flex-col gap-5 relative my-auto max-h-[92vh] overflow-y-auto"
+        className="bg-white rounded-[20px] max-w-2xl w-full p-4 sm:p-7 md:p-8 shadow-2xl border border-[#e5e7eb] flex flex-col gap-4 sm:gap-5 relative my-auto max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-[#eeeeee]">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-[12px] bg-[#0b2518] text-[#c69b55] flex items-center justify-center shadow-xs">
+        <div className="flex items-center justify-between pb-3.5 sm:pb-4 border-b border-[#eeeeee]">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1 mr-2">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-[12px] bg-[#0b2518] text-[#c69b55] flex items-center justify-center shadow-xs shrink-0 aspect-square">
               {activeType === 'photographic' ? <Camera size={20} /> : <Sliders size={20} />}
             </div>
-            <div>
-              <h3 className="font-sans text-[1.2rem] font-bold text-[#111111] m-0">
+            <div className="min-w-0 flex-1">
+              <h3 className="font-sans text-[0.95rem] sm:text-[1.15rem] font-bold text-[#111111] m-0 leading-tight whitespace-nowrap truncate">
                 {isEditing ? 'Edit' : 'Add'} {activeType === 'photographic' ? 'Photographic Comparison' : 'Ear Biometric Comparison'}
               </h3>
-              <p className="font-sans text-[0.8rem] text-[#777777] m-0 mt-0.5">
+              <p className="font-sans text-[0.72rem] sm:text-[0.78rem] text-[#777777] m-0 mt-0.5 whitespace-nowrap truncate">
                 {tusker ? `${tusker.name} (${tusker.id})` : 'Tusker'} • {activeType === 'photographic' ? 'Sequential Progression Comparison' : 'Ear Biometric Identification'}
               </p>
             </div>
@@ -859,7 +930,7 @@ function ComparisonFormModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full border-none bg-[#f4f4f4] hover:bg-[#e8e8e8] text-[#555555] cursor-pointer flex items-center justify-center transition-colors p-0"
+            className="w-8 h-8 rounded-full border-none bg-[#f4f4f4] hover:bg-[#e8e8e8] text-[#555555] cursor-pointer flex items-center justify-center transition-colors p-0 shrink-0"
             aria-label="Close"
           >
             <X size={18} />
@@ -922,13 +993,13 @@ function ComparisonFormModal({
           {/* Quick preset suggestions for stage (photo progression only) */}
           {activeType === 'photographic' && (
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[0.72rem] text-[#888888] font-medium mr-1">Suggestions:</span>
+              <span className="text-[0.72rem] text-[#888888] font-medium mr-1 shrink-0">Suggestions:</span>
               {photoPresets.map((preset) => (
                 <button
                   key={preset}
                   type="button"
                   onClick={() => setStage(preset)}
-                  className={`text-[0.72rem] px-2.5 py-1 rounded-full border transition-colors cursor-pointer ${stage === preset
+                  className={`text-[0.72rem] px-2.5 py-1 rounded-full border transition-colors cursor-pointer whitespace-nowrap ${stage === preset
                     ? 'bg-[#0b2518] text-[#c69b55] border-[#0b2518] font-semibold'
                     : 'bg-[#fafafa] text-[#555555] border-[#e0e0e0] hover:border-[#999999]'
                     }`}
@@ -1216,6 +1287,72 @@ function ComparisonPhotoLightbox({
     setIsDragging(false);
   };
 
+  const touchStartDistRef = useRef(0);
+  const touchStartScaleRef = useRef(1);
+  const lastTapRef = useRef(0);
+
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 2) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      touchStartDistRef.current = dist;
+      touchStartScaleRef.current = scale;
+      setIsDragging(false);
+    } else if (e.touches.length === 1) {
+      const now = Date.now();
+      if (now - lastTapRef.current < 300) {
+        toggleZoom(e);
+        lastTapRef.current = 0;
+        return;
+      }
+      lastTapRef.current = now;
+
+      if (scale > 1) {
+        setIsDragging(true);
+        hasDraggedRef.current = false;
+        dragStartRef.current = {
+          x: e.touches[0].clientX - position.x,
+          y: e.touches[0].clientY - position.y,
+        };
+      }
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches.length === 2 && touchStartDistRef.current > 0) {
+      if (e.cancelable) e.preventDefault();
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const factor = dist / touchStartDistRef.current;
+      const nextScale = Math.min(Math.max(touchStartScaleRef.current * factor, 1), 4);
+      if (nextScale === 1) setPosition({ x: 0, y: 0 });
+      setScale(nextScale);
+    } else if (e.touches.length === 1 && isDragging && scale > 1) {
+      if (e.cancelable) e.preventDefault();
+      const newX = e.touches[0].clientX - dragStartRef.current.x;
+      const newY = e.touches[0].clientY - dragStartRef.current.y;
+      if (Math.abs(newX - position.x) > 3 || Math.abs(newY - position.y) > 3) {
+        hasDraggedRef.current = true;
+      }
+      pendingPosRef.current = { x: newX, y: newY };
+      if (!moveFrameRef.current) {
+        moveFrameRef.current = requestAnimationFrame(() => {
+          moveFrameRef.current = 0;
+          if (pendingPosRef.current) setPosition(pendingPosRef.current);
+        });
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    touchStartDistRef.current = 0;
+  };
+
   // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -1371,8 +1508,13 @@ function ComparisonPhotoLightbox({
             className="w-full h-full flex items-center justify-center select-none"
             style={{
               cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
+              touchAction: 'none',
             }}
             onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 if (scale === 1) {
@@ -1667,6 +1809,72 @@ function SightingPhotoLightbox({
     setIsDragging(false);
   };
 
+  const touchStartDistRef = useRef(0);
+  const touchStartScaleRef = useRef(1);
+  const lastTapRef = useRef(0);
+
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 2) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      touchStartDistRef.current = dist;
+      touchStartScaleRef.current = scale;
+      setIsDragging(false);
+    } else if (e.touches.length === 1) {
+      const now = Date.now();
+      if (now - lastTapRef.current < 300) {
+        toggleZoom(e);
+        lastTapRef.current = 0;
+        return;
+      }
+      lastTapRef.current = now;
+
+      if (scale > 1) {
+        setIsDragging(true);
+        hasDraggedRef.current = false;
+        dragStartRef.current = {
+          x: e.touches[0].clientX - position.x,
+          y: e.touches[0].clientY - position.y,
+        };
+      }
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches.length === 2 && touchStartDistRef.current > 0) {
+      if (e.cancelable) e.preventDefault();
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const factor = dist / touchStartDistRef.current;
+      const nextScale = Math.min(Math.max(touchStartScaleRef.current * factor, 1), 4);
+      if (nextScale === 1) setPosition({ x: 0, y: 0 });
+      setScale(nextScale);
+    } else if (e.touches.length === 1 && isDragging && scale > 1) {
+      if (e.cancelable) e.preventDefault();
+      const newX = e.touches[0].clientX - dragStartRef.current.x;
+      const newY = e.touches[0].clientY - dragStartRef.current.y;
+      if (Math.abs(newX - position.x) > 3 || Math.abs(newY - position.y) > 3) {
+        hasDraggedRef.current = true;
+      }
+      pendingPosRef.current = { x: newX, y: newY };
+      if (!moveFrameRef.current) {
+        moveFrameRef.current = requestAnimationFrame(() => {
+          moveFrameRef.current = 0;
+          if (pendingPosRef.current) setPosition(pendingPosRef.current);
+        });
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    touchStartDistRef.current = 0;
+  };
+
   // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -1818,8 +2026,13 @@ function SightingPhotoLightbox({
             className="w-full h-full flex items-center justify-center select-none"
             style={{
               cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
+              touchAction: 'none',
             }}
             onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 if (scale === 1) {
@@ -1960,9 +2173,9 @@ export default function TuskerProfile() {
 
   const handleBack = useCallback(() => {
     if (fromPath && !fromPath.includes('/edit-tusker') && !fromPath.includes('/add-sighting')) {
-      navigate(fromPath);
+      navigate(fromPath, { state: { restoreScroll: fromPath === '/tuskers' } });
     } else {
-      navigate('/tuskers');
+      navigate('/tuskers', { state: { restoreScroll: true } });
     }
   }, [navigate, fromPath]);
 
@@ -2370,25 +2583,25 @@ export default function TuskerProfile() {
   );
 
   return (
-    <div className="w-full min-h-screen bg-white pt-[calc(80px+2rem)] pb-20">
-      <div className="w-full max-w-[1100px] mx-auto px-8">
+    <div className="w-full min-h-screen bg-white pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2rem)] pb-20">
+      <div className="w-full max-w-[1100px] mx-auto px-4 sm:px-6 md:px-8">
 
         {/* Back and Edit Bar */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-6 sm:mb-8 gap-3">
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 font-sans text-[0.88rem] font-medium text-[#888888] bg-none border-none cursor-pointer p-0 transition-colors hover:text-accent"
+            className="inline-flex items-center gap-1.5 font-sans text-xs sm:text-[0.88rem] font-medium text-[#888888] bg-none border-none cursor-pointer p-0 transition-colors hover:text-accent shrink-0"
             onClick={handleBack}
             aria-label={isFromList ? "Back to List" : "Back"}
             title={isFromList ? "Back to List" : "Back"}
           >
             <ArrowLeft size={18} />
-            {isFromList && <span className="hidden sm:inline">Back to List</span>}
+            {isFromList && <span>Back to List</span>}
           </button>
-          <div className="flex items-center gap-3">
+          <div className="flex-1 flex items-center justify-end gap-2 sm:gap-3">
             {canAddSighting && (
               <button
-                className="bg-accent text-primary font-sans text-[0.88rem] font-semibold rounded-[8px] px-5 py-2.5 shadow-[0_4px_10px_rgba(11,37,24,0.12)] hover:-translate-y-[0.5px] hover:bg-accent-hover transition-all cursor-pointer border-none"
+                className="flex-1 portrait:flex-1 landscape:sm:flex-initial text-center justify-center bg-accent text-primary font-sans text-xs sm:text-[0.88rem] font-semibold rounded-[8px] px-3.5 sm:px-6 py-2 sm:py-2.5 shadow-[0_4px_10px_rgba(11,37,24,0.12)] hover:-translate-y-[0.5px] hover:bg-accent-hover transition-all cursor-pointer border-none shrink-0 whitespace-nowrap"
                 onClick={() => navigate(`/tuskers/${tusker.id.toLowerCase()}/add-sighting`)}
               >
                 Add Sighting/Photo
@@ -2396,7 +2609,7 @@ export default function TuskerProfile() {
             )}
             {isAdmin && (
               <button
-                className="bg-primary text-white font-sans text-[0.88rem] font-semibold rounded-[8px] px-5 py-2.5 shadow-[0_4px_10px_rgba(11,37,24,0.12)] hover:-translate-y-[0.5px] hover:bg-primary-light hover:shadow-[0_6px_15px_rgba(11,37,24,0.22)] transition-all cursor-pointer border-none"
+                className="flex-1 portrait:flex-1 landscape:sm:flex-initial text-center justify-center bg-primary text-white font-sans text-xs sm:text-[0.88rem] font-semibold rounded-[8px] px-3.5 sm:px-6 py-2 sm:py-2.5 shadow-[0_4px_10px_rgba(11,37,24,0.12)] hover:-translate-y-[0.5px] hover:bg-primary-light hover:shadow-[0_6px_15px_rgba(11,37,24,0.22)] transition-all cursor-pointer border-none shrink-0 whitespace-nowrap"
                 onClick={() => navigate(`/admin/edit-tusker/${tusker.id.toLowerCase()}`, { state: { from: fromPath || '/tuskers', fromProfile: true } })}
               >
                 Edit Profile
@@ -2425,10 +2638,10 @@ export default function TuskerProfile() {
 
             {/* Name block */}
             <div>
-              <h1 className="font-sans text-[1.9rem] min-[820px]:text-[2.4rem] font-extrabold text-[#111111] leading-tight m-0">
+              <h1 className="font-sans text-[1.65rem] sm:text-[2rem] min-[820px]:text-[2.4rem] font-extrabold text-[#111111] leading-tight m-0 break-words">
                 {tusker.id ? `${tusker.id} - ` : ''}{tusker.name}
                 {tusker.sinhala && (
-                  <span className="font-sans text-[1.25rem] min-[820px]:text-[1.5rem] font-normal text-[#666666] ml-2.5">
+                  <span className="font-sans text-[1.15rem] sm:text-[1.35rem] min-[820px]:text-[1.5rem] font-normal text-[#666666] ml-2">
                     ({tusker.sinhala})
                   </span>
                 )}
@@ -2630,10 +2843,10 @@ export default function TuskerProfile() {
         {comparisonList && comparisonList.length > 0 && (
           <div className="mt-16 pt-10 border-t border-[#eeeeee]">
             <div className="mb-8">
-              <h2 className="font-sans text-[1.6rem] font-bold text-[#111111] m-0">
+              <h2 className="font-sans text-[1.35rem] sm:text-[1.6rem] font-bold text-[#111111] leading-snug m-0 mb-2">
                 Photographic Comparison
               </h2>
-              <p className="font-sans text-[0.9rem] text-[#666666] mt-1.5 mb-0 max-w-[760px] leading-relaxed">
+              <p className="font-sans text-xs sm:text-[0.88rem] text-[#666666] m-0 max-w-[760px] leading-relaxed">
                 Sequential photo comparison tracking baseline identification against observations over 3-5 year intervals to monitor tusk growth, breakages, ear tears, and distinct physical changes.
               </p>
             </div>
@@ -2721,10 +2934,10 @@ export default function TuskerProfile() {
           <div className="mt-14 pt-10 border-t border-[#eeeeee]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-3">
               <div>
-                <h2 className="font-sans text-[1.6rem] font-bold text-[#111111] m-0 flex items-center gap-2">
+                <h2 className="font-sans text-[1.35rem] sm:text-[1.6rem] font-bold text-[#111111] leading-snug m-0 mb-2 flex items-center gap-2">
                   <span>Ear Biometric &amp; Venation Comparison</span>
                 </h2>
-                <p className="font-sans text-[0.9rem] text-[#666666] mt-1.5 mb-0 max-w-[780px] leading-relaxed">
+                <p className="font-sans text-xs sm:text-[0.88rem] text-[#666666] m-0 max-w-[780px] leading-relaxed">
                   Identification panel comparing pinna edge contours, tears, V-notches, and vascular branching across monitoring intervals.
                 </p>
               </div>
@@ -2826,10 +3039,10 @@ export default function TuskerProfile() {
                     </span>
                   )}
                 </div>
-                <h2 className="font-sans text-[1.45rem] font-bold text-[#111111] m-0">
+                <h2 className="font-sans text-[clamp(0.92rem,4.1vw,1.45rem)] font-bold text-[#111111] leading-snug m-0 whitespace-nowrap sm:whitespace-normal">
                   Sightings &amp; Observation Records History
                 </h2>
-                <p className="font-sans text-[0.82rem] text-[#666666] m-0 mt-1 max-w-2xl">
+                <p className="font-sans text-[0.82rem] text-[#666666] m-0 mt-1 max-w-2xl text-justify">
                   Chronological registry of every recorded observation. Row 1 permanently preserves the original baseline registration data, followed by all subsequent logged field sightings.
                 </p>
               </div>
@@ -2846,9 +3059,15 @@ export default function TuskerProfile() {
             </div>
 
             {/* Table Container - Dynamic height matching Header + Row 1, scrollable vertically for subsequent rows */}
+            <div className="sm:hidden text-[0.72rem] text-[#888888] font-sans mb-1.5 flex items-center gap-1">
+              <span>↔ Swipe table horizontally to view all columns</span>
+            </div>
             <div
               ref={adminTableContainerRef}
-              style={adminTableHeight ? { height: `${adminTableHeight}px` } : { maxHeight: '135px' }}
+              style={{
+                WebkitOverflowScrolling: 'touch',
+                ...(adminTableHeight ? { height: `${adminTableHeight}px` } : { maxHeight: '135px' })
+              }}
               className="w-full overflow-auto bg-white border border-[#e5e7eb] rounded-[14px] shadow-sm"
             >
               <table className="w-full text-left border-collapse min-w-[1020px]">
@@ -3142,17 +3361,17 @@ export default function TuskerProfile() {
 
             {/* Photographic & Ear Biometric Comparisons Management (Admin View) */}
             <div className="mt-10 pt-8 border-t border-[#e8e8e8]">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div className="flex flex-col portrait:flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-6">
                 <div>
-                  <h3 className="font-sans text-[1.25rem] font-bold text-[#111111] m-0 flex items-center gap-2">
-                    <Camera size={20} className="text-accent" />
-                    <span>Photographic &amp; Ear Biometric Comparisons</span>
+                  <h3 className="font-sans text-[clamp(0.85rem,2.8vw,1.25rem)] font-bold text-[#111111] m-0 flex items-center gap-1.5 sm:gap-2 leading-snug whitespace-nowrap">
+                    <Camera size={18} className="text-accent shrink-0" />
+                    <span className="whitespace-nowrap">Photographic &amp; Ear Biometric Comparisons</span>
                   </h3>
-                  <p className="font-sans text-[0.82rem] text-[#666666] mt-1 mb-0 leading-relaxed max-w-[680px]">
+                  <p className="font-sans text-[0.82rem] text-[#666666] mt-1 mb-0 leading-relaxed max-w-[680px] text-justify">
                     Manage sequential multi-year photographic progressions and ear venation biometrics over the years. Added records are immediately reflected in the public comparison collage above.
                   </p>
                 </div>
-                <div className="flex flex-col sm:flex-row items-end sm:items-center justify-end gap-2.5 shrink-0 ml-auto w-full sm:w-auto">
+                <div className="flex flex-col sm:flex-row portrait:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 shrink-0 w-full portrait:w-full lg:w-auto">
                   <button
                     type="button"
                     onClick={() => {
@@ -3162,7 +3381,7 @@ export default function TuskerProfile() {
                         index: -1,
                       });
                     }}
-                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-[10px] bg-[#0b2518] hover:bg-[#133824] text-white text-[0.82rem] font-semibold transition-all shadow-xs cursor-pointer border-none w-full sm:w-[195px] text-center"
+                    className="flex-1 portrait:flex-1 w-full lg:w-[195px] inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-5 py-2.5 rounded-[10px] bg-[#0b2518] hover:bg-[#133824] text-white text-[0.82rem] font-semibold transition-all shadow-xs cursor-pointer border-none text-center whitespace-nowrap"
                   >
                     <Plus size={15} className="text-[#c69b55]" />
                     <span>Add Photo Comparison</span>
@@ -3176,7 +3395,7 @@ export default function TuskerProfile() {
                         index: -1,
                       });
                     }}
-                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-[10px] bg-[#0b2518] hover:bg-[#133824] text-white text-[0.82rem] font-semibold transition-all shadow-xs cursor-pointer border-none w-full sm:w-[195px] text-center"
+                    className="flex-1 portrait:flex-1 w-full lg:w-[195px] inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-5 py-2.5 rounded-[10px] bg-[#0b2518] hover:bg-[#133824] text-white text-[0.82rem] font-semibold transition-all shadow-xs cursor-pointer border-none text-center whitespace-nowrap"
                   >
                     <Plus size={15} className="text-[#c69b55]" />
                     <span>Add Ear Comparison</span>
@@ -3538,13 +3757,13 @@ export default function TuskerProfile() {
             className="bg-white rounded-[16px] max-w-md w-full shadow-2xl border border-[#e5e7eb] p-6 flex flex-col gap-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-3 text-[#dc2626]">
-              <div className="w-10 h-10 rounded-full bg-[#fdecea] flex items-center justify-center shrink-0">
+            <div className="flex items-center gap-3 text-[#dc2626] min-w-0">
+              <div className="w-10 h-10 rounded-full bg-[#fdecea] flex items-center justify-center shrink-0 aspect-square">
                 <Trash2 size={20} />
               </div>
-              <div>
-                <h3 className="font-sans text-[1.1rem] font-bold text-[#111111] m-0">Delete Sighting #{deletingSighting.sightingNum}?</h3>
-                <span className="text-xs text-[#777777]">Row {deletingSighting.rowNum} • {formatDate(deletingSighting.sighting?.captureDate) || 'Verified Sighting'}</span>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-sans text-[0.98rem] sm:text-[1.1rem] font-bold text-[#111111] m-0 whitespace-nowrap truncate">Delete Sighting #{deletingSighting.sightingNum}?</h3>
+                <span className="text-xs text-[#777777] block whitespace-nowrap truncate">Row {deletingSighting.rowNum} • {formatDate(deletingSighting.sighting?.captureDate) || 'Verified Sighting'}</span>
               </div>
             </div>
             <p className="font-sans text-[0.88rem] text-[#555555] leading-relaxed m-0">

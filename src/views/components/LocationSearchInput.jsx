@@ -671,11 +671,11 @@ export default function LocationSearchInput({
       {/* Map Interactive Modal (rendered over the whole page) */}
       {showMapModal && createPortal(
         <div
-          className="fixed inset-0 z-[11000] bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 animate-fade-in overscroll-contain"
+          className="fixed inset-0 z-[11000] bg-black/80 backdrop-blur-md flex items-center justify-center p-2.5 sm:p-5 animate-fade-in overscroll-contain overflow-y-auto"
           onClick={() => setShowMapModal(false)}
         >
           <div
-            className="bg-[#181c19] text-[#e8ebe9] rounded-[22px] max-w-4xl w-full p-4 sm:p-6 shadow-2xl border border-[#2b352f] flex flex-col gap-4 font-sans"
+            className="bg-[#181c19] text-[#e8ebe9] rounded-[22px] max-w-4xl w-full p-3.5 sm:p-6 shadow-2xl border border-[#2b352f] flex flex-col gap-3 sm:gap-4 font-sans my-auto max-h-[94vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -683,13 +683,13 @@ export default function LocationSearchInput({
           >
             {/* Header */}
             <div className="flex items-center justify-between pb-3.5 border-b border-[#2b352f]">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-[12px] bg-[#0b2518] border border-[#c69b55]/40 text-[#c69b55] flex items-center justify-center shadow-md shrink-0">
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1 mr-2">
+                <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-[10px] sm:rounded-[12px] bg-[#0b2518] border border-[#c69b55]/40 text-[#c69b55] flex items-center justify-center shadow-md shrink-0 aspect-square">
                   <MapPin size={20} />
                 </div>
-                <div className="min-w-0">
-                  <h3 className="font-sans text-[1.18rem] font-bold text-white m-0">Pick a Location</h3>
-                  <p className="font-sans text-[0.78rem] text-[#9ba8a0] m-0 mt-0.5">
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-sans text-[0.98rem] sm:text-[1.18rem] font-bold text-white m-0 whitespace-nowrap truncate">Pick a Location</h3>
+                  <p className="font-sans text-[0.72rem] sm:text-[0.78rem] text-[#9ba8a0] m-0 mt-0.5 whitespace-nowrap truncate">
                     Search a place or click anywhere on the map to drop a pin.
                   </p>
                 </div>
@@ -766,7 +766,7 @@ export default function LocationSearchInput({
             </div>
 
             {/* Map */}
-            <div className="relative w-full h-[min(52vh,440px)] min-h-[260px] bg-[#0e1210] rounded-[16px] overflow-hidden border border-[#2b352f]">
+            <div className="relative w-full h-[min(48vh,420px)] min-h-[180px] sm:min-h-[260px] bg-[#0e1210] rounded-[16px] overflow-hidden border border-[#2b352f] shrink-0">
               <div ref={modalMapContainerRef} className="w-full h-full z-[1]" />
 
               {isReverseGeocoding && (

@@ -47,46 +47,46 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b2518] flex flex-col lg:flex-row items-center justify-center p-6 lg:p-12 gap-10 lg:gap-24 relative overflow-hidden">
+    <div className="min-h-screen bg-[#0b2518] flex flex-col lg:flex-row items-center justify-center p-4 sm:p-6 lg:p-12 gap-6 sm:gap-10 lg:gap-24 relative overflow-y-auto">
       {/* Back to Home Link */}
-      <div className="absolute top-8 left-8">
+      <div className="absolute top-4 left-4 sm:top-8 sm:left-8 z-20">
         <Link
           to="/"
-          className="flex items-center gap-2 text-white/70 hover:text-white font-medium transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 sm:gap-2 text-white/80 hover:text-white font-medium text-xs sm:text-sm transition-colors cursor-pointer no-underline bg-black/20 hover:bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-xs"
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft size={18} />
           <span>Back to Home</span>
         </Link>
       </div>
 
       {/* Brand & Mission Side */}
-      <div className="w-full max-w-[500px] flex flex-col items-center text-center mt-12 lg:mt-0">
+      <div className="w-full max-w-[500px] flex flex-col items-center text-center mt-14 sm:mt-12 lg:mt-0">
         <Link
           to="/"
-          className="inline-block hover:opacity-90 hover:scale-[1.02] transition-all duration-300 mb-6"
+          className="inline-block hover:opacity-90 hover:scale-[1.02] transition-all duration-300 mb-4 sm:mb-6"
         >
           <img
             src={wtsLogo}
             alt="Wild Tuskers Sri Lanka"
-            className="h-[9rem] md:h-[13rem] lg:h-[15rem] mx-auto filter drop-shadow-lg object-contain"
+            className="h-[6.5rem] sm:h-[9rem] md:h-[13rem] lg:h-[15rem] mx-auto filter drop-shadow-lg object-contain"
           />
         </Link>
-        <p className="font-sans text-[1.02rem] text-[#b0c9bd] max-w-[480px] leading-[1.8rem] font-normal">
+        <p className="font-sans text-xs sm:text-[1.02rem] text-[#b0c9bd] max-w-[480px] leading-relaxed font-normal m-0 px-2">
           Wild Tuskers Sri Lanka is dedicated to identifying, documenting, and safeguarding
           the rare tusked elephants of Sri Lanka, guardians of our natural heritage.
         </p>
       </div>
 
       {/* Admin Login Portal Card */}
-      <div className="w-full max-w-[480px] bg-white rounded-[2rem] p-8 sm:px-10 sm:py-9 shadow-[0_20px_60px_rgba(0,0,0,0.3)] lg:mb-0 mb-12">
-        <div className="text-center mb-6 flex flex-col items-center">
-          <div className="w-14 h-14 rounded-2xl bg-[#0b2518]/8 text-[#c69b55] flex items-center justify-center mb-3 border border-[#0b2518]/10 shadow-sm">
-            <Shield size={28} />
+      <div className="w-full max-w-[480px] bg-white rounded-[1.5rem] sm:rounded-[2rem] p-5 sm:px-10 sm:py-9 shadow-[0_20px_60px_rgba(0,0,0,0.3)] lg:mb-0 mb-8">
+        <div className="text-center mb-5 sm:mb-6 flex flex-col items-center">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#0b2518]/8 text-[#c69b55] flex items-center justify-center mb-2.5 sm:mb-3 border border-[#0b2518]/10 shadow-sm">
+            <Shield size={24} className="sm:w-7 sm:h-7" />
           </div>
-          <h1 className="font-serif text-[1.8rem] font-bold text-[#0b2518] mb-1.5 leading-tight">
+          <h1 className="font-serif text-2xl sm:text-[1.8rem] font-bold text-[#0b2518] mb-1 sm:mb-1.5 leading-tight">
             Admin Portal
           </h1>
-          <p className="text-[#5c6c64] text-[0.88rem] max-w-[360px] leading-relaxed">
+          <p className="text-[#5c6c64] text-xs sm:text-[0.88rem] max-w-[360px] leading-relaxed m-0">
             Sign in with authorized administrator credentials to manage records, notes, and observations.
           </p>
         </div>

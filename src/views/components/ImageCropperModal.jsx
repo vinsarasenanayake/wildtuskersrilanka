@@ -507,27 +507,27 @@ export default function ImageCropperModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[11000] bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 select-none animate-fade-in"
+      className="fixed inset-0 z-[11000] bg-black/80 backdrop-blur-md flex items-center justify-center p-2.5 sm:p-5 select-none animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="bg-[#181c19] text-[#e8ebe9] rounded-[22px] max-w-4xl w-full p-5 sm:p-7 shadow-2xl border border-[#2b352f] flex flex-col gap-4 relative my-auto max-h-[94vh] overflow-y-auto"
+        className="bg-[#181c19] text-[#e8ebe9] rounded-[18px] sm:rounded-[22px] max-w-4xl w-full p-4 sm:p-7 shadow-2xl border border-[#2b352f] flex flex-col gap-3.5 sm:gap-4 relative my-auto max-h-[94vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between pb-3.5 border-b border-[#2b352f]">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-[12px] bg-[#0b2518] border border-[#c69b55]/40 text-[#c69b55] flex items-center justify-center shadow-md">
-              <Crop size={20} />
+        <div className="flex items-center justify-between pb-3 sm:pb-3.5 border-b border-[#2b352f]">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1 mr-2">
+            <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-[10px] sm:rounded-[12px] bg-[#0b2518] border border-[#c69b55]/40 text-[#c69b55] flex items-center justify-center shadow-md shrink-0 aspect-square">
+              <Crop size={18} className="sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <h3 className="font-sans text-[1.18rem] font-bold text-white m-0 flex items-center gap-2">
-                <span>{title}</span>
-                <span className="text-[0.7rem] px-2 py-0.5 rounded-full bg-[#0b2518] text-[#c69b55] font-semibold border border-[#c69b55]/30 uppercase tracking-wider">
+            <div className="min-w-0 flex-1">
+              <h3 className="font-sans text-[0.92rem] sm:text-[1.12rem] font-bold text-white m-0 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap truncate">
+                <span className="truncate">{title}</span>
+                <span className="text-[0.65rem] sm:text-[0.7rem] px-2 py-0.5 rounded-full bg-[#0b2518] text-[#c69b55] font-semibold border border-[#c69b55]/30 uppercase tracking-wider shrink-0">
                   Biometric Tool
                 </span>
               </h3>
-              <p className="font-sans text-[0.78rem] text-[#9ba8a0] m-0 mt-0.5">
+              <p className="font-sans text-[0.72rem] sm:text-[0.78rem] text-[#9ba8a0] m-0 mt-0.5 whitespace-nowrap truncate">
                 {subtitle}
               </p>
             </div>
@@ -535,7 +535,7 @@ export default function ImageCropperModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full border-none bg-[#242b26] hover:bg-[#2f3832] text-[#9ba8a0] hover:text-white cursor-pointer flex items-center justify-center transition-colors p-0"
+            className="w-8 h-8 rounded-full border-none bg-[#242b26] hover:bg-[#2f3832] text-[#9ba8a0] hover:text-white cursor-pointer flex items-center justify-center transition-colors p-0 shrink-0 ml-2"
             aria-label="Close"
           >
             <X size={18} />
@@ -543,10 +543,10 @@ export default function ImageCropperModal({
         </div>
 
         {/* Toolbar: Aspect Ratios, Rotation, Grid Toggle */}
-        <div className="flex flex-wrap items-center justify-between gap-2.5 bg-[#202622] p-2 rounded-[14px] border border-[#2e3831]">
+        <div className="flex flex-wrap items-center justify-between gap-2 bg-[#202622] p-1.5 sm:p-2 rounded-[14px] border border-[#2e3831]">
           {/* Aspect Ratios */}
-          <div className="flex items-center gap-1 flex-wrap">
-            <span className="text-[0.72rem] font-bold text-[#839188] uppercase tracking-wider mr-1 hidden sm:inline">
+          <div className="flex items-center gap-1 overflow-x-auto max-w-full pb-0.5 scrollbar-none">
+            <span className="text-[0.7rem] sm:text-[0.72rem] font-bold text-[#839188] uppercase tracking-wider mr-1 hidden sm:inline shrink-0">
               Aspect:
             </span>
             {[
@@ -560,7 +560,7 @@ export default function ImageCropperModal({
                 key={item.id}
                 type="button"
                 onClick={() => handleAspectChange(item.id)}
-                className={`px-2.5 py-1 rounded-[8px] text-[0.75rem] font-semibold transition-all border-none cursor-pointer ${
+                className={`px-2 sm:px-2.5 py-1 rounded-[8px] text-[0.7rem] sm:text-[0.75rem] font-semibold transition-all border-none cursor-pointer whitespace-nowrap shrink-0 ${
                   aspect === item.id
                     ? 'bg-[#0b2518] text-[#c69b55] font-bold shadow-xs border border-[#c69b55]/40'
                     : 'bg-transparent text-[#9ba8a0] hover:text-white hover:bg-[#28312b]'
@@ -616,7 +616,7 @@ export default function ImageCropperModal({
         {/* Main Crop Viewport */}
         <div
           ref={containerRef}
-          className="relative w-full h-[380px] sm:h-[440px] bg-[#0e1210] rounded-[16px] overflow-hidden border border-[#2b352f] flex items-center justify-center select-none"
+          className="relative w-full h-[320px] sm:h-[440px] bg-[#0e1210] rounded-[16px] overflow-hidden border border-[#2b352f] flex items-center justify-center select-none"
         >
           {/* Hidden image element to measure natural dimensions */}
           {resolvedUrl && (

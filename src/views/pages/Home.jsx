@@ -10,6 +10,7 @@ import { SITE_ASSETS } from '../../constants/siteAssets';
 import hero960 from '../../assets/images/hero-bg-960.webp';
 import hero1600 from '../../assets/images/hero-bg-1600.webp';
 import hero2400 from '../../assets/images/hero-bg-2400.webp';
+import heroMobileBarana from '../../assets/images/hero-mobile-barana.jpg';
 import { getTuskers } from '../../models/TuskerModel';
 
 const wtsLogo = SITE_ASSETS.wtsLogo;
@@ -50,96 +51,112 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="relative min-h-screen lg:h-screen lg:max-h-screen text-white bg-[#0b120e] overflow-x-hidden lg:overflow-hidden flex flex-col justify-center">
+    <div className="relative h-screen max-h-screen text-white bg-[#0b120e] overflow-hidden landscape:max-h-[500px]:overflow-y-auto flex flex-col justify-between">
       {/* Full-screen fixed background image eliminating any white bar or gap */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        {/* Responsive hero: each screen downloads only the size it needs (~60–330 KB instead of 1 MB) */}
+        {/* Portrait Orientation Hero Image: Barana centered (Mobile phones & Tablets in portrait) */}
         <img
-          src={hero1600}
-          srcSet={`${hero960} 960w, ${hero1600} 1600w, ${hero2400} 2400w`}
-          sizes="(orientation: portrait) 150vh, 100vw"
+          src={heroMobileBarana}
           alt=""
           fetchPriority="high"
           decoding="async"
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className="portrait:block landscape:hidden absolute inset-0 w-full h-full object-cover object-[center_35%]"
+        />
+        {/* Landscape Orientation Hero Image: Barana on left (Desktops, laptops, landscape tablets/phones) */}
+        <img
+          src={hero1600}
+          srcSet={`${hero960} 960w, ${hero1600} 1600w, ${hero2400} 2400w`}
+          sizes="100vw"
+          alt=""
+          fetchPriority="high"
+          decoding="async"
+          className="hidden landscape:block absolute inset-0 w-full h-full object-cover object-center"
         />
         {/* Subtle dark overlay for vibrant background visibility with right-side contrast */}
-        <div className="absolute inset-0 bg-black/25" />
-        <div className="absolute inset-0 bg-gradient-to-l from-black/85 via-black/45 lg:via-black/30 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60" />
+        <div className="absolute inset-0 bg-black/20" />
+        {/* Portrait: dark shade at top for logo, clear middle for tusker, dark shade at bottom for text & counts */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/40 via-20% via-transparent via-45% to-black/95 portrait:block landscape:hidden" />
+        {/* Landscape: right-side gradient for content stack */}
+        <div className="hidden landscape:block absolute inset-0 bg-gradient-to-l from-black/90 via-black/55 to-transparent" />
+        <div className="hidden landscape:block absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60" />
       </div>
 
-      {/* Main Home Content: Right-aligned vertical stack (Logo, Mission, Population Counts, AI Box) */}
-      <div className="relative z-10 w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 pt-[70px] sm:pt-[74px] lg:pt-[76px] pb-3 sm:pb-5 flex justify-end text-left my-auto">
-        <div className="w-full max-w-[620px] flex flex-col items-center gap-2.5 sm:gap-3 lg:gap-3.5 ml-auto">
-          
-          {/* 1. Logo (Enlarged to fill space above and below) */}
-          <h1 className="flex justify-center items-center w-full m-0 p-0 text-[0px] leading-none">
+      {/* Main Home Content: Top Logo & Bottom Info in Portrait; Right-aligned stack in Landscape */}
+      <div className="home-hero-landscape-wrap relative z-10 w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 h-full flex flex-col justify-between portrait:justify-between portrait:items-center landscape:justify-center landscape:items-end pt-[72px] sm:pt-[76px] pb-6 sm:pb-8 lg:pb-6">
+
+        {/* 1. TOP / LOGO */}
+        <div className="home-hero-landscape-logo-box w-full max-w-[620px] portrait:mx-auto flex justify-center pt-1 sm:pt-2 landscape:pt-0">
+          <h1 className="flex justify-center items-center m-0 p-0 text-[0px] leading-none">
             <img
               src={wtsLogo}
               alt="Wild Tuskers Sri Lanka"
-              className="w-full max-w-[480px] sm:max-w-[560px] md:max-w-[600px] lg:max-w-[620px] max-h-[260px] sm:max-h-[290px] lg:max-h-[330px] h-auto object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.85)]"
+              className="home-hero-landscape-logo-img w-full max-w-[360px] sm:max-w-[460px] lg:max-w-[620px] max-h-[145px] sm:max-h-[180px] lg:max-h-[min(300px,34vh)] h-auto object-contain drop-shadow-[0_20px_45px_rgba(0,0,0,0.95)]"
             />
           </h1>
+        </div>
 
-          {/* 2. Mission Statement (Enlarged and center-aligned) */}
-          <div className="text-center w-full m-0 px-1 flex flex-col gap-2">
-            <p className="font-sans text-[0.98rem] sm:text-[1.06rem] md:text-[1.12rem] text-[#f2f6f4] leading-[1.65] font-normal drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] m-0">
-              <span className="font-semibold text-white">Guardians of a Rare Legacy.</span> Wild Tuskers Sri Lanka unites passionate wildlife enthusiasts and conservationists in a shared mission to identify, protect, and preserve Sri Lanka's magnificent tusked elephants, one of Asia's most extraordinary and endangered wildlife treasures.
+        {/* Transparent middle space on portrait so Barana's face, eyes, and tusks are completely visible */}
+        <div className="home-hero-landscape-middle-space flex-1 portrait:block landscape:hidden pointer-events-none min-h-[30px]" />
+
+        {/* 2. BOTTOM / RIGHT: Mission Statement & Compact Frosted Glass Population Counts Box */}
+        <div className="home-hero-landscape-bottom-stack w-full max-w-[620px] portrait:mx-auto flex flex-col items-center gap-2.5 sm:gap-3 landscape:mt-2.5 mb-1">
+
+          {/* Mission Statement */}
+          <div className="text-center w-full m-0 px-2 flex flex-col gap-1 sm:gap-1.5">
+            <p className="home-hero-landscape-mission-text font-sans text-[0.84rem] sm:text-[0.96rem] md:text-[1.08rem] text-[#f2f6f4] leading-[1.55] font-normal drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] m-0 text-center">
+              <span className="font-semibold text-white">Guardians of a Rare Legacy.</span> Wild Tuskers Sri Lanka unites passionate wildlife enthusiasts and conservationists in a shared mission to identify, protect, and preserve Sri Lanka's magnificent tusked elephants.
             </p>
-            <p className="font-sans text-[0.88rem] sm:text-[0.94rem] md:text-[0.98rem] text-[#e6c687] font-medium tracking-wide drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] m-0">
+            <p className="home-hero-landscape-sub-text font-sans text-[0.76rem] sm:text-[0.88rem] md:text-[0.96rem] text-[#e6c687] font-semibold tracking-wide drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] m-0">
               Stand with us. Protect the giants. Preserve the legacy
             </p>
           </div>
 
-          {/* 3. Compact Frosted Glass Population Counts Box */}
-          <div className="w-full rounded-2xl bg-white/15 backdrop-blur-xl border border-white/25 shadow-[0_16px_40px_rgba(0,0,0,0.45),inset_0_1px_1px_rgba(255,255,255,0.3)] overflow-hidden">
+          {/* Compact Frosted Glass Population Counts Box */}
+          <div className="home-hero-landscape-counts-box w-full rounded-2xl bg-white/15 backdrop-blur-xl border border-white/25 shadow-[0_16px_40px_rgba(0,0,0,0.45),inset_0_1px_1px_rgba(255,255,255,0.3)] overflow-hidden">
             <div className="grid grid-cols-4 divide-x divide-white/20">
-              
+
               {/* 1. Total Recorded */}
-              <div className="flex flex-col items-center justify-center text-center py-2.5 sm:py-3 px-1.5 sm:px-2 min-h-[80px] sm:min-h-[88px]">
-                <span className="font-sans text-[1.65rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
+              <div className="home-hero-landscape-stat-cell flex flex-col items-center justify-center text-center py-2 sm:py-3 px-1 sm:px-2 min-h-[72px] sm:min-h-[88px]">
+                <span className="home-hero-landscape-stat-num font-sans text-[1.4rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
                   {stats?.total ?? '—'}
                 </span>
-                <p className="font-sans text-[0.6rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
+                <p className="home-hero-landscape-stat-label font-sans text-[0.54rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
                   Total Recorded
                 </p>
               </div>
 
               {/* 2. Living */}
-              <div className="flex flex-col items-center justify-center text-center py-2.5 sm:py-3 px-1.5 sm:px-2 min-h-[80px] sm:min-h-[88px]">
-                <span className="font-sans text-[1.65rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
+              <div className="home-hero-landscape-stat-cell flex flex-col items-center justify-center text-center py-2 sm:py-3 px-1 sm:px-2 min-h-[72px] sm:min-h-[88px]">
+                <span className="home-hero-landscape-stat-num font-sans text-[1.4rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
                   {stats?.living ?? '—'}
                 </span>
-                <p className="font-sans text-[0.6rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
+                <p className="home-hero-landscape-stat-label font-sans text-[0.54rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
                   Living
                 </p>
               </div>
 
               {/* 3. Missing */}
-              <div className="flex flex-col items-center justify-center text-center py-2.5 sm:py-3 px-1.5 sm:px-2 min-h-[80px] sm:min-h-[88px]">
-                <span className="font-sans text-[1.65rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
+              <div className="home-hero-landscape-stat-cell flex flex-col items-center justify-center text-center py-2 sm:py-3 px-1 sm:px-2 min-h-[72px] sm:min-h-[88px]">
+                <span className="home-hero-landscape-stat-num font-sans text-[1.4rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
                   {stats?.missing ?? '—'}
                 </span>
-                <p className="font-sans text-[0.6rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
+                <p className="home-hero-landscape-stat-label font-sans text-[0.54rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
                   Missing
                 </p>
               </div>
 
               {/* 4. Deceased */}
-              <div className="flex flex-col items-center justify-center text-center py-2.5 sm:py-3 px-1.5 sm:px-2 min-h-[80px] sm:min-h-[88px]">
-                <span className="font-sans text-[1.65rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
+              <div className="home-hero-landscape-stat-cell flex flex-col items-center justify-center text-center py-2 sm:py-3 px-1 sm:px-2 min-h-[72px] sm:min-h-[88px]">
+                <span className="home-hero-landscape-stat-num font-sans text-[1.4rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
                   {stats?.deceased ?? '—'}
                 </span>
-                <p className="font-sans text-[0.6rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
+                <p className="home-hero-landscape-stat-label font-sans text-[0.54rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
                   Deceased
                 </p>
               </div>
 
             </div>
           </div>
-
-          {/* 4. AI Wild Tusker Identification Box temporarily hidden until standalone app launch */}
 
         </div>
       </div>

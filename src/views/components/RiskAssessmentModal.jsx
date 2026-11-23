@@ -15,27 +15,27 @@ export default function RiskAssessmentModal({ tusker, onClose }) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] bg-black/65 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+      className="fixed inset-0 z-[9999] bg-black/65 backdrop-blur-sm flex items-center justify-center p-2.5 sm:p-4 animate-fade-in"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="risk-modal-title"
     >
       <div
-        className="bg-white rounded-[20px] max-w-[640px] w-full max-h-[90vh] flex flex-col shadow-2xl border border-[#e8ecea] relative my-auto overflow-hidden text-[#111111]"
+        className="bg-white rounded-[20px] max-w-[640px] w-full max-h-[92vh] flex flex-col shadow-2xl border border-[#e8ecea] relative my-auto overflow-hidden text-[#111111]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Top Header ── */}
-        <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#0b2518] to-[#123824] text-white">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-[#c69b55]/20 border border-[#c69b55]/40 flex items-center justify-center text-[#c69b55] shrink-0">
-              <ShieldAlert size={20} />
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 bg-gradient-to-r from-[#0b2518] to-[#123824] text-white">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1 mr-2">
+            <div className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-[#c69b55]/20 border border-[#c69b55]/40 flex items-center justify-center text-[#c69b55] shrink-0 aspect-square">
+              <ShieldAlert size={18} className="sm:w-5 sm:h-5" />
             </div>
-            <div className="min-w-0">
-              <h2 id="risk-modal-title" className="font-sans text-[1.05rem] font-bold text-white m-0 tracking-tight truncate">
+            <div className="min-w-0 flex-1">
+              <h2 id="risk-modal-title" className="font-sans text-[0.92rem] sm:text-[1.05rem] font-bold text-white m-0 tracking-tight whitespace-nowrap truncate">
                 Risk Calculation &amp; Prioritization Report
               </h2>
-              <p className="font-sans text-[0.78rem] text-[#d1d5db] m-0 flex items-center gap-1.5 truncate">
+              <p className="font-sans text-[0.72rem] sm:text-[0.78rem] text-[#d1d5db] m-0 flex items-center gap-1.5 whitespace-nowrap truncate">
                 <span className="font-mono text-[#c69b55] font-bold">{tusker.id}</span>
                 <span>•</span>
                 <span className="text-white font-medium">{tusker.name}</span>
@@ -43,7 +43,7 @@ export default function RiskAssessmentModal({ tusker, onClose }) {
                 {riskDetail?.roamingArea && (
                   <>
                     <span>•</span>
-                    <span className="truncate max-w-[200px] text-[#9ca3af]">{riskDetail.roamingArea}</span>
+                    <span className="truncate max-w-[140px] sm:max-w-[200px] text-[#9ca3af]">{riskDetail.roamingArea}</span>
                   </>
                 )}
               </p>
@@ -51,7 +51,7 @@ export default function RiskAssessmentModal({ tusker, onClose }) {
           </div>
           <button
             type="button"
-            className="w-8 h-8 rounded-full border border-white/10 bg-white/10 hover:bg-white/20 text-white cursor-pointer flex items-center justify-center transition-colors shrink-0 ml-3"
+            className="w-8 h-8 rounded-full border border-white/10 bg-white/10 hover:bg-white/20 text-white cursor-pointer flex items-center justify-center transition-colors shrink-0 ml-2"
             onClick={onClose}
             aria-label="Close modal"
           >
@@ -60,10 +60,10 @@ export default function RiskAssessmentModal({ tusker, onClose }) {
         </div>
 
         {/* ── Scrollable Body ── */}
-        <div className="overflow-y-auto px-6 py-5 flex flex-col gap-5 text-sm bg-white">
+        <div className="overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 flex flex-col gap-4 sm:gap-5 text-sm bg-white">
           {/* 1. Executive Summary & Score Banner */}
           <div
-            className="rounded-2xl p-4.5 border flex flex-col gap-3.5 transition-all shadow-sm"
+            className="rounded-2xl p-3.5 sm:p-4.5 border flex flex-col gap-3 sm:gap-3.5 transition-all shadow-sm"
             style={{
               backgroundColor: band ? band.bgColor : '#f9fafb',
               borderColor: band ? band.borderColor : '#e5e7eb',
@@ -107,7 +107,7 @@ export default function RiskAssessmentModal({ tusker, onClose }) {
 
             {/* Segmented Risk Gauge */}
             <div className="flex flex-col gap-1.5">
-              <div className="flex justify-between text-[0.68rem] font-semibold text-[#6b7280]">
+              <div className="flex justify-between text-[0.62rem] sm:text-[0.68rem] font-semibold text-[#6b7280]">
                 <span>0 Very Low</span>
                 <span>20 Low</span>
                 <span>40 Med</span>
@@ -151,11 +151,11 @@ export default function RiskAssessmentModal({ tusker, onClose }) {
           {/* 2. Five Weighted Dimensions Breakdown */}
           <div className="flex flex-col gap-2.5">
             <div className="flex items-center justify-between flex-wrap gap-1">
-              <h3 className="font-sans text-sm font-bold text-[#111827] m-0 flex items-center gap-1.5">
+              <h3 className="font-sans text-xs sm:text-sm font-bold text-[#111827] m-0 flex items-center gap-1.5">
                 <Scale size={15} className="text-[#c69b55]" />
                 Five-Dimension Weighted Model Breakdown
               </h3>
-              <span className="text-[0.68rem] font-mono px-2 py-0.5 rounded bg-[#f3f4f6] text-[#4b5563] border border-[#e5e7eb]">
+              <span className="text-[0.6rem] sm:text-[0.68rem] font-mono px-2 py-0.5 rounded bg-[#f3f4f6] text-[#4b5563] border border-[#e5e7eb] break-all sm:break-normal">
                 Score = (B/7×25) + (H/6×20) + (C/6×15) + (S/6×10) + (R/7×30)
               </span>
             </div>
@@ -258,13 +258,13 @@ export default function RiskAssessmentModal({ tusker, onClose }) {
         </div>
 
         {/* ── Footer ── */}
-        <div className="px-6 py-3.5 bg-[#f9fafb] border-t border-[#eeeeee] flex items-center justify-between">
-          <span className="text-[0.7rem] text-[#9ca3af]">
+        <div className="px-4 sm:px-6 py-3 sm:py-3.5 bg-[#f9fafb] border-t border-[#eeeeee] flex items-center justify-between gap-3">
+          <span className="text-[0.68rem] sm:text-[0.7rem] text-[#9ca3af] truncate">
             WTS Executive Risk Assessment Framework
           </span>
           <button
             type="button"
-            className="bg-[#0b2518] hover:bg-[#123824] text-white text-[0.82rem] font-semibold px-5 py-2 rounded-lg border-none cursor-pointer transition-colors shadow-sm"
+            className="bg-[#0b2518] hover:bg-[#123824] text-white text-[0.8rem] sm:text-[0.82rem] font-semibold px-4 sm:px-5 py-1.5 sm:py-2 rounded-lg border-none cursor-pointer transition-colors shadow-sm shrink-0"
             onClick={onClose}
           >
             Close Report

@@ -170,22 +170,20 @@ function normalizeTuskerName(str) {
   }, []);
 
   return (
-    <div className="w-full min-h-screen bg-[#fafbfc] pt-[calc(80px+2.2rem)] pb-24">
-      <div className="w-full max-w-[1360px] mx-auto px-6 sm:px-8">
+    <div className="w-full min-h-screen bg-[#fafbfc] pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2.2rem)] pb-24">
+      <div className="w-full max-w-[1360px] mx-auto px-4 sm:px-6 md:px-8">
 
         {/* ── Header & Action Bar ── */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3 pb-3.5 border-b border-[#eaeaea]">
-          <div>
-            <h1 className="font-sans text-[1.95rem] sm:text-[2.25rem] font-bold text-[#111111] m-0 mb-1.5">
-              Wild Tuskers Sri Lanka Gallery
-            </h1>
-          </div>
+        <div className="flex flex-col items-center justify-center text-center gap-3 mb-6 pb-4 border-b border-[#eaeaea]">
+          <h1 className="font-sans text-[clamp(1.2rem,5vw,2.85rem)] font-bold text-[#111111] m-0 text-center whitespace-nowrap tracking-tight">
+            Wild Tuskers Sri Lanka Gallery
+          </h1>
 
           {!isAdmin && (
-            <div className="flex items-center gap-3 self-start md:self-end">
+            <div className="flex items-center justify-center gap-3 w-full sm:w-auto mt-1">
               <button
                 onClick={() => setShowSubmitModal(true)}
-                className="bg-accent text-primary font-semibold text-[0.88rem] px-5 py-2.5 rounded-[6px] inline-flex items-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap"
+                className="bg-accent text-primary font-semibold text-xs sm:text-[0.88rem] px-6 sm:px-8 py-2.5 rounded-[8px] inline-flex items-center justify-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap shadow-xs w-full sm:w-auto text-center"
               >
                 <PlusCircle size={16} />
                 <span>Submit a Photo</span>
@@ -205,21 +203,23 @@ function normalizeTuskerName(str) {
 
         {/* ── Admin Filters (when logged in as admin) ── */}
         {isAdmin && (
-          <div className="flex items-center justify-end mb-8">
-            <div className="flex items-center gap-2 p-1 bg-white border border-[#e2e6e4] rounded-[10px]">
+          <div className="flex items-center justify-end mb-8 w-full">
+            <div className="flex items-center gap-2 p-1.5 bg-white border border-[#e2e6e4] rounded-[10px] w-full lg:w-auto shadow-xs">
               <button
                 onClick={() => setFilter('ALL')}
-                className={`font-sans text-[0.82rem] font-semibold px-4 py-1.5 rounded-[8px] transition-all cursor-pointer border-none ${filter === 'ALL' ? 'bg-primary text-white shadow-xs' : 'bg-transparent text-[#666666] hover:text-[#111111]'
-                  }`}
+                className={`flex-1 lg:flex-initial font-sans text-xs sm:text-[0.88rem] font-bold px-4 sm:px-6 py-2.5 sm:py-2 rounded-[8px] transition-all cursor-pointer border-none text-center justify-center ${
+                  filter === 'ALL' ? 'bg-primary text-white shadow-xs' : 'bg-transparent text-[#666666] hover:text-[#111111]'
+                }`}
               >
                 Approved ({allApproved.length})
               </button>
               <button
                 onClick={() => setFilter('PENDING')}
-                className={`font-sans text-[0.82rem] font-semibold px-4 py-1.5 rounded-[8px] transition-all cursor-pointer border-none flex items-center gap-1.5 ${filter === 'PENDING' ? 'bg-[#c69b55] text-white shadow-xs' : 'bg-transparent text-[#666666] hover:text-[#111111]'
-                  }`}
+                className={`flex-1 lg:flex-initial font-sans text-xs sm:text-[0.88rem] font-bold px-4 sm:px-6 py-2.5 sm:py-2 rounded-[8px] transition-all cursor-pointer border-none flex items-center justify-center gap-1.5 ${
+                  filter === 'PENDING' ? 'bg-[#c69b55] text-white shadow-xs' : 'bg-transparent text-[#666666] hover:text-[#111111]'
+                }`}
               >
-                <Clock size={13} />
+                <Clock size={14} />
                 <span>Pending Review</span>
                 {pendingCount > 0 && (
                   <span className="bg-[#b32d2e] text-white text-[0.72rem] px-1.5 py-0.2 rounded-full font-bold">
@@ -248,12 +248,12 @@ function normalizeTuskerName(str) {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 max-w-sm sm:max-w-none mx-auto">
             {photos.map((item) => (
               <div
                 key={item.id}
                 onClick={() => setActivePhoto(item)}
-                className="group relative aspect-[3/4] sm:aspect-[4/5] rounded-[22px] overflow-hidden cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.15)] transition-all duration-300 bg-[#e8ece9] content-auto"
+                className="group relative aspect-[3/4] sm:aspect-[4/5] rounded-[20px] sm:rounded-[22px] overflow-hidden cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.15)] transition-all duration-300 bg-[#e8ece9] content-auto"
               >
                 {/* Edge-to-edge photo filling entire card */}
                 <img
@@ -264,16 +264,16 @@ function normalizeTuskerName(str) {
                   decoding="async"
                 />
 
-                {/* Subtle Hover Gradient Overlay with details */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5 text-white gap-1 text-left">
+                {/* Mobile: subtle permanent gradient so info is clear; Desktop: hover transition */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 sm:p-5 text-white gap-1 text-left">
                   {/* Tusker name with T number in one line */}
                   {getTuskerDisplayName(item) && (
-                    <span className="font-sans text-[0.95rem] sm:text-[1.05rem] font-bold text-white tracking-wide drop-shadow-sm leading-tight block">
+                    <span className="font-sans text-[0.92rem] sm:text-[1.05rem] font-bold text-white tracking-wide drop-shadow-sm leading-tight block">
                       {getTuskerDisplayName(item)}
                     </span>
                   )}
                   {/* Photographer & Location */}
-                  <p className="font-sans text-xs text-white/80 m-0 flex items-center justify-between">
+                  <p className="font-sans text-[0.72rem] sm:text-xs text-white/80 m-0 flex items-center justify-between">
                     <span>By {item.photographer === 'WTS Research Team' || item.photographer === 'WTS Team' ? 'WTS Admin' : (item.photographer || 'WTS Admin')}</span>
                     {item.location && <span className="text-white/60">{item.location}</span>}
                   </p>

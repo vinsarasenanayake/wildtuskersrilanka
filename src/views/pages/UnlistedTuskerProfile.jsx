@@ -337,19 +337,19 @@ export default function UnlistedTuskerProfile() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-white pt-[calc(80px+2rem)] pb-20">
-      <div className="w-full max-w-[1100px] mx-auto px-8">
+    <div className="w-full min-h-screen bg-white pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2rem)] pb-20">
+      <div className="w-full max-w-[1100px] mx-auto px-4 sm:px-6 md:px-8">
 
         {/* Top Bar: Back & Actions */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-6 sm:mb-8 flex-wrap gap-3">
           <button
-            className="inline-flex items-center gap-1.5 font-sans text-[0.88rem] font-medium text-[#888888] bg-none border-none cursor-pointer p-0 transition-colors hover:text-accent"
+            className="inline-flex items-center gap-1.5 font-sans text-xs sm:text-[0.88rem] font-medium text-[#888888] bg-none border-none cursor-pointer p-0 transition-colors hover:text-accent"
             onClick={() => navigate('/unlisted')}
           >
             <ArrowLeft size={16} /> Back to Unlisted Monitoring
           </button>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <button
               onClick={() => {
                 setEditFormData({
@@ -363,14 +363,14 @@ export default function UnlistedTuskerProfile() {
                 setEditError('');
                 setShowEditModal(true);
               }}
-              className="bg-primary text-white font-sans text-[0.85rem] font-semibold rounded-[8px] px-4 py-2 shadow-xs hover:bg-primary-light transition-all cursor-pointer inline-flex items-center gap-1.5 border-none"
+              className="bg-primary text-white font-sans text-xs sm:text-[0.85rem] font-semibold rounded-[8px] px-3.5 sm:px-4 py-1.5 sm:py-2 shadow-xs hover:bg-primary-light transition-all cursor-pointer inline-flex items-center gap-1.5 border-none"
             >
               <Edit3 size={14} />
               <span>Edit Profile</span>
             </button>
             <button
               onClick={handleDelete}
-              className="bg-rose-50 hover:bg-rose-100 text-rose-700 font-sans text-[0.85rem] font-semibold rounded-[8px] px-4 py-2 border border-rose-200 transition-all cursor-pointer inline-flex items-center gap-1.5"
+              className="bg-rose-50 hover:bg-rose-100 text-rose-700 font-sans text-xs sm:text-[0.85rem] font-semibold rounded-[8px] px-3.5 sm:px-4 py-1.5 sm:py-2 border border-rose-200 transition-all cursor-pointer inline-flex items-center gap-1.5"
             >
               <Trash2 size={14} />
               <span>Delete Record</span>
@@ -402,7 +402,7 @@ export default function UnlistedTuskerProfile() {
                 <Scan size={12} />
                 <span>Provisional Field Record</span>
               </div>
-              <h1 className="font-sans text-[1.9rem] min-[820px]:text-[2.4rem] font-extrabold text-[#111111] leading-tight m-0">
+              <h1 className="font-sans text-[1.65rem] sm:text-[2rem] min-[820px]:text-[2.4rem] font-extrabold text-[#111111] leading-tight m-0">
                 {tusker.id}
               </h1>
             </div>
@@ -668,13 +668,13 @@ export default function UnlistedTuskerProfile() {
               onClick={e => e.stopPropagation()}
             >
               <div className="flex justify-between items-center pb-3 border-b border-[#eeeeee]">
-                <div>
-                  <h3 className="font-sans text-[1.25rem] font-bold text-[#111111] m-0">Edit Unlisted Profile</h3>
-                  <p className="font-sans text-[0.82rem] text-[#888888] m-0 mt-0.5">{tusker.id} • Active Observation</p>
+                <div className="min-w-0 flex-1 mr-2">
+                  <h3 className="font-sans text-[1.05rem] sm:text-[1.25rem] font-bold text-[#111111] m-0 whitespace-nowrap truncate">Edit Unlisted Profile</h3>
+                  <p className="font-sans text-[0.74rem] sm:text-[0.82rem] text-[#888888] m-0 mt-0.5 whitespace-nowrap truncate">{tusker.id} • Active Observation</p>
                 </div>
                 <button
                   onClick={() => setShowEditModal(false)}
-                  className="w-8 h-8 rounded-full border-none bg-[#f5f5f5] hover:bg-[#e8e8e8] text-[#555555] cursor-pointer flex items-center justify-center transition-colors"
+                  className="w-8 h-8 rounded-full border-none bg-[#f5f5f5] hover:bg-[#e8e8e8] text-[#555555] cursor-pointer flex items-center justify-center transition-colors shrink-0"
                 >
                   <X size={18} />
                 </button>

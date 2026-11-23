@@ -116,19 +116,19 @@ export default function TuskerForm() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-white pt-[calc(80px+2rem)] pb-20">
-      <div className="w-full max-w-[820px] mx-auto px-8">
-        <button className="inline-flex items-center gap-1.5 font-sans text-[0.88rem] font-medium text-[#888888] bg-none border-none cursor-pointer p-0 mb-8 transition-colors hover:text-accent" onClick={() => navigate(-1)}>
+    <div className="w-full min-h-screen bg-white pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2rem)] pb-20">
+      <div className="w-full max-w-[820px] mx-auto px-4 sm:px-6 md:px-8">
+        <button className="inline-flex items-center gap-1.5 font-sans text-xs sm:text-[0.88rem] font-medium text-[#888888] bg-none border-none cursor-pointer p-0 mb-6 sm:mb-8 transition-colors hover:text-accent" onClick={() => navigate(-1)}>
           <ArrowLeft size={16} /> Back
         </button>
 
-        <div className="bg-white border-1.5 border-[#e8e8e8] rounded-[16px] shadow-[0_8px_30px_rgba(0,0,0,0.03)] p-7 sm:p-10">
-          <div className="text-center flex flex-col items-center gap-2.5 mb-10 pb-6 border-b border-[#eeeeee]">
-            <div className="w-[50px] h-[50px] rounded-[12px] bg-accent/12 text-accent flex items-center justify-center mb-1">
+        <div className="bg-white border-1.5 border-[#e8e8e8] rounded-[16px] shadow-[0_8px_30px_rgba(0,0,0,0.03)] p-4 sm:p-7 md:p-10">
+          <div className="text-center flex flex-col items-center gap-2 mb-8 sm:mb-10 pb-6 border-b border-[#eeeeee]">
+            <div className="w-[46px] h-[46px] sm:w-[50px] sm:h-[50px] rounded-[12px] bg-accent/12 text-accent flex items-center justify-center mb-1 shrink-0 aspect-square">
               {isEditMode ? <Sparkles size={20} /> : <PlusCircle size={20} />}
             </div>
-            <h1 className="font-sans text-[1.6rem] font-bold text-[#111111] m-0">{isEditMode ? `Edit Tusker Profile` : 'Add New Tusker'}</h1>
-            <p className="font-sans text-[0.88rem] text-[#777777] max-w-[480px] leading-6 m-0">
+            <h1 className="font-sans text-lg sm:text-[1.5rem] font-bold text-[#111111] m-0 whitespace-nowrap">{isEditMode ? `Edit Tusker Profile` : 'Add New Tusker'}</h1>
+            <p className="font-sans text-xs sm:text-[0.88rem] text-[#777777] max-w-[480px] leading-relaxed m-0">
               {isEditMode ? `Updating information for ${formData.id}` : 'Create a new documented profile in the WTS registry'}
             </p>
           </div>
@@ -314,11 +314,11 @@ export default function TuskerForm() {
               <textarea name="remarks" className={INPUT_CLASS + ' resize-y leading-6'} rows="3" placeholder="e.g. Lost his right tusk due to an accident" value={formData.remarks} onChange={handleChange} />
             </Field>
 
-            <div className="flex items-center justify-end gap-4 mt-6 pt-6 border-t border-[#eeeeee]">
-              <button type="button" className="bg-none border-1.5 border-[#e8e8e8] text-[#555555] font-sans text-[0.88rem] font-semibold rounded-[10px] px-6 py-3 cursor-pointer hover:bg-[#f7f7f8] hover:text-[#222222] transition-all" onClick={() => navigate(-1)}>
+            <div className="flex flex-col-reverse portrait:flex-col-reverse landscape:sm:flex-row items-center justify-end gap-3 sm:gap-4 mt-6 pt-6 border-t border-[#eeeeee]">
+              <button type="button" className="w-full portrait:w-full landscape:sm:w-auto bg-none border-1.5 border-[#e8e8e8] text-[#555555] font-sans text-xs sm:text-[0.88rem] font-semibold rounded-[10px] px-6 py-2.5 sm:py-3 cursor-pointer hover:bg-[#f7f7f8] hover:text-[#222222] transition-all text-center justify-center" onClick={() => navigate(-1)}>
                 Cancel
               </button>
-              <button type="submit" disabled={saving} className="disabled:opacity-60 disabled:cursor-wait bg-primary text-white border-none font-sans text-[0.88rem] font-semibold rounded-[10px] px-7 py-3 cursor-pointer flex items-center gap-1.5 shadow-[0_4px_14px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-primary-light hover:shadow-[0_6px_20px_rgba(11,37,24,0.25)] transition-all">
+              <button type="submit" disabled={saving} className="w-full portrait:w-full landscape:sm:w-auto disabled:opacity-60 disabled:cursor-wait bg-primary text-white border-none font-sans text-xs sm:text-[0.88rem] font-semibold rounded-[10px] px-7 py-2.5 sm:py-3 cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_4px_14px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-primary-light hover:shadow-[0_6px_20px_rgba(11,37,24,0.25)] transition-all text-center">
                 <Save size={16} />
                 <span>{saving ? 'Saving…' : 'Save Profile'}</span>
               </button>

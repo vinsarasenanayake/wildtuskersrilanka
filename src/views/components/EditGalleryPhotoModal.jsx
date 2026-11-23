@@ -111,21 +111,21 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-[#0b2518] px-5 sm:px-6 py-4 flex items-center justify-between text-white border-b border-[#133c27]">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center text-accent">
+        <div className="bg-[#0b2518] px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between text-white border-b border-[#133c27]">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1 mr-2">
+            <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-lg sm:rounded-xl bg-accent/20 flex items-center justify-center text-accent shrink-0 aspect-square">
               <Camera size={18} />
             </div>
-            <div>
-              <h3 className="font-serif text-lg font-bold m-0 leading-tight">Edit Photo Details</h3>
-              <p className="font-sans text-xs text-white/70 m-0 mt-0.5">
+            <div className="min-w-0 flex-1">
+              <h3 className="font-serif text-[0.98rem] sm:text-lg font-bold m-0 leading-tight whitespace-nowrap truncate">Edit Photo Details</h3>
+              <p className="font-sans text-[0.72rem] sm:text-xs text-white/70 m-0 mt-0.5 whitespace-nowrap truncate">
                 Admin tool: correct mislabeled tuskers, titles, locations, and photographers
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border-none cursor-pointer transition-colors"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border-none cursor-pointer transition-colors shrink-0"
             title="Close"
           >
             <X size={16} />
@@ -289,19 +289,19 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
               </div>
 
               {/* Buttons */}
-              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-200 mt-2">
+              <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-2 sm:gap-2.5 pt-3 border-t border-gray-200 mt-2">
                 <button
                   type="button"
                   onClick={onClose}
                   disabled={saving}
-                  className="h-9 px-4 rounded-lg font-sans text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors border-none cursor-pointer inline-flex items-center justify-center"
+                  className="w-full sm:w-auto h-9 px-4 rounded-lg font-sans text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors border-none cursor-pointer inline-flex items-center justify-center"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="h-9 px-5 rounded-lg font-sans text-xs font-semibold text-primary bg-accent hover:bg-accent-hover transition-colors border-none cursor-pointer inline-flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+                  className="w-full sm:w-auto h-9 px-5 rounded-lg font-sans text-xs font-semibold text-primary bg-accent hover:bg-accent-hover transition-colors border-none cursor-pointer inline-flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
                 >
                   <Save size={14} />
                   <span>{saving ? 'Saving Changes...' : 'Save Changes'}</span>

@@ -6,7 +6,7 @@
  */
 
 import React, { useRef, useEffect, useLayoutEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Search, MapPin, X, ChevronDown, PlusCircle, Radar, ArrowUpDown, Check } from 'lucide-react';
 import { useTuskerList } from '../../controllers/useTusker';
 import { useAuth } from '../../controllers/useAuth';
@@ -54,6 +54,7 @@ export default function WildTuskersList() {
     focusLocation,
   } = useTuskerList();
 
+  const location = useLocation();
   const nameRef     = useRef(null);
   const locationRef = useRef(null);
   const sortRef     = useRef(null);
@@ -61,6 +62,18 @@ export default function WildTuskersList() {
 
   /* ── Restore Scroll & Card Position on Return ─────── */
   useLayoutEffect(() => {
+    // Only restore scroll when explicitly navigated via Back button with restoreScroll: true
+    const shouldRestore = Boolean(location.state?.restoreScroll);
+
+    if (!shouldRestore) {
+      try {
+        sessionStorage.removeItem('wts_last_tusker_id');
+        sessionStorage.removeItem('wts_last_tusker_scroll');
+      } catch {}
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      return;
+    }
+
     const savedId = sessionStorage.getItem('wts_last_tusker_id');
     const savedScroll = sessionStorage.getItem('wts_last_tusker_scroll');
 
@@ -88,7 +101,13 @@ export default function WildTuskersList() {
     const frameId = requestAnimationFrame(restore);
     const t1 = setTimeout(restore, 50);
     const t2 = setTimeout(restore, 150);
-    const t3 = setTimeout(restore, 300);
+    const t3 = setTimeout(() => {
+      restore();
+      try {
+        sessionStorage.removeItem('wts_last_tusker_id');
+        sessionStorage.removeItem('wts_last_tusker_scroll');
+      } catch {}
+    }, 300);
 
     return () => {
       cancelAnimationFrame(frameId);
@@ -96,7 +115,7 @@ export default function WildTuskersList() {
       clearTimeout(t2);
       clearTimeout(t3);
     };
-  }, [loading, filtered.length]);
+  }, [loading, filtered.length, location.state]);
 
   /* ── Click Outside to Close ────────────────── */
   useEffect(() => {
@@ -185,32 +204,32 @@ export default function WildTuskersList() {
   );
 
   return (
-    <div className="w-full max-w-[1280px] mx-auto pt-[calc(80px+2.5rem)] pb-20 px-8 min-h-screen bg-white">
+    <div className="w-full max-w-[1280px] mx-auto pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2.5rem)] pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-white">
 
       {/* ── Page Header ── */}
-      <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-4 mb-10 pb-6 border-b border-[#eeeeee]">
-        <div className="text-center md:text-left">
-          <h1 className="font-sans text-2xl sm:text-3xl md:text-[2.25rem] font-bold text-[#111111] mb-1.5">
+      <div className="flex flex-col sm:flex-row items-center sm:items-center justify-between gap-4 mb-8 sm:mb-10 pb-6 border-b border-[#eeeeee]">
+        <div className="text-center sm:text-left w-full sm:w-auto">
+          <h1 className="font-sans text-2xl sm:text-3xl md:text-[2.25rem] font-bold text-[#111111] mb-1.5 whitespace-nowrap text-center sm:text-left">
             Wild Tuskers List
           </h1>
-          <p className="font-sans text-xs sm:text-[0.88rem] md:text-[0.95rem] text-[#777777] m-0">
+          <p className="font-sans text-xs sm:text-[0.88rem] md:text-[0.95rem] text-[#777777] m-0 text-center sm:text-left">
             {tuskers.length} identified tuskers documented by the WTS team
           </p>
         </div>
 
         {/* Action Buttons: Add Tusker & Unlisted Monitoring for Admin */}
         {isAdmin && (
-          <div className="flex items-center gap-2 sm:gap-2.5 w-full sm:w-auto justify-center md:justify-end shrink-0">
+          <div className="flex max-sm:flex-row sm:flex-col lg:flex-row items-stretch sm:items-end lg:items-center gap-2 sm:gap-2.5 w-full sm:w-auto shrink-0 landscape:mr-4 sm:landscape:mr-6 lg:mr-0">
             <Link
               to="/admin/add-tusker"
-              className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-accent hover:bg-accent-hover text-primary font-semibold text-[0.78rem] sm:text-[0.88rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0 whitespace-nowrap"
+              className="max-sm:flex-1 sm:w-full sm:min-w-[195px] lg:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full bg-accent hover:bg-accent-hover text-primary font-semibold text-[0.78rem] sm:text-[0.85rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0 whitespace-nowrap text-center"
             >
               <PlusCircle size={15} />
               <span>Add a New Tusker</span>
             </Link>
             <Link
               to="/unlisted"
-              className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#faf5ec] hover:bg-[#f3ebd9] text-primary border border-accent/40 font-semibold text-[0.78rem] sm:text-[0.88rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0 whitespace-nowrap"
+              className="max-sm:flex-1 sm:w-full sm:min-w-[195px] lg:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full bg-[#faf5ec] hover:bg-[#f3ebd9] text-primary border border-accent/40 font-semibold text-[0.78rem] sm:text-[0.85rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0 whitespace-nowrap text-center"
             >
               <Radar size={15} className="text-accent" />
               <span>Unlisted Monitoring</span>
@@ -354,7 +373,7 @@ export default function WildTuskersList() {
       ) : loadError ? (
         <div className="flex items-center justify-center min-h-[60vh] font-sans text-[#e53e3e]">Could not load tuskers: {loadError}</div>
       ) : filtered.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-8 min-h-[60vh] content-start">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3.5 sm:gap-x-6 gap-y-6 sm:gap-y-8 min-h-[60vh] content-start">
           {filtered.map(tusker => (
             <Link
               key={tusker.id}
@@ -398,7 +417,7 @@ export default function WildTuskersList() {
                 )}
               </div>
               <div className="flex flex-col gap-0.5">
-                <p className="font-sans text-[0.88rem] font-semibold text-[#111111] leading-[1.4] m-0">
+                <p className="font-sans text-[0.80rem] sm:text-[0.85rem] font-semibold text-[#111111] leading-[1.35] m-0">
                   {tusker.id} – {tusker.name}
                   {tusker.sinhala && <span className="font-normal text-[#444444]"> ({tusker.sinhala})</span>}
                 </p>

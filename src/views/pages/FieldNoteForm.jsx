@@ -73,12 +73,12 @@ export default function FieldNoteForm() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#f8f9fa] pt-[calc(80px+2rem)] pb-20">
-      <div className="w-full max-w-[840px] mx-auto px-6 sm:px-8">
+    <div className="w-full min-h-screen bg-[#f8f9fa] pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2rem)] pb-20">
+      <div className="w-full max-w-[840px] mx-auto px-4 sm:px-6 md:px-8">
         
         {/* Back Link */}
         <button
-          className="inline-flex items-center gap-1.5 font-sans text-[0.88rem] font-medium text-[#777777] bg-none border-none cursor-pointer p-0 mb-6 transition-colors hover:text-accent"
+          className="inline-flex items-center gap-1.5 font-sans text-xs sm:text-[0.88rem] font-medium text-[#777777] bg-none border-none cursor-pointer p-0 mb-6 transition-colors hover:text-accent"
           onClick={() => navigate('/field-notes')}
         >
           <ArrowLeft size={16} /> Back to Field Notes
@@ -120,10 +120,10 @@ export default function FieldNoteForm() {
             
             {/* Header */}
             <div className="text-center flex flex-col items-center gap-2 mb-8 pb-6 border-b border-[#eeeeee]">
-              <div className="w-[52px] h-[52px] rounded-[14px] bg-accent/15 text-accent flex items-center justify-center mb-1">
+              <div className="w-[48px] h-[48px] sm:w-[52px] sm:h-[52px] rounded-[14px] bg-accent/15 text-accent flex items-center justify-center mb-1 shrink-0 aspect-square">
                 <FileText size={24} />
               </div>
-              <h1 className="font-sans text-[1.65rem] font-bold text-[#111111] m-0">
+              <h1 className="font-sans text-xl sm:text-[1.55rem] font-bold text-[#111111] m-0 whitespace-nowrap">
                 Submit a Field Note
               </h1>
               <p className="font-sans text-[0.9rem] text-[#666666] max-w-[520px] leading-relaxed m-0">
@@ -327,10 +327,10 @@ export default function FieldNoteForm() {
               </div>
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-3 mt-4 pt-6 border-t border-[#eeeeee]">
+              <div className="flex flex-col-reverse portrait:flex-col-reverse landscape:sm:flex-row items-center justify-end gap-3 mt-4 pt-6 border-t border-[#eeeeee]">
                 <button
                   type="button"
-                  className="bg-none border border-[#d1d5db] text-[#555555] font-sans text-[0.88rem] font-medium rounded-[10px] px-6 py-2.5 cursor-pointer hover:bg-gray-100 hover:text-[#222222] transition-colors"
+                  className="w-full portrait:w-full landscape:sm:w-auto bg-none border border-[#d1d5db] text-[#555555] font-sans text-xs sm:text-[0.88rem] font-medium rounded-[10px] px-6 py-2.5 cursor-pointer hover:bg-gray-100 hover:text-[#222222] transition-colors text-center justify-center"
                   onClick={() => navigate('/field-notes')}
                 >
                   Cancel
@@ -338,7 +338,7 @@ export default function FieldNoteForm() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="disabled:opacity-60 disabled:cursor-wait bg-primary text-white border-none font-sans text-[0.88rem] font-semibold rounded-[10px] px-7 py-2.5 cursor-pointer flex items-center gap-2 shadow-[0_4px_14px_rgba(11,37,24,0.15)] hover:bg-primary-light transition-all"
+                  className="w-full portrait:w-full landscape:sm:w-auto disabled:opacity-60 disabled:cursor-wait bg-primary text-white border-none font-sans text-xs sm:text-[0.88rem] font-semibold rounded-[10px] px-7 py-2.5 cursor-pointer flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(11,37,24,0.15)] hover:bg-primary-light transition-all text-center"
                 >
                   <Save size={16} />
                   <span>{submitting ? 'Submitting…' : isAdmin ? 'Publish Field Note' : 'Submit for Review'}</span>

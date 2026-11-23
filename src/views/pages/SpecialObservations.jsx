@@ -63,40 +63,40 @@ export default function SpecialObservations() {
   };
 
   return (
-    <div className="bg-[#f7f8fa] min-h-screen pt-[calc(80px+2.5rem)] pb-24">
-      <div className="max-w-[1100px] mx-auto px-6 flex flex-col gap-8">
+    <div className="bg-[#f7f8fa] min-h-screen pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2.5rem)] pb-24">
+      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 flex flex-col gap-6 sm:gap-8">
 
         {/* Page Header */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b border-[#e5e7eb]">
-          <div>
-            <h1 className="font-sans text-[2.1rem] sm:text-[2.4rem] font-extrabold text-[#111111] m-0 tracking-tight leading-tight">
-              Special Observations Over The Years
-            </h1>
-            <p className="font-sans text-[0.98rem] text-[#666666] max-w-[640px] mt-2 mb-0 leading-relaxed">
-              In-depth annual field observations documenting significant behaviors, musth cycles, physical developments, and health records of Sri Lanka's wild tuskers.
-            </p>
-          </div>
+        <div className="flex flex-col items-center justify-center text-center mb-6 pb-6 border-b border-[#e5e7eb] gap-3">
+          <h1 className="font-sans text-[clamp(1.15rem,4.5vw,2.85rem)] font-bold text-[#111111] m-0 tracking-tight leading-snug whitespace-nowrap text-center">
+            Special Observations Over The Years
+          </h1>
+          <p className="font-sans text-xs sm:text-[0.95rem] text-[#555555] leading-[1.75] max-w-3xl mx-auto m-0 text-center">
+            In-depth annual field observations documenting significant behaviors, musth cycles, physical developments, and health records of Sri Lanka's wild tuskers.
+          </p>
 
           {canAddObservation && (
-            <button
-              onClick={() => navigate('/admin/add-observation')}
-              className="bg-accent text-primary font-semibold text-[0.88rem] px-5 py-2.5 rounded-[6px] inline-flex items-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap"
-            >
-              <PlusCircle size={16} />
-              <span>Add Special Observation</span>
-            </button>
+            <div className="flex items-center justify-center w-full sm:w-auto mt-2">
+              <button
+                onClick={() => navigate('/admin/add-observation')}
+                className="bg-accent text-primary font-semibold text-xs sm:text-[0.88rem] px-6 sm:px-8 py-2.5 rounded-[8px] inline-flex items-center justify-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap shadow-sm w-full sm:w-auto text-center"
+              >
+                <PlusCircle size={16} />
+                <span>Add Special Observation</span>
+              </button>
+            </div>
           )}
         </div>
 
         {/* Controls: Year Filter Tabs & Search Bar (hidden when empty) */}
         {allObservations.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-            {/* Year Tabs - hidden if no specific years */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+            {/* Year Tabs - scrollable horizontally on mobile */}
             {availableYears.length > 0 && (
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
                 <button
                   onClick={() => setSelectedYear('ALL')}
-                  className={`font-sans text-[0.88rem] font-bold px-4 py-2 rounded-full transition-all cursor-pointer border-none shrink-0 ${
+                  className={`font-sans text-xs sm:text-[0.88rem] font-bold px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all cursor-pointer border-none shrink-0 ${
                     selectedYear === 'ALL'
                       ? 'bg-primary text-white shadow-sm'
                       : 'bg-white text-[#555555] hover:bg-[#eaeaea] hover:text-[#111111]'
@@ -108,7 +108,7 @@ export default function SpecialObservations() {
                   <button
                     key={year}
                     onClick={() => setSelectedYear(year)}
-                    className={`font-sans text-[0.88rem] font-bold px-4 py-2 rounded-full transition-all cursor-pointer border-none shrink-0 ${
+                    className={`font-sans text-xs sm:text-[0.88rem] font-bold px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all cursor-pointer border-none shrink-0 ${
                       selectedYear === year
                         ? 'bg-primary text-white shadow-sm'
                         : 'bg-white text-[#555555] hover:bg-[#eaeaea] hover:text-[#111111]'
@@ -121,14 +121,14 @@ export default function SpecialObservations() {
             )}
 
             {/* Search Box */}
-            <div className="relative min-w-[240px] max-w-sm ml-auto">
+            <div className="relative w-full sm:w-auto min-w-0 sm:min-w-[240px] sm:max-w-sm sm:ml-auto">
               <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#999999]" />
               <input
                 type="text"
                 placeholder="Search by tusker, title, location..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white border border-[#e2e8f0] rounded-full pl-9 pr-4 py-2 text-[0.88rem] text-[#111111] placeholder:text-[#999999] outline-none focus:border-accent transition-all"
+                className="w-full bg-white border border-[#e2e8f0] rounded-full pl-9 pr-4 py-2 text-xs sm:text-[0.88rem] text-[#111111] placeholder:text-[#999999] outline-none focus:border-accent transition-all"
               />
             </div>
           </div>
@@ -140,26 +140,26 @@ export default function SpecialObservations() {
             {observations.map((item) => (
               <article
                 key={item.id}
-                className="bg-white rounded-2xl border border-[#e8ece9] p-6 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 flex flex-col gap-4 relative"
+                className="bg-white rounded-2xl border border-[#e8ece9] p-4 sm:p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 flex flex-col gap-3 sm:gap-4 relative"
               >
                 {/* Top Meta Bar */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#f0f2f0]">
-                  <div className="flex flex-wrap items-center gap-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 pb-3 border-b border-[#f0f2f0]">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
                     {/* Tusker Tag */}
-                    <span className="font-sans text-[0.82rem] font-bold px-3 py-1 rounded-full bg-accent/15 text-[#9a7020] border border-accent/30 tracking-wide">
+                    <span className="font-sans text-[0.75rem] sm:text-[0.82rem] font-bold px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-accent/15 text-[#9a7020] border border-accent/30 tracking-wide">
                       {item.tuskerName}
                     </span>
 
                     {/* Date */}
-                    <span className="inline-flex items-center gap-1.5 font-sans text-[0.82rem] text-[#666666] font-medium">
-                      <Calendar size={14} className="text-accent" />
+                    <span className="inline-flex items-center gap-1.5 font-sans text-[0.75rem] sm:text-[0.82rem] text-[#666666] font-medium">
+                      <Calendar size={13} className="text-accent" />
                       {formatDate(item.date)}
                     </span>
 
                     {/* Location */}
                     {item.location && (
-                      <span className="inline-flex items-center gap-1.5 font-sans text-[0.82rem] text-[#666666] font-medium">
-                        <MapPin size={14} className="text-accent" />
+                      <span className="inline-flex items-center gap-1.5 font-sans text-[0.75rem] sm:text-[0.82rem] text-[#666666] font-medium">
+                        <MapPin size={13} className="text-accent" />
                         {item.location}
                       </span>
                     )}
@@ -187,23 +187,23 @@ export default function SpecialObservations() {
                 </div>
 
                 {/* Title */}
-                <h2 className="font-sans text-[1.35rem] sm:text-[1.5rem] font-bold text-[#111111] leading-snug m-0">
+                <h2 className="font-sans text-lg sm:text-[1.35rem] md:text-[1.5rem] font-bold text-[#111111] leading-snug m-0">
                   {item.title}
                 </h2>
 
                 {/* Description Body */}
-                <div className="font-sans text-[0.95rem] text-[#333333] leading-[1.8] whitespace-pre-line">
+                <div className="font-sans text-xs sm:text-[0.95rem] text-[#333333] leading-[1.8] whitespace-pre-line">
                   {item.description}
                 </div>
 
                 {/* Photos / Images Gallery */}
                 {item.images && item.images.length > 0 && (
                   <div className="pt-2">
-                    <p className="font-sans text-[0.78rem] font-bold text-[#888888] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                    <p className="font-sans text-[0.72rem] sm:text-[0.78rem] font-bold text-[#888888] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
                       <ImageIcon size={14} />
                       <span>Observation Photographs ({item.images.length})</span>
                     </p>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
                       {item.images.map((imgUrl, i) => (
                         <div
                           key={i}
@@ -253,12 +253,12 @@ export default function SpecialObservations() {
               <Binoculars size={32} />
             </div>
             <h3 className="font-sans text-[1.2rem] font-bold text-[#111111] m-0">No Special Observations Found</h3>
-            <p className="font-sans text-[0.92rem] text-[#777777] max-w-md m-0">
+            <p className="font-sans text-[0.88rem] sm:text-[0.92rem] text-[#777777] max-w-sm sm:max-w-md m-0 leading-relaxed">
               {allObservations.length === 0
-                ? 'No special observations have been recorded yet.'
+                ? <>No special observations have been <span className="inline-block whitespace-nowrap">recorded yet.</span></>
                 : searchQuery
                 ? 'No observations match your current search query. Try clearing the search or switching year filter.'
-                : 'No observations recorded for this year yet.'}
+                : <>No observations recorded for this year <span className="inline-block whitespace-nowrap">yet.</span></>}
             </p>
             {searchQuery && (
               <button

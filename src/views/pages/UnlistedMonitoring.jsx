@@ -147,24 +147,24 @@ export default function UnlistedMonitoring() {
   }
 
   return (
-    <div className="w-full max-w-[1280px] mx-auto pt-[calc(80px+2.5rem)] pb-20 px-8 min-h-screen bg-white">
+    <div className="w-full max-w-[1280px] mx-auto pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2.5rem)] pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-white">
 
       {/* ── Page Header ── */}
-      <div className="text-center mb-10 pb-6 border-b border-[#eeeeee] relative">
-        <div className="flex flex-col items-center">
-          <h1 className="font-sans text-[2.25rem] font-bold text-[#111111] mb-1.5">
+      <div className="flex flex-col sm:flex-row items-center sm:items-center justify-between gap-4 mb-8 sm:mb-10 pb-6 border-b border-[#eeeeee]">
+        <div className="text-center sm:text-left w-full sm:w-auto">
+          <h1 className="font-sans text-2xl sm:text-3xl md:text-[2.25rem] font-bold text-[#111111] mb-1.5 whitespace-nowrap text-center sm:text-left">
             Unlisted Monitoring
           </h1>
-          <p className="font-sans text-[0.95rem] text-[#777777] max-w-[640px] leading-relaxed">
+          <p className="font-sans text-xs sm:text-[0.88rem] md:text-[0.95rem] text-[#777777] m-0 text-center sm:text-left">
             {tuskers.length} unlisted {tuskers.length === 1 ? 'tusker' : 'tuskers'} under active observation across Sri Lanka
           </p>
         </div>
 
         {/* Admin Add Button */}
-        <div className="mt-4 sm:absolute sm:top-2 sm:right-0">
+        <div className="w-full sm:w-auto flex justify-start sm:justify-end shrink-0 landscape:mr-4 sm:landscape:mr-6 min-[1280px]:landscape:mr-0">
           <button
             onClick={() => setShowAddModal(true)}
-            className="bg-accent text-primary font-semibold text-[0.88rem] px-4 py-2 rounded-[6px] inline-flex items-center gap-1.5 shadow-[0_4px_10px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-accent-hover transition-all duration-300 border-none cursor-pointer"
+            className="w-full sm:w-auto justify-center bg-accent text-primary font-semibold text-[0.78rem] sm:text-[0.85rem] px-4 py-2 sm:py-2.5 rounded-full inline-flex items-center gap-1.5 shadow-sm hover:shadow-md transition-all duration-200 border-none cursor-pointer"
           >
             <PlusCircle size={15} />
             <span>Add Unlisted Tusker</span>
@@ -341,17 +341,17 @@ export default function UnlistedMonitoring() {
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center pb-3 border-b border-[#eeeeee]">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-accent/15 text-accent flex items-center justify-center">
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1 mr-2">
+                <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-lg sm:rounded-xl bg-accent/15 text-accent flex items-center justify-center shrink-0 aspect-square">
                   <ShieldAlert size={18} />
                 </div>
-                <div>
-                  <h3 className="font-sans text-[1.15rem] font-bold text-[#111111] m-0">Add Unlisted Tusker</h3>
-                  <p className="font-sans text-xs text-[#888888] m-0">Create a provisional monitoring entry</p>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-sans text-[0.98rem] sm:text-[1.15rem] font-bold text-[#111111] m-0 whitespace-nowrap truncate">Add Unlisted Tusker</h3>
+                  <p className="font-sans text-[0.72rem] sm:text-xs text-[#888888] m-0 whitespace-nowrap truncate">Create a provisional monitoring entry</p>
                 </div>
               </div>
               <button
-                className="w-8 h-8 rounded-full border-none bg-[#f5f5f5] hover:bg-[#e8e8e8] text-[#555555] cursor-pointer flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-full border-none bg-[#f5f5f5] hover:bg-[#e8e8e8] text-[#555555] cursor-pointer flex items-center justify-center transition-colors shrink-0"
                 onClick={() => setShowAddModal(false)}
               >
                 ✕

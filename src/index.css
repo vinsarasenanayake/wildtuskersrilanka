@@ -75,6 +75,56 @@
   background: transparent !important;
   border: none !important;
 }
+
+/* Landscape Phones / Short Viewports (e.g. iPhone 16 landscape: 852x393) */
+@media (orientation: landscape) and (max-height: 500px) {
+  .home-hero-landscape-wrap {
+    padding-top: 50px !important;
+    padding-bottom: 6px !important;
+    justify-content: center !important;
+    align-items: flex-end !important;
+  }
+  .home-hero-landscape-logo-box {
+    max-width: 400px !important;
+    padding-top: 0 !important;
+  }
+  .home-hero-landscape-logo-img {
+    max-height: 80px !important;
+  }
+  .home-hero-landscape-middle-space {
+    display: none !important;
+  }
+  .home-hero-landscape-bottom-stack {
+    max-width: 440px !important;
+    margin-top: 4px !important;
+    gap: 5px !important;
+    margin-bottom: 2px !important;
+  }
+  .home-hero-landscape-mission-text {
+    font-size: 0.70rem !important;
+    line-height: 1.25 !important;
+  }
+  .home-hero-landscape-sub-text {
+    font-size: 0.64rem !important;
+  }
+  .home-hero-landscape-counts-box {
+    min-height: 46px !important;
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+  }
+  .home-hero-landscape-stat-num {
+    font-size: 1.15rem !important;
+  }
+  .home-hero-landscape-stat-label {
+    font-size: 0.48rem !important;
+    margin-top: 1px !important;
+  }
+  .home-hero-landscape-stat-cell {
+    min-height: 42px !important;
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+  }
+}
 .leaflet-container {
   font-family: inherit !important;
   z-index: 1 !important;

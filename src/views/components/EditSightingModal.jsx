@@ -212,7 +212,7 @@ export default function EditSightingModal({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[10000] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-xs animate-in fade-in"
+      className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs animate-in fade-in"
       onClick={onClose}
     >
       <div
@@ -220,18 +220,18 @@ export default function EditSightingModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="px-6 py-4 bg-[#0b2518] text-white flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center text-accent">
+        <div className="px-4 sm:px-6 py-3.5 sm:py-4 bg-[#0b2518] text-white flex items-center justify-between">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1 mr-2">
+            <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-lg sm:rounded-xl bg-accent/20 flex items-center justify-center text-accent shrink-0 aspect-square">
               <Camera size={16} />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className="text-[0.7rem] font-bold bg-[#faf5ec] text-accent px-2 py-0.5 rounded uppercase tracking-wider">
+                <span className="text-[0.68rem] sm:text-[0.7rem] font-bold bg-[#faf5ec] text-accent px-2 py-0.5 rounded uppercase tracking-wider whitespace-nowrap">
                   Row {rowNum} • Sighting #{sightingNum}
                 </span>
               </div>
-              <h3 className="font-sans text-[1.05rem] font-bold text-white m-0 mt-0.5">
+              <h3 className="font-sans text-[0.92rem] sm:text-[1.05rem] font-bold text-white m-0 mt-0.5 whitespace-nowrap truncate">
                 Edit Sighting for {tusker?.name || 'Tusker'}
               </h3>
             </div>
@@ -239,14 +239,14 @@ export default function EditSightingModal({
           <button aria-label="Close"
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border-none cursor-pointer transition-colors"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border-none cursor-pointer transition-colors shrink-0 ml-2"
           >
             <X size={16} />
           </button>
         </div>
 
         {/* Modal Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto flex flex-col gap-4.5 font-sans">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto flex flex-col gap-4 font-sans">
           {error && (
             <div className="bg-[#fff5f5] border border-[#ffcccc] text-[#e53e3e] rounded-[8px] px-3.5 py-2.5 text-xs font-semibold">
               {error}
@@ -406,12 +406,12 @@ export default function EditSightingModal({
           </div>
 
           {/* Modal Actions */}
-          <div className="pt-3 border-t border-[#eeeeee] flex items-center justify-end gap-3 mt-2">
+          <div className="pt-3 border-t border-[#eeeeee] flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5 sm:gap-3 mt-2">
             <button
               type="button"
               onClick={onClose}
               disabled={saving}
-              className="h-9 px-4 rounded-lg text-xs font-semibold text-[#666666] hover:text-[#111111] bg-gray-100 hover:bg-gray-200 border-none cursor-pointer transition-colors inline-flex items-center justify-center"
+              className="w-full sm:w-auto h-9 px-4 rounded-lg text-xs font-semibold text-[#666666] hover:text-[#111111] bg-gray-100 hover:bg-gray-200 border-none cursor-pointer transition-colors inline-flex items-center justify-center"
             >
               Cancel
             </button>
@@ -419,7 +419,7 @@ export default function EditSightingModal({
             <button
               type="submit"
               disabled={saving}
-              className="h-9 inline-flex items-center justify-center gap-2 px-5 rounded-lg text-xs font-bold bg-accent hover:bg-accent-hover text-primary border-none cursor-pointer shadow-xs transition-all disabled:opacity-50"
+              className="w-full sm:w-auto h-9 inline-flex items-center justify-center gap-2 px-5 rounded-lg text-xs font-bold bg-accent hover:bg-accent-hover text-primary border-none cursor-pointer shadow-xs transition-all disabled:opacity-50"
             >
               {saving ? (
                 <>

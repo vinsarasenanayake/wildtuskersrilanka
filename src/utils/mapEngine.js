@@ -160,6 +160,9 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
     backgroundColor: '#0e1210',
     disableDefaultUI: true,
     zoomControl: true,
+    zoomControlOptions: {
+      position: maps.ControlPosition.RIGHT_BOTTOM,
+    },
     mapTypeControl: false,
     streetViewControl: false,
     fullscreenControl: false,
@@ -334,7 +337,7 @@ function createLeafletMap(L, container, { center, zoom, gestureHandling: _gestur
   const map = L.map(container, {
     center,
     zoom,
-    zoomControl: true,
+    zoomControl: false,
     attributionControl: false,
     preferCanvas: true, // Hardware-accelerated GPU canvas for vector polygons and paths
     zoomSnap: 0.5,      // Fluid zoom step increments
@@ -342,6 +345,11 @@ function createLeafletMap(L, container, { center, zoom, gestureHandling: _gestur
     wheelPxPerZoomLevel: 55, // Responsive mouse wheel zooming
     wheelDebounceTime: 15,
     scrollWheelZoom: true,
+    touchZoom: true,
+    doubleClickZoom: true,
+    boxZoom: false,
+    tap: false,          // Prevents touch event and click delays/bugs on modern mobile browsers
+    bounceAtZoomLimits: false,
     inertia: true,
     inertiaDeceleration: 3000,
     inertiaMaxSpeed: 2000,
@@ -350,6 +358,15 @@ function createLeafletMap(L, container, { center, zoom, gestureHandling: _gestur
     fadeAnimation: true,
     markerZoomAnimation: true,
   });
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+  let leafletRo = null;
+  if (typeof ResizeObserver !== 'undefined') {
+    leafletRo = new ResizeObserver(() => {
+      map.invalidateSize();
+    });
+    leafletRo.observe(container);
+  }
   addBaseLayers(L, map, { defaultLayer: 'satellite', showControl: false });
   const areaLayer = L.layerGroup().addTo(map);
   const layer = L.layerGroup().addTo(map);
@@ -402,7 +419,11 @@ function createLeafletMap(L, container, { center, zoom, gestureHandling: _gestur
     },
     onClick(cb) { map.on('click', (e) => cb({ lat: e.latlng.lat, lng: e.latlng.lng })); },
     resize() { map.invalidateSize(); },
-    destroy() { map.remove(); container.remove(); },
+    destroy() {
+      if (leafletRo) leafletRo.disconnect();
+      map.remove();
+      container.remove();
+    },
   };
 }
 

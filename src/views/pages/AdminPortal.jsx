@@ -268,10 +268,10 @@ export default function AdminPortal() {
       const photos = (unlistedFormData.photos && unlistedFormData.photos.length > 0)
         ? unlistedFormData.photos
         : (unlistedFormData.photoUrl
-            ? (unlistedFormData.photoUrl.includes(',')
-                ? unlistedFormData.photoUrl.split(',').map(s => s.trim()).filter(Boolean)
-                : [unlistedFormData.photoUrl])
-            : []);
+          ? (unlistedFormData.photoUrl.includes(',')
+            ? unlistedFormData.photoUrl.split(',').map(s => s.trim()).filter(Boolean)
+            : [unlistedFormData.photoUrl])
+          : []);
       const payload = {
         id: unlistedFormData.id.trim() || undefined,
         location: unlistedFormData.location.trim(),
@@ -366,38 +366,38 @@ export default function AdminPortal() {
   return (
     <div className="min-h-screen bg-[#f8faf9] text-[#1f2824] pb-24">
       {/* Top Banner / Header */}
-      <div className="w-full bg-[#0b2518] text-white pt-[calc(80px+2rem)] pb-10 px-6 sm:px-10 lg:px-16 shadow-lg mb-8">
-        <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="w-full bg-[#0b2518] text-white pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2rem)] pb-6 sm:pb-10 px-4 sm:px-10 lg:px-16 shadow-lg mb-6 sm:mb-8">
+        <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[#d4af37] text-xs font-semibold tracking-wider uppercase mb-3">
-              <Shield size={14} />
+            <div className="inline-flex items-center justify-center sm:justify-start gap-2 px-3 py-1.5 rounded-full bg-white/10 text-[#d4af37] text-xs font-semibold tracking-wider uppercase mb-2.5 w-full sm:w-auto text-center">
+              <Shield size={14} className="shrink-0" />
               <span>WTS Central Administrative Console</span>
             </div>
-            <h1 className="font-serif text-[2.2rem] sm:text-[2.6rem] font-bold tracking-tight text-white m-0">
+            <h1 className="font-serif text-2xl sm:text-[2.2rem] md:text-[2.6rem] font-bold tracking-tight text-white m-0">
               Admin Portal
             </h1>
-            <p className="text-[#a4b8af] text-sm sm:text-base mt-2 max-w-[680px] leading-relaxed">
+            <p className="text-[#a4b8af] text-xs sm:text-sm md:text-base mt-2 max-w-[340px] sm:max-w-[360px] lg:max-w-[500px] xl:max-w-[640px] leading-relaxed m-0 text-left">
               Consolidated registry control center. Manage wild tuskers, unlisted sightings, field observations, project events, and community field notes from a single command portal.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col gap-2.5 sm:gap-3 shrink-0 w-full sm:w-auto lg:flex-row lg:items-center">
             <Link
               to="/"
-              className="bg-white/10 hover:bg-white/20 text-white font-medium text-sm px-4 py-2.5 rounded-lg border border-white/15 transition-all flex items-center gap-2"
+              className="w-full lg:w-auto whitespace-nowrap shrink-0 justify-center text-center bg-white/10 hover:bg-white/20 text-white font-medium text-xs sm:text-sm px-4 py-2 sm:py-2.5 rounded-lg border border-white/15 transition-all flex items-center gap-2 no-underline"
             >
-              <Eye size={16} />
-              <span>View Live Website</span>
+              <Eye size={16} className="shrink-0" />
+              <span className="whitespace-nowrap">View Live Website</span>
             </Link>
             <button
               onClick={async () => {
                 await logout();
                 navigate('/login');
               }}
-              className="bg-[#c2410c] hover:bg-[#9a3412] text-white font-semibold text-sm px-4 py-2.5 rounded-lg transition-all flex items-center gap-2 cursor-pointer border-none shadow-sm"
+              className="w-full lg:w-auto whitespace-nowrap shrink-0 justify-center text-center bg-[#c2410c] hover:bg-[#9a3412] text-white font-semibold text-xs sm:text-sm px-4 py-2 sm:py-2.5 rounded-lg transition-all flex items-center gap-2 cursor-pointer border-none shadow-sm"
             >
-              <LogOut size={16} />
-              <span>Sign Out</span>
+              <LogOut size={16} className="shrink-0" />
+              <span className="whitespace-nowrap">Sign Out</span>
             </button>
           </div>
         </div>
@@ -420,15 +420,14 @@ export default function AdminPortal() {
           </div>
         )}
 
-        {/* Quick Metrics Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+        {/* Quick Metrics Bar: 2-col balanced on mobile/tablet portrait, 5-col on landscape/desktop */}
+        <div className="grid grid-cols-2 min-[800px]:grid-cols-5 gap-3.5 sm:gap-4 mb-8">
           <div
             onClick={() => setActiveTab('tuskers')}
-            className={`p-5 rounded-2xl border transition-all cursor-pointer ${
-              activeTab === 'tuskers'
-                ? 'bg-white border-[#0b2518] shadow-md ring-2 ring-[#0b2518]/10'
-                : 'bg-white border-[#e2e8e4] hover:border-[#c8d4ce]'
-            }`}
+            className={`p-5 rounded-2xl border transition-all cursor-pointer ${activeTab === 'tuskers'
+              ? 'bg-white border-[#0b2518] shadow-md ring-2 ring-[#0b2518]/10'
+              : 'bg-white border-[#e2e8e4] hover:border-[#c8d4ce]'
+              }`}
           >
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold text-[#6a7c73] uppercase tracking-wider">Wild Tuskers</span>
@@ -452,11 +451,10 @@ export default function AdminPortal() {
 
           <div
             onClick={() => setActiveTab('observations')}
-            className={`p-5 rounded-2xl border transition-all cursor-pointer ${
-              activeTab === 'observations'
-                ? 'bg-white border-[#0b2518] shadow-md ring-2 ring-[#0b2518]/10'
-                : 'bg-white border-[#e2e8e4] hover:border-[#c8d4ce]'
-            }`}
+            className={`p-5 rounded-2xl border transition-all cursor-pointer ${activeTab === 'observations'
+              ? 'bg-white border-[#0b2518] shadow-md ring-2 ring-[#0b2518]/10'
+              : 'bg-white border-[#e2e8e4] hover:border-[#c8d4ce]'
+              }`}
           >
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold text-[#6a7c73] uppercase tracking-wider">Observations</span>
@@ -468,11 +466,10 @@ export default function AdminPortal() {
 
           <div
             onClick={() => setActiveTab('events')}
-            className={`p-5 rounded-2xl border transition-all cursor-pointer ${
-              activeTab === 'events'
-                ? 'bg-white border-[#0b2518] shadow-md ring-2 ring-[#0b2518]/10'
-                : 'bg-white border-[#e2e8e4] hover:border-[#c8d4ce]'
-            }`}
+            className={`p-5 rounded-2xl border transition-all cursor-pointer ${activeTab === 'events'
+              ? 'bg-white border-[#0b2518] shadow-md ring-2 ring-[#0b2518]/10'
+              : 'bg-white border-[#e2e8e4] hover:border-[#c8d4ce]'
+              }`}
           >
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold text-[#6a7c73] uppercase tracking-wider">Events</span>
@@ -486,11 +483,10 @@ export default function AdminPortal() {
 
           <div
             onClick={() => setActiveTab('field-notes')}
-            className={`p-5 rounded-2xl border transition-all cursor-pointer col-span-2 sm:col-span-1 ${
-              activeTab === 'field-notes'
-                ? 'bg-white border-[#0b2518] shadow-md ring-2 ring-[#0b2518]/10'
-                : 'bg-white border-[#e2e8e4] hover:border-[#c8d4ce]'
-            }`}
+            className={`p-5 rounded-2xl border transition-all cursor-pointer col-span-2 min-[800px]:col-span-1 ${activeTab === 'field-notes'
+              ? 'bg-white border-[#0b2518] shadow-md ring-2 ring-[#0b2518]/10'
+              : 'bg-white border-[#e2e8e4] hover:border-[#c8d4ce]'
+              }`}
           >
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold text-[#6a7c73] uppercase tracking-wider">Field Notes</span>
@@ -613,48 +609,44 @@ export default function AdminPortal() {
         {/* Navigation Tabs and Search */}
         <div className="bg-white rounded-2xl border border-[#e2e8e4] shadow-sm overflow-hidden mb-12">
           {/* Tabs Bar */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-[#edf2ef] px-6 pt-4 pb-3 gap-4">
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-[#edf2ef] px-4 sm:px-6 pt-3.5 sm:pt-4 pb-3 gap-3 sm:gap-4">
+            <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
               <button
                 onClick={() => setActiveTab('tuskers')}
-                className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all cursor-pointer whitespace-nowrap ${
-                  activeTab === 'tuskers'
-                    ? 'bg-[#0b2518] text-white shadow-sm'
-                    : 'text-[#56685f] hover:bg-[#f0f5f2]'
-                }`}
+                className={`px-3.5 sm:px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap shrink-0 ${activeTab === 'tuskers'
+                  ? 'bg-[#0b2518] text-white shadow-sm'
+                  : 'text-[#56685f] hover:bg-[#f0f5f2]'
+                  }`}
               >
                 Wild Tuskers ({tuskers.length})
               </button>
 
               <button
                 onClick={() => setActiveTab('observations')}
-                className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all cursor-pointer whitespace-nowrap ${
-                  activeTab === 'observations'
-                    ? 'bg-[#0b2518] text-white shadow-sm'
-                    : 'text-[#56685f] hover:bg-[#f0f5f2]'
-                }`}
+                className={`px-3.5 sm:px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap shrink-0 ${activeTab === 'observations'
+                  ? 'bg-[#0b2518] text-white shadow-sm'
+                  : 'text-[#56685f] hover:bg-[#f0f5f2]'
+                  }`}
               >
                 Special Observations ({observations.length})
               </button>
 
               <button
                 onClick={() => setActiveTab('events')}
-                className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all cursor-pointer whitespace-nowrap ${
-                  activeTab === 'events'
-                    ? 'bg-[#0b2518] text-white shadow-sm'
-                    : 'text-[#56685f] hover:bg-[#f0f5f2]'
-                }`}
+                className={`px-3.5 sm:px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap shrink-0 ${activeTab === 'events'
+                  ? 'bg-[#0b2518] text-white shadow-sm'
+                  : 'text-[#56685f] hover:bg-[#f0f5f2]'
+                  }`}
               >
                 Projects and Events ({combinedEvents.length})
               </button>
 
               <button
                 onClick={() => setActiveTab('field-notes')}
-                className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
-                  activeTab === 'field-notes'
-                    ? 'bg-[#0b2518] text-white shadow-sm'
-                    : 'text-[#56685f] hover:bg-[#f0f5f2]'
-                }`}
+                className={`px-3.5 sm:px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 shrink-0 ${activeTab === 'field-notes'
+                  ? 'bg-[#0b2518] text-white shadow-sm'
+                  : 'text-[#56685f] hover:bg-[#f0f5f2]'
+                  }`}
               >
                 <span>Field Notes ({approvedNotes.length + pendingNotes.length})</span>
                 {pendingNotes.length > 0 && (
@@ -664,11 +656,10 @@ export default function AdminPortal() {
 
               <button
                 onClick={() => setActiveTab('gallery')}
-                className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
-                  activeTab === 'gallery'
-                    ? 'bg-[#0b2518] text-white shadow-sm'
-                    : 'text-[#56685f] hover:bg-[#f0f5f2]'
-                }`}
+                className={`px-3.5 sm:px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 shrink-0 ${activeTab === 'gallery'
+                  ? 'bg-[#0b2518] text-white shadow-sm'
+                  : 'text-[#56685f] hover:bg-[#f0f5f2]'
+                  }`}
               >
                 <span>The Gallery ({galleryPhotos.length})</span>
                 {pendingGalleryPhotos.length > 0 && (
@@ -678,11 +669,10 @@ export default function AdminPortal() {
 
               <button
                 onClick={() => setActiveTab('team')}
-                className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
-                  activeTab === 'team'
-                    ? 'bg-[#0b2518] text-white shadow-sm'
-                    : 'text-[#56685f] hover:bg-[#f0f5f2]'
-                }`}
+                className={`px-3.5 sm:px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 shrink-0 ${activeTab === 'team'
+                  ? 'bg-[#0b2518] text-white shadow-sm'
+                  : 'text-[#56685f] hover:bg-[#f0f5f2]'
+                  }`}
               >
                 <Users size={15} />
                 <span>Team &amp; Admins ({teamMembers.length})</span>
@@ -690,14 +680,14 @@ export default function AdminPortal() {
             </div>
 
             {/* Search Input */}
-            <div className="relative min-w-[260px]">
+            <div className="relative w-full md:w-72 shrink-0">
               <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8fa298]" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={`Search ${activeTab.replace('-', ' ')}...`}
-                className="w-full pl-9 pr-4 py-2 rounded-xl border border-[#dde6e1] bg-[#f9fbf9] text-sm text-[#1f2824] focus:outline-none focus:border-[#0b2518] focus:ring-1 focus:ring-[#0b2518]"
+                className="w-full pl-9 pr-4 py-2 rounded-xl border border-[#dde6e1] bg-[#f9fbf9] text-xs sm:text-sm text-[#1f2824] focus:outline-none focus:border-[#0b2518] focus:ring-1 focus:ring-[#0b2518]"
               />
               {searchQuery && (
                 <button
@@ -713,24 +703,24 @@ export default function AdminPortal() {
           {/* TAB 1: WILD TUSKERS */}
           {activeTab === 'tuskers' && (
             <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <span className="text-sm font-semibold text-[#5a6c63]">
                   Showing {filteredTuskers.length} of {tuskers.length} tuskers
                 </span>
-                <div className="flex items-center gap-2.5">
-                  <Link
-                    to="/unlisted"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0b2518] bg-[#faf5ec] hover:bg-[#f3ebd9] border border-accent/40 px-3.5 py-2 rounded-lg transition-all no-underline shadow-xs"
-                  >
-                    <Radar size={15} className="text-accent" />
-                    <span>Unlisted Monitoring</span>
-                  </Link>
+                <div className="flex items-center gap-2.5 w-full sm:w-auto">
                   <Link
                     to="/admin/add-tusker"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#0b2518] hover:bg-[#16402b] px-4 py-2 rounded-lg transition-all no-underline"
+                    className="flex-1 sm:flex-initial justify-center text-center inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#0b2518] hover:bg-[#16402b] px-4 py-2.5 sm:py-2 rounded-lg transition-all no-underline whitespace-nowrap"
                   >
-                    <PlusCircle size={15} />
+                    <PlusCircle size={15} className="shrink-0" />
                     <span>Add Tusker</span>
+                  </Link>
+                  <Link
+                    to="/unlisted"
+                    className="flex-1 sm:flex-initial justify-center text-center inline-flex items-center gap-1.5 text-xs font-bold text-[#0b2518] bg-[#faf5ec] hover:bg-[#f3ebd9] border border-accent/40 px-3.5 py-2.5 sm:py-2 rounded-lg transition-all no-underline shadow-xs whitespace-nowrap"
+                  >
+                    <Radar size={15} className="text-accent shrink-0" />
+                    <span>Unlisted Monitoring</span>
                   </Link>
                 </div>
               </div>
@@ -819,20 +809,20 @@ export default function AdminPortal() {
                 <span className="text-sm font-semibold text-[#5a6c63]">
                   Showing {filteredUnlisted.length} of {unlisted.length} unlisted records
                 </span>
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 w-full sm:w-auto">
                   <button
                     type="button"
                     onClick={() => setShowAddUnlistedModal(true)}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-primary hover:bg-primary-light px-4 py-2 rounded-lg transition-all shadow-sm border-none cursor-pointer"
+                    className="flex-1 sm:flex-initial justify-center text-center inline-flex items-center gap-1.5 text-xs font-bold text-white bg-primary hover:bg-primary-light px-4 py-2.5 sm:py-2 rounded-lg transition-all shadow-sm border-none cursor-pointer whitespace-nowrap"
                   >
-                    <PlusCircle size={15} />
+                    <PlusCircle size={15} className="shrink-0" />
                     <span>Add Unlisted Tusker</span>
                   </button>
                   <Link
                     to="/unlisted"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0b2518] bg-[#0b2518]/10 hover:bg-[#0b2518]/15 px-4 py-2 rounded-lg transition-all"
+                    className="flex-1 sm:flex-initial justify-center text-center inline-flex items-center gap-1.5 text-xs font-bold text-[#0b2518] bg-[#0b2518]/10 hover:bg-[#0b2518]/15 px-4 py-2.5 sm:py-2 rounded-lg transition-all whitespace-nowrap"
                   >
-                    <Radar size={15} />
+                    <Radar size={15} className="shrink-0" />
                     <span>Open Monitoring Board</span>
                   </Link>
                 </div>
@@ -899,13 +889,13 @@ export default function AdminPortal() {
           {/* TAB 3: SPECIAL OBSERVATIONS */}
           {activeTab === 'observations' && (
             <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <span className="text-sm font-semibold text-[#5a6c63]">
                   Showing {filteredObservations.length} of {observations.length} special observations
                 </span>
                 <Link
                   to="/admin/add-observation"
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#0b2518] hover:bg-[#16402b] px-4 py-2 rounded-lg transition-all"
+                  className="w-full sm:w-auto justify-center text-center inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#0b2518] hover:bg-[#16402b] px-4 py-2.5 sm:py-2 rounded-lg transition-all whitespace-nowrap"
                 >
                   <PlusCircle size={15} />
                   <span>Add Observation</span>
@@ -976,13 +966,13 @@ export default function AdminPortal() {
           {/* TAB 4: PROJECTS AND EVENTS */}
           {activeTab === 'events' && (
             <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <span className="text-sm font-semibold text-[#5a6c63]">
                   Showing {combinedEvents.length} events
                 </span>
                 <Link
                   to="/admin/create-event"
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#0b2518] hover:bg-[#16402b] px-4 py-2 rounded-lg transition-all"
+                  className="w-full sm:w-auto justify-center text-center inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#0b2518] hover:bg-[#16402b] px-4 py-2.5 sm:py-2 rounded-lg transition-all whitespace-nowrap"
                 >
                   <PlusCircle size={15} />
                   <span>Create Event</span>
@@ -1013,11 +1003,10 @@ export default function AdminPortal() {
                           <td className="py-3 px-4 font-mono text-xs text-[#7e9087] whitespace-nowrap">{e.date}</td>
                           <td className="py-3 px-4">
                             <span
-                              className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 ${
-                                e.eventCategory === 'Upcoming'
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : 'bg-gray-100 text-gray-700'
-                              }`}
+                              className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 ${e.eventCategory === 'Upcoming'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-gray-100 text-gray-700'
+                                }`}
                             >
                               {e.eventCategory}
                             </span>
@@ -1300,13 +1289,12 @@ export default function AdminPortal() {
                             <div className="text-[0.72rem] text-[#999999]">{item.date}</div>
                           </td>
                           <td className="py-3 px-4">
-                            <span className={`inline-block px-2.5 py-0.5 rounded-full text-[0.72rem] font-bold ${
-                              item.status === 'approved'
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : item.status === 'pending'
+                            <span className={`inline-block px-2.5 py-0.5 rounded-full text-[0.72rem] font-bold ${item.status === 'approved'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : item.status === 'pending'
                                 ? 'bg-amber-100 text-amber-800'
                                 : 'bg-red-100 text-red-800'
-                            }`}>
+                              }`}>
                               {item.status}
                             </span>
                           </td>
@@ -1473,15 +1461,15 @@ export default function AdminPortal() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-xl bg-accent/15 text-accent flex items-center justify-center">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
+                  <div className="w-10 h-10 rounded-xl bg-accent/15 text-accent flex items-center justify-center shrink-0 aspect-square">
                     <Shield size={20} />
                   </div>
-                  <div>
-                    <h3 className="font-sans text-lg font-bold text-gray-900 m-0">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-sans text-[0.95rem] sm:text-lg font-bold text-gray-900 m-0 whitespace-nowrap truncate">
                       {editingTeamMember ? 'Edit Admin / Team Member' : 'Add New Admin / Team Member'}
                     </h3>
-                    <p className="font-sans text-xs text-gray-500 m-0">
+                    <p className="font-sans text-[0.72rem] sm:text-xs text-gray-500 m-0 whitespace-nowrap truncate">
                       Directly managed in database and displayed on About Us
                     </p>
                   </div>
@@ -1489,7 +1477,7 @@ export default function AdminPortal() {
                 <button
                   type="button"
                   onClick={() => setShowTeamModal(false)}
-                  className="text-gray-400 hover:text-gray-600 bg-none border-none cursor-pointer p-1"
+                  className="text-gray-400 hover:text-gray-600 bg-none border-none cursor-pointer p-1 shrink-0"
                 >
                   <X size={20} />
                 </button>
@@ -1605,15 +1593,15 @@ export default function AdminPortal() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-xl bg-accent/15 text-accent flex items-center justify-center">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
+                  <div className="w-10 h-10 rounded-xl bg-accent/15 text-accent flex items-center justify-center shrink-0 aspect-square">
                     <Radar size={20} />
                   </div>
-                  <div>
-                    <h3 className="font-sans text-lg font-bold text-gray-900 m-0">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-sans text-[0.98rem] sm:text-lg font-bold text-gray-900 m-0 whitespace-nowrap truncate">
                       Add Unlisted Tusker
                     </h3>
-                    <p className="font-sans text-xs text-gray-500 m-0">
+                    <p className="font-sans text-[0.72rem] sm:text-xs text-gray-500 m-0 whitespace-nowrap truncate">
                       Create a provisional monitoring entry
                     </p>
                   </div>
@@ -1621,7 +1609,7 @@ export default function AdminPortal() {
                 <button
                   type="button"
                   onClick={() => setShowAddUnlistedModal(false)}
-                  className="text-gray-400 hover:text-gray-600 bg-none border-none cursor-pointer p-1"
+                  className="text-gray-400 hover:text-gray-600 bg-none border-none cursor-pointer p-1 shrink-0"
                 >
                   <X size={20} />
                 </button>

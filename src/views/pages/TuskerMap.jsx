@@ -8,7 +8,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ArrowLeft, Search, Layers, X
+  ArrowLeft, Search, Layers, X, MapPin
 } from 'lucide-react';
 import { getTuskers, LIVING_STATUSES } from '../../models/TuskerModel';
 import { createMap } from '../../utils/mapEngine';
@@ -52,10 +52,23 @@ export default function TuskerMap() {
   const [selectedZone, setSelectedZone] = useState(null); // 'Zone 1' | 'Zone 2' | 'Zone 3' | 'Zone 4' | null
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [mobileTab, setMobileTab] = useState('map'); // 'map' | 'directory'
 
   const hostRef = useRef(null);
   const mapRef = useRef(null);
   const [mapReady, setMapReady] = useState(false);
+
+  useEffect(() => {
+    if (mobileTab === 'map' && mapRef.current) {
+      setTimeout(() => {
+        try {
+          mapRef.current?.resize();
+        } catch {
+          // ignore
+        }
+      }, 100);
+    }
+  }, [mobileTab]);
 
   useEffect(() => {
     document.title = 'Wild Tuskers Sri Lanka | WTS Conservation Zones';
@@ -173,6 +186,7 @@ export default function TuskerMap() {
       }
     } else {
       setSelectedZone(zoneKey);
+      setMobileTab('map');
       const zoneObj = WTS_CONSERVATION_ZONES[zoneKey];
       if (mapRef.current && zoneObj?.bbox) {
         mapRef.current.fitBounds(zoneObj.bbox, { padding: 45 });
@@ -188,11 +202,41 @@ export default function TuskerMap() {
   };
 
   return (
-    <div className="pt-[70px] h-screen flex flex-col bg-[#0b2518] font-sans">
-      <div className="flex-1 min-h-0 flex">
+    <div className="pt-[64px] sm:pt-[70px] h-screen flex flex-col bg-[#0b2518] font-sans">
+      {/* Mobile & Tablet Portrait View Toggle */}
+      <div className="portrait:flex landscape:hidden flex items-center justify-center p-2 bg-[#081b11] border-b border-white/10 shrink-0">
+        <div className="flex rounded-lg bg-[#0f2d1e] p-1 border border-white/10 w-full max-w-sm text-xs font-semibold">
+          <button
+            type="button"
+            onClick={() => setMobileTab('map')}
+            className={`flex-1 py-1.5 rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer border-none ${
+              mobileTab === 'map'
+                ? 'bg-accent text-primary font-bold shadow-xs'
+                : 'bg-transparent text-gray-300 hover:text-white'
+            }`}
+          >
+            <MapPin size={14} /> Map View
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileTab('directory')}
+            className={`flex-1 py-1.5 rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer border-none ${
+              mobileTab === 'directory'
+                ? 'bg-accent text-primary font-bold shadow-xs'
+                : 'bg-transparent text-gray-300 hover:text-white'
+            }`}
+          >
+            <Layers size={14} /> Zones &amp; Tuskers ({filteredTuskers.length})
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 min-h-0 flex flex-col md:flex-row">
         {/* ── Side panel ── */}
-        <aside className="w-[390px] shrink-0 bg-white border-r border-[#e2e8e4] flex flex-col min-h-0">
-          <div className="p-4 border-b border-[#edf2ef]">
+        <aside className={`w-full md:w-[380px] lg:w-[410px] shrink-0 bg-white border-r border-[#e2e8e4] flex flex-col min-h-0 overflow-y-auto overscroll-contain ${
+          mobileTab === 'directory' ? 'portrait:flex portrait:flex-1' : 'portrait:hidden'
+        } landscape:flex`}>
+          <div className="p-3 sm:p-4 border-b border-[#edf2ef]">
             <Link to="/admin" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#6a7c73] hover:text-accent no-underline mb-2.5">
               <ArrowLeft size={14} /> Admin Portal
             </Link>
@@ -313,7 +357,7 @@ export default function TuskerMap() {
           </div>
 
           {/* ── Scrollable Tusker List ── */}
-          <div className="flex-1 overflow-y-auto divide-y divide-[#f0f3f1]">
+          <div className="divide-y divide-[#f0f3f1]">
             <div className="px-4 py-2 bg-[#f8faf9] text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between">
               <span>{selectedZone ? `${selectedZone} Tuskers` : 'All Registered Tuskers'}</span>
               <span>{filteredTuskers.length}</span>
@@ -382,12 +426,14 @@ export default function TuskerMap() {
         </aside>
 
         {/* ── Map Viewport ── */}
-        <div className="relative flex-1 min-w-0 bg-[#0e1210]">
+        <div className={`relative flex-1 min-w-0 bg-[#0e1210] ${
+          mobileTab === 'map' ? 'portrait:flex portrait:flex-col' : 'portrait:hidden'
+        } landscape:flex landscape:flex-col`}>
           <div ref={hostRef} className="absolute inset-0" />
 
           {/* Floating Selected Zone Overlay Card on Map */}
           {selectedZone && (
-            <div className="absolute top-4 left-4 z-[5] w-[320px] bg-[#0d1612]/95 backdrop-blur-md rounded-xl shadow-2xl border border-emerald-500/40 text-white p-4 animate-in fade-in">
+            <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-[5] w-[calc(100%-1.5rem)] sm:w-[320px] max-w-[320px] bg-[#0d1612]/95 backdrop-blur-md rounded-xl shadow-2xl border border-emerald-500/40 text-white p-3.5 sm:p-4 animate-in fade-in">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <span
@@ -422,21 +468,6 @@ export default function TuskerMap() {
               </div>
             </div>
           )}
-
-          {/* Map Legend Overlay at Bottom Right */}
-          <div className="absolute bottom-5 right-5 z-[5] bg-[#0d1612]/90 backdrop-blur-md rounded-xl shadow-xl border border-white/10 text-white p-3 pointer-events-none hidden sm:block">
-            <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
-              4 Conservation Landscapes
-            </div>
-            <div className="space-y-1.5">
-              {Object.values(WTS_CONSERVATION_ZONES).map((z) => (
-                <div key={z.shortName} className="flex items-center gap-2 text-xs">
-                  <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: z.color }} />
-                  <span className="text-gray-200">{z.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </div>

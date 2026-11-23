@@ -152,14 +152,14 @@ export default function AboutUs() {
   const admins = team.filter((m) => m.role === 'Admin');
 
   return (
-    <div className="w-full max-w-[1200px] mx-auto pt-[calc(80px+2.5rem)] pb-24 px-8 min-h-screen bg-white">
+    <div className="w-full max-w-[1200px] mx-auto pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2.5rem)] pb-24 px-4 sm:px-6 md:px-8 min-h-screen bg-white">
       {/* Page Header / About Us Story */}
-      <div className="mb-20">
-        <h1 className="font-sans text-[2.25rem] sm:text-[2.65rem] font-bold text-[#111111] mb-8 text-center tracking-tight">
+      <div className="mb-14 sm:mb-20">
+        <h1 className="font-sans text-2xl sm:text-[2.25rem] md:text-[2.65rem] font-bold text-[#111111] mb-6 sm:mb-8 text-center tracking-tight">
           Wild Tuskers Sri Lanka
         </h1>
 
-        <div className="max-w-[960px] mx-auto font-sans text-[0.98rem] sm:text-[1.02rem] text-[#374151] leading-[1.85] flex flex-col gap-6 text-justify">
+        <div className="max-w-[960px] mx-auto font-sans text-xs sm:text-[0.98rem] md:text-[1.02rem] text-[#374151] leading-[1.8] flex flex-col gap-5 sm:gap-6 text-justify">
           <p className="m-0">
             Founded in 2013, Wild Tuskers Sri Lanka was established with a clear vision: to address a critical gap in the documentation and identification of Sri Lanka's tusked elephants. At the time, there was no comprehensive island-wide database dedicated to systematically identifying and tracking individual tuskers. Recognising the urgent need to preserve information about these rare and iconic animals, a group of passionate wildlife enthusiasts, photographers, and conservationists came together to create what became Sri Lanka's first dedicated tusker identification database.
           </p>

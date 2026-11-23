@@ -662,7 +662,7 @@ export default function TuskerSightingsMap({
       {/* ── Top Bar ── */}
       <div className="p-4 sm:p-5 bg-[#fafaf8] border-b border-[#e8ece9] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+          <div className="flex items-center gap-2 mb-3 sm:mb-3.5 flex-wrap">
             {/* WTS Conservation Zone Pill */}
             {homeRangeShape?.zoneData && (
               <span
@@ -713,15 +713,15 @@ export default function TuskerSightingsMap({
             </span>
           </div>
 
-          <h3 className="font-sans text-[1.15rem] font-bold text-[#111111] m-0 flex items-center gap-2">
-            <Compass size={18} className="text-accent" />
+          <h3 className="font-sans text-[1.12rem] sm:text-[1.2rem] font-bold text-[#111111] m-0 mb-2 sm:mb-2.5 flex items-start sm:items-center gap-2.5 leading-snug">
+            <Compass size={19} className="text-accent shrink-0 mt-0.5 sm:mt-0" />
             <span>
               {homeRangeShape?.zoneData
                 ? `${tusker?.name || 'Tusker'}'s Conservation Landscape: ${homeRangeShape.zoneData.title}`
                 : (isDeceased ? `${tusker?.name || 'Tusker'}'s Historical Habitat Map` : `${tusker?.name || 'Tusker'}'s Home Range & Habitat Map`)}
             </span>
           </h3>
-          <p className="font-sans text-xs text-[#666666] m-0 mt-0.5">
+          <p className="font-sans text-xs sm:text-[0.82rem] text-[#666666] m-0 mt-2 leading-[1.65]">
             {homeRangeShape?.zoneData
               ? `(The shaded boundary represents ${tusker?.name}'s assigned WTS Conservation Landscape: ${homeRangeShape.zoneData.name}, encompassing ${homeRangeShape.zoneData.districts}. Home range: ${tusker?.location || '—'}.)`
               : (isDeceased
@@ -749,7 +749,7 @@ export default function TuskerSightingsMap({
       </div>
 
       {/* ── Interactive Map View Container ── */}
-      <div className="relative w-full h-[400px] sm:h-[480px] bg-[#0e1210] overflow-hidden">
+      <div className="relative w-full h-[340px] sm:h-[480px] bg-[#0e1210] overflow-hidden">
         <div ref={mapContainerRef} className="w-full h-full" />
 
         {/* Floating Active Sighting Detail Card Overlay */}
@@ -870,10 +870,10 @@ export default function TuskerSightingsMap({
 
       {/* ── Points Registry Strip below Map ── */}
       <div className="p-4 bg-[#fafaf8] border-t border-[#e8ece9]">
-        <div className="text-xs font-bold text-[#666666] uppercase tracking-wider mb-2.5 flex items-center justify-between">
-          <span>{homeRangeShape?.zoneData ? 'Conservation Landscape & Sightings Registry' : 'Home Range & Sightings Registry'}</span>
+        <div className="text-xs font-bold text-[#666666] uppercase tracking-wider mb-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <span className="leading-snug">{homeRangeShape?.zoneData ? 'Conservation Landscape & Sightings Registry' : 'Home Range & Sightings Registry'}</span>
           {sightingPoints.length > 0 && (
-            <span className="font-normal lowercase text-[#888888]">
+            <span className="font-normal lowercase text-[#888888] text-[0.72rem] sm:text-xs">
               click any sighting to isolate &amp; focus
             </span>
           )}
