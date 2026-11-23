@@ -460,7 +460,7 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
             }}
           >
             <div
-              className={`relative inline-flex items-center justify-center select-none ${isDragging || isWheeling ? '' : 'transition-transform duration-75'}`}
+              className={`relative inline-flex items-center justify-center select-none max-w-full max-h-[75vh] sm:max-h-[82vh] lightbox-mobile-landscape-inner ${isDragging || isWheeling ? '' : 'transition-transform duration-75'}`}
               style={{
                 transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
                 transformOrigin: 'center center',
@@ -470,7 +470,7 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
                 src={activePhoto}
                 alt={`${name} preview ${index + 1}`}
                 draggable={false}
-                className="max-h-[75vh] sm:max-h-[82vh] landscape:max-h-[calc(100dvh-130px)] landscape:sm:max-h-[82vh] max-w-[92vw] w-auto h-auto object-contain select-none block"
+                className="max-h-[75vh] sm:max-h-[82vh] max-w-full w-auto h-auto object-contain select-none block lightbox-mobile-landscape-img"
               />
               <PhotoWatermarkBadge size="lg" />
             </div>
@@ -1551,7 +1551,7 @@ function ComparisonPhotoLightbox({
               src={activeItem.photo}
               alt={`${tusker?.name || 'Tusker'} ${activeItem.year}`}
               draggable={false}
-              className={`max-h-[70vh] sm:max-h-[74vh] max-w-[92vw] w-auto h-auto object-contain rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10 select-none ${isDragging || isWheeling ? '' : 'transition-transform duration-75'}`}
+              className={`max-h-[70vh] sm:max-h-[74vh] max-w-[92vw] w-auto h-auto object-contain rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10 select-none lightbox-mobile-landscape-img ${isDragging || isWheeling ? '' : 'transition-transform duration-75'}`}
               style={{
                 transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
                 transformOrigin: 'center center',
@@ -2066,7 +2066,7 @@ function SightingPhotoLightbox({
             }}
           >
             <div
-              className={`relative inline-flex items-center justify-center select-none ${isDragging || isWheeling ? '' : 'transition-transform duration-75'}`}
+              className={`relative inline-flex items-center justify-center select-none max-w-full max-h-[70vh] sm:max-h-[74vh] lightbox-mobile-landscape-inner ${isDragging || isWheeling ? '' : 'transition-transform duration-75'}`}
               style={{
                 transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
                 transformOrigin: 'center center',
@@ -2076,9 +2076,8 @@ function SightingPhotoLightbox({
                 src={activeUrl}
                 alt={photo.title || 'Sighting'}
                 draggable={false}
-                className="max-h-[70vh] sm:max-h-[74vh] landscape:max-h-[calc(100dvh-120px)] landscape:sm:max-h-[74vh] max-w-[92vw] w-auto h-auto object-contain rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10 select-none block"
+                className="max-h-[70vh] sm:max-h-[74vh] max-w-full w-auto h-auto object-contain rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10 select-none block lightbox-mobile-landscape-img"
               />
-              <PhotoWatermarkBadge size="md" />
             </div>
           </div>
         )}

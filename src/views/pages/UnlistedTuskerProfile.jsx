@@ -643,11 +643,11 @@ export default function UnlistedTuskerProfile() {
                 </button>
               </div>
 
-              <div className="max-h-[70vh] flex items-center justify-center bg-black">
+              <div className="max-h-[70vh] flex items-center justify-center bg-black lightbox-mobile-landscape-inner">
                 <img
                   src={selectedComparisonImg.photo}
                   alt={tusker.id}
-                  className="max-h-[70vh] w-auto max-w-full object-contain"
+                  className="max-h-[70vh] w-auto max-w-full object-contain lightbox-mobile-landscape-img"
                 />
               </div>
 

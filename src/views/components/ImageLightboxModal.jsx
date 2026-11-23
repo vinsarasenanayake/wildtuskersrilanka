@@ -11,7 +11,6 @@ import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { X, MapPin, Camera, Calendar, Pencil, Trash2, CheckCircle2, ExternalLink, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { getTuskers } from '../../models/TuskerModel';
-import PhotoWatermarkBadge from './PhotoWatermarkBadge';
 
 function formatDisplayDate(dateStr) {
   if (!dateStr) return '';
@@ -315,7 +314,7 @@ export default function ImageLightboxModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex flex-col items-center justify-between p-2.5 sm:p-5 md:p-6 overflow-hidden select-none animate-fade-in"
+      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex flex-col items-center justify-between p-2.5 sm:p-5 md:p-6 overflow-hidden select-none animate-fade-in lightbox-mobile-landscape-root"
       onClick={onClose}
     >
       {/* ── Top Bar: Zoom Controls & Close Button ── */}
@@ -370,7 +369,7 @@ export default function ImageLightboxModal({
 
       {/* ── Center Area: Full View Photo with Zoom and Pan ── */}
       <div
-        className="flex-1 w-full flex items-center justify-center min-h-0 my-auto py-1 sm:py-2 landscape:py-0.5 relative overflow-hidden select-none"
+        className="flex-1 w-full flex items-center justify-center min-h-0 my-auto py-1 sm:py-2 landscape:py-1 landscape:px-8 relative overflow-hidden select-none lightbox-mobile-landscape-stage"
         style={{
           cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
           touchAction: 'none',
@@ -403,7 +402,7 @@ export default function ImageLightboxModal({
         }}
       >
         <div
-          className="relative inline-flex items-center justify-center max-w-full max-h-[70vh] sm:max-h-[76vh] md:max-h-[80vh] landscape:max-h-[calc(100dvh-115px)] landscape:sm:max-h-[80vh] select-none"
+          className="relative inline-flex items-center justify-center max-w-full max-h-[70vh] sm:max-h-[76vh] md:max-h-[80vh] select-none lightbox-mobile-landscape-inner"
           style={{
             transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
             transformOrigin: 'center center',
@@ -414,42 +413,41 @@ export default function ImageLightboxModal({
             src={photo.imageUrl}
             alt={tuskerDisplayName}
             draggable={false}
-            className="max-w-full max-h-[70vh] sm:max-h-[76vh] md:max-h-[80vh] landscape:max-h-[calc(100dvh-115px)] landscape:sm:max-h-[80vh] w-auto h-auto object-contain rounded-xl sm:rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] select-none border border-white/10 block"
+            className="max-w-full max-h-[70vh] sm:max-h-[76vh] md:max-h-[80vh] w-auto h-auto object-contain rounded-xl sm:rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] select-none border border-white/10 block lightbox-mobile-landscape-img"
           />
-          <PhotoWatermarkBadge size="lg" />
         </div>
       </div>
 
       {/* ── Bottom Bar: Full Names, Location, Date, Author & Tusker Profiles ── */}
       <div
-        className="w-full max-w-[1100px] mx-auto z-50 mt-1 sm:mt-2 landscape:mt-0.5"
+        className="w-full max-w-[1100px] mx-auto z-50 mt-0.5 sm:mt-2 shrink-0"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="bg-gradient-to-r from-black/92 via-[#0b1c14]/94 to-black/92 backdrop-blur-xl border border-white/15 rounded-xl sm:rounded-2xl px-3 sm:px-6 md:px-7 py-2 sm:py-4 landscape:py-1.5 shadow-2xl flex flex-col md:flex-row landscape:flex-row items-center justify-between gap-1.5 sm:gap-3 text-center md:text-left landscape:text-left">
+        <div className="bg-gradient-to-r from-black/92 via-[#0b1c14]/94 to-black/92 backdrop-blur-xl border border-white/15 rounded-xl sm:rounded-2xl px-3 sm:px-6 md:px-7 py-2 sm:py-4 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-1.5 sm:gap-3 text-center md:text-left lightbox-mobile-landscape-bottom">
 
           {/* Left: T-Numbers & Full Names of Tuskers */}
-          <div className="flex flex-col gap-0.5 sm:gap-1 min-w-0 flex-1">
-            <h2 className="font-serif text-sm sm:text-[1.15rem] md:text-[1.25rem] font-bold text-white tracking-wide m-0 drop-shadow-sm leading-snug break-words">
+          <div className="flex flex-col gap-0.5 sm:gap-1 min-w-0 flex-1 items-center md:items-start text-center md:text-left lightbox-mobile-landscape-text">
+            <h2 className="font-serif text-sm sm:text-[1.15rem] md:text-[1.25rem] font-bold text-white tracking-wide m-0 drop-shadow-sm leading-tight truncate max-w-full lightbox-mobile-landscape-title">
               {tuskerDisplayName}
             </h2>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-3 sm:gap-x-4 gap-y-1 text-[0.72rem] sm:text-[0.85rem] text-[#d4ded8] font-sans">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2.5 sm:gap-x-4 gap-y-0.5 text-[0.72rem] sm:text-[0.85rem] text-[#d4ded8] font-sans lightbox-mobile-landscape-meta">
               {locationTaken && (
-                <span className="flex items-center gap-1 sm:gap-1.5">
-                  <MapPin size={13} className="text-accent shrink-0" />
+                <span className="flex items-center gap-1">
+                  <MapPin size={11} className="text-accent shrink-0 sm:w-3.5 sm:h-3.5" />
                   <span>{locationTaken}</span>
                 </span>
               )}
 
               {formattedDate && (
-                <span className="flex items-center gap-1 sm:gap-1.5">
-                  <Calendar size={13} className="text-accent shrink-0" />
+                <span className="flex items-center gap-1">
+                  <Calendar size={11} className="text-accent shrink-0 sm:w-3.5 sm:h-3.5" />
                   <span>{formattedDate}</span>
                 </span>
               )}
 
               {photographerName && (
-                <span className="flex items-center gap-1 sm:gap-1.5">
-                  <Camera size={13} className="text-accent shrink-0" />
+                <span className="flex items-center gap-1">
+                  <Camera size={11} className="text-accent shrink-0 sm:w-3.5 sm:h-3.5" />
                   <span>
                     Photo by <strong className="text-white font-semibold">{photographerName}</strong>
                   </span>
@@ -459,16 +457,16 @@ export default function ImageLightboxModal({
           </div>
 
           {/* Right: Quick Actions (Admin Moderation & Tusker Profile Links with Names) */}
-          <div className="flex flex-wrap items-center justify-center md:justify-end gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-1 sm:gap-2 shrink-0 lightbox-mobile-landscape-actions">
             {isAdmin && (
               <>
                 {onEdit && (
                   <button
                     onClick={() => onEdit(photo)}
-                    className="bg-amber-600 hover:bg-amber-700 text-white font-sans text-[0.72rem] sm:text-xs font-semibold py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg border-none cursor-pointer flex items-center gap-1 sm:gap-1.5 shadow-sm transition-colors"
+                    className="bg-amber-600 hover:bg-amber-700 text-white font-sans text-[0.72rem] sm:text-xs font-semibold py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg border-none cursor-pointer flex items-center gap-1 shadow-sm transition-colors lightbox-mobile-landscape-btn"
                     title="Edit details"
                   >
-                    <Pencil size={12} />
+                    <Pencil size={11} />
                     <span>Edit</span>
                   </button>
                 )}
@@ -478,9 +476,9 @@ export default function ImageLightboxModal({
                       onApprove(photo.id || photo);
                       onClose();
                     }}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-sans text-[0.72rem] sm:text-xs font-semibold py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg border-none cursor-pointer flex items-center gap-1 shadow-sm transition-colors"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-sans text-[0.72rem] sm:text-xs font-semibold py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg border-none cursor-pointer flex items-center gap-1 shadow-sm transition-colors lightbox-mobile-landscape-btn"
                   >
-                    <CheckCircle2 size={12} />
+                    <CheckCircle2 size={11} />
                     <span>Approve</span>
                   </button>
                 )}
@@ -490,10 +488,10 @@ export default function ImageLightboxModal({
                       onDelete(photo.id || photo);
                       onClose();
                     }}
-                    className="bg-rose-600 hover:bg-rose-700 text-white font-sans text-[0.72rem] sm:text-xs font-semibold py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg border-none cursor-pointer flex items-center gap-1 shadow-sm transition-colors"
+                    className="bg-rose-600 hover:bg-rose-700 text-white font-sans text-[0.72rem] sm:text-xs font-semibold py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg border-none cursor-pointer flex items-center gap-1 shadow-sm transition-colors lightbox-mobile-landscape-btn"
                     title="Delete"
                   >
-                    <Trash2 size={12} />
+                    <Trash2 size={11} />
                     <span>Delete</span>
                   </button>
                 )}
@@ -506,10 +504,10 @@ export default function ImageLightboxModal({
                 key={t.id}
                 to={`/tuskers/${t.id.toLowerCase()}`}
                 state={{ from: fromPath }}
-                className="bg-white/10 hover:bg-white/20 text-[#f5ecd7] hover:text-white font-sans text-[0.72rem] sm:text-xs font-semibold py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg border border-white/20 transition-all flex items-center gap-1 sm:gap-1.5 no-underline shadow-xs shrink-0"
+                className="bg-white/10 hover:bg-white/20 text-[#f5ecd7] hover:text-white font-sans text-[0.72rem] sm:text-xs font-semibold py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg border border-white/20 transition-all flex items-center gap-1 no-underline shadow-xs shrink-0 lightbox-mobile-landscape-btn"
               >
                 <span>{allMatchedTuskers.length > 1 ? `${t.id} - ${t.name} Profile` : (t.name ? `${t.name} Profile` : 'Tusker Profile')}</span>
-                <ExternalLink size={11} />
+                <ExternalLink size={10} />
               </Link>
             ))}
           </div>

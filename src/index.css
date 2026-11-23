@@ -77,8 +77,8 @@
   border: none !important;
 }
 
-/* Landscape Phones / Short Viewports (e.g. iPhone 16 landscape: 852x393) */
-@media (orientation: landscape) and (max-height: 500px) {
+/* Landscape Phones / Short Viewports (e.g. iPhone 16 landscape: 852x393, Galaxy: 915x412) */
+@media (orientation: landscape) and (max-height: 520px) {
   .home-hero-landscape-wrap {
     padding-top: 50px !important;
     padding-bottom: 6px !important;
@@ -124,6 +124,64 @@
     min-height: 42px !important;
     padding-top: 3px !important;
     padding-bottom: 3px !important;
+  }
+
+  /* ── Lightbox Full-Screen Modals in Mobile Landscape ──
+     Ensures all 4 edges of photographs are 100% visible with surrounding space */
+  .lightbox-mobile-landscape-root {
+    padding: 6px 14px !important;
+  }
+  .lightbox-mobile-landscape-stage {
+    padding: 2px 10px !important;
+  }
+  .lightbox-mobile-landscape-img {
+    max-height: 38vh !important;
+    max-width: 50vw !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
+  .lightbox-mobile-landscape-inner {
+    max-height: 38vh !important;
+    max-width: 50vw !important;
+  }
+  .lightbox-mobile-landscape-bottom {
+    padding: 5px 12px !important;
+    margin-top: 3px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    width: 100% !important;
+    max-width: 960px !important;
+  }
+  .lightbox-mobile-landscape-text {
+    align-items: flex-start !important;
+    text-align: left !important;
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+  }
+  .lightbox-mobile-landscape-title {
+    font-size: 0.72rem !important;
+    line-height: 1.15 !important;
+    text-align: left !important;
+  }
+  .lightbox-mobile-landscape-meta {
+    font-size: 0.63rem !important;
+    justify-content: flex-start !important;
+    text-align: left !important;
+    gap: 6px !important;
+  }
+  .lightbox-mobile-landscape-actions {
+    justify-content: flex-end !important;
+    margin-left: auto !important;
+    gap: 4px !important;
+    flex-shrink: 0 !important;
+  }
+  .lightbox-mobile-landscape-btn {
+    font-size: 0.64rem !important;
+    padding: 3px 7px !important;
+    border-radius: 6px !important;
   }
 }
 .leaflet-container {

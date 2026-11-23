@@ -13,6 +13,7 @@ import { useAuth } from '../../controllers/useAuth';
 import { LIVING_STATUSES } from '../../models/TuskerModel';
 import StatusBadge from '../components/StatusBadge';
 import Footer from '../components/Footer';
+import PhotoWatermarkBadge from '../components/PhotoWatermarkBadge';
 import { setCachedAspect } from '../../utils/photoAspectCache';
 import { thumbUrl } from '../../utils/storageUpload';
 
@@ -515,6 +516,12 @@ export default function WildTuskersList() {
                     <span className="font-sans text-[1rem] font-semibold text-[#999999] tracking-widest">{tusker.id}</span>
                     <span className="flex items-center gap-[3px] font-sans text-[0.72rem] text-[#bbbbbb]"><MapPin size={10} /> {tusker.location}</span>
                   </>
+                )}
+                {tusker.photos && tusker.photos[0] && (
+                  <PhotoWatermarkBadge
+                    size="sm"
+                    className={tusker.livingStatus && tusker.livingStatus !== 'Alive' ? '!top-1.5 !left-auto !right-1.5' : '!top-1.5 !left-1.5'}
+                  />
                 )}
               </div>
               <div className="flex flex-col gap-0.5">

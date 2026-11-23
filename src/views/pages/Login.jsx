@@ -68,7 +68,7 @@ export default function Login() {
           <img
             src={wtsLogo}
             alt="Wild Tuskers Sri Lanka"
-            className="h-[5.8rem] sm:h-[7.5rem] md:h-[11rem] lg:h-[14rem] mx-auto filter drop-shadow-lg object-contain"
+            className="h-[8.8rem] sm:h-[9.5rem] md:h-[11rem] lg:h-[14rem] mx-auto filter drop-shadow-lg object-contain"
           />
         </Link>
         <p className="hidden sm:block font-sans text-xs sm:text-[1.02rem] text-[#b0c9bd] max-w-[480px] leading-relaxed font-normal m-0 px-2">

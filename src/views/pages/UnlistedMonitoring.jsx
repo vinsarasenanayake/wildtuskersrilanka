@@ -11,6 +11,7 @@ import { Search, MapPin, X, ChevronDown, PlusCircle, Trash2, ShieldAlert, Layers
 import { useUnlistedTuskers } from '../../controllers/useUnlistedTuskers';
 import ImageUploadBox from '../components/ImageUploadBox';
 import LocationSearchInput from '../components/LocationSearchInput';
+import PhotoWatermarkBadge from '../components/PhotoWatermarkBadge';
 import { todayLocalISO } from '../../utils/localDate';
 
 export default function UnlistedMonitoring() {
@@ -357,6 +358,9 @@ export default function UnlistedMonitoring() {
                     className="w-full h-full object-cover absolute inset-0"
                   />
                 ) : null}
+                {item.photos && item.photos.length > 0 && (
+                  <PhotoWatermarkBadge size="sm" className="!top-1.5 !left-1.5" />
+                )}
                 <span className="font-sans text-[1rem] font-bold text-[#888888] tracking-widest z-[1] drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
                   {item.id}
                 </span>
