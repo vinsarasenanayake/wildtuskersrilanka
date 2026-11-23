@@ -5,15 +5,15 @@
  * searchable tusker search, and categorized wild tusker directories.
  */
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   ArrowLeft, Search, Layers, X, MapPin, ChevronDown, Compass, ExternalLink
 } from 'lucide-react';
 import { getTuskers, LIVING_STATUSES, DISTRICTS } from '../../models/TuskerModel';
 import { createMap } from '../../utils/mapEngine';
 import { cleanAreaName } from '../../utils/areaShapes';
-import { normalizeDistrict, tuskerIsInDistrict } from '../../controllers/useTusker';
+import { tuskerIsInDistrict } from '../../controllers/useTusker';
 import SRI_LANKA_DISTRICTS_DATA from '../../data/sriLankaDistrictsData.json';
 
 const SRI_LANKA_CENTER = [7.8731, 80.7718];
@@ -40,7 +40,6 @@ function tuskerAreaInfo(t) {
 }
 
 export default function DistrictMap() {
-  const navigate = useNavigate();
   const [tuskers, setTuskers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -155,6 +154,26 @@ export default function DistrictMap() {
     };
   }, []);
 
+  const handleSelectDistrict = useCallback((distName) => {
+    if (!distName || selectedDistrict === distName) {
+      setSelectedDistrict(null);
+      setDistrictQuery('');
+      if (mapRef.current) {
+        mapRef.current.fitBounds([[5.92, 79.6], [9.85, 81.9]], { padding: 30, maxZoom: 9 });
+      }
+    } else {
+      setSelectedDistrict(distName);
+      setDistrictQuery(distName);
+      setShowDistrictDrop(false);
+      setMobileTab('map');
+
+      const distObj = SRI_LANKA_DISTRICTS_DATA[distName];
+      if (distObj && distObj.bbox && mapRef.current) {
+        mapRef.current.fitBounds(distObj.bbox, { padding: 45 });
+      }
+    }
+  }, [selectedDistrict]);
+
   // Draw 25 Administrative Districts on Map as Boundary Polygons (Glassy styling like Zone Map)
   useEffect(() => {
     const map = mapRef.current;
@@ -207,27 +226,7 @@ export default function DistrictMap() {
         map.fitBounds([[5.92, 79.6], [9.85, 81.9]], { padding: 30, maxZoom: 9 });
       } catch {}
     }
-  }, [mapReady, selectedDistrict]);
-
-  const handleSelectDistrict = (distName) => {
-    if (!distName || selectedDistrict === distName) {
-      setSelectedDistrict(null);
-      setDistrictQuery('');
-      if (mapRef.current) {
-        mapRef.current.fitBounds([[5.92, 79.6], [9.85, 81.9]], { padding: 30, maxZoom: 9 });
-      }
-    } else {
-      setSelectedDistrict(distName);
-      setDistrictQuery(distName);
-      setShowDistrictDrop(false);
-      setMobileTab('map');
-
-      const distObj = SRI_LANKA_DISTRICTS_DATA[distName];
-      if (distObj && distObj.bbox && mapRef.current) {
-        mapRef.current.fitBounds(distObj.bbox, { padding: 45 });
-      }
-    }
-  };
+  }, [mapReady, selectedDistrict, handleSelectDistrict]);
 
   const handleReset = () => {
     setSelectedDistrict(null);

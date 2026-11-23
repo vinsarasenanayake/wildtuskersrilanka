@@ -120,17 +120,7 @@ export default function WildTuskersList() {
       } catch {}
     }, 300);
 
-    const hasActiveFilters = Boolean(
-    nameQuery ||
-    selectedDistrict ||
-    districtQuery ||
-    selectedLocation ||
-    locationQuery ||
-    (statusFilter && statusFilter !== 'ALL') ||
-    sortOrder !== 'ID_DESC'
-  );
-
-  return () => {
+    return () => {
       cancelAnimationFrame(frameId);
       clearTimeout(t1);
       clearTimeout(t2);
@@ -155,17 +145,8 @@ export default function WildTuskersList() {
       }
     };
     document.addEventListener('mousedown', handleOutsideClick);
-    const hasActiveFilters = Boolean(
-    nameQuery ||
-    selectedDistrict ||
-    districtQuery ||
-    selectedLocation ||
-    locationQuery ||
-    (statusFilter && statusFilter !== 'ALL') ||
-    sortOrder !== 'ID_DESC'
-  );
 
-  return () => document.removeEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, [setShowNameSugg, setShowDistrictDrop, setShowLocDrop]);
 
   useEffect(() => {
@@ -457,7 +438,7 @@ export default function WildTuskersList() {
       {/* ── Results Count ── */}
       <div className="flex items-center justify-between mb-7 font-sans text-[0.85rem] text-[#888888]">
         <span>{filtered.length} {filtered.length === 1 ? 'tusker' : 'tuskers'} found</span>
-        {(nameQuery || selectedDistrict || districtQuery || selectedLocation || locationQuery || statusFilter !== 'ALL' || sortOrder !== 'ID_DESC') && (
+        {hasActiveFilters && (
           <button
             type="button"
             className="bg-none border-none font-sans text-[0.85rem] text-accent cursor-pointer font-semibold underline p-0 hover:text-accent-hover inline-flex items-center gap-1 transition-colors"

@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   ArrowLeft, Search, Layers, X, MapPin, Compass
 } from 'lucide-react';
@@ -45,7 +45,6 @@ function tuskerAreaInfo(t) {
 }
 
 export default function TuskerMap() {
-  const navigate = useNavigate();
   const [tuskers, setTuskers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');

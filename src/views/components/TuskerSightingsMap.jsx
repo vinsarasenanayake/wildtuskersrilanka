@@ -331,7 +331,7 @@ export default function TuskerSightingsMap({
   // Resolve tusker administrative district(s) data
   const tuskerDistricts = useMemo(() => {
     return getTuskerDistrictData(tusker);
-  }, [tusker?.district, tusker?.lastSeenArea, tusker?.location]);
+  }, [tusker]);
 
   // Assemble habitat anchors (from LOCATION field), Last Seen pin, and field sightings (Row 2+)
   const { anchorCoords, sightingPoints, homeRangeShape, lastSeenPoint } = useMemo(() => {
