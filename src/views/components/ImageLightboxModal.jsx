@@ -413,7 +413,7 @@ export default function ImageLightboxModal({
             src={photo.imageUrl}
             alt={tuskerDisplayName}
             draggable={false}
-            className="max-w-full max-h-[70vh] sm:max-h-[76vh] md:max-h-[80vh] w-auto h-auto object-contain rounded-xl sm:rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] select-none border border-white/10 block lightbox-mobile-landscape-img"
+            className="max-w-full max-h-[70vh] sm:max-h-[76vh] md:max-h-[80vh] w-auto h-auto object-contain rounded-none shadow-[0_24px_70px_rgba(0,0,0,0.95)] select-none border border-white/10 block lightbox-mobile-landscape-img"
           />
         </div>
       </div>

@@ -470,7 +470,7 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
                 src={activePhoto}
                 alt={`${name} preview ${index + 1}`}
                 draggable={false}
-                className="max-h-[75vh] sm:max-h-[82vh] max-w-full w-auto h-auto object-contain select-none block lightbox-mobile-landscape-img"
+                className="max-h-[75vh] sm:max-h-[82vh] max-w-full w-auto h-auto object-contain select-none block rounded-none lightbox-mobile-landscape-img"
               />
               <PhotoWatermarkBadge size="lg" />
             </div>
@@ -1551,7 +1551,7 @@ function ComparisonPhotoLightbox({
               src={activeItem.photo}
               alt={`${tusker?.name || 'Tusker'} ${activeItem.year}`}
               draggable={false}
-              className={`max-h-[70vh] sm:max-h-[74vh] max-w-[92vw] w-auto h-auto object-contain rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10 select-none lightbox-mobile-landscape-img ${isDragging || isWheeling ? '' : 'transition-transform duration-75'}`}
+              className={`max-h-[70vh] sm:max-h-[74vh] max-w-[92vw] w-auto h-auto object-contain rounded-none shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10 select-none lightbox-mobile-landscape-img ${isDragging || isWheeling ? '' : 'transition-transform duration-75'}`}
               style={{
                 transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
                 transformOrigin: 'center center',
@@ -2076,7 +2076,7 @@ function SightingPhotoLightbox({
                 src={activeUrl}
                 alt={photo.title || 'Sighting'}
                 draggable={false}
-                className="max-h-[70vh] sm:max-h-[74vh] max-w-full w-auto h-auto object-contain rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10 select-none block lightbox-mobile-landscape-img"
+                className="max-h-[70vh] sm:max-h-[74vh] max-w-full w-auto h-auto object-contain rounded-none shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10 select-none block lightbox-mobile-landscape-img"
               />
             </div>
           </div>

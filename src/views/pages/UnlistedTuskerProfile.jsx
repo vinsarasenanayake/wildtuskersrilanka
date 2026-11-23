@@ -647,7 +647,7 @@ export default function UnlistedTuskerProfile() {
                 <img
                   src={selectedComparisonImg.photo}
                   alt={tusker.id}
-                  className="max-h-[70vh] w-auto max-w-full object-contain lightbox-mobile-landscape-img"
+                  className="max-h-[70vh] w-auto max-w-full object-contain rounded-none lightbox-mobile-landscape-img"
                 />
               </div>
 
