@@ -133,7 +133,7 @@ function App() {
             {/* Authentication & Admin Portal Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Navigate to="/login" replace />} />
-            <Route path="/admin" element={<AdminPortal />} />
+            <Route path="/admin" element={<RequireAdmin><AdminPortal /></RequireAdmin>} />
             <Route path="/admin/add-tusker" element={<RequireAdmin><TuskerForm /></RequireAdmin>} />
             <Route path="/admin/edit-tusker/:id" element={<RequireAdmin><TuskerForm /></RequireAdmin>} />
             <Route path="/admin/add-observation" element={<RequireAdmin><SpecialObservationForm /></RequireAdmin>} />

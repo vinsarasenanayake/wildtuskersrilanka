@@ -76,13 +76,12 @@ export default function Learn() {
           </div>
         </div>
 
-        {/* ── Content View ── */}
-        <div key={activeTab} className="w-full animate-fade-in">
-          {activeTab === 'observations' ? (
-            <SpecialObservations embedded />
-          ) : (
-            <TuskerIdentification embedded />
-          )}
+        {/* ── Content Views (Kept mounted for 0ms instant switching and scroll preservation) ── */}
+        <div className={activeTab === 'observations' ? 'w-full block animate-fade-in' : 'hidden'}>
+          <SpecialObservations embedded />
+        </div>
+        <div className={activeTab === 'identification' ? 'w-full block animate-fade-in' : 'hidden'}>
+          <TuskerIdentification embedded />
         </div>
 
       </div>

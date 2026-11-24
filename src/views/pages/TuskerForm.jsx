@@ -191,7 +191,7 @@ export default function TuskerForm() {
               {formData.livingStatus !== 'Deceased' && (
                 <Field label="Life Threat Level">
                   <select name="threatLevel" className={SELECT_CLASS} value={formData.threatLevel} onChange={handleChange}>
-                    <option value="">— Not set —</option>
+                    <option value="">- Not set -</option>
                     {THREAT_LEVELS.map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
                 </Field>
@@ -237,7 +237,7 @@ export default function TuskerForm() {
               </Field>
               <Field label={formData.livingStatus === 'Deceased' ? "Estimated Age Range (at death)" : "Age Range"}>
                 <select name="ageRange" className={SELECT_CLASS} value={formData.ageRange} onChange={handleChange}>
-                  <option value="">— Not set —</option>
+                  <option value="">- Not set -</option>
                   {AGE_RANGES.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
                 <p className="text-[0.72rem] text-[#888888] mt-1 m-0">
@@ -255,13 +255,13 @@ export default function TuskerForm() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-6">
               <Field label="Zone">
                 <select name="zone" className={SELECT_CLASS} value={formData.zone} onChange={handleChange}>
-                  <option value="">— Not set —</option>
+                  <option value="">- Not set -</option>
                   {ZONES.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
               </Field>
               <Field label="District">
                 <select name="district" className={SELECT_CLASS} value={formData.district} onChange={handleDistrictChange}>
-                  <option value="">— Not set —</option>
+                  <option value="">- Not set -</option>
                   {formData.district && !DISTRICTS.includes(formData.district) && (
                     <option value={formData.district}>{formData.district}</option>
                   )}
@@ -270,7 +270,7 @@ export default function TuskerForm() {
               </Field>
               <Field label="Province">
                 <select name="province" className={SELECT_CLASS} value={formData.province} onChange={handleChange}>
-                  <option value="">— Not set —</option>
+                  <option value="">- Not set -</option>
                   {formData.province && !PROVINCES.includes(formData.province) && (
                     <option value={formData.province}>{formData.province}</option>
                   )}

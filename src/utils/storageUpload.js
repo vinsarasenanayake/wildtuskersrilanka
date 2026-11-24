@@ -12,7 +12,7 @@ import { compressImage } from './imageCompress';
    Every photo is shrunk in the browser and saved twice:
      • web copy  → web/<folder>/<year>/<id>.webp   max 1920 px (~200–400 KB)
      • thumbnail → thumb/<folder>/<year>/<id>.webp max 480 px  (~10–50 KB)
-   The thumbnail has the same name under /thumb/ — see thumbUrl().
+   The thumbnail has the same name under /thumb/ - see thumbUrl().
 ============================================================== */
 
 const EXT_BY_TYPE = {
@@ -70,7 +70,7 @@ export async function uploadMediaFile(fileOrDataUrl, folder = 'uploads') {
   try {
     await put(`thumb/${name}`, thumb);
   } catch {
-    // Thumbnail is optional — pages fall back gracefully if it's missing
+    // Thumbnail is optional - pages fall back gracefully if it's missing
   }
   return supabase.storage.from(MEDIA_BUCKET).getPublicUrl(`web/${name}`).data.publicUrl;
 }

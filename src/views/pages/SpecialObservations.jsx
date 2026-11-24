@@ -5,7 +5,7 @@
  * Features year filtering, text searching, admin create/edit/delete, and photo lightbox integration.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Binoculars,
@@ -18,11 +18,333 @@ import {
   Edit3,
   User,
   Image as ImageIcon,
-  ExternalLink
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
 } from 'lucide-react';
 import { useSpecialObservationsFeed } from '../../controllers/useSpecialObservations';
 import ImageLightboxModal from '../components/ImageLightboxModal';
 import { formatDisplayTime } from '../../utils/localDate';
+
+const LOOKALIKE_PAIRS_META = [
+  {
+    pattern: /wijaya|walagamba/i,
+    tuskersText: 'T119 - Wijaya vs T219 - Walagamba',
+    title: 'Wilpattu Wijaya (Left) vs. Thabbowa Karuwalagaswewa Walagamba (Right)',
+  },
+  {
+    pattern: /agbo|gajabahu/i,
+    tuskersText: 'T096 - Agbo vs T232 - Gajabahu',
+    title: 'Agbo (Left) vs. Gajabahu (Right)',
+  },
+  {
+    pattern: /missaka|homo/i,
+    tuskersText: 'T078 - Missaka vs T073 - Homo',
+    title: 'Missaka (Left) vs. Homo (Right)',
+  },
+  {
+    pattern: /devra|parinda/i,
+    tuskersText: 'T173 - Devra vs T162 - Parinda',
+    title: 'T173 - Devra (Left) vs. Parinda (Right)',
+  },
+];
+
+function buildObservationPhotos(item) {
+  if (!item.images || item.images.length === 0) return [];
+  const isLookalikes = item.id === 5 || /lookalike|alike/i.test(item.title);
+
+  return item.images.map((imgUrl, idx) => {
+    let title = item.title;
+    let tuskerName = item.tuskerName;
+    let hideDate = Boolean(item.hideDate);
+    let hideLocation = false;
+
+    if (isLookalikes) {
+      hideDate = true;
+      hideLocation = true;
+      const pairMeta =
+        LOOKALIKE_PAIRS_META.find((m) => m.pattern.test(imgUrl)) ||
+        LOOKALIKE_PAIRS_META[idx];
+      if (pairMeta) {
+        title = pairMeta.title;
+        tuskerName = pairMeta.tuskersText;
+      }
+    }
+
+    return {
+      id: `${item.id}_${idx}`,
+      imageUrl: imgUrl,
+      title,
+      tuskerName,
+      location: hideLocation ? null : item.location,
+      date: hideDate ? null : item.date,
+      hideDate,
+      hideLocation,
+      author: item.author,
+      item,
+    };
+  });
+}
+
+function ObservationPhotosScrollRow({ item, obsPhotos, onPhotoClick }) {
+  const rowRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const isDraggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const scrollLeftRef = useRef(0);
+  const movedDistanceRef = useRef(0);
+  const [isGrabbing, setIsGrabbing] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = rowRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 6);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 6);
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [checkScroll, item.images.length]);
+
+  const scrollByAmount = (direction) => {
+    if (!rowRef.current) return;
+    const offset = direction === 'left' ? -280 : 280;
+    rowRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+    setTimeout(checkScroll, 320);
+  };
+
+  const handleMouseDown = (e) => {
+    if (e.button !== 0 || !rowRef.current) return;
+    isDraggingRef.current = true;
+    startXRef.current = e.pageX - rowRef.current.offsetLeft;
+    scrollLeftRef.current = rowRef.current.scrollLeft;
+    movedDistanceRef.current = 0;
+    setIsGrabbing(true);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDraggingRef.current || !rowRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - rowRef.current.offsetLeft;
+    const walk = (x - startXRef.current) * 1.5;
+    movedDistanceRef.current = Math.abs(x - startXRef.current);
+    rowRef.current.scrollLeft = scrollLeftRef.current - walk;
+    checkScroll();
+  };
+
+  const handleMouseUpOrLeave = () => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    setIsGrabbing(false);
+  };
+
+  const handleCardClick = (photo) => {
+    if (movedDistanceRef.current > 6) return;
+    onPhotoClick(photo);
+  };
+
+  return (
+    <div className="pt-2 flex flex-col gap-2 relative">
+      <div className="flex items-center justify-between">
+        <span className="font-sans text-[0.72rem] sm:text-[0.78rem] font-bold text-[#888888] uppercase tracking-wider flex items-center gap-1.5">
+          <ImageIcon size={14} className="text-accent shrink-0" />
+          <span>Observation Photographs ({item.images.length})</span>
+        </span>
+        <div className="flex items-center gap-2">
+          {item.images.length > 2 && (
+            <div className="hidden sm:flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => scrollByAmount('left')}
+                disabled={!canScrollLeft}
+                className="w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-25 disabled:pointer-events-none flex items-center justify-center text-gray-700 border-none cursor-pointer transition-all"
+                aria-label="Scroll photos left"
+                title="Scroll left"
+              >
+                <ChevronLeft size={13} />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollByAmount('right')}
+                disabled={!canScrollRight}
+                className="w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-25 disabled:pointer-events-none flex items-center justify-center text-gray-700 border-none cursor-pointer transition-all"
+                aria-label="Scroll photos right"
+                title="Scroll right"
+              >
+                <ChevronRight size={13} />
+              </button>
+            </div>
+          )}
+          <span className="text-[0.7rem] sm:text-[0.75rem] text-[#888888]">
+            Click to enlarge
+          </span>
+        </div>
+      </div>
+
+      <div
+        ref={rowRef}
+        onScroll={checkScroll}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUpOrLeave}
+        onMouseLeave={handleMouseUpOrLeave}
+        className={`flex items-center gap-2.5 sm:gap-3 overflow-x-auto pb-2.5 pt-1 overscroll-contain select-none ${
+          isGrabbing ? 'cursor-grabbing' : 'cursor-grab'
+        }`}
+        style={{
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#c5a059 transparent',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+        }}
+      >
+        {item.images.map((imgUrl, idx) => (
+          <div
+            key={idx}
+            onClick={() => handleCardClick(obsPhotos[idx])}
+            className="group relative w-[160px] sm:w-[200px] md:w-[230px] aspect-[4/3] rounded-xl overflow-hidden bg-[#f3f4f6] border border-[#e5e7eb] shadow-2xs shrink-0 select-none cursor-pointer"
+          >
+            <img
+              src={imgUrl}
+              alt={`${item.tuskerName} observation photograph ${idx + 1}`}
+              draggable={false}
+              onDragStart={(e) => e.preventDefault()}
+              className="w-full h-full object-cover pointer-events-none transition-transform duration-300 group-hover:scale-105 select-none"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white pointer-events-none">
+              <ZoomIn size={18} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ObservationPhotosGallery({ item, setActiveLightboxPhoto }) {
+  if (!item.images || item.images.length === 0) return null;
+  const count = item.images.length;
+  const obsPhotos = buildObservationPhotos(item);
+
+  // If more than 4 images: horizontal scroll row with touch and mouse drag (matching Our Projects)
+  if (count > 4) {
+    return (
+      <ObservationPhotosScrollRow
+        item={item}
+        obsPhotos={obsPhotos}
+        onPhotoClick={(photo) => setActiveLightboxPhoto({ ...photo, allPhotos: obsPhotos })}
+      />
+    );
+  }
+
+  return (
+    <div className="pt-2 flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <span className="font-sans text-[0.72rem] sm:text-[0.78rem] font-bold text-[#888888] uppercase tracking-wider flex items-center gap-1.5">
+          <ImageIcon size={14} className="text-accent shrink-0" />
+          <span>Observation Photographs ({count})</span>
+        </span>
+        <span className="text-[0.7rem] sm:text-[0.75rem] text-[#888888]">
+          Click to enlarge
+        </span>
+      </div>
+
+      {/* 1 Image: Full view matching the full length/width of the section */}
+      {count === 1 && (
+        <div
+          onClick={() => setActiveLightboxPhoto({ ...obsPhotos[0], allPhotos: obsPhotos })}
+          className="relative w-full rounded-2xl overflow-hidden bg-[#f8f9fa] border border-[#e5e7eb] cursor-pointer group shadow-2xs"
+        >
+          <img
+            src={item.images[0]}
+            alt={`${item.tuskerName} observation photograph`}
+            className="w-full h-auto max-h-[580px] object-contain block mx-auto transition-transform duration-300 group-hover:scale-[1.01]"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+            <ExternalLink size={22} />
+          </div>
+        </div>
+      )}
+
+      {/* 2 Images: 50% 50% of the section length */}
+      {count === 2 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+          {item.images.map((imgUrl, i) => (
+            <div
+              key={i}
+              onClick={() => setActiveLightboxPhoto({ ...obsPhotos[i], allPhotos: obsPhotos })}
+              className="relative aspect-[16/10] sm:aspect-[4/3] rounded-xl overflow-hidden bg-[#f8f9fa] border border-[#e5e7eb] cursor-pointer group shadow-2xs"
+            >
+              <img
+                src={imgUrl}
+                alt={`${item.tuskerName} observation ${i + 1}`}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                <ExternalLink size={18} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 3 Images: 3/3 of the section length */}
+      {count === 3 && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+          {item.images.map((imgUrl, i) => (
+            <div
+              key={i}
+              onClick={() => setActiveLightboxPhoto({ ...obsPhotos[i], allPhotos: obsPhotos })}
+              className="relative aspect-[4/3] rounded-xl overflow-hidden bg-[#f8f9fa] border border-[#e5e7eb] cursor-pointer group shadow-2xs"
+            >
+              <img
+                src={imgUrl}
+                alt={`${item.tuskerName} observation ${i + 1}`}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                <ExternalLink size={18} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 4 Images: 4 images across the section like Looks Alike */}
+      {count === 4 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+          {item.images.map((imgUrl, i) => (
+            <div
+              key={i}
+              onClick={() => setActiveLightboxPhoto({ ...obsPhotos[i], allPhotos: obsPhotos })}
+              className="relative aspect-[4/3] rounded-xl overflow-hidden bg-[#f8f9fa] border border-[#e5e7eb] cursor-pointer group shadow-2xs"
+            >
+              <img
+                src={imgUrl}
+                alt={`${item.tuskerName} observation ${i + 1}`}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                <ExternalLink size={18} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function SpecialObservations({ embedded = false }) {
   const navigate = useNavigate();
@@ -30,9 +352,6 @@ export default function SpecialObservations({ embedded = false }) {
     loading,
     observations,
     allObservations = [],
-    availableYears,
-    selectedYear,
-    setSelectedYear,
     searchQuery,
     setSearchQuery,
     canAddObservation,
@@ -79,79 +398,63 @@ export default function SpecialObservations({ embedded = false }) {
           <p className="font-sans text-xs sm:text-[0.95rem] text-[#555555] leading-[1.75] max-w-3xl mx-auto m-0 text-center">
             In-depth annual field observations documenting significant behaviors, musth cycles, physical developments, and health records of Sri Lanka's wild tuskers.
           </p>
+        </div>
+      )}
 
-          {canAddObservation && (
-            <div className="flex items-center justify-center w-full sm:w-auto mt-2">
+      {/* Controls Bar: Search (Left) + Add Observation (Right) on ONE horizontal line */}
+      <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          {/* Search Box */}
+          <div className="relative w-full sm:max-w-md flex-1">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#999999] pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search by tusker, title, location..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-10 sm:h-10 bg-white border border-[#e2e8f0] rounded-xl sm:rounded-lg pl-9 pr-9 text-xs sm:text-[0.88rem] text-[#111111] placeholder:text-[#999999] outline-none focus:border-accent transition-all shadow-2xs box-border"
+            />
+            {searchQuery && (
               <button
-                onClick={() => navigate('/admin/add-observation')}
-                className="bg-accent text-primary font-semibold text-xs sm:text-[0.88rem] px-6 sm:px-8 py-2.5 rounded-[8px] inline-flex items-center justify-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap shadow-sm w-full sm:w-auto text-center"
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 border-none bg-none cursor-pointer p-0 text-base leading-none"
+                aria-label="Clear search"
               >
-                <PlusCircle size={16} />
-                <span>Add Special Observation</span>
+                &times;
               </button>
-            </div>
+            )}
+          </div>
+
+          {/* Add Special Observation Button */}
+          {canAddObservation && (
+            <button
+              type="button"
+              onClick={() => navigate('/admin/add-observation')}
+              className="h-10 sm:h-10 bg-accent text-primary font-bold text-xs sm:text-[0.88rem] px-5 sm:px-6 rounded-xl sm:rounded-lg inline-flex items-center justify-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors whitespace-nowrap shadow-xs shrink-0"
+            >
+              <PlusCircle size={16} />
+              <span>Add Special Observation</span>
+            </button>
           )}
         </div>
-      )}
 
-      {/* Embedded Admin Add Button */}
-      {embedded && canAddObservation && (
-        <div className="flex items-center w-full sm:w-auto sm:justify-end">
-          <button
-            onClick={() => navigate('/admin/add-observation')}
-            className="w-full sm:w-auto bg-accent text-primary font-bold text-xs sm:text-[0.88rem] px-5 sm:px-6 py-3 sm:py-2.5 rounded-xl sm:rounded-lg inline-flex items-center justify-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors whitespace-nowrap shadow-xs"
-          >
-            <PlusCircle size={16} />
-            <span>Add Special Observation</span>
-          </button>
-        </div>
-      )}
-
-        {/* Controls: Year Filter Tabs & Search Bar (hidden when empty) */}
-        {allObservations.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
-            {/* Year Tabs - scrollable horizontally on mobile */}
-            {availableYears.length > 0 && (
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
-                <button
-                  onClick={() => setSelectedYear('ALL')}
-                  className={`font-sans text-xs sm:text-[0.88rem] font-bold px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all cursor-pointer border-none shrink-0 ${
-                    selectedYear === 'ALL'
-                      ? 'bg-primary text-white shadow-sm'
-                      : 'bg-white text-[#555555] hover:bg-[#eaeaea] hover:text-[#111111]'
-                  }`}
-                >
-                  All Years
-                </button>
-                {availableYears.map((year) => (
-                  <button
-                    key={year}
-                    onClick={() => setSelectedYear(year)}
-                    className={`font-sans text-xs sm:text-[0.88rem] font-bold px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all cursor-pointer border-none shrink-0 ${
-                      selectedYear === year
-                        ? 'bg-primary text-white shadow-sm'
-                        : 'bg-white text-[#555555] hover:bg-[#eaeaea] hover:text-[#111111]'
-                    }`}
-                  >
-                    {year}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Search Box */}
-            <div className="relative w-full sm:w-auto min-w-0 sm:min-w-[240px] sm:max-w-sm sm:ml-auto">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#999999]" />
-              <input
-                type="text"
-                placeholder="Search by tusker, title, location..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white border border-[#e2e8f0] rounded-full pl-9 pr-4 py-2 text-xs sm:text-[0.88rem] text-[#111111] placeholder:text-[#999999] outline-none focus:border-accent transition-all"
-              />
-            </div>
+        {/* Records Found Indicator */}
+        {searchQuery.trim() && (
+          <div className="font-sans text-xs sm:text-[0.85rem] text-[#666666] px-1 font-medium flex items-center gap-1.5 animate-fade-in">
+            <span>
+              Found <strong className="text-primary font-bold">{observations.length}</strong> {observations.length === 1 ? 'record' : 'records'} matching &ldquo;<span className="text-[#111111] font-semibold">{searchQuery}</span>&rdquo;
+            </span>
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="text-accent hover:underline cursor-pointer border-none bg-none font-semibold text-xs ml-1"
+            >
+              Clear search
+            </button>
           </div>
         )}
+      </div>
 
         {/* Observations List & Loading Skeleton */}
         {loading && allObservations.length === 0 ? (
@@ -182,11 +485,13 @@ export default function SpecialObservations({ embedded = false }) {
                       {item.tuskerName}
                     </span>
 
-                    {/* Date */}
-                    <span className="inline-flex items-center gap-1.5 font-sans text-[0.75rem] sm:text-[0.82rem] text-[#666666] font-medium">
-                      <Calendar size={13} className="text-accent" />
-                      {formatDate(item.date)}
-                    </span>
+                    {/* Date (hidden if multi-year/comparative observation specifies hideDate) */}
+                    {item.date && !item.hideDate && (
+                      <span className="inline-flex items-center gap-1.5 font-sans text-[0.75rem] sm:text-[0.82rem] text-[#666666] font-medium">
+                        <Calendar size={13} className="text-accent" />
+                        {formatDate(item.date)}
+                      </span>
+                    )}
 
                     {/* Time of Observation */}
                     {item.time && (
@@ -231,49 +536,35 @@ export default function SpecialObservations({ embedded = false }) {
                   {item.title}
                 </h2>
 
-                {/* Description Body */}
-                <div className="font-sans text-xs sm:text-[0.95rem] text-[#333333] leading-[1.8] whitespace-pre-line">
-                  {item.description}
-                </div>
-
-                {/* Photos / Images Gallery */}
-                {item.images && item.images.length > 0 && (
-                  <div className="pt-2">
-                    <p className="font-sans text-[0.72rem] sm:text-[0.78rem] font-bold text-[#888888] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                      <ImageIcon size={14} />
-                      <span>Observation Photographs ({item.images.length})</span>
-                    </p>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
-                      {item.images.map((imgUrl, i) => (
-                        <div
-                          key={i}
-                          onClick={() =>
-                            setActiveLightboxPhoto({
-                              imageUrl: imgUrl,
-                              title: item.title,
-                              tuskerName: item.tuskerName,
-                              location: item.location,
-                              date: item.date,
-                              author: item.author,
-                              id: item.id,
-                              item: item,
-                            })
-                          }
-                          className="relative aspect-[4/3] rounded-xl overflow-hidden bg-[#e8e8e8] border border-[#e0e0e0] cursor-pointer group shadow-xs"
-                        >
-                          <img
-                            src={imgUrl}
-                            alt={`${item.tuskerName} observation ${i + 1}`}
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          />
-                          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                            <ExternalLink size={18} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                {/* Description: Scrollable with Justified Paragraphs */}
+                {item.description && (
+                  <div
+                    tabIndex={0}
+                    role="region"
+                    aria-label={`Description for ${item.title}`}
+                    className="max-h-[220px] sm:max-h-[260px] overflow-y-auto pr-2 sm:pr-3 flex flex-col gap-2.5 overscroll-contain focus:outline-hidden"
+                    style={{
+                      scrollbarWidth: 'thin',
+                      scrollbarColor: '#c5a059 transparent',
+                    }}
+                  >
+                    {item.description.split(/\n+/).map((para, pIdx) => (
+                      <p
+                        key={pIdx}
+                        className="font-sans text-xs sm:text-[0.93rem] text-[#374151] leading-[1.8] text-justify m-0"
+                        style={{ textAlign: 'justify', textJustify: 'inter-word' }}
+                      >
+                        {para}
+                      </p>
+                    ))}
                   </div>
                 )}
+
+                {/* Photos / Images Gallery */}
+                <ObservationPhotosGallery
+                  item={item}
+                  setActiveLightboxPhoto={setActiveLightboxPhoto}
+                />
 
                 {/* Footer Attribution */}
                 {item.author && (
@@ -297,8 +588,8 @@ export default function SpecialObservations({ embedded = false }) {
               {allObservations.length === 0
                 ? <>No special observations have been <span className="inline-block whitespace-nowrap">recorded yet.</span></>
                 : searchQuery
-                ? 'No observations match your current search query. Try clearing the search or switching year filter.'
-                : <>No observations recorded for this year <span className="inline-block whitespace-nowrap">yet.</span></>}
+                ? 'No observations match your current search query. Try clearing the search.'
+                : <>No observations recorded yet.</>}
             </p>
             {searchQuery && (
               <button
@@ -317,19 +608,26 @@ export default function SpecialObservations({ embedded = false }) {
       {activeLightboxPhoto && (
         <ImageLightboxModal
           photo={activeLightboxPhoto}
+          allPhotos={activeLightboxPhoto.allPhotos || [activeLightboxPhoto]}
+          onNavigatePhoto={(nextPhoto) =>
+            setActiveLightboxPhoto({
+              ...nextPhoto,
+              allPhotos: activeLightboxPhoto.allPhotos,
+            })
+          }
           isAdmin={isAdmin}
           onEdit={() => {
-            const itemId = activeLightboxPhoto.id;
+            const itemId = activeLightboxPhoto.item?.id || activeLightboxPhoto.id;
             setActiveLightboxPhoto(null);
             navigate(`/admin/edit-observation/${itemId}`);
           }}
           onDelete={() => {
-            const itemId = activeLightboxPhoto.id;
+            const itemId = activeLightboxPhoto.item?.id || activeLightboxPhoto.id;
             setActiveLightboxPhoto(null);
             handleDelete(itemId);
           }}
           onClose={() => setActiveLightboxPhoto(null)}
-          fromPath="/observations"
+          fromPath={embedded ? '/learn?tab=observations' : '/observations'}
         />
       )}
     </>

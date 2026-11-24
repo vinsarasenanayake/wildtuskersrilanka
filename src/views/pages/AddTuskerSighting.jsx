@@ -182,7 +182,7 @@ export default function AddTuskerSighting() {
                     value={formData.threatLevel}
                     onChange={handleChange}
                   >
-                    <option value="">— Not set —</option>
+                    <option value="">- Not set -</option>
                     {THREAT_LEVELS.map(o => (
                       <option key={o} value={o}>{o}</option>
                     ))}

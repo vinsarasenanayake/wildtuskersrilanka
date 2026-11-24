@@ -3,7 +3,7 @@
  * @description Client-side image resizing and WebP compression before uploading to storage.
  */
 
-const MAX_EDGE = 1920;     // px — long edge; plenty for full-screen viewing
+const MAX_EDGE = 1920;     // px - long edge; plenty for full-screen viewing
 const QUALITY = 0.82;      // visually lossless for photos
 const SKIP_TYPES = ['image/gif', 'image/svg+xml'];
 
@@ -24,7 +24,7 @@ export async function compressImage(blob, { maxEdge = MAX_EDGE, quality = QUALIT
   try {
     bitmap = await createImageBitmap(blob, { imageOrientation: 'from-image' });
   } catch {
-    return blob; // browser can't decode it — upload as-is
+    return blob; // browser can't decode it - upload as-is
   }
 
   const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));

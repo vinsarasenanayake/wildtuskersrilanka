@@ -18,8 +18,9 @@ import {
 
 export default function DocumentViewerModal({ item, onClose }) {
   const titleId = useId();
-  const viewerEngine = 'office';
+  const [viewerEngine, setViewerEngine] = useState('google');
   const [iframeLoading, setIframeLoading] = useState(true);
+  const [iframeError, setIframeError] = useState(false);
 
   const containerRef = useRef(null);
   const iframeRef = useRef(null);
@@ -133,9 +134,20 @@ export default function DocumentViewerModal({ item, onClose }) {
   // Attempt to focus the iframe once loaded so native office/pdf controls respond to arrows
   const handleIframeLoad = () => {
     setIframeLoading(false);
+    setIframeError(false);
     try {
       iframeRef.current?.focus();
     } catch {}
+  };
+
+  const handleIframeError = () => {
+    setIframeLoading(false);
+    if (isOffice && viewerEngine === 'google') {
+      // Auto-fallback to Office engine if Google docs viewer fails
+      setViewerEngine('office');
+    } else {
+      setIframeError(true);
+    }
   };
 
   if (!item) return null;
@@ -269,15 +281,36 @@ export default function DocumentViewerModal({ item, onClose }) {
                 </span>
               </div>
             )}
-            <iframe
-              ref={iframeRef}
-              key={viewerIframeSrc}
-              src={viewerIframeSrc}
-              title={item.title}
-              className="w-full h-full border-none bg-white flex-1"
-              onLoad={handleIframeLoad}
-              allowFullScreen
-            />
+            {iframeError ? (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#0c120e] text-white/80 p-6 text-center gap-4">
+                <FileText size={48} className="text-accent/60" />
+                <h3 className="text-base sm:text-lg font-bold text-white">Document Preview Unavailable</h3>
+                <p className="text-xs sm:text-sm text-white/60 max-w-md">
+                  This document could not be previewed directly in the browser. You can download the file directly to view it on your device.
+                </p>
+                {fileUrl && (
+                  <a
+                    href={fileUrl}
+                    download={item.fileName || 'document'}
+                    className="h-9 px-4 rounded-lg inline-flex items-center justify-center gap-2 text-xs font-semibold text-primary bg-accent hover:bg-accent-hover transition-all no-underline shadow-xs cursor-pointer"
+                  >
+                    <Download size={15} />
+                    <span>Download File</span>
+                  </a>
+                )}
+              </div>
+            ) : (
+              <iframe
+                ref={iframeRef}
+                key={viewerIframeSrc}
+                src={viewerIframeSrc}
+                title={item.title}
+                className="w-full h-full border-none bg-white flex-1"
+                onLoad={handleIframeLoad}
+                onError={handleIframeError}
+                allowFullScreen
+              />
+            )}
           </div>
         )}
       </div>

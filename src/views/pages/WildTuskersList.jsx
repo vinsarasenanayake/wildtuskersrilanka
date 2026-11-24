@@ -92,8 +92,12 @@ export default function WildTuskersList() {
       return;
     }
 
-    const savedId = sessionStorage.getItem('wts_last_tusker_id');
-    const savedScroll = sessionStorage.getItem('wts_last_tusker_scroll');
+    let savedId = null;
+    let savedScroll = null;
+    try {
+      savedId = sessionStorage.getItem('wts_last_tusker_id');
+      savedScroll = sessionStorage.getItem('wts_last_tusker_scroll');
+    } catch {}
 
     if (!savedId && !savedScroll) return;
 

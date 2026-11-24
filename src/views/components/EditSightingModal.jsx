@@ -58,7 +58,7 @@ function getInitialFormData(sightingObj) {
   // Extract capture date
   const rawDate = sightingObj.captureDate || sightingObj.date || '';
   let captureDate = '';
-  if (rawDate && rawDate !== '—') {
+  if (rawDate && rawDate !== '-') {
     const match = String(rawDate).match(/\d{4}-\d{2}-\d{2}/);
     if (match) {
       captureDate = match[0];
@@ -92,13 +92,13 @@ function getInitialFormData(sightingObj) {
     imageUrl: allImgs[0] || '',
     images: allImgs,
     captureDate,
-    author: author !== '—' ? author : 'WTS Admin',
+    author: author !== '-' ? author : 'WTS Admin',
     location: location !== 'Location unrecorded' ? location : '',
-    healthCondition: healthCondition !== '—' ? healthCondition : 'Good',
-    threatLevel: threatLevel !== '—' ? threatLevel : '',
+    healthCondition: healthCondition !== '-' ? healthCondition : 'Good',
+    threatLevel: threatLevel !== '-' ? threatLevel : '',
     specialMarks,
     specialWounds,
-    note: note !== '—' ? note : '',
+    note: note !== '-' ? note : '',
   };
 }
 
@@ -333,7 +333,7 @@ export default function EditSightingModal({
                 value={formData.healthCondition}
                 onChange={handleChange}
               >
-                <option value="">— Select Condition —</option>
+                <option value="">- Select Condition -</option>
                 {HEALTH_OPTIONS.map((o) => (
                   <option key={o} value={o}>
                     {o}
@@ -353,7 +353,7 @@ export default function EditSightingModal({
                 value={formData.threatLevel}
                 onChange={handleChange}
               >
-                <option value="">— Select Threat Level —</option>
+                <option value="">- Select Threat Level -</option>
                 {THREAT_LEVELS.map((o) => (
                   <option key={o} value={o}>
                     {o}

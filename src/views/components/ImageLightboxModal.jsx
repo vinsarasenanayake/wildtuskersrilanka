@@ -342,8 +342,8 @@ export default function ImageLightboxModal({
     return photo.tuskerName || photo.title || 'Wild Tusker';
   })();
 
-  const locationTaken = photo.location || tusker?.location || '';
-  const formattedDate = formatDisplayDate(photo.date);
+  const locationTaken = photo.hideLocation ? '' : (photo.location || tusker?.location || '');
+  const formattedDate = photo.hideDate ? '' : formatDisplayDate(photo.date);
   const rawPhotographer = photo.photographer || photo.author || photo.sharedBy || '';
   const photographerName =
     rawPhotographer === 'WTS Research Team' || rawPhotographer === 'WTS Team'
@@ -454,7 +454,11 @@ export default function ImageLightboxModal({
             src={photo.imageUrl}
             alt={tuskerDisplayName}
             draggable={false}
-            className="max-w-full max-h-[70vh] sm:max-h-[76vh] md:max-h-[80vh] w-auto h-auto object-contain rounded-none shadow-[0_24px_70px_rgba(0,0,0,0.95)] select-none border border-white/10 block lightbox-mobile-landscape-img"
+            className={`max-w-full max-h-[70vh] sm:max-h-[76vh] md:max-h-[80vh] w-auto h-auto object-contain select-none block lightbox-mobile-landscape-img ${
+              photo.bgWhite
+                ? 'bg-white p-2 sm:p-4 rounded-xl shadow-2xl border-none'
+                : 'rounded-none shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10'
+            }`}
           />
         </div>
 

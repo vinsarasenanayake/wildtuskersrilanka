@@ -11,7 +11,7 @@ import { uploadMediaFile } from '../utils/storageUpload';
    SECTION 1: TIME METADATA PARSER & SERIALIZER
 ============================================================== */
 export function parseObservationMeta(rawDescription) {
-  if (!rawDescription) return { description: '', time: '' };
+  if (!rawDescription) return { description: '', time: '', hideDate: false };
   const metaMatch = String(rawDescription).match(/<!--WTS_OBS_META:([\s\S]*?)-->/);
   if (metaMatch) {
     try {
@@ -20,18 +20,21 @@ export function parseObservationMeta(rawDescription) {
       return {
         description: cleanDesc,
         time: meta.time || '',
+        hideDate: Boolean(meta.hideDate),
       };
     } catch (e) {
       console.warn('[SpecialObservationsModel] Failed to parse meta:', e);
     }
   }
-  return { description: rawDescription, time: '' };
+  return { description: rawDescription, time: '', hideDate: false };
 }
 
-export function serializeObservationDescription(description, time) {
+export function serializeObservationDescription(description, time, hideDate = false) {
   const cleanDesc = (description || '').trim();
-  if (time && time.trim()) {
-    const meta = { time: time.trim() };
+  const meta = {};
+  if (time && time.trim()) meta.time = time.trim();
+  if (hideDate) meta.hideDate = true;
+  if (Object.keys(meta).length > 0) {
     return `<!--WTS_OBS_META:${JSON.stringify(meta)}-->\n${cleanDesc}`;
   }
   return cleanDesc;
@@ -46,15 +49,18 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 
 export function getCachedSpecialObservations() {
   const now = Date.now();
-  if (observationsCache && (now - observationsCacheTime < CACHE_TTL_MS)) {
+  if (observationsCache && Array.isArray(observationsCache) && observationsCache.length > 0 && (now - observationsCacheTime < CACHE_TTL_MS)) {
     return observationsCache;
   }
   try {
     const saved = sessionStorage.getItem('wts_observations_cache');
     if (saved) {
-      observationsCache = JSON.parse(saved);
-      observationsCacheTime = now;
-      return observationsCache;
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        observationsCache = parsed;
+        observationsCacheTime = now;
+        return observationsCache;
+      }
     }
   } catch { /* ignore */ }
   return null;
@@ -79,6 +85,7 @@ function mapObservation(row) {
   const meta = parseObservationMeta(o.description);
   o.description = meta.description;
   o.time = meta.time || o.time || '';
+  o.hideDate = Boolean(meta.hideDate || o.hideDate);
   return o;
 }
 
@@ -105,12 +112,11 @@ async function uploadImages(images = []) {
 export async function getSpecialObservations(forceRefresh = false) {
   if (!forceRefresh) {
     const cached = getCachedSpecialObservations();
-    if (cached) return cached;
+    if (cached && cached.length > 0) return cached;
   }
 
   const rows = unwrap(
     await supabase.from('special_observations').select('*')
-      .neq('location', 'LEARN_IDENTIFICATION')
       .order('date', { ascending: false })
       .order('id', { ascending: false })
   );
@@ -133,7 +139,7 @@ export async function getSpecialObservationById(id) {
 
 export async function addSpecialObservation(entry) {
   const images = await uploadImages(entry.images || []);
-  const finalDescription = serializeObservationDescription(entry.description, entry.time);
+  const finalDescription = serializeObservationDescription(entry.description, entry.time, entry.hideDate);
   const payload = { ...entry, description: finalDescription, images };
   const saved = unwrap(
     await supabase.from('special_observations')
@@ -148,7 +154,7 @@ export async function updateSpecialObservation(id, updated) {
   if (Array.isArray(images)) {
     images = await uploadImages(images);
   }
-  const finalDescription = serializeObservationDescription(updated.description, updated.time);
+  const finalDescription = serializeObservationDescription(updated.description, updated.time, updated.hideDate);
   const payload = {
     ...updated,
     description: finalDescription,

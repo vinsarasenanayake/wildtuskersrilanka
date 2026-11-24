@@ -176,7 +176,7 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
   });
   // Google draws a grey "can't load Google Maps correctly" box on errors
   // (quota reached, key problems). Spot it and switch to the free maps.
-  // (Checked a few times after loading — watching every change slowed zooming.)
+  // (Checked a few times after loading - watching every change slowed zooming.)
   const errorChecks = [1500, 5000, 12000].map((ms) =>
     setTimeout(() => {
       if (container.isConnected && container.querySelector('.gm-err-container, .gm-err-message')) {

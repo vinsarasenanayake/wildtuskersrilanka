@@ -22,7 +22,7 @@ import { todayLocalISO, isFutureDateTime } from '../utils/localDate';
 export function useSpecialObservationsFeed() {
   const cached = getCachedSpecialObservations();
   const [observations, setObservations] = useState(() => cached || []);
-  const [loading, setLoading] = useState(() => !cached);
+  const [loading, setLoading] = useState(() => !cached || cached.length === 0);
   const [selectedYear, setSelectedYear] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const { isAdmin } = useAuth();
@@ -38,7 +38,8 @@ export function useSpecialObservationsFeed() {
   };
 
   useEffect(() => {
-    loadObservations();
+    // If cached observations exist, immediately refresh in background (stale-while-revalidate)
+    loadObservations(true);
   }, []);
 
   // Compute available years (sorted descending)
@@ -130,7 +131,7 @@ export function useSpecialObservationForm(id) {
         setFormData({
           title: existing.title || '',
           tuskerName: existing.tuskerName || '',
-          date: existing.date || '',
+          date: existing.hideDate ? '' : (existing.date || ''),
           time: existing.time || '',
           location: existing.location || '',
           description: existing.description || '',
@@ -185,15 +186,15 @@ export function useSpecialObservationForm(id) {
   const saveObservation = async () => {
     const { title, tuskerName, date, time, location, description, images, author } = formData;
 
-    if (!title || !date || !description || !tuskerName) {
-      setError('Please provide Tusker Name, Title, Date, and Description.');
+    if (!title || !description || !tuskerName) {
+      setError('Please provide Tusker Name, Title, and Description.');
       return false;
     }
-    if (date > todayLocalISO()) {
+    if (date && date > todayLocalISO()) {
       setError('Observation date cannot be in the future.');
       return false;
     }
-    if (isFutureDateTime(date, time)) {
+    if (date && time && isFutureDateTime(date, time)) {
       setError('Observation time cannot be in the future for today.');
       return false;
     }
@@ -217,12 +218,14 @@ export function useSpecialObservationForm(id) {
         })
       );
 
+      const hasDate = Boolean(date && String(date).trim());
       const payload = {
         title,
         tuskerName,
-        date,
+        date: hasDate ? date : todayLocalISO(),
+        hideDate: !hasDate,
         time: time || null,
-        location: location || 'Sri Lanka',
+        location: location || null,
         description,
         images: Array.isArray(resolvedImages) ? resolvedImages : [],
         author: author || 'WTS Admin',

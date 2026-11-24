@@ -247,11 +247,11 @@ export default function LocationSearchInput({
 
           const combined = [...localMatches];
           geocoderMatches.forEach((gm) => {
-            if (!combined.some((c) => c.title.toLowerCase() === gm.title.toLowerCase())) {
+            if (gm?.title && !combined.some((c) => (c?.title || '').toLowerCase() === (gm.title || '').toLowerCase())) {
               combined.push(gm);
             }
           });
-          const hasExact = combined.some((c) => c.title.toLowerCase() === q);
+          const hasExact = combined.some((c) => (c?.title || '').toLowerCase() === q);
           if (!hasExact && q.length > 0) {
             combined.push({
               title: q.charAt(0).toUpperCase() + q.slice(1),

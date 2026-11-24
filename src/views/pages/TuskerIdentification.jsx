@@ -1,295 +1,448 @@
 /**
  * @file TuskerIdentification.jsx
- * @description Educational learning hub for tusker morphological identification.
- * Showcases presentations (PPTX, Word, PDF) and visual slide guides covering
- * ear biometrics, tusk angles, wear patterns, and individual recognition protocols.
- * Features topic filtering, instant search, full-screen interactive reader modal,
- * and admin submission controls.
+ * @description Educational scientific guide on individual wild tusker identification.
+ * Formatted with rich typography and structured sections matching the About Us page,
+ * documenting the core morphological identification methodology established by
+ * T. N. C. Vidya, Deepika Prasad and Arjun Ghosh (JNCASR).
  */
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
-  GraduationCap,
-  PlusCircle,
   BookOpen,
-  Eye,
-  Download,
-  Trash2,
-  Edit3,
-  Presentation,
-  FileText,
-  Image as ImageIcon,
-  FolderOpen
+  ZoomIn,
+  Info
 } from 'lucide-react';
-import { useTuskerIdentificationFeed } from '../../controllers/useTuskerIdentification';
-import DocumentViewerModal from '../components/DocumentViewerModal';
+import ImageLightboxModal from '../components/ImageLightboxModal';
+
+// High-resolution local diagram assets
+import earFoldsImg from '../../assets/images/identification/ear-folds.png';
+import earMarksImg from '../../assets/images/identification/ear-marks.png';
+import backShapesImg from '../../assets/images/identification/back-shapes.png';
+import tailBrushImg from '../../assets/images/identification/tail-brush.png';
+import tuskShapesImg from '../../assets/images/identification/tusk-shapes.png';
+
+const IDENTIFICATION_DIAGRAMS = [
+  { id: 'ear-folds', imageUrl: earFoldsImg, title: 'Ear Folds Classification Diagram', bgWhite: true },
+  { id: 'ear-marks', imageUrl: earMarksImg, title: 'Ear Depigmentation & Ear Marks Diagram', bgWhite: true },
+  { id: 'back-shapes', imageUrl: backShapesImg, title: 'Back Shapes Classification Diagram', bgWhite: true },
+  { id: 'tail-brush', imageUrl: tailBrushImg, title: 'Tail Brush & Conformation Diagram', bgWhite: true },
+  { id: 'tusk-shapes', imageUrl: tuskShapesImg, title: 'Shape of Tusks Classification Diagram', bgWhite: true },
+];
+
+const IMPORTANCE_POINTS = [
+  {
+    num: 1,
+    title: 'Monitor Individuals Over Time',
+    desc: 'Assess health, physical development, musth cycles, and long-term survival in the wild across years and decades.',
+  },
+  {
+    num: 2,
+    title: 'Improve Population & Demographic Estimates',
+    desc: 'Establish accurate population baselines by avoiding double-counting individuals across overlapping home ranges and seasonal movements.',
+  },
+  {
+    num: 3,
+    title: 'Understand Social & Dominance Dynamics',
+    desc: 'Study social interactions, movement patterns, temporary bull groupings, and dominance hierarchies among wild tuskers.',
+  },
+  {
+    num: 4,
+    title: 'Support Targeted Conservation & Anti-Poaching',
+    desc: 'Enable field rangers, researchers, and wildlife authorities to deploy focused protection for high-value tusked bulls.',
+  },
+  {
+    num: 5,
+    title: 'Manage Human-Elephant Coexistence',
+    desc: 'Identify specific individuals involved in agricultural conflict to deploy tailored, non-lethal deterrents and mitigation strategies.',
+  },
+];
+
+const CITATION_TEXT = 'Source: Individual Identification in Asian Elephants - T. N. C. Vidya*, Deepika Prasad and Arjun Ghosh. Evolutionary and Organismal Biology Unit, Jawaharlal Nehru Centre for Advanced Scientific Research (JNCASR), Bangalore, India.';
 
 export default function TuskerIdentification({ embedded = false }) {
-  const navigate = useNavigate();
-  const {
-    loading,
-    identifications,
-    canAddIdentification,
-    isAdmin,
-    handleDelete,
-  } = useTuskerIdentificationFeed();
-
-  const [activeViewerItem, setActiveViewerItem] = useState(null);
+  const [activeZoomImg, setActiveZoomImg] = useState(null);
 
   useEffect(() => {
     if (!embedded) {
-      document.title = 'Wild Tuskers Sri Lanka | Tusker Identification Learning';
+      document.title = 'Wild Tuskers Sri Lanka | How to Identify Tuskers';
     }
   }, [embedded]);
 
-  const formatFileSize = (bytes) => {
-    if (!bytes || bytes <= 0) return '';
-    if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-    return `${Math.round(bytes / 1024)} KB`;
-  };
+  return (
+    <div className={embedded ? "w-full max-w-[1040px] mx-auto flex flex-col gap-10 sm:gap-14" : "w-full max-w-[1040px] mx-auto pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2.5rem)] pb-24 px-4 sm:px-6 md:px-8 min-h-screen bg-white flex flex-col gap-10 sm:gap-14"}>
 
-  const getFormatIcon = (type) => {
-    const t = (type || '').toLowerCase();
-    if (t === 'pptx' || t === 'ppt') return <Presentation size={14} className="text-amber-500" />;
-    if (t === 'docx' || t === 'doc') return <FileText size={14} className="text-blue-500" />;
-    if (t === 'pdf') return <FileText size={14} className="text-red-500" />;
-    return <ImageIcon size={14} className="text-emerald-500" />;
-  };
-
-  const mainContent = (
-    <div className={embedded ? "w-full flex flex-col gap-6" : "max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-6 sm:gap-8"}>
-      {/* ── Page Header (standalone only) ── */}
-      {!embedded && (
-        <div className="flex flex-col items-center justify-center text-center pb-6 sm:pb-8 border-b border-[#e5e7eb] gap-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/15 text-primary text-xs font-bold tracking-wide uppercase">
-            <GraduationCap size={15} className="text-accent" />
-            <span>Learning & Research Hub</span>
+      {/* ── Page Header / Introduction (Slide 1) ── */}
+      <section className="bg-white rounded-2xl p-6 sm:p-10 border border-[#e5e7eb] shadow-xs">
+        <div className="flex flex-col gap-4 text-left">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/15 text-primary text-xs font-bold tracking-wide uppercase w-fit">
+            <BookOpen size={15} className="text-accent" />
+            <span>Scientific Identification Methodology</span>
           </div>
 
-          <h1 className="font-sans text-[clamp(1.5rem,4.5vw,2.85rem)] font-bold text-[#111111] m-0 tracking-tight leading-tight text-center">
-            Tusker Identification Presentations
+          <h1 className="font-sans text-2xl sm:text-[2.15rem] md:text-[2.45rem] font-bold text-[#111111] m-0 tracking-tight leading-tight">
+            How to Identify Tuskers
           </h1>
 
-          <p className="font-sans text-xs sm:text-[0.96rem] text-[#555555] leading-relaxed max-w-3xl mx-auto m-0 text-center">
-            Comprehensive field guides, biometric ear notation systems, tusk morphometry standards, and educational slide decks for learning individual identification of Sri Lanka's wild tuskers.
-          </p>
-
-          {canAddIdentification && (
-            <div className="flex items-center justify-center w-full sm:w-auto mt-2">
-              <button
-                type="button"
-                onClick={() => navigate('/admin/add-identification')}
-                className="bg-accent text-primary font-bold text-xs sm:text-[0.88rem] px-6 sm:px-8 py-2.5 rounded-[8px] inline-flex items-center justify-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-all shrink-0 whitespace-nowrap shadow-sm hover:shadow-md hover:-translate-y-0.5"
-              >
-                <PlusCircle size={17} />
-                <span>Upload Presentation Material</span>
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Embedded Admin Add Button */}
-      {embedded && canAddIdentification && (
-        <div className="flex items-center w-full sm:w-auto sm:justify-end">
-          <button
-            type="button"
-            onClick={() => navigate('/admin/add-identification')}
-            className="w-full sm:w-auto bg-accent text-primary font-bold text-xs sm:text-[0.88rem] px-5 sm:px-6 py-3 sm:py-2.5 rounded-xl sm:rounded-lg inline-flex items-center justify-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-all whitespace-nowrap shadow-xs"
-          >
-            <PlusCircle size={16} />
-            <span>Upload Presentation Material</span>
-          </button>
-        </div>
-      )}
-
-        {/* ── Learning Materials Grid ── */}
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((n) => (
-              <div key={n} className="bg-white rounded-2xl overflow-hidden shadow-xs border border-[#e5e7eb] animate-pulse">
-                <div className="aspect-video bg-gray-200" />
-                <div className="p-5 flex flex-col gap-3">
-                  <div className="h-4 bg-gray-200 rounded w-1/3" />
-                  <div className="h-6 bg-gray-200 rounded w-3/4" />
-                  <div className="h-12 bg-gray-200 rounded w-full" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : identifications.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 sm:p-12 text-center border border-[#e5e7eb] shadow-xs flex flex-col items-center justify-center gap-3">
-            <div className="w-14 h-14 rounded-full bg-accent/15 text-primary flex items-center justify-center mb-1">
-              <FolderOpen size={28} className="text-accent" />
-            </div>
-            <h3 className="font-sans text-base sm:text-lg font-bold text-[#111111] m-0">
-              No Learning Materials Found
-            </h3>
-            <p className="font-sans text-xs sm:text-sm text-[#666666] max-w-md m-0">
-              No presentations have been uploaded yet. Check back soon for educational materials!
+          <div className="font-sans text-xs sm:text-[0.98rem] md:text-[1.02rem] text-[#374151] leading-[1.8] flex flex-col gap-4">
+            <p className="m-0">
+              The approach to identifying individual wild tuskers comes from <strong>T. N. C. Vidya, Deepika Prasad and Arjun Ghosh</strong>, whose paper <em>&ldquo;Individual Identification in Asian Elephants&rdquo;</em> provides the scientific foundation for distinguishing wild Asian elephants in their natural habitats.
             </p>
-            {canAddIdentification && (
-              <button
-                type="button"
-                onClick={() => navigate('/admin/add-identification')}
-                className="mt-2 bg-accent text-primary font-bold text-xs sm:text-sm px-6 py-2.5 rounded-lg inline-flex items-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-all shadow-xs"
-              >
-                <PlusCircle size={16} />
-                <span>Upload First Presentation</span>
-              </button>
-            )}
+            <p className="m-0 text-[#4b5563]">
+              Each identified tusker is assigned a unique reference code beginning with &ldquo;T&rdquo; and a distinctive name that celebrates its individuality. This system ensures accurate identification while making it easier for researchers, conservationists, and wildlife enthusiasts to recognize and remember each elephant. For example, <strong>T075 - Kawantissa</strong>.
+            </p>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
-            {identifications.map((item) => {
-              const fileType = (item.fileType || (item.fileName ? item.fileName.split('.').pop() : 'pptx')).toUpperCase();
 
-              return (
-                <article
-                  key={item.id}
-                  className="bg-white rounded-2xl overflow-hidden shadow-xs hover:shadow-lg transition-all duration-300 border border-[#e5e7eb] flex flex-col group hover:-translate-y-1"
-                >
-                  {/* Card Cover Preview */}
-                  <div
-                    className="relative aspect-video bg-[#0b2518] overflow-hidden cursor-pointer"
-                    onClick={() => setActiveViewerItem(item)}
-                    title="Click to view presentation"
-                  >
-                    <img
-                      src={item.coverImage || 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/gallery/site_app_mockup_1794763769059.webp'}
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/30 pointer-events-none" />
-
-                    {/* Format badge top right */}
-                    <div className="absolute top-3 right-3 flex items-center gap-1.5">
-                      <span className="font-sans text-[0.66rem] font-bold tracking-wider uppercase px-2.5 py-1 rounded-md bg-black/80 text-white backdrop-blur-xs border border-white/15 flex items-center gap-1.5 shadow-xs">
-                        {getFormatIcon(item.fileType)}
-                        <span>{fileType}</span>
-                      </span>
-                    </div>
-
-                    {/* Center Click-to-Read Overlay Pill */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <span className="px-3.5 py-1.5 rounded-full bg-accent text-primary font-bold text-xs flex items-center gap-1.5 shadow-lg transform scale-95 group-hover:scale-100 transition-transform">
-                        <Eye size={15} />
-                        <span>Read Full View</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Card Body */}
-                  <div className="p-5 flex-1 flex flex-col justify-between gap-4">
-                    <div className="flex flex-col gap-2">
-                      <h3
-                        className="font-sans text-[1.05rem] font-bold text-[#111111] leading-snug m-0 group-hover:text-accent transition-colors line-clamp-2 cursor-pointer"
-                        onClick={() => setActiveViewerItem(item)}
-                      >
-                        {item.title}
-                      </h3>
-
-                      <p className="font-sans text-xs sm:text-[0.84rem] text-[#555555] leading-relaxed m-0 line-clamp-3">
-                        {item.description}
-                      </p>
-                    </div>
-
-                    {/* Meta info & Admin Actions */}
-                    <div className="flex flex-col gap-3 pt-3 border-t border-[#f0f0f0]">
-                      <div className="flex items-center justify-between text-[0.72rem] text-[#6b7280]">
-                        <span className="truncate max-w-[65%]">
-                          {item.author || 'Wild Tuskers Sri Lanka'}
-                        </span>
-                        {item.fileSize > 0 && (
-                          <span className="font-medium text-[#4b5563] shrink-0">
-                            {formatFileSize(item.fileSize)}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setActiveViewerItem(item)}
-                          className="flex-1 bg-accent text-primary hover:bg-accent-hover font-bold text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer border-none shadow-xs"
-                        >
-                          <BookOpen size={14} />
-                          <span>View Presentation</span>
-                        </button>
-
-                        {item.fileUrl && (
-                          <a
-                            href={item.fileUrl}
-                            download={item.fileName || 'presentation'}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-[#374151] flex items-center justify-center transition-all cursor-pointer no-underline border border-gray-200 shrink-0"
-                            title="Download File"
-                          >
-                            <Download size={15} />
-                          </a>
-                        )}
-
-                        {isAdmin && (
-                          <div className="flex items-center gap-1 shrink-0 ml-1">
-                            <button
-                              type="button"
-                              onClick={() => navigate(`/admin/edit-identification/${item.id}`)}
-                              className="w-8 h-8 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 flex items-center justify-center transition-all cursor-pointer border-none"
-                              title="Edit Material"
-                            >
-                              <Edit3 size={14} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDelete(item.id)}
-                              className="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 flex items-center justify-center transition-all cursor-pointer border-none"
-                              title="Delete Material"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
+          {/* Citation Banner */}
+          <div className="mt-2 p-3.5 sm:p-4 rounded-xl bg-[#fafbfa] border border-[#edf0ed] flex items-start gap-3">
+            <Info size={18} className="text-accent shrink-0 mt-0.5" />
+            <p className="font-sans text-xs sm:text-[0.84rem] text-[#6b7280] leading-relaxed m-0">
+              {CITATION_TEXT}
+            </p>
           </div>
-        )}
+        </div>
+      </section>
 
-    </div>
-  );
+      {/* ── Section: Importance of Identification (Slide 7) ── */}
+      <section className="bg-white rounded-2xl p-6 sm:p-10 border border-[#e5e7eb] shadow-xs">
+        <div className="mb-6 pb-3 border-b-2 border-[#f0f0f0]">
+          <h2 className="font-sans text-[1.35rem] sm:text-[1.5rem] font-bold text-[#111111] m-0 tracking-tight">
+            Importance of Identification
+          </h2>
+          <p className="font-sans text-xs sm:text-[0.92rem] text-[#666666] mt-1.5 m-0">
+            Why systematic photographic and biometric tracking is crucial for Sri Lanka's wild tuskers:
+          </p>
+        </div>
 
-  if (embedded) {
-    return (
-      <>
-        {mainContent}
-        {activeViewerItem && (
-          <DocumentViewerModal
-            item={activeViewerItem}
-            onClose={() => setActiveViewerItem(null)}
+        <div className="flex flex-col gap-3.5 sm:gap-4">
+          {IMPORTANCE_POINTS.map((obj) => (
+            <div
+              key={obj.num}
+              className="flex items-start gap-3.5 sm:gap-4 p-4 sm:p-5 rounded-xl bg-[#fafbfa] border border-[#edf0ed] transition-colors hover:bg-white hover:border-[#c69b55]/40 hover:shadow-xs"
+            >
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-primary text-white font-bold text-xs sm:text-sm flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                {obj.num}
+              </div>
+              <div className="flex flex-col gap-1 flex-1">
+                <h3 className="font-sans text-[0.98rem] sm:text-[1.05rem] font-bold text-[#111111] m-0">
+                  {obj.title}
+                </h3>
+                <p className="font-sans text-xs sm:text-[0.92rem] text-[#555555] leading-[1.65] m-0">
+                  {obj.desc}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Section 1: Ear Folds (Slide 2) ── */}
+      <section className="bg-white rounded-2xl p-6 sm:p-10 border border-[#e5e7eb] shadow-xs flex flex-col gap-6">
+        <div className="pb-3 border-b-2 border-[#f0f0f0]">
+          <div className="flex items-center gap-2 text-accent text-xs font-bold uppercase tracking-wider mb-1">
+            <span>Biometric Feature 01</span>
+          </div>
+          <h2 className="font-sans text-[1.35rem] sm:text-[1.5rem] font-bold text-[#111111] m-0 tracking-tight">
+            Ear Folds (Ears)
+          </h2>
+          <p className="font-sans text-xs sm:text-[0.92rem] text-[#666666] mt-1.5 m-0">
+            The top and side folds of the ear pinna develop distinct, permanent orientations as an elephant matures.
+          </p>
+        </div>
+
+        {/* Diagram Image */}
+        <div
+          onClick={() => setActiveZoomImg(IDENTIFICATION_DIAGRAMS[0])}
+          className="relative rounded-xl overflow-hidden border border-[#e5e7eb] bg-[#f9fafb] cursor-pointer group shadow-2xs hover:shadow-md transition-all"
+          title="Click to view full diagram"
+        >
+          <img
+            src={earFoldsImg}
+            alt="Ear folds classification in Asian elephants"
+            className="w-full h-auto object-contain max-h-[460px] mx-auto block group-hover:scale-[1.01] transition-transform duration-300"
           />
-        )}
-      </>
-    );
-  }
+          <div className="absolute bottom-3 right-3 bg-black/70 hover:bg-black/90 text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-all">
+            <ZoomIn size={14} />
+            <span className="hidden sm:inline">Click to enlarge</span>
+          </div>
+        </div>
 
-  return (
-    <div className="bg-[#f7f8fa] min-h-screen pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2.5rem)] pb-24">
-      {mainContent}
+        {/* Classification Breakdown */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-3.5">
+          <div className="p-4 rounded-xl bg-[#fafbfa] border border-[#edf0ed]">
+            <span className="font-bold text-primary text-xs sm:text-sm block mb-1">Top Fold Variations:</span>
+            <ul className="text-xs sm:text-[0.9rem] text-[#4b5563] space-y-1.5 pl-4 m-0 leading-relaxed list-disc">
+              <li><strong>a)</strong> Not folded</li>
+              <li><strong>b)</strong> Slightly folded forward</li>
+              <li><strong>c) and h)</strong> Pointing forward</li>
+              <li><strong>d) and g)</strong> Pointing backward</li>
+              <li><strong>e)</strong> Folded forward in a rolling fold</li>
+              <li><strong>f)</strong> Folded forward in a flat fold</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-[#fafbfa] border border-[#edf0ed] flex flex-col justify-between">
+            <div>
+              <span className="font-bold text-primary text-xs sm:text-sm block mb-1">Side Fold Variations:</span>
+              <ul className="text-xs sm:text-[0.9rem] text-[#4b5563] space-y-1.5 pl-4 m-0 leading-relaxed list-disc">
+                <li><strong>h)</strong> Folded forward</li>
+                <li>Side fold degree and curvature provide immediate field verification when viewed in profile.</li>
+              </ul>
+            </div>
+            <div className="pt-3 border-t border-[#edf0ed] text-[0.78rem] text-[#6b7280] italic">
+              {CITATION_TEXT}
+            </div>
+          </div>
+        </div>
+      </section>
 
-      {/* ── Interactive Document & Presentation Full-View Modal ── */}
-      {activeViewerItem && (
-        <DocumentViewerModal
-          item={activeViewerItem}
-          onClose={() => setActiveViewerItem(null)}
+      {/* ── Section 2: Ear Depigmentation & Ear Marks (Slide 3) ── */}
+      <section className="bg-white rounded-2xl p-6 sm:p-10 border border-[#e5e7eb] shadow-xs flex flex-col gap-6">
+        <div className="pb-3 border-b-2 border-[#f0f0f0]">
+          <div className="flex items-center gap-2 text-accent text-xs font-bold uppercase tracking-wider mb-1">
+            <span>Biometric Feature 02</span>
+          </div>
+          <h2 className="font-sans text-[1.35rem] sm:text-[1.5rem] font-bold text-[#111111] m-0 tracking-tight">
+            Ear Depigmentation and Ear Marks
+          </h2>
+          <p className="font-sans text-xs sm:text-[0.92rem] text-[#666666] mt-1.5 m-0">
+            Holes, notches, tears, and depigmentation patches serve as permanent biometric fingerprints unique to each elephant.
+          </p>
+        </div>
+
+        {/* Diagram Image */}
+        <div
+          onClick={() => setActiveZoomImg(IDENTIFICATION_DIAGRAMS[1])}
+          className="relative rounded-xl overflow-hidden border border-[#e5e7eb] bg-[#f9fafb] cursor-pointer group shadow-2xs hover:shadow-md transition-all"
+          title="Click to view full diagram"
+        >
+          <img
+            src={earMarksImg}
+            alt="Ear depigmentation and ear marks in Asian elephants"
+            className="w-full h-auto object-contain max-h-[460px] mx-auto block group-hover:scale-[1.01] transition-transform duration-300"
+          />
+          <div className="absolute bottom-3 right-3 bg-black/70 hover:bg-black/90 text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-all">
+            <ZoomIn size={14} />
+            <span className="hidden sm:inline">Click to enlarge</span>
+          </div>
+        </div>
+
+        {/* Classification Breakdown */}
+        <div className="p-4 sm:p-5 rounded-xl bg-[#fafbfa] border border-[#edf0ed]">
+          <span className="font-bold text-primary text-xs sm:text-sm block mb-2">Key Diagnostic Features Identified:</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-xs sm:text-[0.9rem] text-[#4b5563] leading-relaxed">
+            <div>
+              <p className="m-0 mb-1.5"><strong>a)</strong> A tiny hole (marked by arrow) before the side fold</p>
+              <p className="m-0 mb-1.5"><strong>b)</strong> A large hole before the side fold</p>
+              <p className="m-0 mb-1.5"><strong>c)</strong> Marked depigmentation and tears, including a missing semi-circular section, before the side fold</p>
+              <p className="m-0 mb-1.5"><strong>d)</strong> Tears with finger-like projections before, at and after the side fold</p>
+            </div>
+            <div>
+              <p className="m-0 mb-1.5"><strong>e)</strong> A tear on the top fold</p>
+              <p className="m-0 mb-1.5"><strong>f)</strong> A tear at the side fold, with a large part of the ear missing</p>
+              <p className="m-0 mb-1.5"><strong>g)</strong> A tear at the side fold, plus nicks before and after it</p>
+            </div>
+          </div>
+          <div className="mt-4 pt-3 border-t border-[#edf0ed] text-[0.78rem] text-[#6b7280] italic">
+            {CITATION_TEXT}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Section 3: Back Shapes (Slide 4) ── */}
+      <section className="bg-white rounded-2xl p-6 sm:p-10 border border-[#e5e7eb] shadow-xs flex flex-col gap-6">
+        <div className="pb-3 border-b-2 border-[#f0f0f0]">
+          <div className="flex items-center gap-2 text-accent text-xs font-bold uppercase tracking-wider mb-1">
+            <span>Biometric Feature 03</span>
+          </div>
+          <h2 className="font-sans text-[1.35rem] sm:text-[1.5rem] font-bold text-[#111111] m-0 tracking-tight">
+            Back Shapes
+          </h2>
+          <p className="font-sans text-xs sm:text-[0.92rem] text-[#666666] mt-1.5 m-0">
+            The dorsal spinal profile and vertebral curvature classify individual silhouettes from distance in field conditions.
+          </p>
+        </div>
+
+        {/* Diagram Image */}
+        <div
+          onClick={() => setActiveZoomImg(IDENTIFICATION_DIAGRAMS[2])}
+          className="relative rounded-xl overflow-hidden border border-[#e5e7eb] bg-[#f9fafb] cursor-pointer group shadow-2xs hover:shadow-md transition-all"
+          title="Click to view full diagram"
+        >
+          <img
+            src={backShapesImg}
+            alt="Back shapes classification in Asian elephants"
+            className="w-full h-auto object-contain max-h-[460px] mx-auto block group-hover:scale-[1.01] transition-transform duration-300"
+          />
+          <div className="absolute bottom-3 right-3 bg-black/70 hover:bg-black/90 text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-all">
+            <ZoomIn size={14} />
+            <span className="hidden sm:inline">Click to enlarge</span>
+          </div>
+        </div>
+
+        {/* Classification Breakdown */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-4 rounded-xl bg-[#fafbfa] border border-[#edf0ed]">
+            <span className="font-bold text-primary text-xs sm:text-sm block mb-1.5">Standard Curvature Profiles:</span>
+            <ul className="text-xs sm:text-[0.9rem] text-[#4b5563] space-y-1.5 pl-4 m-0 leading-relaxed list-disc">
+              <li><strong>a)</strong> Concave</li>
+              <li><strong>b)</strong> Flat</li>
+              <li><strong>c)</strong> Broken</li>
+              <li><strong>d)</strong> Flat and broken</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-[#fafbfa] border border-[#edf0ed] flex flex-col justify-between">
+            <div>
+              <span className="font-bold text-primary text-xs sm:text-sm block mb-1.5">Elevated & Irregular Profiles:</span>
+              <ul className="text-xs sm:text-[0.9rem] text-[#4b5563] space-y-1.5 pl-4 m-0 leading-relaxed list-disc">
+                <li><strong>e) and f)</strong> Humped</li>
+                <li><strong>g)</strong> Wavy</li>
+                <li><strong>h)</strong> Humped and sloping</li>
+              </ul>
+            </div>
+            <div className="pt-3 border-t border-[#edf0ed] text-[0.78rem] text-[#6b7280] italic">
+              {CITATION_TEXT}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Section 4: Tail Brush (Slide 5) ── */}
+      <section className="bg-white rounded-2xl p-6 sm:p-10 border border-[#e5e7eb] shadow-xs flex flex-col gap-6">
+        <div className="pb-3 border-b-2 border-[#f0f0f0]">
+          <div className="flex items-center gap-2 text-accent text-xs font-bold uppercase tracking-wider mb-1">
+            <span>Biometric Feature 04</span>
+          </div>
+          <h2 className="font-sans text-[1.35rem] sm:text-[1.5rem] font-bold text-[#111111] m-0 tracking-tight">
+            Tail Brush & Tail Conformation
+          </h2>
+          <p className="font-sans text-xs sm:text-[0.92rem] text-[#666666] mt-1.5 m-0">
+            Tail hair distribution, kinks, vertebrae breaks, and curvature provide reliable secondary markers for positive confirmation.
+          </p>
+        </div>
+
+        {/* Diagram Image */}
+        <div
+          onClick={() => setActiveZoomImg(IDENTIFICATION_DIAGRAMS[3])}
+          className="relative rounded-xl overflow-hidden border border-[#e5e7eb] bg-[#f9fafb] cursor-pointer group shadow-2xs hover:shadow-md transition-all"
+          title="Click to view full diagram"
+        >
+          <img
+            src={tailBrushImg}
+            alt="Tail brush and tail curvature classification"
+            className="w-full h-auto object-contain max-h-[460px] mx-auto block group-hover:scale-[1.01] transition-transform duration-300"
+          />
+          <div className="absolute bottom-3 right-3 bg-black/70 hover:bg-black/90 text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-all">
+            <ZoomIn size={14} />
+            <span className="hidden sm:inline">Click to enlarge</span>
+          </div>
+        </div>
+
+        {/* Classification Breakdown */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-4 rounded-xl bg-[#fafbfa] border border-[#edf0ed]">
+            <span className="font-bold text-primary text-xs sm:text-sm block mb-1.5">Tail Brush Hair Distribution:</span>
+            <ul className="text-xs sm:text-[0.9rem] text-[#4b5563] space-y-1.5 pl-4 m-0 leading-relaxed list-disc">
+              <li><strong>a)</strong> No hair</li>
+              <li><strong>b) and c)</strong> Short at front and back</li>
+              <li><strong>d)</strong> Short at back</li>
+              <li><strong>e)</strong> Normal at front</li>
+              <li><strong>f)</strong> Normal at back</li>
+              <li><strong>g) to j)</strong> Normal full brush</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-[#fafbfa] border border-[#edf0ed] flex flex-col justify-between">
+            <div>
+              <span className="font-bold text-primary text-xs sm:text-sm block mb-1.5">Tail Kink & Curvature:</span>
+              <ul className="text-xs sm:text-[0.9rem] text-[#4b5563] space-y-1.5 pl-4 m-0 leading-relaxed list-disc">
+                <li><strong>g) and i)</strong> Kinked</li>
+                <li><strong>c), h) and j)</strong> Curved</li>
+                <li><strong>k)</strong> Curved and twisted (side view)</li>
+                <li><strong>l)</strong> Same tail as in k (rear view)</li>
+              </ul>
+            </div>
+            <div className="pt-3 border-t border-[#edf0ed] text-[0.78rem] text-[#6b7280] italic">
+              {CITATION_TEXT}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Section 5: Shape of Tusks (Slide 6) ── */}
+      <section className="bg-white rounded-2xl p-6 sm:p-10 border border-[#e5e7eb] shadow-xs flex flex-col gap-6">
+        <div className="pb-3 border-b-2 border-[#f0f0f0]">
+          <div className="flex items-center gap-2 text-accent text-xs font-bold uppercase tracking-wider mb-1">
+            <span>Biometric Feature 05</span>
+          </div>
+          <h2 className="font-sans text-[1.35rem] sm:text-[1.5rem] font-bold text-[#111111] m-0 tracking-tight">
+            Shape of Tusks
+          </h2>
+          <p className="font-sans text-xs sm:text-[0.92rem] text-[#666666] mt-1.5 m-0">
+            Tusk direction, length, angle, and asymmetrical growth patterns define the iconic front profile of every wild tusker.
+          </p>
+        </div>
+
+        {/* Diagram Image */}
+        <div
+          onClick={() => setActiveZoomImg(IDENTIFICATION_DIAGRAMS[4])}
+          className="relative rounded-xl overflow-hidden border border-[#e5e7eb] bg-[#f9fafb] cursor-pointer group shadow-2xs hover:shadow-md transition-all"
+          title="Click to view full diagram"
+        >
+          <img
+            src={tuskShapesImg}
+            alt="Shape and conformation of tusks in Asian elephants"
+            className="w-full h-auto object-contain max-h-[460px] mx-auto block group-hover:scale-[1.01] transition-transform duration-300"
+          />
+          <div className="absolute bottom-3 right-3 bg-black/70 hover:bg-black/90 text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-all">
+            <ZoomIn size={14} />
+            <span className="hidden sm:inline">Click to enlarge</span>
+          </div>
+        </div>
+
+        {/* Classification Breakdown */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
+          <div className="p-4 rounded-xl bg-[#fafbfa] border border-[#edf0ed]">
+            <span className="font-bold text-primary text-xs sm:text-sm block mb-1.5">Tusk Direction:</span>
+            <ul className="text-xs sm:text-[0.88rem] text-[#4b5563] space-y-1.5 pl-4 m-0 leading-relaxed list-disc">
+              <li><strong>a)</strong> Parallel</li>
+              <li><strong>b)</strong> Divergent</li>
+              <li><strong>f)</strong> Convergent</li>
+              <li><strong>g)</strong> Divergent & Convergent (right tusk convergent, left divergent)</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-[#fafbfa] border border-[#edf0ed]">
+            <span className="font-bold text-primary text-xs sm:text-sm block mb-1.5">Tusk Length & Angle:</span>
+            <ul className="text-xs sm:text-[0.88rem] text-[#4b5563] space-y-1.5 pl-4 m-0 leading-relaxed list-disc">
+              <li><strong>c)</strong> Medium length</li>
+              <li><strong>i)</strong> Long length</li>
+              <li><strong>c)</strong> Horizontal angle</li>
+              <li><strong>i)</strong> Intermediate angle</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-[#fafbfa] border border-[#edf0ed]">
+            <span className="font-bold text-primary text-xs sm:text-sm block mb-1.5">Tusk Asymmetry:</span>
+            <ul className="text-xs sm:text-[0.88rem] text-[#4b5563] space-y-1.5 pl-4 m-0 leading-relaxed list-disc">
+              <li><strong>c) and e)</strong> Left tusk higher</li>
+              <li><strong>i)</strong> Right tusk longer</li>
+              <li><strong>d)</strong> Left crosses over right</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl bg-[#fafbfa] border border-[#edf0ed] text-[0.78rem] text-[#6b7280] italic">
+          {CITATION_TEXT}
+        </div>
+      </section>
+
+      {/* ── High-Resolution Zoom Lightbox Modal ── */}
+      {activeZoomImg && (
+        <ImageLightboxModal
+          photo={activeZoomImg}
+          allPhotos={IDENTIFICATION_DIAGRAMS}
+          onNavigatePhoto={(nextPhoto) => setActiveZoomImg(nextPhoto)}
+          onClose={() => setActiveZoomImg(null)}
+          fromPath={embedded ? '/learn?tab=identification' : '/identification'}
         />
       )}
+
     </div>
   );
 }

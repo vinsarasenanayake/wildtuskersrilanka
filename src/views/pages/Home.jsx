@@ -148,7 +148,7 @@ export default function Home() {
                 className="home-hero-landscape-stat-cell flex flex-col items-center justify-center text-center py-2 sm:py-3 px-1 sm:px-2 min-h-[72px] sm:min-h-[88px] no-underline hover:bg-white/10 transition-colors cursor-pointer group"
               >
                 <span className="home-hero-landscape-stat-num font-sans text-[1.4rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] group-hover:text-accent transition-colors">
-                  {stats?.total ?? '—'}
+                  {stats?.total ?? '-'}
                 </span>
                 <p className="home-hero-landscape-stat-label font-sans text-[0.54rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 group-hover:text-white uppercase tracking-wider mt-1 whitespace-nowrap m-0 transition-colors">
                   Total Recorded
@@ -163,7 +163,7 @@ export default function Home() {
                 className="home-hero-landscape-stat-cell flex flex-col items-center justify-center text-center py-2 sm:py-3 px-1 sm:px-2 min-h-[72px] sm:min-h-[88px] no-underline hover:bg-white/10 transition-colors cursor-pointer group"
               >
                 <span className="home-hero-landscape-stat-num font-sans text-[1.4rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] group-hover:text-accent transition-colors">
-                  {stats?.living ?? '—'}
+                  {stats?.living ?? '-'}
                 </span>
                 <p className="home-hero-landscape-stat-label font-sans text-[0.54rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 group-hover:text-white uppercase tracking-wider mt-1 whitespace-nowrap m-0 transition-colors">
                   Living
@@ -178,7 +178,7 @@ export default function Home() {
                 className="home-hero-landscape-stat-cell flex flex-col items-center justify-center text-center py-2 sm:py-3 px-1 sm:px-2 min-h-[72px] sm:min-h-[88px] no-underline hover:bg-white/10 transition-colors cursor-pointer group"
               >
                 <span className="home-hero-landscape-stat-num font-sans text-[1.4rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] group-hover:text-accent transition-colors">
-                  {stats?.missing ?? '—'}
+                  {stats?.missing ?? '-'}
                 </span>
                 <p className="home-hero-landscape-stat-label font-sans text-[0.54rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 group-hover:text-white uppercase tracking-wider mt-1 whitespace-nowrap m-0 transition-colors">
                   No Recent Record
@@ -193,7 +193,7 @@ export default function Home() {
                 className="home-hero-landscape-stat-cell flex flex-col items-center justify-center text-center py-2 sm:py-3 px-1 sm:px-2 min-h-[72px] sm:min-h-[88px] no-underline hover:bg-white/10 transition-colors cursor-pointer group"
               >
                 <span className="home-hero-landscape-stat-num font-sans text-[1.4rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] group-hover:text-accent transition-colors">
-                  {stats?.deceased ?? '—'}
+                  {stats?.deceased ?? '-'}
                 </span>
                 <p className="home-hero-landscape-stat-label font-sans text-[0.54rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 group-hover:text-white uppercase tracking-wider mt-1 whitespace-nowrap m-0 transition-colors">
                   Deceased

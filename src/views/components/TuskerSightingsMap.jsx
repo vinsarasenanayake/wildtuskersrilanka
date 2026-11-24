@@ -381,12 +381,12 @@ export default function TuskerSightingsMap({
         sightingNum,
         title: `${tusker.name} (${tusker.id}) - Field Sighting #${sightingNum}`,
         location: details.location || 'Location unrecorded',
-        date: sighting.captureDate || '—',
+        date: sighting.captureDate || '-',
         author: sighting.author || 'WTS Field Contributor',
-        health: details.healthCondition || '—',
-        threat: details.threatLevel || '—',
+        health: details.healthCondition || '-',
+        threat: details.threatLevel || '-',
         photo: (details.images && details.images[0]) || (sighting.imageUrl ? (typeof sighting.imageUrl === 'string' ? sighting.imageUrl.split(',')[0].trim() : sighting.imageUrl) : null),
-        notes: details.note || (!sighting.note?.trim().startsWith('{') ? sighting.note : '') || details.remarks || '—',
+        notes: details.note || (!sighting.note?.trim().startsWith('{') ? sighting.note : '') || details.remarks || '-',
         coords,
         badge: `Row ${rowNum} • Sighting #${sightingNum}`,
       });
@@ -692,7 +692,7 @@ export default function TuskerSightingsMap({
           title: point.location,
           lines: [
             point.author ? `Recorder: ${point.author}` : '',
-            point.notes && point.notes !== '—' ? point.notes : '',
+            point.notes && point.notes !== '-' ? point.notes : '',
           ].filter(Boolean),
         },
         onClick: () => handleSelectPoint(point),
@@ -801,7 +801,7 @@ export default function TuskerSightingsMap({
           </h3>
           <p className="font-sans text-xs sm:text-[0.82rem] text-[#666666] m-0 mt-2 leading-[1.65]">
             {homeRangeShape?.zoneData
-              ? `(The shaded boundary represents ${tusker?.name}'s assigned WTS Conservation Landscape: ${homeRangeShape.zoneData.name}, encompassing ${homeRangeShape.zoneData.districts}. Home range: ${tusker?.location || '—'}.)`
+              ? `(The shaded boundary represents ${tusker?.name}'s assigned WTS Conservation Landscape: ${homeRangeShape.zoneData.name}, encompassing ${homeRangeShape.zoneData.districts}. Home range: ${tusker?.location || '-'}.)`
               : (isDeceased
                   ? `(Disclaimer: The shaded polygon outlines ${tusker?.name}'s ${statusTheme.disclaimerText} across ${tusker?.location || 'registered area'}.)`
                   : `(Disclaimer: The shaded polygon outlines ${tusker?.name}'s ${statusTheme.disclaimerText} across ${tusker?.location || 'registered area'}. ${sightingPoints.length > 0 ? 'Individual field sightings are plotted within.' : ''})`)}
@@ -862,9 +862,9 @@ export default function TuskerSightingsMap({
                           photo: selectedPoint.photo,
                           // keep the original stored note so every field is read back correctly
                           note: selectedPoint.rawSighting?.note || '',
-                          notes: selectedPoint.notes && selectedPoint.notes !== '—' ? selectedPoint.notes : '',
-                          healthCondition: selectedPoint.health !== '—' ? selectedPoint.health : (selectedPoint.rawSighting?.healthCondition || ''),
-                          threatLevel: selectedPoint.threat !== '—' ? selectedPoint.threat : (selectedPoint.rawSighting?.threatLevel || ''),
+                          notes: selectedPoint.notes && selectedPoint.notes !== '-' ? selectedPoint.notes : '',
+                          healthCondition: selectedPoint.health !== '-' ? selectedPoint.health : (selectedPoint.rawSighting?.healthCondition || ''),
+                          threatLevel: selectedPoint.threat !== '-' ? selectedPoint.threat : (selectedPoint.rawSighting?.threatLevel || ''),
                           coords: selectedPoint.coords || selectedPoint.rawSighting?.coords,
                         };
                         onEditSighting({
@@ -911,7 +911,7 @@ export default function TuskerSightingsMap({
               )}
             </div>
 
-            {selectedPoint.notes && selectedPoint.notes !== '—' && (
+            {selectedPoint.notes && selectedPoint.notes !== '-' && (
               <p className="text-xs text-[#666666] m-0 mb-2 italic">
                 {selectedPoint.notes}
               </p>
@@ -930,7 +930,7 @@ export default function TuskerSightingsMap({
                       location: selectedPoint.location,
                       healthCondition: selectedPoint.health,
                       threatLevel: selectedPoint.threat,
-                      note: selectedPoint.notes && selectedPoint.notes !== '—' ? selectedPoint.notes : '',
+                      note: selectedPoint.notes && selectedPoint.notes !== '-' ? selectedPoint.notes : '',
                     });
                   }
                 }}

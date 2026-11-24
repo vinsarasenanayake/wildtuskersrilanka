@@ -6,7 +6,7 @@
  * full-screen lightbox exploration, and admin moderation controls.
  */
 
-import React, { useEffect, useLayoutEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjectFeed } from '../../controllers/useProjects';
 import {
@@ -338,8 +338,28 @@ export default function OurProjects() {
   const navigate = useNavigate();
   const { upcomingEvents, pastEvents, loading, isAdmin, removeEvent } = useProjectFeed();
 
+  const [selectedYear, setSelectedYear] = useState('ALL');
   const [actionNotice, setActionNotice] = useState(null);
   const [activeLightboxPhoto, setActiveLightboxPhoto] = useState(null);
+
+  // Compute available years for past events (sorted descending)
+  const availableYears = useMemo(() => {
+    const yearsSet = new Set();
+    pastEvents.forEach((ev) => {
+      const yr = ev.date ? new Date(ev.date).getFullYear().toString() : '';
+      if (yr) yearsSet.add(yr);
+    });
+    return Array.from(yearsSet).sort((a, b) => Number(b) - Number(a));
+  }, [pastEvents]);
+
+  // Filter past events by selected year
+  const filteredPastEvents = useMemo(() => {
+    if (selectedYear === 'ALL') return pastEvents;
+    return pastEvents.filter((ev) => {
+      if (!ev.date) return false;
+      return new Date(ev.date).getFullYear().toString() === selectedYear;
+    });
+  }, [pastEvents, selectedYear]);
 
   useEffect(() => {
     document.title = 'Wild Tuskers Sri Lanka | Our Projects';
@@ -352,7 +372,9 @@ export default function OurProjects() {
       if (!ticking) {
         window.requestAnimationFrame(() => {
           if (window.scrollY > 0) {
-            sessionStorage.setItem('wts_projects_scroll', String(window.scrollY));
+            try {
+              sessionStorage.setItem('wts_projects_scroll', String(window.scrollY));
+            } catch {}
           }
           ticking = false;
         });
@@ -365,7 +387,10 @@ export default function OurProjects() {
 
   // Restore scroll position on reload without jumping to top
   useLayoutEffect(() => {
-    const savedY = sessionStorage.getItem('wts_projects_scroll');
+    let savedY = null;
+    try {
+      savedY = sessionStorage.getItem('wts_projects_scroll');
+    } catch {}
     if (savedY) {
       const y = parseInt(savedY, 10);
       if (!isNaN(y) && y > 0) {
@@ -535,6 +560,37 @@ export default function OurProjects() {
                 </span>
               )}
             </h2>
+
+            {/* Year Filter Pills */}
+            {availableYears.length > 0 && (
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
+                <button
+                  type="button"
+                  onClick={() => setSelectedYear('ALL')}
+                  className={`font-sans text-xs sm:text-[0.88rem] font-bold px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all cursor-pointer border-none shrink-0 ${
+                    selectedYear === 'ALL'
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'bg-white text-[#555555] hover:bg-[#eaeaea] hover:text-[#111111]'
+                  }`}
+                >
+                  All Years
+                </button>
+                {availableYears.map((year) => (
+                  <button
+                    type="button"
+                    key={year}
+                    onClick={() => setSelectedYear(year)}
+                    className={`font-sans text-xs sm:text-[0.88rem] font-bold px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all cursor-pointer border-none shrink-0 ${
+                      selectedYear === year
+                        ? 'bg-primary text-white shadow-sm'
+                        : 'bg-white text-[#555555] hover:bg-[#eaeaea] hover:text-[#111111]'
+                    }`}
+                  >
+                    {year}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {loading && pastEvents.length === 0 ? (
@@ -550,18 +606,29 @@ export default function OurProjects() {
                 </div>
               ))}
             </div>
-          ) : pastEvents.length === 0 ? (
+          ) : filteredPastEvents.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 sm:py-12 px-4 gap-3 bg-white rounded-2xl border border-[#e5e7eb] text-center shadow-xs">
               <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center">
                 <CheckCircle2 size={24} strokeWidth={1.5} />
               </div>
               <p className="font-sans text-xs sm:text-[0.95rem] text-[#888888] m-0">
-                No past events recorded yet.
+                {selectedYear !== 'ALL'
+                  ? `No events recorded for year ${selectedYear}.`
+                  : 'No past events recorded yet.'}
               </p>
+              {selectedYear !== 'ALL' && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedYear('ALL')}
+                  className="text-accent text-xs sm:text-sm font-semibold hover:underline border-none bg-none cursor-pointer mt-1"
+                >
+                  Show All Years
+                </button>
+              )}
             </div>
           ) : (
             <div className="flex flex-col gap-5 sm:gap-6">
-              {pastEvents.map(event => (
+              {filteredPastEvents.map(event => (
                 <ProjectCard
                   key={event.id}
                   event={event}

@@ -174,15 +174,14 @@ export default function SpecialObservationForm() {
               {/* Date */}
               <div className="flex flex-col gap-1.5">
                 <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">
-                  Observation Date<span className="text-[#e53e3e]"> *</span>
+                  Observation Date (Optional)
                 </label>
                 <input
                   type="date"
                   name="date"
-                  required
                   max={todayLocalISO()}
                   className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
-                  value={formData.date}
+                  value={formData.date || ''}
                   onChange={handleChange}
                 />
               </div>

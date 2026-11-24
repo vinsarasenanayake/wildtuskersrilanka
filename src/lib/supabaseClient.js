@@ -9,7 +9,7 @@ import { createClient } from '@supabase/supabase-js';
 /* ==============================================================
    SUPABASE CLIENT
    Values come from .env.local (see .env.example). The anon /
-   publishable key is safe to ship to the browser — Row Level
+   publishable key is safe to ship to the browser - Row Level
    Security in supabase/migrations decides what it can do.
 ============================================================== */
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;

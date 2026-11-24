@@ -3142,7 +3142,7 @@ export default function TuskerProfile() {
                     <td className="py-3.5 px-4 text-[#333333]">
                       <div className="flex items-center gap-1">
                         <MapPin size={13} className="text-accent shrink-0" />
-                        <span>{tusker.location || '—'}</span>
+                        <span>{tusker.location || '-'}</span>
                       </div>
                     </td>
 
@@ -3158,7 +3158,7 @@ export default function TuskerProfile() {
                           {tusker.threatLevel}
                         </span>
                       ) : (
-                        <span className="text-[#999999]">—</span>
+                        <span className="text-[#999999]">-</span>
                       )}
                     </td>
 
@@ -3194,12 +3194,12 @@ export default function TuskerProfile() {
                           </div>
                         </button>
                       ) : (
-                        <span className="text-[#aaaaaa] text-xs">—</span>
+                        <span className="text-[#aaaaaa] text-xs">-</span>
                       )}
                     </td>
 
                     <td className="py-3.5 px-4 text-center text-[#aaaaaa] text-xs select-none" title="Permanent baseline documentation">
-                      —
+                      -
                     </td>
                   </tr>
 
@@ -3208,7 +3208,7 @@ export default function TuskerProfile() {
                     const details = parseSightingDetails(sighting);
                     const rowNum = idx + 2;
                     const sightingNum = idx + 1;
-                    const noteDisplay = details.note || (!sighting.note?.trim().startsWith('{') ? sighting.note : '') || details.remarks || '—';
+                    const noteDisplay = details.note || (!sighting.note?.trim().startsWith('{') ? sighting.note : '') || details.remarks || '-';
 
                     return (
                       <tr key={sighting.id || idx} className="hover:bg-[#f9fafb] transition-colors">
@@ -3224,7 +3224,7 @@ export default function TuskerProfile() {
                         </td>
 
                         <td className="py-3.5 px-4 font-medium text-[#111111]">
-                          {formatDate(sighting.captureDate) || sighting.captureDate || '—'}
+                          {formatDate(sighting.captureDate) || sighting.captureDate || '-'}
                         </td>
 
                         <td className="py-3.5 px-4">
@@ -3241,7 +3241,7 @@ export default function TuskerProfile() {
                               <span>{details.location}</span>
                             </div>
                           ) : (
-                            <span className="text-[#999999]">—</span>
+                            <span className="text-[#999999]">-</span>
                           )}
                         </td>
 
@@ -3251,7 +3251,7 @@ export default function TuskerProfile() {
                               <HeartPulse size={12} className="shrink-0" /> <span>{details.healthCondition}</span>
                             </span>
                           ) : (
-                            <span className="text-[#999999]">—</span>
+                            <span className="text-[#999999]">-</span>
                           )}
                         </td>
 
@@ -3261,7 +3261,7 @@ export default function TuskerProfile() {
                               {details.threatLevel}
                             </span>
                           ) : (
-                            <span className="text-[#999999]">—</span>
+                            <span className="text-[#999999]">-</span>
                           )}
                         </td>
 
@@ -3270,7 +3270,7 @@ export default function TuskerProfile() {
                             className="line-clamp-2 max-w-[220px] text-[#444444] text-[0.8rem]"
                             title={[details.specialMarks, details.specialWounds].filter(Boolean).join('; ')}
                           >
-                            {[details.specialMarks, details.specialWounds].filter(Boolean).join('; ') || '—'}
+                            {[details.specialMarks, details.specialWounds].filter(Boolean).join('; ') || '-'}
                           </div>
                         </td>
 
@@ -3291,12 +3291,12 @@ export default function TuskerProfile() {
                                     url: primaryPhoto,
                                     images: allSightingImages,
                                     title: `${tusker.name} (${tusker.id}) - Sighting #${sightingNum}`,
-                                    date: formatDate(sighting.captureDate) || sighting.captureDate || '—',
+                                    date: formatDate(sighting.captureDate) || sighting.captureDate || '-',
                                     author: sighting.author || 'WTS Admin',
                                     location: details.location || '',
                                     healthCondition: details.healthCondition || '',
                                     threatLevel: details.threatLevel || '',
-                                    note: noteDisplay !== '—' ? noteDisplay : ''
+                                    note: noteDisplay !== '-' ? noteDisplay : ''
                                   });
                                 }}
                                 className="group relative w-12 h-12 rounded-[8px] overflow-hidden border border-[#d5d5d5] bg-black/5 mx-auto block cursor-pointer transition-transform hover:scale-105 p-0"
@@ -3317,7 +3317,7 @@ export default function TuskerProfile() {
                                 </div>
                               </button>
                             ) : (
-                              <span className="text-[#aaaaaa] text-xs">—</span>
+                              <span className="text-[#aaaaaa] text-xs">-</span>
                             );
                           })()}
                         </td>

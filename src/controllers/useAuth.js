@@ -10,7 +10,7 @@ import { supabase } from '../lib/supabaseClient';
 /* ==============================================================
    SECTION 1: SHARED AUTH STORE (Supabase Auth)
    One subscription for the whole app. `isAdmin` is true only when
-   the signed-in user is listed in public.admin_users — the same
+   the signed-in user is listed in public.admin_users - the same
    check the database's Row Level Security uses.
 ============================================================== */
 let authState = { isAdmin: false, authLoading: true, user: null };

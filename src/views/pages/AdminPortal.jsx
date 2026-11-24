@@ -1376,8 +1376,8 @@ export default function AdminPortal() {
                           </td>
                           <td className="py-3 px-4 font-medium text-[#182620] max-w-[260px] truncate">{item.title}</td>
                           <td className="py-3 px-4 text-xs text-[#5a6c63]">
-                            <div>{item.tuskerName || '—'}</div>
-                            <div className="text-[#888888]">{item.location || '—'}</div>
+                            <div>{item.tuskerName || '-'}</div>
+                            <div className="text-[#888888]">{item.location || '-'}</div>
                           </td>
                           <td className="py-3 px-4 text-xs text-[#5a6c63]">
                             <div>{item.photographer}</div>
@@ -1520,7 +1520,7 @@ export default function AdminPortal() {
                                   <ExternalLink size={11} />
                                 </a>
                               ) : (
-                                <span className="text-[#aaaaaa]">—</span>
+                                <span className="text-[#aaaaaa]">-</span>
                               )}
                             </td>
                             <td className="py-3 px-4 text-right">

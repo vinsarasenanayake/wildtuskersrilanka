@@ -29,9 +29,9 @@ function tuskerAreaInfo(t) {
       date: isDeceased ? (t.deathYear ? String(t.deathYear) : t.lastSeen) : t.lastSeen,
     };
   }
-  if (t.location) {
+  if (t.location && typeof t.location === 'string') {
     return {
-      name: t.location.split('/')[0].trim(),
+      name: (t.location.split('/')[0] || '').trim(),
       label: 'Roaming corridor',
       date: t.listedDate,
     };
