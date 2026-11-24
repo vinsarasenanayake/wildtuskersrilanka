@@ -13,13 +13,13 @@ import {
   Radar, Database, CheckCircle2, XCircle, Search, LogOut, RefreshCw, AlertCircle, Check, Users, ExternalLink, Save, X, Layers,
   Map as MapIcon,
 } from 'lucide-react';
-import { getTuskers, deleteTusker } from '../../models/TuskerModel';
-import { getUnlistedTuskers, deleteUnlistedTusker, addUnlistedTusker } from '../../models/UnlistedTuskersModel';
-import { getSpecialObservations, deleteSpecialObservation } from '../../models/SpecialObservationsModel';
-import { getEvents, deleteEvent } from '../../models/ProjectModel';
-import { getFieldNotes, approveFieldNote, rejectFieldNote } from '../../models/FieldNotesModel';
-import { getGalleryPhotos, approveGalleryPhoto, rejectGalleryPhoto, deleteGalleryPhoto, updateGalleryPhoto } from '../../models/GalleryModel';
-import { getTeamMembers, addTeamMember, updateTeamMember, deleteTeamMember } from '../../models/TeamModel';
+import { getTuskers, getCachedTuskers, deleteTusker } from '../../models/TuskerModel';
+import { getUnlistedTuskers, getCachedUnlistedTuskers, deleteUnlistedTusker, addUnlistedTusker } from '../../models/UnlistedTuskersModel';
+import { getSpecialObservations, getCachedSpecialObservations, deleteSpecialObservation } from '../../models/SpecialObservationsModel';
+import { getEvents, getCachedEvents, deleteEvent } from '../../models/ProjectModel';
+import { getFieldNotes, getCachedFieldNotes, approveFieldNote, rejectFieldNote } from '../../models/FieldNotesModel';
+import { getGalleryPhotos, getCachedGalleryPhotos, approveGalleryPhoto, rejectGalleryPhoto, deleteGalleryPhoto, updateGalleryPhoto } from '../../models/GalleryModel';
+import { getTeamMembers, getCachedTeamMembers, addTeamMember, updateTeamMember, deleteTeamMember } from '../../models/TeamModel';
 import { useAuth } from '../../controllers/useAuth';
 import { safeUrl } from '../../utils/safeUrl';
 import StatusBadge from '../components/StatusBadge';
@@ -39,15 +39,25 @@ export default function AdminPortal() {
   const [searchQuery, setSearchQuery] = useState('');
   const [notification, setNotification] = useState('');
 
-  // Data states
-  const [tuskers, setTuskers] = useState([]);
-  const [unlisted, setUnlisted] = useState([]);
-  const [observations, setObservations] = useState([]);
-  const [events, setEvents] = useState({ upcoming: [], past: [] });
-  const [fieldNotes, setFieldNotes] = useState({ approved: [], pending: [] });
-  const [galleryPhotos, setGalleryPhotos] = useState([]);
+  // Data states with instant 0ms memory & session cache initialization
+  const [tuskers, setTuskers] = useState(() => getCachedTuskers() || []);
+  const [unlisted, setUnlisted] = useState(() => getCachedUnlistedTuskers() || []);
+  const [observations, setObservations] = useState(() => getCachedSpecialObservations() || []);
+  const [events, setEvents] = useState(() => getCachedEvents() || { upcoming: [], past: [] });
+  const [fieldNotes, setFieldNotes] = useState(() => {
+    const cached = getCachedFieldNotes(true);
+    if (Array.isArray(cached) && cached.length > 0) {
+      return {
+        approved: cached.filter(n => n.status === 'approved'),
+        pending: cached.filter(n => n.status === 'pending'),
+      };
+    }
+    return { approved: [], pending: [] };
+  });
+  const [galleryPhotos, setGalleryPhotos] = useState(() => getCachedGalleryPhotos(true) || []);
   const [editingGalleryPhoto, setEditingGalleryPhoto] = useState(null);
-  const [teamMembers, setTeamMembers] = useState([]);
+  const [teamMembers, setTeamMembers] = useState(() => getCachedTeamMembers() || []);
+  const [dataLoading, setDataLoading] = useState(() => !getCachedTuskers());
 
   // Team Admin Modal state
   const [showTeamModal, setShowTeamModal] = useState(false);
@@ -111,6 +121,8 @@ export default function AdminPortal() {
       setTeamMembers(Array.isArray(teamList) ? teamList : []);
     } catch (err) {
       showToast(`Could not load data: ${err.message}`);
+    } finally {
+      setDataLoading(false);
     }
   };
 
@@ -433,7 +445,11 @@ export default function AdminPortal() {
               <span className="text-xs font-bold text-[#6a7c73] uppercase tracking-wider">Wild Tuskers</span>
               <Database size={18} className="text-[#0b2518]" />
             </div>
-            <div className="font-serif text-3xl font-extrabold text-[#0b2518]">{tuskers.length}</div>
+            {dataLoading && tuskers.length === 0 ? (
+              <div className="h-9 w-16 bg-[#0b2518]/10 animate-pulse rounded-lg my-1" />
+            ) : (
+              <div className="font-serif text-3xl font-extrabold text-[#0b2518]">{tuskers.length}</div>
+            )}
             <p className="text-xs text-[#8a9b92] mt-1 mb-0">Documented profiles</p>
           </div>
 
@@ -445,7 +461,11 @@ export default function AdminPortal() {
               <span className="text-xs font-bold text-[#6a7c73] uppercase tracking-wider">Unlisted</span>
               <Radar size={18} className="text-[#0b2518]" />
             </div>
-            <div className="font-serif text-3xl font-extrabold text-[#0b2518]">{unlisted.length}</div>
+            {dataLoading && unlisted.length === 0 ? (
+              <div className="h-9 w-16 bg-[#0b2518]/10 animate-pulse rounded-lg my-1" />
+            ) : (
+              <div className="font-serif text-3xl font-extrabold text-[#0b2518]">{unlisted.length}</div>
+            )}
             <p className="text-xs text-[#8a9b92] mt-1 mb-0">Under monitoring</p>
           </Link>
 
@@ -460,7 +480,11 @@ export default function AdminPortal() {
               <span className="text-xs font-bold text-[#6a7c73] uppercase tracking-wider">Observations</span>
               <Binoculars size={18} className="text-[#0b2518]" />
             </div>
-            <div className="font-serif text-3xl font-extrabold text-[#0b2518]">{observations.length}</div>
+            {dataLoading && observations.length === 0 ? (
+              <div className="h-9 w-16 bg-[#0b2518]/10 animate-pulse rounded-lg my-1" />
+            ) : (
+              <div className="font-serif text-3xl font-extrabold text-[#0b2518]">{observations.length}</div>
+            )}
             <p className="text-xs text-[#8a9b92] mt-1 mb-0">Field observations</p>
           </div>
 
@@ -475,9 +499,13 @@ export default function AdminPortal() {
               <span className="text-xs font-bold text-[#6a7c73] uppercase tracking-wider">Events</span>
               <Calendar size={18} className="text-[#0b2518]" />
             </div>
-            <div className="font-serif text-3xl font-extrabold text-[#0b2518]">
-              {(events.upcoming?.length || 0) + (events.past?.length || 0)}
-            </div>
+            {dataLoading && !events.upcoming?.length && !events.past?.length ? (
+              <div className="h-9 w-16 bg-[#0b2518]/10 animate-pulse rounded-lg my-1" />
+            ) : (
+              <div className="font-serif text-3xl font-extrabold text-[#0b2518]">
+                {(events.upcoming?.length || 0) + (events.past?.length || 0)}
+              </div>
+            )}
             <p className="text-xs text-[#8a9b92] mt-1 mb-0">Past and upcoming</p>
           </div>
 
@@ -492,14 +520,18 @@ export default function AdminPortal() {
               <span className="text-xs font-bold text-[#6a7c73] uppercase tracking-wider">Field Notes</span>
               <FileText size={18} className="text-[#0b2518]" />
             </div>
-            <div className="flex items-baseline gap-2">
-              <span className="font-serif text-3xl font-extrabold text-[#0b2518]">{approvedNotes.length}</span>
-              {pendingNotes.length > 0 && (
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
-                  {pendingNotes.length} pending
-                </span>
-              )}
-            </div>
+            {dataLoading && !approvedNotes.length && !pendingNotes.length ? (
+              <div className="h-9 w-16 bg-[#0b2518]/10 animate-pulse rounded-lg my-1" />
+            ) : (
+              <div className="flex items-baseline gap-2">
+                <span className="font-serif text-3xl font-extrabold text-[#0b2518]">{approvedNotes.length}</span>
+                {pendingNotes.length > 0 && (
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                    {pendingNotes.length} pending
+                  </span>
+                )}
+              </div>
+            )}
             <p className="text-xs text-[#8a9b92] mt-1 mb-0">Researcher field notes</p>
           </div>
         </div>
@@ -705,7 +737,7 @@ export default function AdminPortal() {
             <div className="p-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <span className="text-sm font-semibold text-[#5a6c63]">
-                  Showing {filteredTuskers.length} of {tuskers.length} tuskers
+                  {dataLoading && tuskers.length === 0 ? 'Loading registry records…' : `Showing ${filteredTuskers.length} of ${tuskers.length} tuskers`}
                 </span>
                 <div className="flex items-center gap-2.5 w-full sm:w-auto">
                   <Link
@@ -738,7 +770,18 @@ export default function AdminPortal() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#eef3f0]">
-                    {filteredTuskers.length === 0 ? (
+                    {dataLoading && tuskers.length === 0 ? (
+                      [1, 2, 3, 4, 5].map((n) => (
+                        <tr key={n} className="animate-pulse">
+                          <td className="py-3 px-4"><div className="h-4 w-12 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-32 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-28 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-16 bg-gray-200 rounded-full" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-20 bg-gray-200 rounded-full" /></td>
+                          <td className="py-3 px-4 text-right"><div className="h-4 w-14 bg-gray-200 rounded ml-auto" /></td>
+                        </tr>
+                      ))
+                    ) : filteredTuskers.length === 0 ? (
                       <tr>
                         <td colSpan="6" className="py-8 text-center text-[#7e9087]">
                           No tuskers found matching your search.
@@ -840,7 +883,17 @@ export default function AdminPortal() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#eef3f0]">
-                    {filteredUnlisted.length === 0 ? (
+                    {dataLoading && unlisted.length === 0 ? (
+                      [1, 2, 3, 4, 5].map((n) => (
+                        <tr key={n} className="animate-pulse">
+                          <td className="py-3 px-4"><div className="h-4 w-24 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-32 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-28 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-40 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4 text-right"><div className="h-4 w-14 bg-gray-200 rounded ml-auto" /></td>
+                        </tr>
+                      ))
+                    ) : filteredUnlisted.length === 0 ? (
                       <tr>
                         <td colSpan="5" className="py-8 text-center text-[#7e9087]">
                           No unlisted records found.
@@ -891,7 +944,7 @@ export default function AdminPortal() {
             <div className="p-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <span className="text-sm font-semibold text-[#5a6c63]">
-                  Showing {filteredObservations.length} of {observations.length} special observations
+                  {dataLoading && observations.length === 0 ? 'Loading observations…' : `Showing ${filteredObservations.length} of ${observations.length} special observations`}
                 </span>
                 <Link
                   to="/admin/add-observation"
@@ -915,7 +968,18 @@ export default function AdminPortal() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#eef3f0]">
-                    {filteredObservations.length === 0 ? (
+                    {dataLoading && observations.length === 0 ? (
+                      [1, 2, 3, 4, 5].map((n) => (
+                        <tr key={n} className="animate-pulse">
+                          <td className="py-3 px-4"><div className="h-4 w-20 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-24 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-36 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-24 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-20 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4 text-right"><div className="h-4 w-14 bg-gray-200 rounded ml-auto" /></td>
+                        </tr>
+                      ))
+                    ) : filteredObservations.length === 0 ? (
                       <tr>
                         <td colSpan="6" className="py-8 text-center text-[#7e9087]">
                           No observations found.
@@ -968,7 +1032,7 @@ export default function AdminPortal() {
             <div className="p-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <span className="text-sm font-semibold text-[#5a6c63]">
-                  Showing {combinedEvents.length} events
+                  {dataLoading && !events.upcoming?.length && !events.past?.length ? 'Loading events…' : `Showing ${combinedEvents.length} events`}
                 </span>
                 <Link
                   to="/admin/create-event"
@@ -991,7 +1055,17 @@ export default function AdminPortal() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#eef3f0]">
-                    {combinedEvents.length === 0 ? (
+                    {dataLoading && !events.upcoming?.length && !events.past?.length ? (
+                      [1, 2, 3, 4, 5].map((n) => (
+                        <tr key={n} className="animate-pulse">
+                          <td className="py-3 px-4"><div className="h-4 w-20 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-16 bg-gray-200 rounded-full" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-36 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-24 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4 text-right"><div className="h-4 w-14 bg-gray-200 rounded ml-auto" /></td>
+                        </tr>
+                      ))
+                    ) : combinedEvents.length === 0 ? (
                       <tr>
                         <td colSpan="5" className="py-8 text-center text-[#7e9087]">
                           No events recorded.
@@ -1111,7 +1185,7 @@ export default function AdminPortal() {
               {/* Published Field Notes Section */}
               <div className="flex items-center justify-between mb-4">
                 <span className="text-sm font-semibold text-[#5a6c63]">
-                  Published Field Notes ({approvedNotes.length})
+                  Published Field Notes {dataLoading && !approvedNotes.length ? '' : `(${approvedNotes.length})`}
                 </span>
               </div>
 
@@ -1127,7 +1201,17 @@ export default function AdminPortal() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#eef3f0]">
-                    {approvedNotes.length === 0 ? (
+                    {dataLoading && !approvedNotes.length && !pendingNotes.length ? (
+                      [1, 2, 3, 4, 5].map((n) => (
+                        <tr key={n} className="animate-pulse">
+                          <td className="py-3 px-4"><div className="h-4 w-20 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-16 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-36 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-24 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4 text-right"><div className="h-4 w-14 bg-gray-200 rounded ml-auto" /></td>
+                        </tr>
+                      ))
+                    ) : approvedNotes.length === 0 ? (
                       <tr>
                         <td colSpan="5" className="py-8 text-center text-[#7e9087]">
                           No published field notes found.
@@ -1265,7 +1349,18 @@ export default function AdminPortal() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#eef3f0]">
-                    {filteredGallery.length === 0 ? (
+                    {dataLoading && galleryPhotos.length === 0 ? (
+                      [1, 2, 3, 4, 5].map((n) => (
+                        <tr key={n} className="animate-pulse">
+                          <td className="py-2 px-4 w-16"><div className="w-12 h-12 rounded-lg bg-gray-200" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-32 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-24 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-28 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-16 bg-gray-200 rounded-full" /></td>
+                          <td className="py-3 px-4 text-right"><div className="h-4 w-14 bg-gray-200 rounded ml-auto" /></td>
+                        </tr>
+                      ))
+                    ) : filteredGallery.length === 0 ? (
                       <tr>
                         <td colSpan="6" className="py-8 text-center text-[#7e9087]">
                           No gallery photos found.
@@ -1366,7 +1461,18 @@ export default function AdminPortal() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#eef3f0]">
-                    {teamMembers.length === 0 ? (
+                    {dataLoading && teamMembers.length === 0 ? (
+                      [1, 2, 3, 4, 5].map((n) => (
+                        <tr key={n} className="animate-pulse">
+                          <td className="py-2.5 px-4"><div className="w-10 h-10 rounded-full bg-gray-200" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-28 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-16 bg-gray-200 rounded-full" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-10 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4"><div className="h-4 w-20 bg-gray-200 rounded" /></td>
+                          <td className="py-3 px-4 text-right"><div className="h-4 w-14 bg-gray-200 rounded ml-auto" /></td>
+                        </tr>
+                      ))
+                    ) : teamMembers.length === 0 ? (
                       <tr>
                         <td colSpan="6" className="py-8 text-center text-[#7e9087]">
                           No team members found.

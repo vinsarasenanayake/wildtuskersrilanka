@@ -76,6 +76,10 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
       setError('Please specify the Photographer name.');
       return;
     }
+    if (formData.date && formData.date > todayLocalISO()) {
+      setError('Date taken cannot be in the future.');
+      return;
+    }
 
     try {
       setSaving(true);
@@ -124,8 +128,9 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border-none cursor-pointer transition-colors shrink-0"
+            className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border-none cursor-pointer transition-colors shrink-0 shadow-xs"
             title="Close"
           >
             <X size={16} />
@@ -244,6 +249,7 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
                   <input
                     type="date"
                     name="date"
+                    max={todayLocalISO()}
                     value={formData.date}
                     onChange={handleChange}
                     className="w-full bg-white border border-gray-300 rounded-lg px-3.5 py-2 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"

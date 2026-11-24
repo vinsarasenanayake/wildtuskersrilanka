@@ -5,8 +5,9 @@
  * multi-tusker tagging, location tagging, and full-screen zoomable lightbox.
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Camera,
   Upload,
@@ -17,9 +18,12 @@ import {
   ShieldCheck,
   PlusCircle,
   Pencil,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { useGallery, useGallerySubmit } from '../../controllers/useGallery';
 import { getTuskers } from '../../models/TuskerModel';
+import { todayLocalISO } from '../../utils/localDate';
 import ImageUploadBox from '../components/ImageUploadBox';
 import TuskerMultiSelect from '../components/TuskerMultiSelect';
 import EditGalleryPhotoModal from '../components/EditGalleryPhotoModal';
@@ -28,6 +32,18 @@ import LocationSearchInput from '../components/LocationSearchInput';
 import Footer from '../components/Footer';
 
 export default function Gallery() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Read return photo ID if navigating back from a Tusker Profile
+  const returnPhotoIdFromNav = location.state?.returnPhotoId || location.state?.returnPhoto?.id || null;
+  const returnTargetIdRef = useRef(returnPhotoIdFromNav || null);
+  if (returnTargetIdRef.current === null) {
+    try {
+      returnTargetIdRef.current = sessionStorage.getItem('wts_last_gallery_photo_id') || null;
+    } catch { /* ignore */ }
+  }
+
   const {
     photos,
     allApproved,
@@ -44,10 +60,70 @@ export default function Gallery() {
     handleApprove,
     handleDelete,
     handleUpdate,
-  } = useGallery();
+  } = useGallery(null); // Never open full view lightbox automatically on back navigation
 
   const [tuskers, setTuskers] = useState([]);
   const [editingPhoto, setEditingPhoto] = useState(null);
+
+  // When returning from Tusker Profile, position directly at the grid photo instantly before paint
+  useLayoutEffect(() => {
+    const targetId = returnTargetIdRef.current;
+    let savedScroll = null;
+    try {
+      savedScroll = sessionStorage.getItem('wts_last_gallery_scroll');
+    } catch { /* ignore */ }
+
+    if (!targetId && !savedScroll) return;
+
+    // Immediately restore vertical position before paint so the slideshow is NEVER shown
+    if (savedScroll !== null) {
+      const y = parseInt(savedScroll, 10);
+      if (!isNaN(y) && y > 0) {
+        window.scrollTo({ top: y, behavior: 'instant' });
+      }
+    }
+
+    const performScroll = () => {
+      if (targetId) {
+        const card = document.getElementById(`gallery-photo-${targetId}`);
+        if (card) {
+          card.scrollIntoView({ block: 'center', behavior: 'instant' });
+          card.classList.add('ring-4', 'ring-[#0b2518]/40', 'transition-all', 'duration-500');
+          setTimeout(() => {
+            card.classList.remove('ring-4', 'ring-[#0b2518]/40');
+          }, 2000);
+          returnTargetIdRef.current = null;
+          try {
+            sessionStorage.removeItem('wts_last_gallery_photo_id');
+            sessionStorage.removeItem('wts_last_gallery_scroll');
+            sessionStorage.removeItem('wts_last_gallery_photo_obj');
+          } catch { /* ignore */ }
+          if (location.state?.returnPhotoId || location.state?.returnPhoto) {
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+          return true;
+        }
+      }
+      return false;
+    };
+
+    if (!performScroll()) {
+      const frame = requestAnimationFrame(performScroll);
+      return () => cancelAnimationFrame(frame);
+    }
+  }, [photos, returnPhotoIdFromNav, location.state]);
+
+  const handleCloseLightbox = useCallback(() => {
+    setActivePhoto(null);
+    try {
+      sessionStorage.removeItem('wts_last_gallery_photo_id');
+      sessionStorage.removeItem('wts_last_gallery_scroll');
+      sessionStorage.removeItem('wts_last_gallery_photo_obj');
+    } catch { /* ignore */ }
+    if (location.state?.returnPhoto || location.state?.returnPhotoId) {
+      navigate('.', { replace: true, state: {} });
+    }
+  }, [location.state, navigate, setActivePhoto]);
 
   useEffect(() => {
     let active = true;
@@ -253,8 +329,15 @@ function normalizeTuskerName(str) {
             {photos.map((item) => (
               <div
                 key={item.id}
-                onClick={() => setActivePhoto(item)}
-                className="group relative aspect-[3/4] sm:aspect-[4/5] rounded-[20px] sm:rounded-[22px] overflow-hidden cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.15)] transition-all duration-300 bg-[#e8ece9] content-auto"
+                id={`gallery-photo-${item.id}`}
+                onClick={() => {
+                  try {
+                    sessionStorage.setItem('wts_last_gallery_scroll', String(window.scrollY));
+                    sessionStorage.setItem('wts_last_gallery_photo_id', String(item.id));
+                  } catch { /* ignore */ }
+                  setActivePhoto(item);
+                }}
+                className="group relative aspect-[3/4] sm:aspect-[4/5] rounded-[20px] sm:rounded-[22px] overflow-hidden cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.15)] transition-all duration-300 bg-[#e8ece9]"
               >
                 {/* Edge-to-edge photo filling entire card */}
                 <img
@@ -336,7 +419,9 @@ function normalizeTuskerName(str) {
           photo={activePhoto}
           tusker={matchedTusker}
           tuskers={tuskers}
-          onClose={() => setActivePhoto(null)}
+          allPhotos={allApproved}
+          onNavigatePhoto={(p) => setActivePhoto(p)}
+          onClose={handleCloseLightbox}
           isAdmin={isAdmin}
           onApprove={handleApprove}
           onDelete={handleDelete}
@@ -373,33 +458,133 @@ function normalizeTuskerName(str) {
 /* ── 3D Coverflow Carousel (Exact UI from Reference Image 2) ─── */
 function CoverflowCarousel({ items, onSelectPhoto, getTuskerDisplayName }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const count = items?.length || 0;
+  const pointerStartXRef = useRef(0);
+  const isDraggingRef = useRef(false);
+  const pauseTimeoutRef = useRef(null);
+  const isHoveredRef = useRef(false);
+
+  // Pause autoplay for 15 seconds whenever user interacts
+  const pauseAutoplay = useCallback((durationMs = 15000) => {
+    setIsPaused(true);
+    if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
+    pauseTimeoutRef.current = setTimeout(() => {
+      if (!isHoveredRef.current) {
+        setIsPaused(false);
+      }
+    }, durationMs);
+  }, []);
 
   useEffect(() => {
-    if (!items || items.length <= 1) return;
+    return () => {
+      if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!items || items.length <= 1 || isPaused) return;
     const timer = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % items.length);
     }, 6000);
     return () => clearInterval(timer);
-  }, [items]);
+  }, [items, isPaused]);
 
   // Keyboard navigation
   useEffect(() => {
     if (count <= 1) return;
     const handleKeyDown = (e) => {
-      if (e.key === 'ArrowLeft') setActiveIndex((curr) => (curr - 1 + count) % count);
-      if (e.key === 'ArrowRight') setActiveIndex((curr) => (curr + 1) % count);
+      if (e.key === 'ArrowLeft') {
+        pauseAutoplay(15000);
+        setActiveIndex((curr) => (curr - 1 + count) % count);
+      }
+      if (e.key === 'ArrowRight') {
+        pauseAutoplay(15000);
+        setActiveIndex((curr) => (curr + 1) % count);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [count]);
+  }, [count, pauseAutoplay]);
+
+  const handlePointerDown = (clientX) => {
+    pointerStartXRef.current = clientX;
+    isDraggingRef.current = true;
+    pauseAutoplay(15000);
+  };
+
+  const handlePointerUp = (clientX) => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    pauseAutoplay(15000);
+    const deltaX = clientX - pointerStartXRef.current;
+    if (Math.abs(deltaX) > 40) {
+      if (deltaX > 0) {
+        setActiveIndex((curr) => (curr - 1 + count) % count);
+      } else {
+        setActiveIndex((curr) => (curr + 1) % count);
+      }
+    }
+  };
+
+  const handleMouseEnter = () => {
+    isHoveredRef.current = true;
+    setIsPaused(true);
+  };
+
+  const handleMouseLeave = () => {
+    isHoveredRef.current = false;
+    pauseAutoplay(10000);
+  };
 
   if (!items || items.length === 0) return null;
 
   return (
     <div className="w-full flex flex-col items-center mb-8 select-none overflow-hidden pt-1 pb-1">
       {/* 3D Stage Container (Enlarged) */}
-      <div className="relative w-full max-w-[1180px] h-[360px] sm:h-[450px] md:h-[510px] flex items-center justify-center">
+      <div
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onMouseDown={(e) => handlePointerDown(e.clientX)}
+        onMouseUp={(e) => handlePointerUp(e.clientX)}
+        onTouchStart={(e) => {
+          if (e.touches.length === 1) handlePointerDown(e.touches[0].clientX);
+        }}
+        onTouchEnd={(e) => {
+          if (e.changedTouches.length === 1) handlePointerUp(e.changedTouches[0].clientX);
+        }}
+        className="relative w-full max-w-[1180px] h-[360px] sm:h-[450px] md:h-[510px] flex items-center justify-center cursor-grab active:cursor-grabbing"
+      >
+        {/* Navigation Arrow Chevrons */}
+        {count > 1 && (
+          <>
+            <button
+              type="button"
+              aria-label="Previous image"
+              onClick={(e) => {
+                e.stopPropagation();
+                pauseAutoplay(15000);
+                setActiveIndex((curr) => (curr - 1 + count) % count);
+              }}
+              className="absolute left-2 sm:left-4 md:left-8 z-40 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white/85 hover:bg-white text-black shadow-[0_6px_24px_rgba(0,0,0,0.22)] backdrop-blur-md flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer border-none shrink-0"
+            >
+              <ChevronLeft size={28} strokeWidth={3} className="text-[#111111] -ml-0.5" />
+            </button>
+            <button
+              type="button"
+              aria-label="Next image"
+              onClick={(e) => {
+                e.stopPropagation();
+                pauseAutoplay(15000);
+                setActiveIndex((curr) => (curr + 1) % count);
+              }}
+              className="absolute right-2 sm:right-4 md:right-8 z-40 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white/85 hover:bg-white text-black shadow-[0_6px_24px_rgba(0,0,0,0.22)] backdrop-blur-md flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer border-none shrink-0"
+            >
+              <ChevronRight size={28} strokeWidth={3} className="text-[#111111] -mr-0.5" />
+            </button>
+          </>
+        )}
+
         {items.map((item, index) => {
           let diff = (index - activeIndex) % count;
           if (diff > count / 2) diff -= count;
@@ -519,17 +704,18 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center pb-4 mb-5 border-b border-[#eeeeee]">
-          <div>
-            <h3 className="font-sans text-[1.25rem] font-bold text-[#111111] m-0">
+          <div className="min-w-0 pr-3">
+            <h3 className="font-sans text-[1.15rem] sm:text-[1.25rem] font-bold text-[#111111] m-0 truncate">
               Submit a Tusker Photo
             </h3>
-            <p className="font-sans text-xs text-[#777777] m-0 mt-0.5">
+            <p className="font-sans text-xs text-[#777777] m-0 mt-0.5 leading-snug">
               Contribute your field photography to the Wild Tuskers Sri Lanka gallery.
             </p>
           </div>
           <button aria-label="Close"
+            type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-[#f4f4f4] hover:bg-[#e8e8e8] text-[#555555] flex items-center justify-center border-none cursor-pointer transition-colors"
+            className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full shrink-0 bg-[#f4f4f4] hover:bg-[#e8e8e8] text-[#555555] flex items-center justify-center border-none cursor-pointer transition-colors shadow-xs"
           >
             <X size={18} />
           </button>
@@ -632,6 +818,7 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
                 <input
                   type="date"
                   name="date"
+                  max={todayLocalISO()}
                   value={formData.date}
                   onChange={handleChange}
                   className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm"

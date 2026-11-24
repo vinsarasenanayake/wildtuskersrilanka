@@ -6,7 +6,7 @@
  * full-screen lightbox exploration, and admin moderation controls.
  */
 
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjectFeed } from '../../controllers/useProjects';
 import {
@@ -16,6 +16,7 @@ import {
   Trash2,
   User,
   Clock,
+  MapPin,
   CheckCircle2,
   Image as ImageIcon,
   ZoomIn,
@@ -243,6 +244,20 @@ function ProjectCard({ event, isAdmin, onEdit, onDelete, onPhotoClick }) {
               <Calendar size={13} className="shrink-0" />
               <span>{formatEventDate(event.date)}</span>
             </span>
+
+            {event.time && (
+              <span className="inline-flex items-center gap-1.5 font-sans text-[0.75rem] sm:text-[0.82rem] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                <Clock size={12} className="shrink-0 text-emerald-700" />
+                <span>{event.time}</span>
+              </span>
+            )}
+
+            {event.location && (
+              <span className="inline-flex items-center gap-1.5 font-sans text-[0.75rem] sm:text-[0.82rem] font-medium text-gray-700 bg-gray-50 px-2 py-0.5 rounded border border-gray-200">
+                <MapPin size={12} className="shrink-0 text-amber-600" />
+                <span>{event.location}</span>
+              </span>
+            )}
           </div>
         </div>
 
@@ -321,7 +336,7 @@ function ProjectCard({ event, isAdmin, onEdit, onDelete, onPhotoClick }) {
 
 export default function OurProjects() {
   const navigate = useNavigate();
-  const { upcomingEvents, pastEvents, isAdmin, removeEvent } = useProjectFeed();
+  const { upcomingEvents, pastEvents, loading, isAdmin, removeEvent } = useProjectFeed();
 
   const [actionNotice, setActionNotice] = useState(null);
   const [activeLightboxPhoto, setActiveLightboxPhoto] = useState(null);
@@ -329,6 +344,45 @@ export default function OurProjects() {
   useEffect(() => {
     document.title = 'Wild Tuskers Sri Lanka | Our Projects';
   }, []);
+
+  // Persist scroll position across page reloads
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (window.scrollY > 0) {
+            sessionStorage.setItem('wts_projects_scroll', String(window.scrollY));
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Restore scroll position on reload without jumping to top
+  useLayoutEffect(() => {
+    const savedY = sessionStorage.getItem('wts_projects_scroll');
+    if (savedY) {
+      const y = parseInt(savedY, 10);
+      if (!isNaN(y) && y > 0) {
+        window.scrollTo({ top: y, behavior: 'instant' });
+        const frame = requestAnimationFrame(() => {
+          window.scrollTo({ top: y, behavior: 'instant' });
+        });
+        const timer = setTimeout(() => {
+          window.scrollTo({ top: y, behavior: 'instant' });
+        }, 50);
+        return () => {
+          cancelAnimationFrame(frame);
+          clearTimeout(timer);
+        };
+      }
+    }
+  }, [upcomingEvents.length, pastEvents.length]);
 
   const handleEdit = (id) => {
     navigate(`/admin/edit-event/${id}`);
@@ -408,59 +462,70 @@ export default function OurProjects() {
           </p>
         </div>
 
-        {/* Upcoming Events Section */}
-        <section className="flex flex-col gap-4">
-          {/* Header Row: Maintained single-line on mobile portrait */}
-          <div className="flex flex-row items-center justify-between gap-2 sm:gap-3">
-            <h2 className="font-sans text-[0.95rem] sm:text-[1.2rem] font-bold text-[#111111] m-0 whitespace-nowrap shrink-0 flex items-center gap-2">
-              <span>Upcoming Events</span>
-              {upcomingEvents.length > 0 && (
-                <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900">
-                  {upcomingEvents.length}
-                </span>
+        {/* Upcoming Events Section (Hidden for visitors if empty) */}
+        {(isAdmin || upcomingEvents.length > 0) && (
+          <section className="flex flex-col gap-4">
+            {/* Header Row: Maintained single-line on mobile portrait */}
+            <div className="flex flex-row items-center justify-between gap-2 sm:gap-3">
+              <h2 className="font-sans text-[0.95rem] sm:text-[1.2rem] font-bold text-[#111111] m-0 whitespace-nowrap shrink-0 flex items-center gap-2">
+                <span>Upcoming Events</span>
+                {upcomingEvents.length > 0 && (
+                  <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900">
+                    {upcomingEvents.length}
+                  </span>
+                )}
+              </h2>
+              {isAdmin && (
+                <div className="flex gap-2 w-auto shrink-0">
+                  <button
+                    type="button"
+                    className="bg-accent text-primary font-semibold text-[0.72rem] sm:text-[0.88rem] px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-[6px] inline-flex items-center justify-center gap-1.5 border-none cursor-pointer hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap shadow-sm w-auto text-center"
+                    onClick={() => navigate('/admin/create-event')}
+                  >
+                    <PlusCircle size={14} className="shrink-0" />
+                    <span>Create Project / Event</span>
+                  </button>
+                </div>
               )}
-            </h2>
-            {isAdmin && (
-              <div className="flex gap-2 w-auto shrink-0">
-                <button
-                  type="button"
-                  className="bg-accent text-primary font-semibold text-[0.72rem] sm:text-[0.88rem] px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-[6px] inline-flex items-center justify-center gap-1.5 border-none cursor-pointer hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap shadow-sm w-auto text-center"
-                  onClick={() => navigate('/admin/create-event')}
-                >
-                  <PlusCircle size={14} className="shrink-0" />
-                  <span>Create Project / Event</span>
-                </button>
+            </div>
+
+            {loading && upcomingEvents.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-[#e5e7eb] p-6 shadow-xs animate-pulse flex flex-col gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-6 w-28 bg-gray-200 rounded-full" />
+                  <div className="h-4 w-32 bg-gray-200 rounded" />
+                </div>
+                <div className="h-6 w-1/2 bg-gray-200 rounded" />
+                <div className="h-16 w-full bg-gray-100 rounded" />
+              </div>
+            ) : upcomingEvents.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 sm:py-12 px-4 gap-3 bg-white rounded-2xl border border-[#e5e7eb] text-center shadow-xs">
+                <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center">
+                  <Calendar size={24} strokeWidth={1.5} />
+                </div>
+                <p className="font-sans text-xs sm:text-[0.95rem] text-[#888888] m-0">
+                  No upcoming events currently scheduled.
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-5 sm:gap-6">
+                {upcomingEvents.map(event => (
+                  <ProjectCard
+                    key={event.id}
+                    event={event}
+                    isAdmin={isAdmin}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onPhotoClick={handlePhotoClick}
+                  />
+                ))}
               </div>
             )}
-          </div>
-
-          {upcomingEvents.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 sm:py-12 px-4 gap-3 bg-white rounded-2xl border border-[#e5e7eb] text-center shadow-xs">
-              <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center">
-                <Calendar size={24} strokeWidth={1.5} />
-              </div>
-              <p className="font-sans text-xs sm:text-[0.95rem] text-[#888888] m-0">
-                No upcoming events currently scheduled.
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-5 sm:gap-6">
-              {upcomingEvents.map(event => (
-                <ProjectCard
-                  key={event.id}
-                  event={event}
-                  isAdmin={isAdmin}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onPhotoClick={handlePhotoClick}
-                />
-              ))}
-            </div>
-          )}
-        </section>
+          </section>
+        )}
 
         {/* Past Events Section */}
-        <section className="flex flex-col gap-4 pt-4 sm:pt-6 border-t border-[#e5e7eb]">
+        <section className={`flex flex-col gap-4 ${(isAdmin || upcomingEvents.length > 0) ? 'pt-4 sm:pt-6 border-t border-[#e5e7eb]' : ''}`}>
           <div className="flex items-center justify-between flex-wrap gap-3">
             <h2 className="font-sans text-base sm:text-[1.2rem] font-bold text-[#111111] m-0 flex items-center gap-2">
               <span>Past Events & Expeditions</span>
@@ -472,7 +537,20 @@ export default function OurProjects() {
             </h2>
           </div>
 
-          {pastEvents.length === 0 ? (
+          {loading && pastEvents.length === 0 ? (
+            <div className="flex flex-col gap-5 sm:gap-6">
+              {[1, 2].map(n => (
+                <div key={n} className="bg-white rounded-2xl border border-[#e5e7eb] p-6 shadow-xs animate-pulse flex flex-col gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-6 w-28 bg-gray-200 rounded-full" />
+                    <div className="h-4 w-32 bg-gray-200 rounded" />
+                  </div>
+                  <div className="h-6 w-1/2 bg-gray-200 rounded" />
+                  <div className="h-16 w-full bg-gray-100 rounded" />
+                </div>
+              ))}
+            </div>
+          ) : pastEvents.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 sm:py-12 px-4 gap-3 bg-white rounded-2xl border border-[#e5e7eb] text-center shadow-xs">
               <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center">
                 <CheckCircle2 size={24} strokeWidth={1.5} />

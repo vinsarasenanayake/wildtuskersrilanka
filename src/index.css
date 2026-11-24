@@ -46,6 +46,26 @@
     font-family: var(--font-sans);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  /* High-contrast keyboard accessibility focus outlines for dark navigation elements */
+  header a:focus-visible,
+  header button:focus-visible,
+  nav a:focus-visible,
+  nav button:focus-visible {
+    outline: 2px solid #f6cf7d !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 4px rgba(11, 37, 24, 0.85) !important;
+  }
+
+  /* Never show harsh outline on input fields, textareas, selects */
+  input:focus,
+  input:focus-visible,
+  textarea:focus,
+  textarea:focus-visible,
+  select:focus,
+  select:focus-visible {
+    outline: none !important;
+  }
 }
 
 @layer utilities {

@@ -2186,11 +2186,17 @@ export default function TuskerProfile() {
 
   const handleBack = useCallback(() => {
     if (fromPath && !fromPath.includes('/edit-tusker') && !fromPath.includes('/add-sighting')) {
-      navigate(fromPath, { state: { restoreScroll: fromPath === '/tuskers' } });
+      navigate(fromPath, {
+        state: {
+          restoreScroll: fromPath === '/tuskers',
+          returnPhotoId: location.state?.returnPhotoId,
+          returnPhoto: location.state?.returnPhoto,
+        },
+      });
     } else {
       navigate('/tuskers', { state: { restoreScroll: true } });
     }
-  }, [navigate, fromPath]);
+  }, [navigate, fromPath, location.state]);
 
   const {
     tusker,

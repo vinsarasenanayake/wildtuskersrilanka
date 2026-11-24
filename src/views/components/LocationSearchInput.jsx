@@ -97,7 +97,7 @@ export default function LocationSearchInput({
             if (data && data.length > 0) {
               const geoMatches = data.map((item) => ({
                 name: item.title,
-                type: 'Location',
+                type: item.badge || item.type || 'Location',
                 region: item.subtitle || 'Sri Lanka',
                 lat: item.lat,
                 lng: item.lng,
@@ -147,13 +147,19 @@ export default function LocationSearchInput({
     body.style.overflow = 'hidden';
     documentElement.style.overflow = 'hidden';
     if (scrollbar > 0) body.style.paddingRight = `${scrollbar}px`;
-    const onKey = (e) => { if (e.key === 'Escape') setShowMapModal(false); };
-    window.addEventListener('keydown', onKey);
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        e.stopImmediatePropagation();
+        e.stopPropagation();
+        setShowMapModal(false);
+      }
+    };
+    window.addEventListener('keydown', onKey, true);
     return () => {
       body.style.overflow = prev.bodyOverflow;
       body.style.paddingRight = prev.bodyPadding;
       documentElement.style.overflow = prev.htmlOverflow;
-      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('keydown', onKey, true);
     };
   }, [showMapModal]);
 
@@ -709,9 +715,10 @@ export default function LocationSearchInput({
               <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#c69b55] pointer-events-none" />
               <input
                 type="text"
-                placeholder="Search any city, town, village, tank, road, or national park…"
+                placeholder="Search any building, store, business, park, sanctuary, road, or city…"
                 value={modalSearch}
                 onChange={(e) => setModalSearch(e.target.value)}
+                autoComplete="off"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();

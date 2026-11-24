@@ -6,6 +6,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import {
   getSpecialObservations,
+  getCachedSpecialObservations,
   getSpecialObservationById,
   addSpecialObservation,
   updateSpecialObservation,
@@ -13,21 +14,22 @@ import {
 } from '../models/SpecialObservationsModel';
 import { useAuth } from './useAuth';
 import { uploadMediaFile } from '../utils/storageUpload';
-import { todayLocalISO } from '../utils/localDate';
+import { todayLocalISO, isFutureDateTime } from '../utils/localDate';
 
 /* ==============================================================
    SECTION 1: SPECIAL OBSERVATIONS PUBLIC FEED CONTROLLER
 ============================================================== */
 export function useSpecialObservationsFeed() {
-  const [observations, setObservations] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const cached = getCachedSpecialObservations();
+  const [observations, setObservations] = useState(() => cached || []);
+  const [loading, setLoading] = useState(() => !cached);
   const [selectedYear, setSelectedYear] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const { isAdmin } = useAuth();
 
-  const loadObservations = async () => {
+  const loadObservations = async (force = false) => {
     try {
-      setObservations(await getSpecialObservations());
+      setObservations(await getSpecialObservations(force));
     } catch (err) {
       console.error(err);
     } finally {
@@ -109,6 +111,7 @@ export function useSpecialObservationForm(id) {
     title: '',
     tuskerName: '',
     date: todayLocalISO(),
+    time: '',
     location: '',
     description: '',
     images: [],
@@ -128,6 +131,7 @@ export function useSpecialObservationForm(id) {
           title: existing.title || '',
           tuskerName: existing.tuskerName || '',
           date: existing.date || '',
+          time: existing.time || '',
           location: existing.location || '',
           description: existing.description || '',
           images: Array.isArray(existing.images) ? existing.images : [],
@@ -179,10 +183,18 @@ export function useSpecialObservationForm(id) {
   };
 
   const saveObservation = async () => {
-    const { title, tuskerName, date, location, description, images, author } = formData;
+    const { title, tuskerName, date, time, location, description, images, author } = formData;
 
     if (!title || !date || !description || !tuskerName) {
       setError('Please provide Tusker Name, Title, Date, and Description.');
+      return false;
+    }
+    if (date > todayLocalISO()) {
+      setError('Observation date cannot be in the future.');
+      return false;
+    }
+    if (isFutureDateTime(date, time)) {
+      setError('Observation time cannot be in the future for today.');
       return false;
     }
 
@@ -209,6 +221,7 @@ export function useSpecialObservationForm(id) {
         title,
         tuskerName,
         date,
+        time: time || null,
         location: location || 'Sri Lanka',
         description,
         images: Array.isArray(resolvedImages) ? resolvedImages : [],

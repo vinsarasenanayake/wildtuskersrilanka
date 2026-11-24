@@ -98,6 +98,32 @@ export default function ImageUploadBox({
     }
   };
 
+  const validateFile = (file) => {
+    if (file.size > 15 * 1024 * 1024) {
+      throw new Error(`"${file.name}" is too large (max 15 MB).`);
+    }
+    if (file.size < 100) {
+      throw new Error(`"${file.name}" is corrupted or empty (0 or 1-byte file).`);
+    }
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+          reject(new Error(`"${file.name}" is corrupted or cannot be rendered.`));
+        } else {
+          resolve();
+        }
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error(`"${file.name}" is not a valid image file.`));
+      };
+      img.src = objectUrl;
+    });
+  };
+
   const handleFiles = async (filesList) => {
     if (!filesList || filesList.length === 0) return;
     const rawFiles = Array.from(filesList);
@@ -110,6 +136,19 @@ export default function ImageUploadBox({
 
     const filesToUpload = isMultiple ? validFiles : validFiles.slice(0, 1);
 
+    // Validate all files first before attempting upload
+    setUploadError('');
+    for (const file of filesToUpload) {
+      try {
+        await validateFile(file);
+      } catch (validationErr) {
+        setUploadError(validationErr.message);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        if (addMoreInputRef.current) addMoreInputRef.current.value = '';
+        return;
+      }
+    }
+
     // If single image mode with allowCrop and autoCropOnSelect, immediately launch cropper modal
     if (!isMultiple && allowCrop && autoCropOnSelect && filesToUpload.length > 0) {
       setCropperSource(filesToUpload[0]);
@@ -119,31 +158,37 @@ export default function ImageUploadBox({
       return;
     }
 
-    setUploadError('');
     setUploading(true);
     setUploadCount(filesToUpload.length);
 
     try {
-      const uploadPromises = filesToUpload.map(async (file) => {
+      const errors = [];
+      const successfulUrls = [];
+
+      for (const file of filesToUpload) {
         try {
-          return await uploadMediaFile(file, folder);
-        } catch (err) {
-          console.error('[ImageUploadBox] upload failed for file:', file.name, err);
-          return URL.createObjectURL(file);
+          const publicUrl = await uploadMediaFile(file, folder);
+          if (publicUrl) successfulUrls.push(publicUrl);
+        } catch (uploadErr) {
+          console.error('[ImageUploadBox] upload failed for file:', file.name, uploadErr);
+          errors.push(`Failed to upload "${file.name}": ${uploadErr.message || 'Server error'}`);
         }
-      });
+      }
 
-      const uploadedUrls = await Promise.all(uploadPromises);
-      const validUrls = uploadedUrls.filter(Boolean);
+      if (errors.length > 0) {
+        setUploadError(errors.join(' | '));
+      }
 
-      if (isMultiple) {
-        emitChange([...imageList, ...validUrls]);
-      } else {
-        emitChange([validUrls[0]]);
+      if (successfulUrls.length > 0) {
+        if (isMultiple) {
+          emitChange([...imageList, ...successfulUrls]);
+        } else {
+          emitChange([successfulUrls[0]]);
+        }
       }
     } catch (err) {
       console.error('[ImageUploadBox] batch upload failed:', err);
-      setUploadError('One or more images could not be uploaded.');
+      setUploadError(err.message || 'One or more images could not be uploaded.');
     } finally {
       setUploading(false);
       setUploadCount(0);

@@ -7,7 +7,7 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, Home, Info, Database, BookOpen, Binoculars, Calendar, Shield, Camera } from 'lucide-react';
+import { Menu, X, LogOut, Home, Info, Database, BookOpen, Calendar, Shield, Camera, GraduationCap } from 'lucide-react';
 import { SITE_ASSETS } from '../../constants/siteAssets';
 import { useAuth } from '../../controllers/useAuth';
 
@@ -31,13 +31,13 @@ const Facebook = ({ size = 26, className = '' }) => (
 );
 
 const navItems = [
-  { name: 'Home',                 path: '/',             icon: Home },
-  { name: 'About Us',             path: '/about',        icon: Info },
-  { name: 'Wild Tuskers List',    path: '/tuskers',      icon: Database },
-  { name: 'The Gallery',          path: '/gallery',      icon: Camera },
-  { name: 'Field Notes',          path: '/field-notes',  icon: BookOpen },
-  { name: 'Special Observations', path: '/observations', icon: Binoculars },
-  { name: 'Our Projects',         path: '/projects',     icon: Calendar },
+  { name: 'Home',              path: '/',            icon: Home },
+  { name: 'About Us',          path: '/about',       icon: Info },
+  { name: 'Wild Tuskers List', path: '/tuskers',     icon: Database },
+  { name: 'The Gallery',       path: '/gallery',     icon: Camera },
+  { name: 'Field Notes',       path: '/field-notes', icon: BookOpen },
+  { name: 'Our Projects',      path: '/projects',    icon: Calendar },
+  { name: 'Learn',             path: '/learn',       icon: GraduationCap },
 ];
 
 export default function Navbar() {
@@ -100,11 +100,28 @@ export default function Navbar() {
         sessionStorage.removeItem('wts_last_tusker_scroll');
       } catch {}
     }
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    if (path === '/projects') {
+      try {
+        sessionStorage.removeItem('wts_projects_scroll');
+      } catch {}
+    }
   };
 
-  const isActive = (path) =>
-    path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
+  const isActive = (path) => {
+    if (path === '/') return location.pathname === '/';
+    if (path === '/learn') {
+      return (
+        location.pathname.startsWith('/learn') ||
+        location.pathname.startsWith('/observations') ||
+        location.pathname.startsWith('/tusker-identification') ||
+        location.pathname.startsWith('/admin/add-observation') ||
+        location.pathname.startsWith('/admin/edit-observation') ||
+        location.pathname.startsWith('/admin/add-identification') ||
+        location.pathname.startsWith('/admin/edit-identification')
+      );
+    }
+    return location.pathname.startsWith(path);
+  };
 
   const visibleNavItems = navItems;
 
@@ -112,42 +129,53 @@ export default function Navbar() {
   const isScrolledState = isScrolled || !isHome;
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-[1000] flex items-center transition-all duration-300 ${
-        isScrolledState
-          ? 'h-[66px] sm:h-[70px] lg:h-[74px] bg-gradient-to-r from-primary/95 via-primary-light/95 to-primary/95 backdrop-blur-xl shadow-md border-b border-white/10'
-          : 'h-[74px] sm:h-[80px] bg-transparent'
-      }`}
-    >
-      <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 flex items-center justify-between h-full">
+    <>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-accent focus:text-primary focus:font-bold focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-white"
+      >
+        Skip to content
+      </a>
+      <header
+        className={`fixed top-0 left-0 right-0 z-[1000] flex items-center transition-all duration-300 ${
+          isScrolledState
+            ? 'h-[66px] sm:h-[70px] lg:h-[74px] bg-gradient-to-r from-primary/95 via-primary-light/95 to-primary/95 backdrop-blur-xl shadow-md border-b border-white/10'
+            : 'h-[74px] sm:h-[80px] bg-transparent'
+        }`}
+      >
+        <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 flex items-center justify-between h-full">
 
-        {/* Brand / Logo */}
-        <Link to="/" className="flex items-center gap-2 sm:gap-[0.75rem] shrink-0" onClick={closeMenu}>
-          <div className="flex items-center justify-center">
-            <img
-              src={wtsLogo}
-              className="block h-[44px] sm:h-[50px] lg:h-[52px] w-auto object-contain"
-              alt="Wild Tuskers Sri Lanka Logo"
-            />
-          </div>
-        </Link>
+          {/* Brand / Logo */}
+          <Link
+            to="/"
+            className="flex items-center gap-2 sm:gap-[0.75rem] shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-primary rounded-md"
+            onClick={closeMenu}
+          >
+            <div className="flex items-center justify-center">
+              <img
+                src={wtsLogo}
+                className="block h-[44px] sm:h-[50px] lg:h-[52px] w-auto object-contain"
+                alt="Wild Tuskers Sri Lanka Logo"
+              />
+            </div>
+          </Link>
 
-        {/* Desktop Navigation */}
-        {/* Responsive horizontal menu for laptops, MacBooks, and large screens */}
-        <nav className="hidden xl:flex items-center flex-1 justify-center px-2 min-[1440px]:px-4">
-          <ul className="flex list-none items-center gap-2.5 min-[1360px]:gap-3.5 min-[1440px]:gap-6 2xl:gap-8 m-0 p-0">
-            {visibleNavItems.map((item) => {
-              const IconComponent = item.icon;
-              const active = isActive(item.path);
-              return (
-                <li key={item.name}>
-                  <Link
-                    to={item.path}
-                    onClick={() => handleNavClick(item.path)}
-                    className={`inline-flex items-center gap-1.5 min-[1440px]:gap-2 font-medium text-[0.86rem] min-[1360px]:text-[0.9rem] 2xl:text-[0.96rem] whitespace-nowrap relative py-2 px-1 transition-all duration-300 group ${
-                      active ? 'opacity-100 text-accent font-semibold' : 'text-white/85 hover:opacity-100 hover:text-accent'
-                    }`}
-                  >
+          {/* Desktop Navigation */}
+          {/* Responsive horizontal menu for laptops, MacBooks, and large screens */}
+          <nav className="hidden xl:flex items-center flex-1 justify-center px-2 min-[1440px]:px-4">
+            <ul className="flex list-none items-center gap-2.5 min-[1360px]:gap-3.5 min-[1440px]:gap-6 2xl:gap-8 m-0 p-0">
+              {visibleNavItems.map((item) => {
+                const IconComponent = item.icon;
+                const active = isActive(item.path);
+                return (
+                  <li key={item.name}>
+                    <Link
+                      to={item.path}
+                      onClick={() => handleNavClick(item.path)}
+                      className={`inline-flex items-center gap-1.5 min-[1440px]:gap-2 font-medium text-[0.86rem] min-[1360px]:text-[0.9rem] 2xl:text-[0.96rem] whitespace-nowrap relative py-2 px-2 transition-all duration-300 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-primary rounded-md ${
+                        active ? 'opacity-100 text-accent font-semibold' : 'text-white/85 hover:opacity-100 hover:text-accent'
+                      }`}
+                    >
                     <IconComponent
                       size={15}
                       className={`hidden 2xl:block opacity-75 transition-transform duration-200 group-hover:-translate-y-[1px] group-hover:opacity-100 ${
@@ -162,6 +190,8 @@ export default function Navbar() {
                 </li>
               );
             })}
+
+
           </ul>
         </nav>
 
@@ -306,6 +336,8 @@ export default function Navbar() {
                       </li>
                     );
                   })}
+
+
                 </ul>
               </nav>
             </div>
@@ -366,5 +398,6 @@ export default function Navbar() {
         document.body
       )}
     </header>
+    </>
   );
 }

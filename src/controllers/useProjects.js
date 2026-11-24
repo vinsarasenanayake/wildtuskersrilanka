@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { getEvents, addEvent, getEventById, updateEvent, deleteEvent } from '../models/ProjectModel';
+import { getEvents, getCachedEvents, addEvent, getEventById, updateEvent, deleteEvent } from '../models/ProjectModel';
 import { useAuth } from './useAuth';
 
 function getTodayDateString() {
@@ -19,13 +19,14 @@ function getTodayDateString() {
    SECTION 1: PROJECTS & EVENTS TIMELINE CONTROLLER
 ============================================================== */
 export function useProjectFeed() {
-  const [events, setEvents] = useState({ upcoming: [], past: [] });
-  const [loading, setLoading] = useState(true);
+  const cached = getCachedEvents();
+  const [events, setEvents] = useState(() => cached || { upcoming: [], past: [] });
+  const [loading, setLoading] = useState(() => !cached);
   const { isAdmin } = useAuth();
 
   const fetchEvents = async () => {
     try {
-      const data = await getEvents();
+      const data = await getEvents(true);
       setEvents(data);
       return data;
     } catch (err) {
@@ -67,6 +68,8 @@ export function useEventForm(eventId) {
   const [formData, setFormData] = useState({
     title: '',
     date: '',
+    time: '',
+    location: '',
     type: 'upcoming', // 'upcoming' or 'past'
     description: '',
     sharedBy: '',
@@ -89,6 +92,8 @@ export function useEventForm(eventId) {
         setFormData({
           title: ev.title || '',
           date: ev.date || '',
+          time: ev.time || '',
+          location: ev.location || '',
           type: isPast ? 'past' : (ev.type === 'past' ? 'past' : 'upcoming'),
           description: ev.description || '',
           sharedBy: ev.sharedBy || '',
@@ -127,7 +132,7 @@ export function useEventForm(eventId) {
   };
 
   const createEvent = async () => {
-    const { title, date, type, description, sharedBy, image, images } = formData;
+    const { title, date, time, location, type, description, sharedBy, image, images } = formData;
 
     if (!title || !date || !description || !sharedBy) {
       setError('Please fill in all required fields.');
@@ -142,7 +147,15 @@ export function useEventForm(eventId) {
       : (image ? image : null);
 
     try {
-      const payload = { title, date, description, sharedBy, image: finalImage };
+      const payload = {
+        title,
+        date,
+        time: time || null,
+        location: location || null,
+        description,
+        sharedBy,
+        image: finalImage,
+      };
       if (eventId) await updateEvent(eventId, payload, effectiveType);
       else await addEvent(payload, effectiveType);
     } catch (err) {

@@ -20,8 +20,9 @@ import TuskerForm from './views/pages/TuskerForm';
 import EventForm from './views/pages/EventForm';
 import FieldNotes from './views/pages/FieldNotes';
 import FieldNoteForm from './views/pages/FieldNoteForm';
-import SpecialObservations from './views/pages/SpecialObservations';
 import SpecialObservationForm from './views/pages/SpecialObservationForm';
+import TuskerIdentificationForm from './views/pages/TuskerIdentificationForm';
+import Learn from './views/pages/Learn';
 import Gallery from './views/pages/Gallery';
 import UnlistedMonitoring from './views/pages/UnlistedMonitoring';
 import UnlistedTuskerProfile from './views/pages/UnlistedTuskerProfile';
@@ -88,15 +89,23 @@ function App() {
     document.body.style.paddingRight = '';
     document.documentElement.style.overflow = '';
 
-    if (navType === 'PUSH') {
+    let hasGalleryReturn = false;
+    try {
+      hasGalleryReturn = Boolean(
+        sessionStorage.getItem('wts_last_gallery_scroll') ||
+        sessionStorage.getItem('wts_last_gallery_photo_id')
+      );
+    } catch { /* ignore */ }
+
+    if (navType === 'PUSH' && !location.state?.returnPhotoId && !location.state?.restoreScroll && !hasGalleryReturn) {
       window.scrollTo(0, 0);
     }
-  }, [location.pathname, navType]);
+  }, [location.pathname, location.state, navType]);
 
   return (
     <>
       {showNavbar && <Navbar />}
-      <main key={location.pathname} className="animate-fade-in">
+      <main id="main-content" key={location.pathname} className="animate-fade-in">
         <ErrorBoundary>
           <Routes>
             {/* Public Core Routes */}
@@ -108,7 +117,9 @@ function App() {
             <Route path="/projects" element={<OurProjects />} />
             <Route path="/field-notes" element={<FieldNotes />} />
             <Route path="/add-field-note" element={<VisitorOnly adminTo="/field-notes"><FieldNoteForm /></VisitorOnly>} />
-            <Route path="/observations" element={<SpecialObservations />} />
+            <Route path="/learn" element={<Learn />} />
+            <Route path="/observations" element={<Navigate to="/learn?tab=observations" replace />} />
+            <Route path="/tusker-identification" element={<Navigate to="/learn?tab=identification" replace />} />
             <Route path="/gallery" element={<Gallery />} />
 
             {/* AI Re-identification routes hidden until separate standalone app release */}
@@ -127,6 +138,8 @@ function App() {
             <Route path="/admin/edit-tusker/:id" element={<RequireAdmin><TuskerForm /></RequireAdmin>} />
             <Route path="/admin/add-observation" element={<RequireAdmin><SpecialObservationForm /></RequireAdmin>} />
             <Route path="/admin/edit-observation/:id" element={<RequireAdmin><SpecialObservationForm /></RequireAdmin>} />
+            <Route path="/admin/add-identification" element={<RequireAdmin><TuskerIdentificationForm /></RequireAdmin>} />
+            <Route path="/admin/edit-identification/:id" element={<RequireAdmin><TuskerIdentificationForm /></RequireAdmin>} />
             <Route path="/admin/tusker-map" element={<RequireAdmin><TuskerMap /></RequireAdmin>} />
             <Route path="/admin/zone-map" element={<RequireAdmin><TuskerMap /></RequireAdmin>} />
             <Route path="/admin/district-map" element={<RequireAdmin><DistrictMap /></RequireAdmin>} />

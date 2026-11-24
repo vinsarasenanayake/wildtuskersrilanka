@@ -535,7 +535,7 @@ export default function ImageCropperModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full border-none bg-[#242b26] hover:bg-[#2f3832] text-[#9ba8a0] hover:text-white cursor-pointer flex items-center justify-center transition-colors p-0 shrink-0 ml-2"
+            className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full border-none bg-[#242b26] hover:bg-[#2f3832] text-[#9ba8a0] hover:text-white cursor-pointer flex items-center justify-center transition-colors p-0 shrink-0 ml-2 shadow-xs"
             aria-label="Close"
           >
             <X size={18} />

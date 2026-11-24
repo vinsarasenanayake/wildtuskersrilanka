@@ -109,6 +109,26 @@ const sameArea = (aLow, targetLower) => {
   return false;
 };
 
+const normTuskerId = (id) => String(id || '').toUpperCase().replace(/^T0*/, 'T');
+
+function matchesTuskerSearch(t, rawQuery) {
+  if (!rawQuery) return true;
+  const q = rawQuery.trim().toLowerCase();
+  if (!q) return true;
+
+  if (t.name && t.name.toLowerCase().includes(q)) return true;
+  if (t.id && t.id.toLowerCase().includes(q)) return true;
+
+  const normQ = normTuskerId(q);
+  const normId = normTuskerId(t.id);
+  if (normQ && normId && (normId.includes(normQ) || normId === normQ)) return true;
+
+  if (t.sinhala && t.sinhala.toLowerCase().includes(q)) return true;
+  if (t.sinhalaName && t.sinhalaName.toLowerCase().includes(q)) return true;
+
+  return false;
+}
+
 export function useTuskerList() {
   const initialCache = getCachedTuskers();
   const [tuskers, setTuskers] = useState(() => initialCache || []);
@@ -270,9 +290,15 @@ export function useTuskerList() {
   const districtSuggestions = useMemo(() => {
     const q = (districtQuery || '').trim().toLowerCase();
     const isBrowsingAll = !q || (selectedDistrict && q === selectedDistrict.toLowerCase().trim());
-    if (isBrowsingAll) return DISTRICTS;
-    return DISTRICTS.filter(d => d.toLowerCase().includes(q));
-  }, [districtQuery, selectedDistrict]);
+    const base = isBrowsingAll ? DISTRICTS : DISTRICTS.filter(d => d.toLowerCase().includes(q));
+    return [...base].sort((a, b) => {
+      const cA = countInDistrict(a);
+      const cB = countInDistrict(b);
+      if (cA > 0 && cB === 0) return -1;
+      if (cA === 0 && cB > 0) return 1;
+      return a.localeCompare(b);
+    });
+  }, [districtQuery, selectedDistrict, countInDistrict]);
 
   // Valid locations for the currently selected district
   const validLocationsForDistrict = useMemo(() => {
@@ -346,9 +372,8 @@ export function useTuskerList() {
       setShowNameSugg(false);
       return;
     }
-    const q = val.toLowerCase();
     const matches = tuskers
-      .filter(t => t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q))
+      .filter(t => matchesTuskerSearch(t, val))
       .sort((a, b) => compareTuskerId(a.id, b.id));
     setNameSugg(matches.slice(0, 5));
     setShowNameSugg(true);
@@ -444,9 +469,7 @@ export function useTuskerList() {
   const filtered = useMemo(() => {
     let list = [...tuskers];
     if (nameQuery.trim()) {
-      const q = nameQuery.toLowerCase();
-      list = list.filter(t =>
-        t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q));
+      list = list.filter(t => matchesTuskerSearch(t, nameQuery));
     }
     if (selectedDistrict) {
       list = list.filter(t => tuskerIsInDistrict(t, selectedDistrict));
@@ -518,8 +541,18 @@ export function useTuskerList() {
    SECTION 2: TUSKER PROFILE & SLIDESHOW CONTROLLER
 ============================================================== */
 export function useTuskerProfile(id) {
-  const [tusker, setTusker] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [tusker, setTusker] = useState(() => {
+    const list = getCachedTuskers();
+    if (!list || !id) return null;
+    const clean = decodeURIComponent(id).trim().toLowerCase();
+    return list.find(t => t.id && t.id.toLowerCase() === clean) || null;
+  });
+  const [loading, setLoading] = useState(() => {
+    const list = getCachedTuskers();
+    if (!list || !id) return true;
+    const clean = decodeURIComponent(id).trim().toLowerCase();
+    return !list.some(t => t.id && t.id.toLowerCase() === clean);
+  });
   const { isAdmin } = useAuth();
 
   useEffect(() => {
@@ -662,6 +695,10 @@ export function useSightingForm(tuskerId) {
 
     if (finalUrls.length === 0 || !captureDate) {
       setError('Please provide at least one photo and capture date.');
+      return false;
+    }
+    if (captureDate > todayLocalISO()) {
+      setError('Sighting date cannot be in the future.');
       return false;
     }
     if (!String(formData.lastSeenArea || '').trim()) {
@@ -841,6 +878,10 @@ export function useTuskerForm(id) {
     }
     if (f.deathYear && !/^\d{4}$/.test(f.deathYear)) {
       setError('Year of death must be a 4-digit year.');
+      return false;
+    }
+    if (f.listedDate && f.listedDate > todayLocalISO()) {
+      setError('Registration / listed date cannot be in the future.');
       return false;
     }
 

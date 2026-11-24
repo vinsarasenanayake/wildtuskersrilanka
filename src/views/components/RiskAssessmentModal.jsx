@@ -51,7 +51,7 @@ export default function RiskAssessmentModal({ tusker, onClose }) {
           </div>
           <button
             type="button"
-            className="w-8 h-8 rounded-full border border-white/10 bg-white/10 hover:bg-white/20 text-white cursor-pointer flex items-center justify-center transition-colors shrink-0 ml-2"
+            className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full border border-white/10 bg-white/10 hover:bg-white/20 text-white cursor-pointer flex items-center justify-center transition-colors shrink-0 ml-2 shadow-xs"
             onClick={onClose}
             aria-label="Close modal"
           >

@@ -10,6 +10,8 @@ import { ArrowLeft, Save, CalendarPlus } from 'lucide-react';
 import { useEventForm } from '../../controllers/useProjects';
 import { useAuth } from '../../controllers/useAuth';
 import ImageUploadBox from '../components/ImageUploadBox';
+import ClockTimePicker from '../components/ClockTimePicker';
+import LocationSearchInput from '../components/LocationSearchInput';
 
 export default function EventForm() {
   const navigate = useNavigate();
@@ -124,6 +126,38 @@ export default function EventForm() {
                     Dates earlier than today cannot be registered as an upcoming event.
                   </p>
                 )}
+              </div>
+
+              {/* Event Time (for upcoming events) */}
+              {formData.type === 'upcoming' && (
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">
+                    Event Time (Optional / Recommended)
+                  </label>
+                  <ClockTimePicker
+                    name="time"
+                    value={formData.time}
+                    onChange={handleChange}
+                    allowFuture={true}
+                    placeholder="Select event start time"
+                  />
+                </div>
+              )}
+
+              {/* Event Location / Venue (Flexible for auditoriums, halls, buildings, stores, businesses, wildlife parks) */}
+              <div className={`flex flex-col gap-1.5 ${formData.type === 'upcoming' ? 'sm:col-span-1' : 'sm:col-span-2'}`}>
+                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">
+                  Venue / Location (Optional)
+                </label>
+                <LocationSearchInput
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  placeholder="Search venue, building, store, park, or pick on map..."
+                  showMapButton={true}
+                  autoComplete="off"
+                  className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
+                />
               </div>
 
               {/* Shared By */}

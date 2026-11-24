@@ -18,6 +18,7 @@ export default function UnlistedMonitoring() {
   const navigate = useNavigate();
   const {
     tuskers,
+    loading,
     filtered,
     searchQuery,
     setSearchQuery,
@@ -86,6 +87,10 @@ export default function UnlistedMonitoring() {
     e.preventDefault();
     if (!newFormData.location || !newFormData.description) {
       alert('Please provide at least location and description.');
+      return;
+    }
+    if (newFormData.listedDate && newFormData.listedDate > todayLocalISO()) {
+      alert('First spotted date cannot be in the future.');
       return;
     }
     const photos = (newFormData.photos && newFormData.photos.length > 0)
@@ -339,7 +344,17 @@ export default function UnlistedMonitoring() {
       </div>
 
       {/* ── Grid: Navigates to full profile page on click (no popup) ── */}
-      {filtered.length > 0 ? (
+      {loading && filtered.length === 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-8 min-h-[60vh] content-start">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
+            <div key={n} className="flex flex-col gap-2.5 animate-pulse">
+              <div className="w-full aspect-square bg-[#e8ecea] rounded-[6px]" />
+              <div className="h-4 w-28 bg-[#e8ecea] rounded" />
+              <div className="h-3 w-20 bg-[#e8ecea] rounded" />
+            </div>
+          ))}
+        </div>
+      ) : filtered.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-8 min-h-[60vh] content-start">
           {filtered.map(item => (
             <div
@@ -466,6 +481,7 @@ export default function UnlistedMonitoring() {
                   </label>
                   <input
                     type="date"
+                    max={todayLocalISO()}
                     value={newFormData.listedDate}
                     onChange={e => setNewFormData({ ...newFormData, listedDate: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent"

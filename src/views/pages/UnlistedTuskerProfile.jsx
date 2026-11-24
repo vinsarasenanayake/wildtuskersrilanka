@@ -26,12 +26,13 @@ import {
   Edit3,
   Save
 } from 'lucide-react';
-import { getUnlistedTuskerById, deleteUnlistedTusker, updateUnlistedTusker } from '../../models/UnlistedTuskersModel';
+import { getUnlistedTuskerById, getCachedUnlistedTuskers, deleteUnlistedTusker, updateUnlistedTusker } from '../../models/UnlistedTuskersModel';
 import { getTuskerComparison, getTuskerEarComparison } from '../../models/TuskerModel';
 import { useAuth } from '../../controllers/useAuth';
 import { getCachedAspect, setCachedAspect, probeImageAspect } from '../../utils/photoAspectCache';
 import ImageUploadBox from '../components/ImageUploadBox';
 import LocationSearchInput from '../components/LocationSearchInput';
+import { todayLocalISO } from '../../utils/localDate';
 import PhotoWatermarkBadge from '../components/PhotoWatermarkBadge';
 
 /* ── Photo Slideshow Component ───────────────────────────────── */
@@ -204,8 +205,18 @@ export default function UnlistedTuskerProfile() {
   const navigate = useNavigate();
   const { isAdmin, authLoading } = useAuth();
 
-  const [tusker, setTusker] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [tusker, setTusker] = useState(() => {
+    const list = getCachedUnlistedTuskers();
+    if (!list || !id) return null;
+    const clean = decodeURIComponent(id).trim().replace(/[-_]+/g, ' ').toLowerCase();
+    return list.find(t => t.id && t.id.toLowerCase() === clean) || null;
+  });
+  const [loading, setLoading] = useState(() => {
+    const list = getCachedUnlistedTuskers();
+    if (!list || !id) return true;
+    const clean = decodeURIComponent(id).trim().replace(/[-_]+/g, ' ').toLowerCase();
+    return !list.some(t => t.id && t.id.toLowerCase() === clean);
+  });
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [selectedComparisonImg, setSelectedComparisonImg] = useState(null);
 
@@ -261,6 +272,10 @@ export default function UnlistedTuskerProfile() {
     e.preventDefault();
     if (!editFormData.location.trim()) {
       setEditError('Please enter a location.');
+      return;
+    }
+    if (editFormData.listedDate && editFormData.listedDate > todayLocalISO()) {
+      setEditError('Recorded date cannot be in the future.');
       return;
     }
     setSavingEdit(true);
@@ -636,8 +651,9 @@ export default function UnlistedTuskerProfile() {
                   {tusker.id} • {selectedComparisonImg.year}
                 </span>
                 <button
+                  type="button"
                   onClick={() => setSelectedComparisonImg(null)}
-                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border-none cursor-pointer transition-colors"
+                  className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border-none cursor-pointer transition-colors shrink-0 shadow-xs"
                 >
                   <X size={18} />
                 </button>
@@ -677,8 +693,9 @@ export default function UnlistedTuskerProfile() {
                   <p className="font-sans text-[0.74rem] sm:text-[0.82rem] text-[#888888] m-0 mt-0.5 whitespace-nowrap truncate">{tusker.id} • Active Observation</p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setShowEditModal(false)}
-                  className="w-8 h-8 rounded-full border-none bg-[#f5f5f5] hover:bg-[#e8e8e8] text-[#555555] cursor-pointer flex items-center justify-center transition-colors shrink-0"
+                  className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full border-none bg-[#f5f5f5] hover:bg-[#e8e8e8] text-[#555555] cursor-pointer flex items-center justify-center transition-colors shrink-0 shadow-xs"
                 >
                   <X size={18} />
                 </button>
@@ -707,6 +724,7 @@ export default function UnlistedTuskerProfile() {
                     <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">Recorded Date</label>
                     <input
                       type="date"
+                      max={todayLocalISO()}
                       value={editFormData.listedDate}
                       onChange={(e) => setEditFormData({ ...editFormData, listedDate: e.target.value })}
                       className="border border-[#dde6e1] rounded-xl px-3.5 py-2.5 text-sm text-[#111111] focus:outline-none focus:border-accent"

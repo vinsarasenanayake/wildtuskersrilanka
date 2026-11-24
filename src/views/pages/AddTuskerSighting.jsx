@@ -11,6 +11,7 @@ import { useSightingForm } from '../../controllers/useTusker';
 import { THREAT_LEVELS } from '../../models/TuskerModel';
 import ImageUploadBox from '../components/ImageUploadBox';
 import LocationSearchInput from '../components/LocationSearchInput';
+import { todayLocalISO } from '../../utils/localDate';
 
 const INPUT_CLASS =
   'w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12';
@@ -99,6 +100,7 @@ export default function AddTuskerSighting() {
                     type="date"
                     name="captureDate"
                     required
+                    max={todayLocalISO()}
                     className={INPUT_CLASS}
                     value={formData.captureDate}
                     onChange={handleChange}

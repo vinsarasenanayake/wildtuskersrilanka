@@ -6,6 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { SITE_ASSETS } from '../../constants/siteAssets';
 import hero960 from '../../assets/images/hero-bg-960.webp';
 import hero1600 from '../../assets/images/hero-bg-1600.webp';
@@ -135,49 +136,69 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Compact Frosted Glass Population Counts Box */}
+          {/* Compact Frosted Glass Population Counts Box - Clickable Stat Links to Registry */}
           <div className="home-hero-landscape-counts-box w-full rounded-2xl bg-white/15 backdrop-blur-xl border border-white/25 shadow-[0_16px_40px_rgba(0,0,0,0.45),inset_0_1px_1px_rgba(255,255,255,0.3)] overflow-hidden">
             <div className="grid grid-cols-4 divide-x divide-white/20">
 
               {/* 1. Total Recorded */}
-              <div className="home-hero-landscape-stat-cell flex flex-col items-center justify-center text-center py-2 sm:py-3 px-1 sm:px-2 min-h-[72px] sm:min-h-[88px]">
-                <span className="home-hero-landscape-stat-num font-sans text-[1.4rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
+              <Link
+                to="/tuskers"
+                state={{ filterStatus: 'ALL' }}
+                title="View All Tuskers in Registry"
+                className="home-hero-landscape-stat-cell flex flex-col items-center justify-center text-center py-2 sm:py-3 px-1 sm:px-2 min-h-[72px] sm:min-h-[88px] no-underline hover:bg-white/10 transition-colors cursor-pointer group"
+              >
+                <span className="home-hero-landscape-stat-num font-sans text-[1.4rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] group-hover:text-accent transition-colors">
                   {stats?.total ?? '—'}
                 </span>
-                <p className="home-hero-landscape-stat-label font-sans text-[0.54rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
+                <p className="home-hero-landscape-stat-label font-sans text-[0.54rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 group-hover:text-white uppercase tracking-wider mt-1 whitespace-nowrap m-0 transition-colors">
                   Total Recorded
                 </p>
-              </div>
+              </Link>
 
               {/* 2. Living */}
-              <div className="home-hero-landscape-stat-cell flex flex-col items-center justify-center text-center py-2 sm:py-3 px-1 sm:px-2 min-h-[72px] sm:min-h-[88px]">
-                <span className="home-hero-landscape-stat-num font-sans text-[1.4rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
+              <Link
+                to="/tuskers"
+                state={{ filterStatus: 'Alive' }}
+                title="View Living Tuskers in Registry"
+                className="home-hero-landscape-stat-cell flex flex-col items-center justify-center text-center py-2 sm:py-3 px-1 sm:px-2 min-h-[72px] sm:min-h-[88px] no-underline hover:bg-white/10 transition-colors cursor-pointer group"
+              >
+                <span className="home-hero-landscape-stat-num font-sans text-[1.4rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] group-hover:text-accent transition-colors">
                   {stats?.living ?? '—'}
                 </span>
-                <p className="home-hero-landscape-stat-label font-sans text-[0.54rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
+                <p className="home-hero-landscape-stat-label font-sans text-[0.54rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 group-hover:text-white uppercase tracking-wider mt-1 whitespace-nowrap m-0 transition-colors">
                   Living
                 </p>
-              </div>
+              </Link>
 
-              {/* 3. Missing */}
-              <div className="home-hero-landscape-stat-cell flex flex-col items-center justify-center text-center py-2 sm:py-3 px-1 sm:px-2 min-h-[72px] sm:min-h-[88px]">
-                <span className="home-hero-landscape-stat-num font-sans text-[1.4rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
+              {/* 3. No Recent Record */}
+              <Link
+                to="/tuskers"
+                state={{ filterStatus: 'No Recent Record' }}
+                title="View Tuskers with No Recent Record"
+                className="home-hero-landscape-stat-cell flex flex-col items-center justify-center text-center py-2 sm:py-3 px-1 sm:px-2 min-h-[72px] sm:min-h-[88px] no-underline hover:bg-white/10 transition-colors cursor-pointer group"
+              >
+                <span className="home-hero-landscape-stat-num font-sans text-[1.4rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] group-hover:text-accent transition-colors">
                   {stats?.missing ?? '—'}
                 </span>
-                <p className="home-hero-landscape-stat-label font-sans text-[0.54rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
-                  Missing
+                <p className="home-hero-landscape-stat-label font-sans text-[0.54rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 group-hover:text-white uppercase tracking-wider mt-1 whitespace-nowrap m-0 transition-colors">
+                  No Recent Record
                 </p>
-              </div>
+              </Link>
 
               {/* 4. Deceased */}
-              <div className="home-hero-landscape-stat-cell flex flex-col items-center justify-center text-center py-2 sm:py-3 px-1 sm:px-2 min-h-[72px] sm:min-h-[88px]">
-                <span className="home-hero-landscape-stat-num font-sans text-[1.4rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
+              <Link
+                to="/tuskers"
+                state={{ filterStatus: 'Deceased' }}
+                title="View Deceased Tuskers in Registry"
+                className="home-hero-landscape-stat-cell flex flex-col items-center justify-center text-center py-2 sm:py-3 px-1 sm:px-2 min-h-[72px] sm:min-h-[88px] no-underline hover:bg-white/10 transition-colors cursor-pointer group"
+              >
+                <span className="home-hero-landscape-stat-num font-sans text-[1.4rem] sm:text-[1.9rem] md:text-[2.15rem] font-semibold text-white leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] group-hover:text-accent transition-colors">
                   {stats?.deceased ?? '—'}
                 </span>
-                <p className="home-hero-landscape-stat-label font-sans text-[0.54rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 uppercase tracking-wider mt-1 whitespace-nowrap m-0">
+                <p className="home-hero-landscape-stat-label font-sans text-[0.54rem] sm:text-[0.68rem] md:text-[0.7rem] font-normal text-white/75 group-hover:text-white uppercase tracking-wider mt-1 whitespace-nowrap m-0 transition-colors">
                   Deceased
                 </p>
-              </div>
+              </Link>
 
             </div>
           </div>

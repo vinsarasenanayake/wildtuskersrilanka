@@ -7,6 +7,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   getGalleryPhotos,
+  getCachedGalleryPhotos,
   submitGalleryPhoto,
   approveGalleryPhoto,
   rejectGalleryPhoto,
@@ -18,12 +19,12 @@ import { uploadMediaFile } from '../utils/storageUpload';
 import { todayLocalISO } from '../utils/localDate';
 import { friendlyError } from '../utils/friendlyError';
 
-export function useGallery() {
-  const [photos, setPhotos] = useState([]);
-  const [loading, setLoading] = useState(true);
+export function useGallery(initialActivePhoto = null) {
+  const [photos, setPhotos] = useState(() => getCachedGalleryPhotos(false) || []);
+  const [loading, setLoading] = useState(() => !getCachedGalleryPhotos(false));
   const [filter, setFilter] = useState('ALL'); // 'ALL' or specific location / year
   const [searchQuery, setSearchQuery] = useState('');
-  const [activePhoto, setActivePhoto] = useState(null); // Lightbox modal
+  const [activePhoto, setActivePhoto] = useState(initialActivePhoto); // Instant frame 0 restoration
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const { isAdmin, authLoading } = useAuth();
 
@@ -208,6 +209,10 @@ export function useGallerySubmit(onSuccess) {
     }
     if (!formData.photographer.trim()) {
       setError("Please provide the photographer's name.");
+      return;
+    }
+    if (formData.date && formData.date > todayLocalISO()) {
+      setError('Date taken cannot be in the future.');
       return;
     }
     if ((formData.tuskerName || '').length > 200) {

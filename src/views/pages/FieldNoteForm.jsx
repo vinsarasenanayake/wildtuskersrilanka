@@ -24,6 +24,8 @@ import {
 import { useFieldNoteForm } from '../../controllers/useFieldNotes';
 import TuskerMultiSelect from '../components/TuskerMultiSelect';
 import LocationSearchInput from '../components/LocationSearchInput';
+import ClockTimePicker from '../components/ClockTimePicker';
+import { todayLocalISO } from '../../utils/localDate';
 
 export default function FieldNoteForm() {
   const navigate = useNavigate();
@@ -191,6 +193,7 @@ export default function FieldNoteForm() {
                     type="date"
                     name="date"
                     required
+                    max={todayLocalISO()}
                     className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15"
                     value={formData.date}
                     onChange={handleChange}
@@ -202,23 +205,12 @@ export default function FieldNoteForm() {
                     <Clock size={14} className="text-[#888888]" />
                     <span>Time of Sighting<span className="text-[#e53e3e]"> *</span></span>
                   </label>
-                  <div className="relative w-full">
-                    <input
-                      type="time"
-                      name="time"
-                      maxLength={50}
-                      required
-                      placeholder="--:-- --"
-                      className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15"
-                      value={formData.time || ''}
-                      onChange={handleChange}
-                    />
-                    {!formData.time && (
-                      <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 font-sans text-[0.92rem] text-[#9ca3af] select-none">
-                        --:-- --
-                      </span>
-                    )}
-                  </div>
+                  <ClockTimePicker
+                    value={formData.time || ''}
+                    onChange={handleChange}
+                    selectedDate={formData.date}
+                    required
+                  />
                 </div>
 
                 <div className="flex flex-col gap-1.5">

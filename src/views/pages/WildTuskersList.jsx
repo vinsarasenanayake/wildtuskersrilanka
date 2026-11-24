@@ -71,6 +71,13 @@ export default function WildTuskersList() {
   const sortRef     = useRef(null);
   const [showSortDrop, setShowSortDrop] = useState(false);
 
+  /* ── Sync status filter from navigation (e.g. Home stat click) ── */
+  useEffect(() => {
+    if (location.state?.filterStatus) {
+      setStatusFilter(location.state.filterStatus);
+    }
+  }, [location.state?.filterStatus, setStatusFilter]);
+
   /* ── Restore Scroll & Card Position on Return ─────── */
   useLayoutEffect(() => {
     // Only restore scroll when explicitly navigated via Back button with restoreScroll: true
@@ -165,12 +172,8 @@ export default function WildTuskersList() {
         }`}
       >
         <ArrowUpDown size={16} className="text-accent shrink-0" />
-        <span
-          className={`font-sans text-[0.9rem] font-normal flex-1 truncate select-none ${
-            sortOrder === 'ID_DESC' ? 'text-[#bbbbbb]' : 'text-[#111111]'
-          }`}
-        >
-          {sortOrder === 'ID_DESC' ? 'Sort by…' : (SORT_OPTIONS.find(o => o.id === sortOrder)?.label || 'Sort by…')}
+        <span className="font-sans text-[0.9rem] font-normal flex-1 truncate select-none text-[#111111]">
+          {SORT_OPTIONS.find(o => o.id === sortOrder)?.label || 'Default (T-ID: Descending)'}
         </span>
 
         {sortOrder !== 'ID_DESC' ? (
@@ -333,19 +336,29 @@ export default function WildTuskersList() {
           </div>
           {showDistrictDrop && districtSuggestions.length > 0 && (
             <ul className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white border border-[#e2e8f0] rounded-[12px] shadow-[0_12px_32px_rgba(0,0,0,0.12)] z-[200] list-none m-0 py-1.5 max-h-[270px] overflow-y-auto overscroll-contain divide-y divide-[#f8f9fa]">
-              {districtSuggestions.map(dist => (
-                <li
-                  key={dist}
-                  className={`flex items-center gap-2 px-4 py-2.5 cursor-pointer font-sans text-[0.88rem] text-[#333333] transition-colors hover:bg-[#faf5ec] ${selectedDistrict === dist ? 'bg-[#faf5ec]' : ''}`}
-                  onMouseDown={() => pickDistrict(dist)}
-                >
-                  <Layers size={12} className="text-accent shrink-0" />
-                  <span className="flex-1 text-[#111111] font-medium">{dist}</span>
-                  <span className="ml-auto text-[0.78rem] text-[#aaaaaa]">
-                    {countInDistrict(dist)} {countInDistrict(dist) === 1 ? 'tusker' : 'tuskers'}
-                  </span>
-                </li>
-              ))}
+              {districtSuggestions.map(dist => {
+                const count = countInDistrict(dist);
+                const isZero = count === 0;
+                return (
+                  <li
+                    key={dist}
+                    className={`flex items-center gap-2 px-4 py-2.5 font-sans text-[0.88rem] transition-colors ${
+                      isZero
+                        ? 'opacity-40 cursor-not-allowed bg-transparent text-[#888888]'
+                        : `cursor-pointer text-[#333333] hover:bg-[#faf5ec] ${selectedDistrict === dist ? 'bg-[#faf5ec]' : ''}`
+                    }`}
+                    onMouseDown={() => {
+                      if (!isZero) pickDistrict(dist);
+                    }}
+                  >
+                    <Layers size={12} className={isZero ? 'text-[#aaaaaa] shrink-0' : 'text-accent shrink-0'} />
+                    <span className="flex-1 font-medium">{dist}</span>
+                    <span className="ml-auto text-[0.78rem] text-[#aaaaaa]">
+                      {count} {count === 1 ? 'tusker' : 'tuskers'}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
@@ -451,8 +464,16 @@ export default function WildTuskersList() {
       </div>
 
       {/* ── Grid ── */}
-      {loading ? (
-        <div className="flex items-center justify-center min-h-[60vh] font-sans text-[#aaaaaa]">Loading tuskers…</div>
+      {loading && filtered.length === 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3.5 sm:gap-x-6 gap-y-6 sm:gap-y-8 min-h-[60vh] content-start">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
+            <div key={n} className="flex flex-col gap-2.5 animate-pulse">
+              <div className="w-full aspect-square bg-[#e8ecea] rounded-[6px]" />
+              <div className="h-4 w-32 bg-[#e8ecea] rounded" />
+              <div className="h-3 w-20 bg-[#e8ecea] rounded" />
+            </div>
+          ))}
+        </div>
       ) : loadError ? (
         <div className="flex items-center justify-center min-h-[60vh] font-sans text-[#e53e3e]">Could not load tuskers: {loadError}</div>
       ) : filtered.length > 0 ? (

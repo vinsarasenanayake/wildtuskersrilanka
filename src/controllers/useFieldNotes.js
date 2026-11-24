@@ -5,8 +5,10 @@
  */
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { todayLocalISO, isFutureDateTime } from '../utils/localDate';
 import {
   getFieldNotes,
+  getCachedFieldNotes,
   addFieldNote,
   approveFieldNote,
   rejectFieldNote,
@@ -14,15 +16,14 @@ import {
 } from '../models/FieldNotesModel';
 import { useAuth } from './useAuth';
 import { uploadMediaFile } from '../utils/storageUpload';
-import { todayLocalISO } from '../utils/localDate';
 import { friendlyError } from '../utils/friendlyError';
 
 /* ==============================================================
    SECTION 1: FIELD NOTES PUBLIC FEED & ADMIN REVIEW CONTROLLER
 ============================================================== */
 export function useFieldNotesFeed() {
-  const [allNotes, setAllNotes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [allNotes, setAllNotes] = useState(() => getCachedFieldNotes(false) || []);
+  const [loading, setLoading] = useState(() => !getCachedFieldNotes(false));
   const { isAdmin, authLoading } = useAuth();
 
   const reloadNotes = useCallback(async () => {
@@ -162,6 +163,10 @@ export function useFieldNoteForm() {
     }
     if (!date) {
       setError('Please select the Date.');
+      return null;
+    }
+    if (isFutureDateTime(date, time)) {
+      setError('Date and time of sighting cannot be in the future.');
       return null;
     }
     if (!time) {

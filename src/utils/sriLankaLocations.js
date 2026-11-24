@@ -441,9 +441,16 @@ export async function reverseGeocodeCoordinatesAsync(lat, lng) {
         const data = await res.json();
         const addr = data.address || {};
 
-        // Find specific local place (tank, water body, village, hamlet, suburb, town, city, road, natural feature)
+        // Find specific local place (building, store, business, park, sanctuary, tank, water body, village, road, etc.)
         const specific =
+          addr.building ||
+          addr.amenity ||
+          addr.shop ||
+          addr.tourism ||
+          addr.office ||
+          addr.craft ||
           addr.leisure ||
+          addr.historic ||
           addr.natural ||
           addr.water ||
           addr.village ||
@@ -646,7 +653,7 @@ export async function searchPlacesLive(query, { limit = 8, signal } = {}) {
   if (!res.ok) return [];
   const data = await res.json();
   const seen = new Set();
-  return (data?.features || [])
+  const results = (data?.features || [])
     .filter((f) => !f.properties?.countrycode || f.properties.countrycode === 'LK')
     .map((f) => {
       const p = f.properties || {};
@@ -655,12 +662,24 @@ export async function searchPlacesLive(query, { limit = 8, signal } = {}) {
       const subtitle = [p.city !== title ? p.city : null, p.district || p.county, p.state]
         .filter(Boolean)
         .join(', ');
+
+      const rawType = p.osm_value || p.osm_key || '';
+      let placeType = 'Location';
+      if (rawType === 'amenity' || rawType === 'building') placeType = 'Building';
+      else if (rawType === 'shop') placeType = 'Store';
+      else if (rawType === 'office') placeType = 'Business';
+      else if (rawType === 'tourism') placeType = 'Venue';
+      else if (rawType === 'leisure' || rawType === 'park') placeType = 'Park';
+      else if (rawType === 'sanctuary' || rawType === 'nature_reserve') placeType = 'Sanctuary';
+
       return {
         title,
         subtitle: subtitle || 'Sri Lanka',
         full: [title, subtitle, 'Sri Lanka'].filter(Boolean).join(', '),
         lat: typeof lat === 'number' ? lat : undefined,
         lng: typeof lng === 'number' ? lng : undefined,
+        type: placeType,
+        badge: placeType,
       };
     })
     .filter((r) => {
@@ -669,6 +688,47 @@ export async function searchPlacesLive(query, { limit = 8, signal } = {}) {
       seen.add(key);
       return true;
     });
+
+  // Fallback to Nominatim search for specific venues, buildings, or stores not caught by Photon
+  if (results.length === 0 && q.length >= 3) {
+    try {
+      const nomUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&countrycodes=lk&format=json&limit=${limit}&addressdetails=1`;
+      const nomRes = await fetch(nomUrl, { headers: { 'Accept-Language': 'en' }, signal });
+      if (nomRes.ok) {
+        const nomData = await nomRes.json();
+        if (Array.isArray(nomData)) {
+          nomData.forEach((item) => {
+            const title = item.name || (item.display_name ? item.display_name.split(',')[0].trim() : '');
+            if (!title) return;
+            const subtitle = item.display_name ? item.display_name.split(',').slice(1, 4).join(', ').trim() : 'Sri Lanka';
+            const cat = item.type || item.class || 'Location';
+            let badge = 'Location';
+            if (['building', 'amenity', 'auditorium', 'hall'].includes(cat)) badge = 'Building';
+            else if (['shop', 'supermarket', 'mall'].includes(cat)) badge = 'Store';
+            else if (['park', 'leisure', 'garden'].includes(cat)) badge = 'Park';
+            else if (['sanctuary', 'nature_reserve'].includes(cat)) badge = 'Sanctuary';
+            const key = title.toLowerCase();
+            if (!seen.has(key)) {
+              seen.add(key);
+              results.push({
+                title,
+                subtitle,
+                full: item.display_name,
+                lat: parseFloat(item.lat),
+                lng: parseFloat(item.lon),
+                type: badge,
+                badge,
+              });
+            }
+          });
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  return results;
 }
 
 /* ── Google Places / Geocoding (used only when a Google key is set) ── */

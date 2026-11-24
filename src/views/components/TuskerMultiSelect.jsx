@@ -153,19 +153,22 @@ export default function TuskerMultiSelect({
       return tuskersList.slice(0, 12);
     }
 
-    const cleanNum = q.replace(/^t/i, '').trim();
+    const normQ = q.toUpperCase().replace(/^T0*/, 'T');
 
     return tuskersList
       .filter((t) => {
         const idLower = t.id.toLowerCase();
-        const idNum = t.id.replace(/^T/i, '');
+        const normId = (t.id || '').toUpperCase().replace(/^T0*/, 'T');
         const nameLower = t.name.toLowerCase();
         const locLower = (t.location || '').toLowerCase();
+        const sinhalaLower = (t.sinhala || t.sinhalaName || '').toLowerCase();
 
         return (
           idLower.includes(q) ||
-          (cleanNum && idNum.includes(cleanNum)) ||
+          normId === normQ ||
+          normId.includes(normQ) ||
           nameLower.includes(q) ||
+          sinhalaLower.includes(q) ||
           locLower.includes(q)
         );
       })

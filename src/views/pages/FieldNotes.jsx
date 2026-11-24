@@ -29,6 +29,7 @@ export default function FieldNotes() {
     notesByYear,
     availableYears,
     pendingNotes,
+    loading,
     isAdmin,
     approveNote,
     rejectNote,
@@ -464,8 +465,27 @@ export default function FieldNotes() {
           )
         )}
 
-        {/* Empty overall fallback */}
-        {!isPendingView && availableYears.length === 0 && (
+        {/* Skeleton loading state while fetching field notes */}
+        {!isPendingView && loading && availableYears.length === 0 && (
+          <div className="flex flex-col gap-6 sm:gap-8">
+            {[1, 2, 3].map((n) => (
+              <div
+                key={n}
+                className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 animate-pulse flex flex-col gap-4"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-5 w-32 bg-gray-200 rounded" />
+                  <div className="h-5 w-24 bg-gray-200 rounded" />
+                </div>
+                <div className="h-6 w-2/3 bg-gray-200 rounded" />
+                <div className="h-20 w-full bg-gray-100 rounded" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Empty overall fallback: only displayed when NOT loading and truly empty */}
+        {!isPendingView && !loading && availableYears.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 px-4 gap-4 bg-white rounded-[12px] shadow-sm text-center">
             <div className="text-[#aaaaaa]">
               <FileText size={56} strokeWidth={1.2} />

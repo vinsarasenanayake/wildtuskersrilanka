@@ -6,7 +6,7 @@
    which can only read public data.
 ============================================================== */
 const SITE = 'https://wildtuskersrilanka.vercel.app';
-const STATIC_PAGES = ['/', '/about', '/tuskers', '/gallery', '/field-notes', '/observations', '/projects', '/ai-app'];
+const STATIC_PAGES = ['/', '/about', '/tuskers', '/gallery', '/field-notes', '/observations', '/projects'];
 
 const xmlEscape = (s) => String(s).replace(/[<>&'"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c]));
 

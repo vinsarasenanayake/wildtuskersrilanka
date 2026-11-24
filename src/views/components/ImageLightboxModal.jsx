@@ -9,7 +9,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
-import { X, MapPin, Camera, Calendar, Pencil, Trash2, CheckCircle2, ExternalLink, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { X, MapPin, Camera, Calendar, Pencil, Trash2, CheckCircle2, ExternalLink, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getTuskers } from '../../models/TuskerModel';
 
 function formatDisplayDate(dateStr) {
@@ -41,6 +41,8 @@ export default function ImageLightboxModal({
   photo,
   tusker,
   tuskers: passedTuskers = [],
+  allPhotos = [],
+  onNavigatePhoto,
   onClose,
   isAdmin = false,
   onApprove,
@@ -56,6 +58,38 @@ export default function ImageLightboxModal({
   const rafRef = useRef(null);
 
   const [tuskersList, setTuskersList] = useState(passedTuskers);
+
+  // Photos navigation index
+  const currentIndex = useMemo(() => {
+    if (!allPhotos || !allPhotos.length || !photo) return -1;
+    return allPhotos.findIndex((p) => String(p.id) === String(photo.id));
+  }, [allPhotos, photo]);
+
+  const hasMultiplePhotos = allPhotos && allPhotos.length > 1 && currentIndex >= 0;
+
+  const goToPrev = useCallback(
+    (e) => {
+      e?.stopPropagation();
+      if (!hasMultiplePhotos || !onNavigatePhoto) return;
+      setScale(1);
+      setPosition({ x: 0, y: 0 });
+      const prevIdx = (currentIndex - 1 + allPhotos.length) % allPhotos.length;
+      onNavigatePhoto(allPhotos[prevIdx]);
+    },
+    [hasMultiplePhotos, onNavigatePhoto, currentIndex, allPhotos]
+  );
+
+  const goToNext = useCallback(
+    (e) => {
+      e?.stopPropagation();
+      if (!hasMultiplePhotos || !onNavigatePhoto) return;
+      setScale(1);
+      setPosition({ x: 0, y: 0 });
+      const nextIdx = (currentIndex + 1) % allPhotos.length;
+      onNavigatePhoto(allPhotos[nextIdx]);
+    },
+    [hasMultiplePhotos, onNavigatePhoto, currentIndex, allPhotos]
+  );
 
   // Load tuskers list if not provided
   useEffect(() => {
@@ -225,7 +259,7 @@ export default function ImageLightboxModal({
     };
   }, []);
 
-  // Keyboard escape listener to close modal or reset zoom
+  // Keyboard listener: Escape to close/zoom-reset, ArrowLeft/ArrowRight to navigate
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
@@ -234,11 +268,15 @@ export default function ImageLightboxModal({
         } else {
           onClose();
         }
+      } else if (e.key === 'ArrowLeft' && scale === 1) {
+        goToPrev();
+      } else if (e.key === 'ArrowRight' && scale === 1) {
+        goToNext();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose, scale, resetZoom]);
+  }, [onClose, scale, resetZoom, goToPrev, goToNext]);
 
   // Match all tuskers if multiple are featured in this photograph
   const allMatchedTuskers = useMemo(() => {
@@ -314,6 +352,9 @@ export default function ImageLightboxModal({
 
   return createPortal(
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Image lightbox"
       className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex flex-col items-center justify-between p-2.5 sm:p-5 md:p-6 overflow-hidden select-none animate-fade-in lightbox-mobile-landscape-root"
       onClick={onClose}
     >
@@ -416,6 +457,30 @@ export default function ImageLightboxModal({
             className="max-w-full max-h-[70vh] sm:max-h-[76vh] md:max-h-[80vh] w-auto h-auto object-contain rounded-none shadow-[0_24px_70px_rgba(0,0,0,0.95)] select-none border border-white/10 block lightbox-mobile-landscape-img"
           />
         </div>
+
+        {/* Floating Prev & Next Buttons (when multiple photos available) */}
+        {hasMultiplePhotos && (
+          <>
+            <button
+              type="button"
+              onClick={goToPrev}
+              aria-label="Previous photo"
+              title="Previous photo (Left Arrow)"
+              className="absolute left-2 sm:left-4 z-40 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 hover:bg-black/85 text-white/90 hover:text-white border border-white/20 flex items-center justify-center cursor-pointer transition-all shadow-xl hover:scale-110 active:scale-95"
+            >
+              <ChevronLeft size={24} />
+            </button>
+            <button
+              type="button"
+              onClick={goToNext}
+              aria-label="Next photo"
+              title="Next photo (Right Arrow)"
+              className="absolute right-2 sm:right-4 z-40 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 hover:bg-black/85 text-white/90 hover:text-white border border-white/20 flex items-center justify-center cursor-pointer transition-all shadow-xl hover:scale-110 active:scale-95"
+            >
+              <ChevronRight size={24} />
+            </button>
+          </>
+        )}
       </div>
 
       {/* ── Bottom Bar: Full Names, Location, Date, Author & Tusker Profiles ── */}
@@ -503,7 +568,13 @@ export default function ImageLightboxModal({
               <Link
                 key={t.id}
                 to={`/tuskers/${t.id.toLowerCase()}`}
-                state={{ from: fromPath }}
+                onClick={() => {
+                  try {
+                    sessionStorage.setItem('wts_last_gallery_photo_id', String(photo.id));
+                    sessionStorage.setItem('wts_last_gallery_scroll', String(window.scrollY));
+                  } catch { /* ignore */ }
+                }}
+                state={{ from: fromPath || '/gallery', returnPhotoId: photo.id }}
                 className="bg-white/10 hover:bg-white/20 text-[#f5ecd7] hover:text-white font-sans text-[0.72rem] sm:text-xs font-semibold py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg border border-white/20 transition-all flex items-center gap-1 no-underline shadow-xs shrink-0 lightbox-mobile-landscape-btn"
               >
                 <span>{allMatchedTuskers.length > 1 ? `${t.id} - ${t.name} Profile` : (t.name ? `${t.name} Profile` : 'Tusker Profile')}</span>

@@ -19,6 +19,8 @@ import { getTuskers } from '../../models/TuskerModel';
 import { useAuth } from '../../controllers/useAuth';
 import TuskerMultiSelect from '../components/TuskerMultiSelect';
 import LocationSearchInput from '../components/LocationSearchInput';
+import ClockTimePicker from '../components/ClockTimePicker';
+import { todayLocalISO } from '../../utils/localDate';
 
 export default function SpecialObservationForm() {
   const { id } = useParams();
@@ -100,7 +102,7 @@ export default function SpecialObservationForm() {
     e.preventDefault();
     const success = await saveObservation();
     if (success) {
-      navigate('/observations');
+      navigate('/learn?tab=observations');
     }
   };
 
@@ -178,14 +180,30 @@ export default function SpecialObservationForm() {
                   type="date"
                   name="date"
                   required
+                  max={todayLocalISO()}
                   className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
                   value={formData.date}
                   onChange={handleChange}
                 />
               </div>
 
-              {/* Location */}
+              {/* Time */}
               <div className="flex flex-col gap-1.5">
+                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">
+                  Time of Observation (Optional)
+                </label>
+                <ClockTimePicker
+                  name="time"
+                  value={formData.time}
+                  onChange={handleChange}
+                  selectedDate={formData.date}
+                  allowFuture={false}
+                  placeholder="Select observation time"
+                />
+              </div>
+
+              {/* Location */}
+              <div className="flex flex-col gap-1.5 sm:col-span-2">
                 <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">
                   Location / National Park
                 </label>

@@ -74,3 +74,47 @@ export async function uploadMediaFile(fileOrDataUrl, folder = 'uploads') {
   }
   return supabase.storage.from(MEDIA_BUCKET).getPublicUrl(`web/${name}`).data.publicUrl;
 }
+
+/**
+ * Upload an uncompressed document or presentation file (PPTX, DOCX, PDF, etc.)
+ * directly to Supabase Storage wts-media bucket under docs/<folder>/<year>/<filename>.
+ *
+ * @param {File|Blob|string} fileOrUrl
+ * @param {string} folder - e.g. 'identifications', 'presentations'
+ * @returns {Promise<{ url: string, name: string, size: number, type: string }>}
+ */
+export async function uploadDocumentFile(fileOrUrl, folder = 'identifications') {
+  if (!fileOrUrl) return null;
+  if (typeof fileOrUrl === 'string' && /^https?:\/\//i.test(fileOrUrl)) {
+    const fileName = fileOrUrl.split('/').pop() || 'document';
+    const ext = fileName.split('.').pop().toLowerCase();
+    return { url: fileOrUrl, name: fileName, size: 0, type: ext };
+  }
+
+  const safeFolder = String(folder).toLowerCase().replace(/[^a-z0-9-]/g, '-').slice(0, 40) || 'identifications';
+  const originalName = fileOrUrl.name || 'presentation_document';
+  const parts = originalName.split('.');
+  const ext = (parts.length > 1 ? parts.pop() : 'bin').toLowerCase();
+  const rawBaseName = parts.join('.').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 50) || 'file';
+  const uniqueId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID().slice(0, 8) : Date.now();
+  const path = `docs/${safeFolder}/${new Date().getUTCFullYear()}/${Date.now()}_${uniqueId}_${rawBaseName}.${ext}`;
+
+  const { error } = await supabase.storage.from(MEDIA_BUCKET).upload(path, fileOrUrl, {
+    contentType: fileOrUrl.type || 'application/octet-stream',
+    cacheControl: '31536000',
+    upsert: false,
+  });
+
+  if (error) {
+    console.error('[storageUpload] Failed to upload document file:', error);
+    throw error;
+  }
+
+  const { data } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
+  return {
+    url: data.publicUrl,
+    name: originalName,
+    size: fileOrUrl.size || 0,
+    type: ext,
+  };
+}

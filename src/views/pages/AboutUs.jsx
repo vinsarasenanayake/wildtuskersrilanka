@@ -7,7 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { PlusCircle, Edit2, Trash2, X, Save, Shield, ExternalLink, Loader2 } from 'lucide-react';
-import { getTeamMembers, addTeamMember, updateTeamMember, deleteTeamMember } from '../../models/TeamModel';
+import { getTeamMembers, getCachedTeamMembers, addTeamMember, updateTeamMember, deleteTeamMember } from '../../models/TeamModel';
 import { useAuth } from '../../controllers/useAuth';
 import ImageUploadBox from '../components/ImageUploadBox';
 import { safeUrl } from '../../utils/safeUrl';
@@ -42,8 +42,8 @@ const OBJECTIVES = [
 ];
 
 export default function AboutUs() {
-  const [team, setTeam] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [team, setTeam] = useState(() => getCachedTeamMembers() || []);
+  const [loading, setLoading] = useState(() => !getCachedTeamMembers());
   const { isAdmin } = useAuth();
 
   // Modal states for admin management
@@ -159,7 +159,7 @@ export default function AboutUs() {
           Wild Tuskers Sri Lanka
         </h1>
 
-        <div className="max-w-[960px] mx-auto font-sans text-xs sm:text-[0.98rem] md:text-[1.02rem] text-[#374151] leading-[1.8] flex flex-col gap-5 sm:gap-6 text-justify">
+        <div className="max-w-[960px] mx-auto font-sans text-xs sm:text-[0.98rem] md:text-[1.02rem] text-[#374151] leading-[1.8] flex flex-col gap-5 sm:gap-6 text-left">
           <p className="m-0">
             Founded in 2013, Wild Tuskers Sri Lanka was established with a clear vision: to address a critical gap in the documentation and identification of Sri Lanka's tusked elephants. At the time, there was no comprehensive island-wide database dedicated to systematically identifying and tracking individual tuskers. Recognising the urgent need to preserve information about these rare and iconic animals, a group of passionate wildlife enthusiasts, photographers, and conservationists came together to create what became Sri Lanka's first dedicated tusker identification database.
           </p>
@@ -231,7 +231,15 @@ export default function AboutUs() {
         </div>
 
         {loading && team.length === 0 ? (
-          <div className="py-12 text-center text-[#aaaaaa] font-sans">Loading team…</div>
+          <div className="grid grid-cols-2 min-[560px]:grid-cols-3 min-[760px]:grid-cols-4 min-[1000px]:grid-cols-5 gap-x-6 gap-y-10">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <div key={n} className="flex flex-col items-center gap-3 animate-pulse">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gray-200" />
+                <div className="h-4 w-24 bg-gray-200 rounded" />
+                <div className="h-3 w-16 bg-gray-100 rounded" />
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="grid grid-cols-2 min-[560px]:grid-cols-3 min-[760px]:grid-cols-4 min-[1000px]:grid-cols-5 gap-x-6 gap-y-10">
             {admins.map((member) => (
@@ -257,13 +265,13 @@ export default function AboutUs() {
             </h2>
             <div className="font-sans text-[0.92rem] sm:text-[0.96rem] text-[#444444] leading-[1.75] flex flex-col gap-3.5 text-left">
               <p className="m-0">Copyright &copy; 2026</p>
-              <p className="m-0 font-medium text-[#222222]">Wild Tuskers of Sri Lanka</p>
-              <p className="m-0 text-[#555555] text-justify">
-                All Rights Reserved. No part of this website may be Reproduced in any form, by any means without prior written permission from the copyright holders.
+              <p className="m-0 font-medium text-[#222222]">Wild Tuskers Sri Lanka</p>
+              <p className="m-0 text-[#555555] text-left">
+                All Rights Reserved. No part of this website may be reproduced in any form, by any means without prior written permission from the copyright holders.
               </p>
               <div className="mt-2 text-[#444444] leading-[1.6]">
                 <p className="m-0 font-medium text-[#222222]">Milinda Wattegedara,</p>
-                <p className="m-0">462/4/C, Lake Road, Akuregoda, Batharamulla</p>
+                <p className="m-0">462/4/C, Lake Road, Akuregoda, Battaramulla</p>
                 <p className="m-0">
                   Email &mdash;{' '}
                   <a
@@ -282,7 +290,7 @@ export default function AboutUs() {
             <h2 className="font-sans text-[1.2rem] sm:text-[1.3rem] font-bold text-[#111111] mb-5 tracking-tight text-center">
               Copyright &copy; Photographs
             </h2>
-            <p className="m-0 font-sans text-[0.92rem] sm:text-[0.96rem] text-[#555555] leading-[1.75] text-justify">
+            <p className="m-0 font-sans text-[0.92rem] sm:text-[0.96rem] text-[#555555] leading-[1.75] text-left">
               The copyrights of all the photographs displayed here are owned by Wild Tuskers Sri Lanka and the original Photographer. Unauthorised reproduction, distribution, or use of these images is prohibited without the explicit permission of the original photographer or Wild Tuskers Sri Lanka Team.
             </p>
           </div>

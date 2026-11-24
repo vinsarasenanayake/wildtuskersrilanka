@@ -11,6 +11,7 @@ import {
   Binoculars,
   PlusCircle,
   Calendar,
+  Clock,
   MapPin,
   Search,
   Trash2,
@@ -21,10 +22,12 @@ import {
 } from 'lucide-react';
 import { useSpecialObservationsFeed } from '../../controllers/useSpecialObservations';
 import ImageLightboxModal from '../components/ImageLightboxModal';
+import { formatDisplayTime } from '../../utils/localDate';
 
-export default function SpecialObservations() {
+export default function SpecialObservations({ embedded = false }) {
   const navigate = useNavigate();
   const {
+    loading,
     observations,
     allObservations = [],
     availableYears,
@@ -40,8 +43,10 @@ export default function SpecialObservations() {
   const [activeLightboxPhoto, setActiveLightboxPhoto] = useState(null);
 
   useEffect(() => {
-    document.title = 'Wild Tuskers Sri Lanka | Special Observations';
-  }, []);
+    if (!embedded) {
+      document.title = 'Wild Tuskers Sri Lanka | Special Observations';
+    }
+  }, [embedded]);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
@@ -62,11 +67,11 @@ export default function SpecialObservations() {
     return dateStr;
   };
 
-  return (
-    <div className="bg-[#f7f8fa] min-h-screen pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2.5rem)] pb-24">
-      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 flex flex-col gap-6 sm:gap-8">
-
-        {/* Page Header */}
+  const mainContent = (
+    <>
+      <div className={embedded ? "w-full flex flex-col gap-6" : "max-w-[1100px] mx-auto px-4 sm:px-6 flex flex-col gap-6 sm:gap-8"}>
+      {/* Page Header (standalone only) */}
+      {!embedded && (
         <div className="flex flex-col items-center justify-center text-center mb-6 pb-6 border-b border-[#e5e7eb] gap-3">
           <h1 className="font-sans text-[clamp(1.15rem,4.5vw,2.85rem)] font-bold text-[#111111] m-0 tracking-tight leading-snug whitespace-nowrap text-center">
             Special Observations Over The Years
@@ -87,6 +92,20 @@ export default function SpecialObservations() {
             </div>
           )}
         </div>
+      )}
+
+      {/* Embedded Admin Add Button */}
+      {embedded && canAddObservation && (
+        <div className="flex items-center w-full sm:w-auto sm:justify-end">
+          <button
+            onClick={() => navigate('/admin/add-observation')}
+            className="w-full sm:w-auto bg-accent text-primary font-bold text-xs sm:text-[0.88rem] px-5 sm:px-6 py-3 sm:py-2.5 rounded-xl sm:rounded-lg inline-flex items-center justify-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors whitespace-nowrap shadow-xs"
+          >
+            <PlusCircle size={16} />
+            <span>Add Special Observation</span>
+          </button>
+        </div>
+      )}
 
         {/* Controls: Year Filter Tabs & Search Bar (hidden when empty) */}
         {allObservations.length > 0 && (
@@ -134,8 +153,21 @@ export default function SpecialObservations() {
           </div>
         )}
 
-        {/* Observations List */}
-        {observations.length > 0 ? (
+        {/* Observations List & Loading Skeleton */}
+        {loading && allObservations.length === 0 ? (
+          <div className="flex flex-col gap-6">
+            {[1, 2, 3].map((n) => (
+              <div key={n} className="bg-white rounded-2xl border border-[#e8ece9] p-5 sm:p-7 shadow-xs animate-pulse flex flex-col gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-6 w-28 bg-gray-200 rounded-full" />
+                  <div className="h-4 w-24 bg-gray-200 rounded" />
+                </div>
+                <div className="h-6 w-3/4 bg-gray-200 rounded" />
+                <div className="h-16 w-full bg-gray-100 rounded" />
+              </div>
+            ))}
+          </div>
+        ) : observations.length > 0 ? (
           <div className="flex flex-col gap-6">
             {observations.map((item) => (
               <article
@@ -155,6 +187,14 @@ export default function SpecialObservations() {
                       <Calendar size={13} className="text-accent" />
                       {formatDate(item.date)}
                     </span>
+
+                    {/* Time of Observation */}
+                    {item.time && (
+                      <span className="inline-flex items-center gap-1.5 font-sans text-[0.75rem] sm:text-[0.82rem] text-emerald-800 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        <Clock size={12} className="text-emerald-700" />
+                        {formatDisplayTime(item.time) || item.time}
+                      </span>
+                    )}
 
                     {/* Location */}
                     {item.location && (
@@ -292,6 +332,16 @@ export default function SpecialObservations() {
           fromPath="/observations"
         />
       )}
+    </>
+  );
+
+  if (embedded) {
+    return mainContent;
+  }
+
+  return (
+    <div className="bg-[#f7f8fa] min-h-screen pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2.5rem)] pb-24">
+      {mainContent}
     </div>
   );
 }

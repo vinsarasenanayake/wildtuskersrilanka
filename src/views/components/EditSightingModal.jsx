@@ -172,6 +172,10 @@ export default function EditSightingModal({
       setError('Please provide a capture date.');
       return;
     }
+    if (formData.captureDate > todayLocalISO()) {
+      setError('Capture date cannot be in the future.');
+      return;
+    }
 
     try {
       setSaving(true);
@@ -239,7 +243,7 @@ export default function EditSightingModal({
           <button aria-label="Close"
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border-none cursor-pointer transition-colors shrink-0 ml-2"
+            className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border-none cursor-pointer transition-colors shrink-0 ml-2 shadow-xs"
           >
             <X size={16} />
           </button>
@@ -278,6 +282,7 @@ export default function EditSightingModal({
                 type="date"
                 name="captureDate"
                 required
+                max={todayLocalISO()}
                 className={INPUT_CLASS}
                 value={formData.captureDate}
                 onChange={handleChange}

@@ -32,7 +32,55 @@ async function uploadGalleryImage(img) {
 // Visitors may not read photographer contact details.
 const PUBLIC_GALLERY_COLUMNS = 'id, image_url, title, tusker_name, location, date, photographer, status, submitted_at, approved_at';
 
+let galleryCache = null;
+let galleryCacheAdmin = false;
+let galleryCacheTime = 0;
+const GALLERY_CACHE_TTL_MS = 5 * 60 * 1000; // 5-minute memory cache
+
+export function getCachedGalleryPhotos(admin = false) {
+  const now = Date.now();
+  if (galleryCache && (now - galleryCacheTime < GALLERY_CACHE_TTL_MS)) {
+    if (!admin && galleryCacheAdmin) {
+      return galleryCache.filter((p) => p.status === 'approved');
+    }
+    return galleryCache;
+  }
+  try {
+    const key = `wts_gallery_photos_${admin ? 'admin' : 'pub'}`;
+    const saved =
+      sessionStorage.getItem(key) ||
+      localStorage.getItem(key) ||
+      sessionStorage.getItem('wts_gallery_photos_pub') ||
+      localStorage.getItem('wts_gallery_photos_pub');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      galleryCache = parsed;
+      galleryCacheAdmin = admin;
+      galleryCacheTime = now;
+      if (!admin && parsed.some((p) => p.status !== 'approved')) {
+        return parsed.filter((p) => p.status === 'approved');
+      }
+      return parsed;
+    }
+  } catch { /* ignore */ }
+  return null;
+}
+
+export function invalidateGalleryCache() {
+  galleryCache = null;
+  galleryCacheTime = 0;
+  try {
+    sessionStorage.removeItem('wts_gallery_photos_admin');
+    sessionStorage.removeItem('wts_gallery_photos_pub');
+    localStorage.removeItem('wts_gallery_photos_admin');
+    localStorage.removeItem('wts_gallery_photos_pub');
+  } catch { /* ignore */ }
+}
+
 export async function getGalleryPhotos({ admin = false } = {}) {
+  const cached = getCachedGalleryPhotos(admin);
+  if (cached) return cached;
+
   try {
     let query = supabase
       .from('gallery_photos')
@@ -47,10 +95,19 @@ export async function getGalleryPhotos({ admin = false } = {}) {
     const { data, error } = await query;
     if (error) throw error;
     if (data && data.length > 0) {
-      return data.map(fromRow).map((r) => ({
+      const mapped = data.map(fromRow).map((r) => ({
         ...r,
         photographer: (r.photographer === 'WTS Research Team' || r.photographer === 'WTS Team') ? 'WTS Admin' : (r.photographer || 'WTS Admin'),
       }));
+      galleryCache = mapped;
+      galleryCacheAdmin = admin;
+      galleryCacheTime = Date.now();
+      try {
+        const key = `wts_gallery_photos_${admin ? 'admin' : 'pub'}`;
+        sessionStorage.setItem(key, JSON.stringify(mapped));
+        localStorage.setItem(key, JSON.stringify(mapped));
+      } catch { /* ignore */ }
+      return mapped;
     }
     return [];
   } catch (err) {
@@ -79,6 +136,7 @@ export async function submitGalleryPhoto(form) {
     .insert(row);
 
   if (error) throw error;
+  invalidateGalleryCache();
   return fromRow(row);
 }
 
@@ -91,6 +149,7 @@ export async function approveGalleryPhoto(id) {
     .single();
 
   if (error) throw error;
+  invalidateGalleryCache();
   return fromRow(data);
 }
 
@@ -103,6 +162,7 @@ export async function rejectGalleryPhoto(id) {
     .single();
 
   if (error) throw error;
+  invalidateGalleryCache();
   return fromRow(data);
 }
 
@@ -113,6 +173,7 @@ export async function deleteGalleryPhoto(id) {
     .eq('id', Number(id));
 
   if (error) throw error;
+  invalidateGalleryCache();
   return true;
 }
 
@@ -128,6 +189,7 @@ export async function updateGalleryPhoto(id, updates) {
     .single();
 
   if (error) throw error;
+  invalidateGalleryCache();
   return fromRow(data);
 }
 

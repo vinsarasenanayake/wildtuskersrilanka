@@ -6,6 +6,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   getUnlistedTuskers,
+  getCachedUnlistedTuskers,
   addUnlistedTusker,
   updateUnlistedTusker,
   deleteUnlistedTusker
@@ -17,8 +18,8 @@ import { useAuth } from './useAuth';
 
 export function useUnlistedTuskers() {
   /* ── Data State & Sync ─────────────────────────────────────── */
-  const [tuskers, setTuskers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [tuskers, setTuskers] = useState(() => getCachedUnlistedTuskers() || []);
+  const [loading, setLoading] = useState(() => !getCachedUnlistedTuskers());
   const { isAdmin, authLoading } = useAuth();
 
   const reloadData = useCallback(async () => {

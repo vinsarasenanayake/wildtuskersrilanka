@@ -28,11 +28,67 @@ function mapUnlisted(row) {
 /* ==============================================================
    SECTION 2: UNLISTED TUSKERS CRUD (async, Supabase)
 ============================================================== */
+
+let unlistedCache = null;
+let unlistedCacheTime = 0;
+const UNLISTED_CACHE_TTL_MS = 5 * 60 * 1000;
+
+export function getCachedUnlistedTuskers() {
+  const now = Date.now();
+  if (unlistedCache && (now - unlistedCacheTime < UNLISTED_CACHE_TTL_MS)) {
+    return unlistedCache;
+  }
+  try {
+    const raw = sessionStorage.getItem('wts_unlisted_tuskers');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        unlistedCache = parsed;
+        unlistedCacheTime = now;
+        return parsed;
+      }
+    }
+  } catch {}
+  return null;
+}
+
+export function invalidateUnlistedCache() {
+  unlistedCache = null;
+  unlistedCacheTime = 0;
+  try {
+    sessionStorage.removeItem('wts_unlisted_tuskers');
+  } catch {}
+}
+
 export async function getUnlistedTuskers() {
+  const cached = getCachedUnlistedTuskers();
+  if (cached) {
+    // Background refresh
+    supabase.from('unlisted_tuskers').select('*').order('created_at', { ascending: false })
+      .then(({ data }) => {
+        if (data) {
+          const mapped = data.map(mapUnlisted);
+          unlistedCache = mapped;
+          unlistedCacheTime = Date.now();
+          try {
+            sessionStorage.setItem('wts_unlisted_tuskers', JSON.stringify(mapped));
+          } catch {}
+        }
+      })
+      .catch(() => {});
+    return cached;
+  }
+
   const rows = unwrap(
     await supabase.from('unlisted_tuskers').select('*').order('created_at', { ascending: false })
   );
-  return rows.map(mapUnlisted);
+  const result = rows.map(mapUnlisted);
+  unlistedCache = result;
+  unlistedCacheTime = Date.now();
+  try {
+    sessionStorage.setItem('wts_unlisted_tuskers', JSON.stringify(result));
+  } catch {}
+  return result;
 }
 
 /** Next free "UNLISTED 0NN" id, based on the highest existing number. */
@@ -49,6 +105,7 @@ export async function addUnlistedTusker(entry) {
   const id = entry.id?.trim() || await nextUnlistedId();
   const row = toRow({ ...entry, id }, UNLISTED_FIELDS);
   const saved = unwrap(await supabase.from('unlisted_tuskers').insert(row).select().single());
+  invalidateUnlistedCache();
   return mapUnlisted(saved);
 }
 
@@ -57,11 +114,13 @@ export async function updateUnlistedTusker(id, updated) {
   const saved = unwrap(
     await supabase.from('unlisted_tuskers').update(row).eq('id', id).select().maybeSingle()
   );
+  invalidateUnlistedCache();
   return saved ? mapUnlisted(saved) : null;
 }
 
 export async function deleteUnlistedTusker(id) {
   unwrap(await supabase.from('unlisted_tuskers').delete().eq('id', id));
+  invalidateUnlistedCache();
   return true;
 }
 
