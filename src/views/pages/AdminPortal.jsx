@@ -996,7 +996,7 @@ export default function AdminPortal() {
                           <td className="py-3 px-4 text-right">
                             <div className="inline-flex items-center gap-1.5 justify-end">
                               <Link
-                                to="/observations"
+                                to="/special-observations?tab=observations"
                                 className="p-1.5 rounded-lg text-[#5a6c63] hover:text-[#0b2518] hover:bg-[#eef3f0] transition-all"
                                 title="View in feed"
                               >

@@ -102,7 +102,7 @@ export default function SpecialObservationForm() {
     e.preventDefault();
     const success = await saveObservation();
     if (success) {
-      navigate('/learn?tab=observations');
+      navigate('/special-observations?tab=observations');
     }
   };
 

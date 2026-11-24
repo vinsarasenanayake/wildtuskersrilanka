@@ -152,7 +152,7 @@ export default function UnlistedMonitoring() {
         <div className="w-16 h-16 rounded-full bg-amber-500/15 text-amber-600 flex items-center justify-center mb-4 border border-amber-500/30">
           <ShieldAlert size={32} />
         </div>
-        <h1 className="font-sans text-[2rem] font-bold text-[#111111] mb-2">Admin Access Required</h1>
+        <h1 className="font-sans text-2xl sm:text-[2rem] font-bold text-[#111111] mb-2">Admin Access Required</h1>
         <p className="font-sans text-[#666666] max-w-[480px] mb-8 text-[0.95rem] leading-relaxed">
           The Unlisted Monitoring registry contains provisional observation records and is strictly reserved for authorized administrators.
         </p>
@@ -175,7 +175,7 @@ export default function UnlistedMonitoring() {
           <h1 className="font-sans text-2xl sm:text-3xl md:text-[2.25rem] font-bold text-[#111111] mb-1.5 whitespace-nowrap text-center sm:text-left">
             Unlisted Monitoring
           </h1>
-          <p className="font-sans text-xs sm:text-[0.88rem] md:text-[0.95rem] text-[#777777] m-0 text-center sm:text-left">
+          <p className="font-sans text-[0.84rem] sm:text-[0.92rem] md:text-[0.98rem] text-[#777777] m-0 text-center sm:text-left">
             {tuskers.length} unlisted {tuskers.length === 1 ? 'tusker' : 'tuskers'} under active observation across Sri Lanka
           </p>
         </div>

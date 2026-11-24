@@ -411,7 +411,7 @@ export default function SpecialObservations({ embedded = false }) {
           <h1 className="font-sans text-[clamp(1.15rem,4.5vw,2.85rem)] font-bold text-[#111111] m-0 tracking-tight leading-snug whitespace-nowrap text-center">
             Special Observations Over The Years
           </h1>
-          <p className="font-sans text-xs sm:text-[0.95rem] text-[#555555] leading-[1.75] max-w-3xl mx-auto m-0 text-center">
+          <p className="font-sans text-sm sm:text-[0.98rem] md:text-[1.02rem] text-[#555555] leading-relaxed max-w-3xl mx-auto m-0 text-center">
             In-depth annual field observations documenting significant behaviors, musth cycles, physical developments, and health records of Sri Lanka's wild tuskers.
           </p>
         </div>
@@ -547,9 +547,9 @@ export default function SpecialObservations({ embedded = false }) {
                         )}
                       </div>
 
-                      <div className="flex flex-col gap-2.5 text-xs sm:text-[0.94rem] text-[#4b5563] leading-[1.8] text-justify">
+                      <div className="flex flex-col gap-2.5 text-sm sm:text-[0.96rem] md:text-[1rem] text-[#4b5563] leading-[1.8] text-justify">
                         <p className="m-0" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
-                          In the field, wild tuskers often share remarkably similar silhouettes, tusk lengths, and head shapes, leading to frequent misidentifications even among experienced observers and wildlife photographers. Systematic morphological identification-focusing on ear venation, top-fold curvatures, tears, facial depigmentation, and tusk angles-is essential to correctly distinguish these lookalike individuals.
+                          In the field, wild tuskers often share remarkably similar silhouettes, tusk lengths, and head shapes, leading to frequent misidentifications even among experienced observers and wildlife photographers. Systematic morphological identification - focusing on ear venation, top-fold curvatures, tears, facial depigmentation, and tusk angles - is essential to correctly distinguish these lookalike individuals.
                         </p>
                         <p className="m-0" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
                           This comparative study examines 4 pairs (8 iconic Sri Lankan tuskers) that look remarkably alike at first glance, detailing the key diagnostic features that separate them:
@@ -774,7 +774,7 @@ export default function SpecialObservations({ embedded = false }) {
             <div className="w-16 h-16 rounded-2xl bg-[#faf5ec] text-accent flex items-center justify-center mb-1">
               <Binoculars size={32} />
             </div>
-            <h3 className="font-sans text-[1.2rem] font-bold text-[#111111] m-0">No Special Observations Found</h3>
+            <h3 className="font-sans text-base sm:text-[1.2rem] font-bold text-[#111111] m-0">No Special Observations Found</h3>
             <p className="font-sans text-[0.88rem] sm:text-[0.92rem] text-[#777777] max-w-sm sm:max-w-md m-0 leading-relaxed">
               {allObservations.length === 0
                 ? <>No special observations have been <span className="inline-block whitespace-nowrap">recorded yet.</span></>
@@ -818,7 +818,7 @@ export default function SpecialObservations({ embedded = false }) {
             handleDelete(itemId);
           }}
           onClose={() => setActiveLightboxPhoto(null)}
-          fromPath={embedded ? '/learn?tab=observations' : '/observations'}
+          fromPath={embedded ? '/special-observations?tab=observations' : '/special-observations'}
         />
       )}
     </>

@@ -44,7 +44,7 @@ import {
   Sliders,
 } from 'lucide-react';
 import { useTuskerProfile } from '../../controllers/useTusker';
-import { calculateTuskerAge, parseSightingDetails, updateSighting, deleteSighting, updateTusker } from '../../models/TuskerModel';
+import { calculateTuskerAge, parseSightingDetails, updateSighting, deleteSighting, updateTusker, getRecordTimestamp } from '../../models/TuskerModel';
 import StatusBadge from '../components/StatusBadge';
 import TuskerSightingsMap from '../components/TuskerSightingsMap';
 import EditSightingModal from '../components/EditSightingModal';
@@ -311,6 +311,9 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
   return createPortal(
     <div
       ref={containerRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Tusker photo fullscreen zoom view"
       className="fixed inset-0 z-[10000] bg-black/95 text-white flex flex-col select-none overflow-hidden animate-fade-in"
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
@@ -2213,6 +2216,17 @@ export default function TuskerProfile() {
     nextPhoto,
   } = useTuskerProfile(id);
 
+  // Subsequent sightings sorted chronologically ascending by year/date (oldest first, following years later)
+  const sortedSightings = useMemo(() => {
+    if (!tusker?.sightings || !Array.isArray(tusker.sightings)) return [];
+    return [...tusker.sightings].sort((a, b) => {
+      const timeA = getRecordTimestamp(a.captureDate);
+      const timeB = getRecordTimestamp(b.captureDate);
+      if (timeA !== timeB) return timeA - timeB;
+      return (a.id || 0) - (b.id || 0);
+    });
+  }, [tusker?.sightings]);
+
   const [showRiskModal, setShowRiskModal] = useState(false);
   const [selectedComparisonImg, setSelectedComparisonImg] = useState(null);
   const [previewModalPhoto, setPreviewModalPhoto] = useState(null);
@@ -2861,53 +2875,47 @@ export default function TuskerProfile() {
         {/* PHOTOGRAPHIC COMPARISON (3x1 Horizontal Collage) */}
         {comparisonList && comparisonList.length > 0 && (
           <div className="mt-16 pt-10 border-t border-[#eeeeee]">
-            <div className="mb-8">
-              <h2 className="font-sans text-[1.35rem] sm:text-[1.6rem] font-bold text-[#111111] leading-snug m-0 mb-2">
+            <div className="mb-6 sm:mb-8">
+              <h2 className="font-sans text-[1.35rem] sm:text-[1.6rem] font-bold text-[#111111] leading-snug m-0">
                 Photographic Comparison
               </h2>
-              <p className="font-sans text-xs sm:text-[0.88rem] text-[#666666] m-0 max-w-[760px] leading-relaxed">
-                Sequential photo comparison tracking baseline identification against observations over 3-5 year intervals to monitor tusk growth, breakages, ear tears, and distinct physical changes.
-              </p>
             </div>
 
-            {/* Responsive Collage */}
-            <div className={`grid grid-cols-1 ${comparisonList.length === 1 ? 'max-w-md mx-auto' : comparisonList.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-6`}>
+            {/* Responsive Collage: 3 images per row on sm+, fixed size when 1 or 2 */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-6">
               {comparisonList.map((item, index) => (
                 <div
-                  key={index}
+                  key={item.recordNum || index}
                   className="bg-[#fcfdfd] border border-[#e5e7eb] rounded-[16px] overflow-hidden flex flex-col shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
                 >
-                  {/* Top Stage & Year Header */}
-                  <div className="px-4 py-3 bg-white border-b border-[#f0f0f0] flex items-center justify-between">
-                    <div className="flex flex-col min-w-0 pr-2">
-                      <span className="font-sans text-[0.82rem] font-bold text-[#555555] truncate">
-                        {item.stage || `Stage ${index + 1}`}
+                  {/* Top Location & Year Header Only (No title) */}
+                  <div className="px-4 py-3 bg-white border-b border-[#f0f0f0] flex items-center justify-between gap-2 min-h-[44px]">
+                    <div className="flex items-center gap-1.5 min-w-0 pr-2">
+                      <MapPin size={13} className="text-accent shrink-0" />
+                      <span className="font-sans text-[0.82rem] font-semibold text-[#555555] truncate">
+                        {item.location || '-'}
                       </span>
-                      {item.location && (
-                        <span className="font-sans text-[0.72rem] text-[#888888] flex items-center gap-1 mt-0.5 truncate">
-                          <MapPin size={10} className="text-accent shrink-0" />
-                          <span>{item.location}</span>
-                        </span>
-                      )}
                     </div>
                     <span className="text-[#111111] font-sans text-[0.84rem] font-extrabold flex items-center gap-1.5 shrink-0">
-                      <Calendar size={13} />
-                      <span>{item.year}</span>
+                      <Calendar size={13} className="text-accent shrink-0" />
+                      <span>{item.year || '-'}</span>
                     </span>
                   </div>
 
                   {/* Photo Card */}
                   <div
                     onClick={() => item.photo && setSelectedComparisonImg(item)}
-                    className={`relative w-full aspect-[4/3] bg-[#eef1ee] overflow-hidden flex items-center justify-center ${item.photo ? 'cursor-pointer group' : ''
-                      }`}
+                    className={`relative w-full aspect-[4/3] bg-[#eef1ee] overflow-hidden flex items-center justify-center ${
+                      item.photo ? 'cursor-pointer group' : ''
+                    }`}
                   >
                     {item.photo ? (
                       <>
                         <img
                           src={item.photo}
-                          alt={`${tusker.name} ${item.year}`}
+                          alt={`${tusker.name} ${item.year || ''}`}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
                         />
                         <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-1.5 font-sans text-xs font-semibold">
                           <Maximize2 size={16} />
@@ -2916,28 +2924,12 @@ export default function TuskerProfile() {
                       </>
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-[#f8faf9] to-[#edf3ef]">
-                        <div className="w-12 h-12 rounded-full bg-[#0b2518]/10 text-[#0b2518] flex items-center justify-center mb-2">
-                          <Camera size={22} className="opacity-70" />
-                        </div>
+                        <Camera size={22} className="opacity-70 text-[#0b2518] mb-2" />
                         <span className="font-sans text-xs font-bold text-[#2d4036] uppercase tracking-wider mb-1">
-                          {tusker.id} • {item.year}
+                          {tusker.id} {item.year ? `• ${item.year}` : ''}
                         </span>
                         <span className="font-sans text-[0.78rem] text-[#6b7c73] max-w-[200px] leading-tight">
-                          {item.stage} Photo
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Sentence Below the Photo */}
-                  <div className="p-4 flex-1 flex flex-col justify-between bg-white">
-                    <p className="font-sans text-[0.88rem] text-[#2c3330] leading-[1.65] m-0 font-medium">
-                      {item.changeSentence}
-                    </p>
-                    {item.hasChange && item.changeType && (
-                      <div className="mt-3 pt-2.5 border-t border-[#f2f2f2]">
-                        <span className="inline-block text-[0.7rem] font-bold uppercase tracking-wider text-[#996515] bg-[#faf5ec] px-2 py-0.5 rounded-full border border-[#f0e6d2]">
-                          {item.changeType}
+                          {item.stage || 'Sighting Record'}
                         </span>
                       </div>
                     )}
@@ -2956,7 +2948,7 @@ export default function TuskerProfile() {
                 <h2 className="font-sans text-[1.35rem] sm:text-[1.6rem] font-bold text-[#111111] leading-snug m-0 mb-2 flex items-center gap-2">
                   <span>Ear Biometric &amp; Venation Comparison</span>
                 </h2>
-                <p className="font-sans text-xs sm:text-[0.88rem] text-[#666666] m-0 max-w-[780px] leading-relaxed">
+                <p className="font-sans text-[0.84rem] sm:text-[0.92rem] text-[#666666] m-0 max-w-[780px] leading-relaxed">
                   Identification panel comparing pinna edge contours, tears, V-notches, and vascular branching across monitoring intervals.
                 </p>
               </div>
@@ -3050,9 +3042,9 @@ export default function TuskerProfile() {
                     <Lock size={12} /> Admin Only View
                   </span>
                   <span className="font-sans text-xs font-semibold text-[#888888]">
-                    {(tusker.sightings?.length || 0) + 1} Total Records
+                    {(sortedSightings.length || 0) + 1} Total Records
                   </span>
-                  {(tusker.sightings?.length || 0) > 1 && (
+                  {(sortedSightings.length || 0) > 1 && (
                     <span className="font-sans text-[0.72rem] text-accent font-semibold bg-accent/10 px-2.5 py-0.5 rounded-full flex items-center gap-1">
                       ↕ Scroll table to view all records
                     </span>
@@ -3203,8 +3195,8 @@ export default function TuskerProfile() {
                     </td>
                   </tr>
 
-                  {/* Subsequent Sighting Rows (Row 2, Row 3...) */}
-                  {(tusker.sightings || []).map((sighting, idx) => {
+                  {/* Subsequent Sighting Rows (Row 2, Row 3...) sorted chronologically ascending by year/date */}
+                  {sortedSightings.map((sighting, idx) => {
                     const details = parseSightingDetails(sighting);
                     const rowNum = idx + 2;
                     const sightingNum = idx + 1;
@@ -3353,7 +3345,7 @@ export default function TuskerProfile() {
                   })}
 
                   {/* Empty state when no sightings exist yet */}
-                  {(!tusker.sightings || tusker.sightings.length === 0) && (
+                  {(!sortedSightings || sortedSightings.length === 0) && (
                     <tr>
                       <td colSpan="9" className="py-6 px-4 text-center text-[#777777] bg-[#fafafa]">
                         <div className="flex flex-col items-center justify-center gap-1.5">
@@ -3372,39 +3364,25 @@ export default function TuskerProfile() {
 
             {/* Map of Sighting Points (Admin Only View) */}
             <TuskerSightingsMap
-              tusker={tusker}
+              tusker={{ ...tusker, sightings: sortedSightings }}
               onPreviewPhoto={setPreviewModalPhoto}
               onEditSighting={(info) => setEditingSighting(info)}
               onEditTusker={() => navigate(`/admin/edit-tusker/${tusker.id.toLowerCase()}`, { state: { from: fromPath || '/tuskers', fromProfile: true } })}
             />
 
-            {/* Photographic & Ear Biometric Comparisons Management (Admin View) */}
+            {/* Ear Biometric Comparisons Management (Admin View) */}
             <div className="mt-10 pt-8 border-t border-[#e8e8e8]">
-              <div className="flex flex-col portrait:flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                 <div>
                   <h3 className="font-sans text-[clamp(0.85rem,2.8vw,1.25rem)] font-bold text-[#111111] m-0 flex items-center gap-1.5 sm:gap-2 leading-snug whitespace-nowrap">
-                    <Camera size={18} className="text-accent shrink-0" />
-                    <span className="whitespace-nowrap">Photographic &amp; Ear Biometric Comparisons</span>
+                    <Sliders size={18} className="text-accent shrink-0" />
+                    <span className="whitespace-nowrap">Ear Biometric Comparisons</span>
                   </h3>
                   <p className="font-sans text-[0.82rem] text-[#666666] mt-1 mb-0 leading-relaxed max-w-[680px] text-justify">
-                    Manage sequential multi-year photographic progressions and ear venation biometrics over the years. Added records are immediately reflected in the public comparison collage above.
+                    Manage ear venation biometrics over the years. Added records are immediately reflected in the public ear comparison collage above.
                   </p>
                 </div>
-                <div className="flex flex-col sm:flex-row portrait:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 shrink-0 w-full portrait:w-full lg:w-auto">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setComparisonModal({
-                        type: 'photographic',
-                        item: null,
-                        index: -1,
-                      });
-                    }}
-                    className="flex-1 portrait:flex-1 w-full lg:w-[195px] inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-5 py-2.5 rounded-[10px] bg-[#0b2518] hover:bg-[#133824] text-white text-[0.82rem] font-semibold transition-all shadow-xs cursor-pointer border-none text-center whitespace-nowrap"
-                  >
-                    <Plus size={15} className="text-[#c69b55]" />
-                    <span>Add Photo Comparison</span>
-                  </button>
+                <div className="shrink-0 w-full sm:w-auto">
                   <button
                     type="button"
                     onClick={() => {
@@ -3414,7 +3392,7 @@ export default function TuskerProfile() {
                         index: -1,
                       });
                     }}
-                    className="flex-1 portrait:flex-1 w-full lg:w-[195px] inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-5 py-2.5 rounded-[10px] bg-[#0b2518] hover:bg-[#133824] text-white text-[0.82rem] font-semibold transition-all shadow-xs cursor-pointer border-none text-center whitespace-nowrap"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 sm:px-5 py-2.5 rounded-[10px] bg-[#0b2518] hover:bg-[#133824] text-white text-[0.82rem] font-semibold transition-all shadow-xs cursor-pointer border-none text-center whitespace-nowrap"
                   >
                     <Plus size={15} className="text-[#c69b55]" />
                     <span>Add Ear Comparison</span>
@@ -3422,201 +3400,104 @@ export default function TuskerProfile() {
                 </div>
               </div>
 
-              {/* Grid with 2 columns: Photographic progression & Ear biometrics */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* 1. Photographic Comparisons Column */}
-                <div className="bg-[#fafbfb] border border-[#e5e7eb] rounded-[16px] p-5 flex flex-col gap-4">
-                  <div className="flex items-center justify-between pb-3 border-b border-[#ededed]">
-                    <div className="flex items-center gap-2">
-                      <Camera size={16} className="text-accent" />
-                      <span className="font-sans text-[0.92rem] font-bold text-[#111111]">
-                        Photographic Progression
-                      </span>
-                    </div>
-                    <span className="text-[0.72rem] font-bold px-2 py-0.5 rounded-full bg-white border border-[#d5d5d5] text-[#555555]">
-                      {Array.isArray(tusker.photographicComparison) ? tusker.photographicComparison.length : 0} {Array.isArray(tusker.photographicComparison) && tusker.photographicComparison.length === 1 ? 'record' : 'records'}
+              {/* Ear Biometric Records Container */}
+              <div className="bg-[#fafbfb] border border-[#e5e7eb] rounded-[16px] p-5 sm:p-6 flex flex-col gap-4">
+                <div className="flex items-center justify-between pb-3 border-b border-[#ededed]">
+                  <div className="flex items-center gap-2">
+                    <Sliders size={16} className="text-accent" />
+                    <span className="font-sans text-[0.92rem] font-bold text-[#111111]">
+                      Ear Biometric Records
                     </span>
                   </div>
+                  <span className="text-[0.72rem] font-bold px-2 py-0.5 rounded-full bg-white border border-[#d5d5d5] text-[#555555]">
+                    {Array.isArray(tusker.earComparison) ? tusker.earComparison.length : 0} {Array.isArray(tusker.earComparison) && tusker.earComparison.length === 1 ? 'record' : 'records'}
+                  </span>
+                </div>
 
-                  {Array.isArray(tusker.photographicComparison) && tusker.photographicComparison.length > 0 ? (
-                    <div className="flex flex-col gap-3">
-                      {tusker.photographicComparison.map((item, idx) => (
+                {Array.isArray(tusker.earComparison) && tusker.earComparison.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    {tusker.earComparison.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-white border border-[#e8e8e8] rounded-[12px] p-3.5 flex gap-3.5 shadow-xs hover:border-[#cccccc] transition-colors"
+                      >
                         <div
-                          key={idx}
-                          className="bg-white border border-[#e8e8e8] rounded-[12px] p-3.5 flex gap-3.5 shadow-xs hover:border-[#cccccc] transition-colors"
+                          onClick={() => item.photo && setSelectedComparisonImg({ ...item, isEar: true })}
+                          className={`w-20 h-20 rounded-[8px] bg-[#f0f0f0] overflow-hidden shrink-0 border border-[#e0e0e0] flex items-center justify-center ${item.photo ? 'cursor-pointer group relative' : ''}`}
                         >
-                          <div
-                            onClick={() => item.photo && setSelectedComparisonImg(item)}
-                            className={`w-20 h-20 rounded-[8px] bg-[#f0f0f0] overflow-hidden shrink-0 border border-[#e0e0e0] flex items-center justify-center ${item.photo ? 'cursor-pointer group relative' : ''}`}
-                          >
-                            {item.photo ? (
-                              <>
-                                <img src={item.photo} alt={item.stage} className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                                  <Eye size={14} />
-                                </div>
-                              </>
-                            ) : (
-                              <Camera size={18} className="text-[#999999]" />
-                            )}
-                          </div>
-
-                          <div className="flex-1 min-w-0 flex flex-col justify-between">
-                            <div>
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="font-sans text-[0.85rem] font-bold text-[#111111] truncate">
-                                  {item.stage || `Stage ${idx + 1}`}
-                                </span>
-                                <span className="bg-[#0b2518] text-[#c69b55] text-[0.7rem] font-bold px-2 py-0.5 rounded-full shrink-0">
-                                  {item.year}
-                                </span>
+                          {item.photo ? (
+                            <>
+                              <img src={item.photo} alt={item.stage} className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                <Eye size={14} />
                               </div>
+                            </>
+                          ) : (
+                            <Camera size={18} className="text-[#999999]" />
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0 flex flex-col justify-between">
+                          <div>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-sans text-[0.85rem] font-bold text-[#111111] truncate">
+                                {item.stage || (item.earSide ? `${item.earSide} Record` : `Record ${idx + 1}`)}
+                              </span>
+                              <span className="bg-[#0b2518] text-[#c69b55] text-[0.7rem] font-bold px-2 py-0.5 rounded-full shrink-0">
+                                {item.year}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              {item.earSide && (
+                                <span className="text-[0.68rem] font-semibold text-[#0b2518] bg-[#0b2518]/10 px-1.5 py-0.2 rounded">
+                                  {item.earSide}
+                                </span>
+                              )}
                               {item.location && (
-                                <span className="text-[0.72rem] text-[#777777] flex items-center gap-1 mt-0.5 truncate">
+                                <span className="text-[0.72rem] text-[#777777] flex items-center gap-1 truncate">
                                   <MapPin size={10} className="text-accent shrink-0" />
                                   <span>{item.location}</span>
                                 </span>
                               )}
-                              {item.hasChange && item.changeType && (
-                                <span className="inline-block text-[0.68rem] font-bold uppercase tracking-wider text-[#996515] bg-[#faf5ec] px-1.5 py-0.5 rounded border border-[#f0e6d2] mt-1">
-                                  {item.changeType}
-                                </span>
-                              )}
+                            </div>
+                            {item.changeSentence && (
                               <p className="font-sans text-[0.78rem] text-[#444444] line-clamp-2 mt-1 mb-0 leading-snug">
                                 {item.changeSentence}
                               </p>
-                            </div>
-
-                            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[#f2f2f2] justify-end">
-                              <button
-                                type="button"
-                                onClick={() => setComparisonModal({ type: 'photographic', item, index: idx })}
-                                className="inline-flex items-center gap-1 text-[0.72rem] font-medium text-[#444444] hover:text-[#111111] px-2 py-1 rounded bg-[#f5f5f5] hover:bg-[#ebebeb] border-none cursor-pointer transition-colors"
-                              >
-                                <Edit size={12} />
-                                <span>Edit</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setDeletingComparison({ type: 'photographic', index: idx, item })}
-                                className="inline-flex items-center gap-1 text-[0.72rem] font-medium text-red-600 hover:text-red-700 px-2 py-1 rounded bg-red-50 hover:bg-red-100 border-none cursor-pointer transition-colors"
-                              >
-                                <Trash2 size={12} />
-                                <span>Delete</span>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="py-8 px-4 text-center border border-dashed border-[#d8d8d8] rounded-[12px] bg-white">
-                      <Camera size={24} className="mx-auto text-[#bbbbbb] mb-1.5" />
-                      <p className="font-sans text-[0.82rem] font-bold text-[#555555] m-0">No photographic comparisons added yet</p>
-                      <p className="font-sans text-[0.75rem] text-[#888888] m-0 mt-0.5 max-w-[280px] mx-auto">
-                        Track multi-year tusk and physical changes by clicking "+ Add Photo Comparison".
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* 2. Ear Biometric Comparisons Column */}
-                <div className="bg-[#fafbfb] border border-[#e5e7eb] rounded-[16px] p-5 flex flex-col gap-4">
-                  <div className="flex items-center justify-between pb-3 border-b border-[#ededed]">
-                    <div className="flex items-center gap-2">
-                      <Sliders size={16} className="text-accent" />
-                      <span className="font-sans text-[0.92rem] font-bold text-[#111111]">
-                        Ear Biometric Records
-                      </span>
-                    </div>
-                    <span className="text-[0.72rem] font-bold px-2 py-0.5 rounded-full bg-white border border-[#d5d5d5] text-[#555555]">
-                      {Array.isArray(tusker.earComparison) ? tusker.earComparison.length : 0} {Array.isArray(tusker.earComparison) && tusker.earComparison.length === 1 ? 'record' : 'records'}
-                    </span>
-                  </div>
-
-                  {Array.isArray(tusker.earComparison) && tusker.earComparison.length > 0 ? (
-                    <div className="flex flex-col gap-3">
-                      {tusker.earComparison.map((item, idx) => (
-                        <div
-                          key={idx}
-                          className="bg-white border border-[#e8e8e8] rounded-[12px] p-3.5 flex gap-3.5 shadow-xs hover:border-[#cccccc] transition-colors"
-                        >
-                          <div
-                            onClick={() => item.photo && setSelectedComparisonImg({ ...item, isEar: true })}
-                            className={`w-20 h-20 rounded-[8px] bg-[#f0f0f0] overflow-hidden shrink-0 border border-[#e0e0e0] flex items-center justify-center ${item.photo ? 'cursor-pointer group relative' : ''}`}
-                          >
-                            {item.photo ? (
-                              <>
-                                <img src={item.photo} alt={item.stage} className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                                  <Eye size={14} />
-                                </div>
-                              </>
-                            ) : (
-                              <Camera size={18} className="text-[#999999]" />
                             )}
                           </div>
 
-                          <div className="flex-1 min-w-0 flex flex-col justify-between">
-                            <div>
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="font-sans text-[0.85rem] font-bold text-[#111111] truncate">
-                                  {item.stage || (item.earSide ? `${item.earSide} Record` : `Record ${idx + 1}`)}
-                                </span>
-                                <span className="bg-[#0b2518] text-[#c69b55] text-[0.7rem] font-bold px-2 py-0.5 rounded-full shrink-0">
-                                  {item.year}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                {item.earSide && (
-                                  <span className="text-[0.68rem] font-semibold text-[#0b2518] bg-[#0b2518]/10 px-1.5 py-0.2 rounded">
-                                    {item.earSide}
-                                  </span>
-                                )}
-                                {item.location && (
-                                  <span className="text-[0.72rem] text-[#777777] flex items-center gap-1 truncate">
-                                    <MapPin size={10} className="text-accent shrink-0" />
-                                    <span>{item.location}</span>
-                                  </span>
-                                )}
-                              </div>
-                              <p className="font-sans text-[0.78rem] text-[#444444] line-clamp-2 mt-1 mb-0 leading-snug">
-                                {item.changeSentence}
-                              </p>
-                            </div>
-
-                            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[#f2f2f2] justify-end">
-                              <button
-                                type="button"
-                                onClick={() => setComparisonModal({ type: 'ear', item, index: idx })}
-                                className="inline-flex items-center gap-1 text-[0.72rem] font-medium text-[#444444] hover:text-[#111111] px-2 py-1 rounded bg-[#f5f5f5] hover:bg-[#ebebeb] border-none cursor-pointer transition-colors"
-                              >
-                                <Edit size={12} />
-                                <span>Edit</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setDeletingComparison({ type: 'ear', index: idx, item })}
-                                className="inline-flex items-center gap-1 text-[0.72rem] font-medium text-red-600 hover:text-red-700 px-2 py-1 rounded bg-red-50 hover:bg-red-100 border-none cursor-pointer transition-colors"
-                              >
-                                <Trash2 size={12} />
-                                <span>Delete</span>
-                              </button>
-                            </div>
+                          <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[#f2f2f2] justify-end">
+                            <button
+                              type="button"
+                              onClick={() => setComparisonModal({ type: 'ear', item, index: idx })}
+                              className="inline-flex items-center gap-1 text-[0.72rem] font-medium text-[#444444] hover:text-[#111111] px-2 py-1 rounded bg-[#f5f5f5] hover:bg-[#ebebeb] border-none cursor-pointer transition-colors"
+                            >
+                              <Edit size={12} />
+                              <span>Edit</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDeletingComparison({ type: 'ear', index: idx, item })}
+                              className="inline-flex items-center gap-1 text-[0.72rem] font-medium text-red-600 hover:text-red-700 px-2 py-1 rounded bg-red-50 hover:bg-red-100 border-none cursor-pointer transition-colors"
+                            >
+                              <Trash2 size={12} />
+                              <span>Delete</span>
+                            </button>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="py-8 px-4 text-center border border-dashed border-[#d8d8d8] rounded-[12px] bg-white">
-                      <Sliders size={24} className="mx-auto text-[#bbbbbb] mb-1.5" />
-                      <p className="font-sans text-[0.82rem] font-bold text-[#555555] m-0">No ear biometric records added yet</p>
-                      <p className="font-sans text-[0.75rem] text-[#888888] m-0 mt-0.5 max-w-[280px] mx-auto">
-                        Document pinna contours, notches, and vascular branching by clicking "+ Add Ear Comparison".
-                      </p>
-                    </div>
-                  )}
-                </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-8 px-4 text-center border border-dashed border-[#d8d8d8] rounded-[12px] bg-white">
+                    <Sliders size={24} className="mx-auto text-[#bbbbbb] mb-1.5" />
+                    <p className="font-sans text-[0.82rem] font-bold text-[#555555] m-0">No ear biometric records added yet</p>
+                    <p className="font-sans text-[0.75rem] text-[#888888] m-0 mt-0.5 max-w-[280px] mx-auto">
+                      Document pinna contours, notches, and vascular branching by clicking "+ Add Ear Comparison".
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

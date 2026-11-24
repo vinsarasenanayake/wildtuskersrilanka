@@ -56,7 +56,7 @@ export default function TuskerIdentificationForm() {
     e.preventDefault();
     const success = await saveIdentification();
     if (success) {
-      navigate('/learn?tab=identification');
+      navigate('/special-observations?tab=identification');
     }
   };
 
@@ -82,11 +82,11 @@ export default function TuskerIdentificationForm() {
         <div className="mb-6 flex items-center justify-between">
           <button
             type="button"
-            onClick={() => navigate('/learn?tab=identification')}
+            onClick={() => navigate('/special-observations?tab=identification')}
             className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#4b5563] hover:text-[#111827] bg-white px-3.5 py-2 rounded-lg border border-[#e5e7eb] shadow-2xs transition-all cursor-pointer"
           >
             <ArrowLeft size={16} />
-            <span>Back to Learn</span>
+            <span>Back to Special Observations</span>
           </button>
         </div>
 

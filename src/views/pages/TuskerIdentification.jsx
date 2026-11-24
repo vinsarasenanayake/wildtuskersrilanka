@@ -83,11 +83,11 @@ export default function TuskerIdentification({ embedded = false }) {
             How to Identify Tuskers
           </h1>
 
-          <div className="font-sans text-xs sm:text-[0.98rem] md:text-[1.02rem] text-[#374151] leading-[1.8] flex flex-col gap-4">
-            <p className="m-0">
+          <div className="font-sans text-sm sm:text-[0.98rem] md:text-[1.02rem] text-[#374151] leading-[1.8] flex flex-col gap-4 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
+            <p className="m-0 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
               The approach to identifying individual wild tuskers comes from <strong>T. N. C. Vidya, Deepika Prasad and Arjun Ghosh</strong>, whose paper <em>&ldquo;Individual Identification in Asian Elephants&rdquo;</em> provides the scientific foundation for distinguishing wild Asian elephants in their natural habitats.
             </p>
-            <p className="m-0 text-[#4b5563]">
+            <p className="m-0 text-[#4b5563] text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
               Each identified tusker is assigned a unique reference code beginning with &ldquo;T&rdquo; and a distinctive name that celebrates its individuality. This system ensures accurate identification while making it easier for researchers, conservationists, and wildlife enthusiasts to recognize and remember each elephant. For example, <strong>T075 - Kawantissa</strong>.
             </p>
           </div>
@@ -95,7 +95,7 @@ export default function TuskerIdentification({ embedded = false }) {
           {/* Citation Banner */}
           <div className="mt-2 p-3.5 sm:p-4 rounded-xl bg-[#fafbfa] border border-[#edf0ed] flex items-start gap-3">
             <Info size={18} className="text-accent shrink-0 mt-0.5" />
-            <p className="font-sans text-xs sm:text-[0.84rem] text-[#6b7280] leading-relaxed m-0">
+            <p className="font-sans text-[0.82rem] sm:text-[0.84rem] text-[#6b7280] leading-relaxed m-0 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
               {CITATION_TEXT}
             </p>
           </div>
@@ -108,7 +108,7 @@ export default function TuskerIdentification({ embedded = false }) {
           <h2 className="font-sans text-[1.35rem] sm:text-[1.5rem] font-bold text-[#111111] m-0 tracking-tight">
             Importance of Identification
           </h2>
-          <p className="font-sans text-xs sm:text-[0.92rem] text-[#666666] mt-1.5 m-0">
+          <p className="font-sans text-[0.85rem] sm:text-[0.92rem] text-[#666666] mt-1.5 m-0 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
             Why systematic photographic and biometric tracking is crucial for Sri Lanka's wild tuskers:
           </p>
         </div>
@@ -126,7 +126,7 @@ export default function TuskerIdentification({ embedded = false }) {
                 <h3 className="font-sans text-[0.98rem] sm:text-[1.05rem] font-bold text-[#111111] m-0">
                   {obj.title}
                 </h3>
-                <p className="font-sans text-xs sm:text-[0.92rem] text-[#555555] leading-[1.65] m-0">
+                <p className="font-sans text-[0.85rem] sm:text-[0.92rem] text-[#555555] leading-[1.65] m-0 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
                   {obj.desc}
                 </p>
               </div>
@@ -144,7 +144,7 @@ export default function TuskerIdentification({ embedded = false }) {
           <h2 className="font-sans text-[1.35rem] sm:text-[1.5rem] font-bold text-[#111111] m-0 tracking-tight">
             Ear Folds (Ears)
           </h2>
-          <p className="font-sans text-xs sm:text-[0.92rem] text-[#666666] mt-1.5 m-0">
+          <p className="font-sans text-[0.85rem] sm:text-[0.92rem] text-[#666666] mt-1.5 m-0 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
             The top and side folds of the ear pinna develop distinct, permanent orientations as an elephant matures.
           </p>
         </div>
@@ -187,7 +187,7 @@ export default function TuskerIdentification({ embedded = false }) {
                 <li>Side fold degree and curvature provide immediate field verification when viewed in profile.</li>
               </ul>
             </div>
-            <div className="pt-3 border-t border-[#edf0ed] text-[0.78rem] text-[#6b7280] italic">
+            <div className="pt-3 border-t border-[#edf0ed] text-[0.78rem] text-[#6b7280] italic text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
               {CITATION_TEXT}
             </div>
           </div>
@@ -203,7 +203,7 @@ export default function TuskerIdentification({ embedded = false }) {
           <h2 className="font-sans text-[1.35rem] sm:text-[1.5rem] font-bold text-[#111111] m-0 tracking-tight">
             Ear Depigmentation and Ear Marks
           </h2>
-          <p className="font-sans text-xs sm:text-[0.92rem] text-[#666666] mt-1.5 m-0">
+          <p className="font-sans text-[0.85rem] sm:text-[0.92rem] text-[#666666] mt-1.5 m-0 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
             Holes, notches, tears, and depigmentation patches serve as permanent biometric fingerprints unique to each elephant.
           </p>
         </div>
@@ -230,18 +230,18 @@ export default function TuskerIdentification({ embedded = false }) {
           <span className="font-bold text-primary text-xs sm:text-sm block mb-2">Key Diagnostic Features Identified:</span>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-xs sm:text-[0.9rem] text-[#4b5563] leading-relaxed">
             <div>
-              <p className="m-0 mb-1.5"><strong>a)</strong> A tiny hole (marked by arrow) before the side fold</p>
-              <p className="m-0 mb-1.5"><strong>b)</strong> A large hole before the side fold</p>
-              <p className="m-0 mb-1.5"><strong>c)</strong> Marked depigmentation and tears, including a missing semi-circular section, before the side fold</p>
-              <p className="m-0 mb-1.5"><strong>d)</strong> Tears with finger-like projections before, at and after the side fold</p>
+              <p className="m-0 mb-1.5 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}><strong>a)</strong> A tiny hole (marked by arrow) before the side fold</p>
+              <p className="m-0 mb-1.5 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}><strong>b)</strong> A large hole before the side fold</p>
+              <p className="m-0 mb-1.5 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}><strong>c)</strong> Marked depigmentation and tears, including a missing semi-circular section, before the side fold</p>
+              <p className="m-0 mb-1.5 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}><strong>d)</strong> Tears with finger-like projections before, at and after the side fold</p>
             </div>
             <div>
-              <p className="m-0 mb-1.5"><strong>e)</strong> A tear on the top fold</p>
-              <p className="m-0 mb-1.5"><strong>f)</strong> A tear at the side fold, with a large part of the ear missing</p>
-              <p className="m-0 mb-1.5"><strong>g)</strong> A tear at the side fold, plus nicks before and after it</p>
+              <p className="m-0 mb-1.5 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}><strong>e)</strong> A tear on the top fold</p>
+              <p className="m-0 mb-1.5 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}><strong>f)</strong> A tear at the side fold, with a large part of the ear missing</p>
+              <p className="m-0 mb-1.5 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}><strong>g)</strong> A tear at the side fold, plus nicks before and after it</p>
             </div>
           </div>
-          <div className="mt-4 pt-3 border-t border-[#edf0ed] text-[0.78rem] text-[#6b7280] italic">
+          <div className="mt-4 pt-3 border-t border-[#edf0ed] text-[0.78rem] text-[#6b7280] italic text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
             {CITATION_TEXT}
           </div>
         </div>
@@ -256,7 +256,7 @@ export default function TuskerIdentification({ embedded = false }) {
           <h2 className="font-sans text-[1.35rem] sm:text-[1.5rem] font-bold text-[#111111] m-0 tracking-tight">
             Back Shapes
           </h2>
-          <p className="font-sans text-xs sm:text-[0.92rem] text-[#666666] mt-1.5 m-0">
+          <p className="font-sans text-[0.85rem] sm:text-[0.92rem] text-[#666666] mt-1.5 m-0 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
             The dorsal spinal profile and vertebral curvature classify individual silhouettes from distance in field conditions.
           </p>
         </div>
@@ -298,7 +298,7 @@ export default function TuskerIdentification({ embedded = false }) {
                 <li><strong>h)</strong> Humped and sloping</li>
               </ul>
             </div>
-            <div className="pt-3 border-t border-[#edf0ed] text-[0.78rem] text-[#6b7280] italic">
+            <div className="pt-3 border-t border-[#edf0ed] text-[0.78rem] text-[#6b7280] italic text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
               {CITATION_TEXT}
             </div>
           </div>
@@ -314,7 +314,7 @@ export default function TuskerIdentification({ embedded = false }) {
           <h2 className="font-sans text-[1.35rem] sm:text-[1.5rem] font-bold text-[#111111] m-0 tracking-tight">
             Tail Brush & Tail Conformation
           </h2>
-          <p className="font-sans text-xs sm:text-[0.92rem] text-[#666666] mt-1.5 m-0">
+          <p className="font-sans text-[0.85rem] sm:text-[0.92rem] text-[#666666] mt-1.5 m-0 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
             Tail hair distribution, kinks, vertebrae breaks, and curvature provide reliable secondary markers for positive confirmation.
           </p>
         </div>
@@ -359,7 +359,7 @@ export default function TuskerIdentification({ embedded = false }) {
                 <li><strong>l)</strong> Same tail as in k (rear view)</li>
               </ul>
             </div>
-            <div className="pt-3 border-t border-[#edf0ed] text-[0.78rem] text-[#6b7280] italic">
+            <div className="pt-3 border-t border-[#edf0ed] text-[0.78rem] text-[#6b7280] italic text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
               {CITATION_TEXT}
             </div>
           </div>
@@ -375,7 +375,7 @@ export default function TuskerIdentification({ embedded = false }) {
           <h2 className="font-sans text-[1.35rem] sm:text-[1.5rem] font-bold text-[#111111] m-0 tracking-tight">
             Shape of Tusks
           </h2>
-          <p className="font-sans text-xs sm:text-[0.92rem] text-[#666666] mt-1.5 m-0">
+          <p className="font-sans text-[0.85rem] sm:text-[0.92rem] text-[#666666] mt-1.5 m-0 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
             Tusk direction, length, angle, and asymmetrical growth patterns define the iconic front profile of every wild tusker.
           </p>
         </div>
@@ -427,7 +427,7 @@ export default function TuskerIdentification({ embedded = false }) {
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#fafbfa] border border-[#edf0ed] text-[0.78rem] text-[#6b7280] italic">
+        <div className="p-4 rounded-xl bg-[#fafbfa] border border-[#edf0ed] text-[0.78rem] text-[#6b7280] italic text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
           {CITATION_TEXT}
         </div>
       </section>
@@ -439,7 +439,7 @@ export default function TuskerIdentification({ embedded = false }) {
           allPhotos={IDENTIFICATION_DIAGRAMS}
           onNavigatePhoto={(nextPhoto) => setActiveZoomImg(nextPhoto)}
           onClose={() => setActiveZoomImg(null)}
-          fromPath={embedded ? '/learn?tab=identification' : '/identification'}
+          fromPath={embedded ? '/special-observations?tab=identification' : '/special-observations?tab=identification'}
         />
       )}
 

@@ -95,10 +95,26 @@ export async function getGalleryPhotos({ admin = false } = {}) {
     const { data, error } = await query;
     if (error) throw error;
     if (data && data.length > 0) {
-      const mapped = data.map(fromRow).map((r) => ({
-        ...r,
-        photographer: (r.photographer === 'WTS Research Team' || r.photographer === 'WTS Team') ? 'WTS Admin' : (r.photographer || 'WTS Admin'),
-      }));
+      const mapped = data.map(fromRow).map((r) => {
+        let photographer = r.photographer;
+        const imgName = String(r.imageUrl || '').toLowerCase();
+        const tuskerName = String(r.tuskerName || '').toLowerCase();
+        const title = String(r.title || '').toLowerCase();
+
+        // Accurate photographer attribution for known seeded community photos (M10):
+        if (imgName.includes('yasa') || tuskerName.includes('yasa') || title.includes('t069') || title.includes('yasa')) {
+          photographer = 'Milinda Wattegedara';
+        } else if (imgName.includes('wijaya') || tuskerName.includes('wijaya') || title.includes('t072') || title.includes('wijaya')) {
+          photographer = 'Milinda Wattegedara';
+        } else if (!photographer || photographer === 'WTS Admin' || photographer === 'WTS Research Team' || photographer === 'WTS Team') {
+          photographer = 'Milinda Wattegedara / WTS Team';
+        }
+
+        return {
+          ...r,
+          photographer,
+        };
+      });
       galleryCache = mapped;
       galleryCacheAdmin = admin;
       galleryCacheTime = Date.now();

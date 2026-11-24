@@ -77,6 +77,12 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+/* ── Legacy Route Redirect Helper ──────────────────────────── */
+function LearnRedirect() {
+  const loc = useLocation();
+  return <Navigate to={{ pathname: '/special-observations', search: loc.search }} replace />;
+}
+
 /* ── Application Router ────────────────────────────────────── */
 function App() {
   const location = useLocation();
@@ -117,9 +123,11 @@ function App() {
             <Route path="/projects" element={<OurProjects />} />
             <Route path="/field-notes" element={<FieldNotes />} />
             <Route path="/add-field-note" element={<VisitorOnly adminTo="/field-notes"><FieldNoteForm /></VisitorOnly>} />
-            <Route path="/learn" element={<Learn />} />
-            <Route path="/observations" element={<Navigate to="/learn?tab=observations" replace />} />
-            <Route path="/tusker-identification" element={<Navigate to="/learn?tab=identification" replace />} />
+            <Route path="/special-observations" element={<Learn />} />
+            <Route path="/learn" element={<LearnRedirect />} />
+            <Route path="/observations" element={<Navigate to="/special-observations?tab=observations" replace />} />
+            <Route path="/special-observation" element={<Navigate to="/special-observations" replace />} />
+            <Route path="/tusker-identification" element={<Navigate to="/special-observations?tab=identification" replace />} />
             <Route path="/gallery" element={<Gallery />} />
 
             {/* AI Re-identification routes hidden until separate standalone app release */}

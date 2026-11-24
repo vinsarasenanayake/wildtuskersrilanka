@@ -4,7 +4,7 @@
  * Manages chronological sorting, year grouping, image uploads, and approval lifecycles.
  */
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { todayLocalISO, isFutureDateTime } from '../utils/localDate';
 import {
   getFieldNotes,
@@ -110,8 +110,10 @@ export function useFieldNoteForm() {
     time: '',
     description: '',
     specialNote: '',
-    images: [] // array of image attachment data URLs
+    images: [], // array of image attachment data URLs
+    consentAgreed: false,
   });
+  const pendingImageFilesRef = useRef([]);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -123,101 +125,169 @@ export function useFieldNoteForm() {
   }, [isAdmin]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+    setError('');
   };
 
   const handleAddImages = async (newFilesOrUrls) => {
     if (!newFilesOrUrls || newFilesOrUrls.length === 0) return;
     const items = Array.from(newFilesOrUrls);
-    const uploaded = await Promise.all(
-      items.map(async (item) => {
-        if (typeof item === 'string') return item;
-        try {
-          return await uploadMediaFile(item, 'fieldnotes');
-        } catch (err) {
-          console.warn('[useFieldNotes] upload failed, fallback to local object URL', err);
-          return URL.createObjectURL(item);
+
+    // Validate size (<15MB) and type client-side before creating preview
+    const validItems = [];
+    for (const item of items) {
+      if (typeof item === 'string') {
+        validItems.push(item);
+      } else if (item instanceof File || item instanceof Blob) {
+        if (item.size > 15 * 1024 * 1024) {
+          setError(`"${item.name || 'Photo'}" is too large (max 15 MB).`);
+          return;
         }
-      })
-    );
+        if (item.size < 100) {
+          setError(`"${item.name || 'Photo'}" is corrupted or empty.`);
+          return;
+        }
+        validItems.push(item);
+      }
+    }
+
+    // Generate local preview URLs; defer storage upload until form submit
+    const previewUrls = [];
+    const filesToUpload = [];
+    for (const item of validItems) {
+      if (typeof item === 'string') {
+        previewUrls.push(item);
+      } else {
+        const previewUrl = URL.createObjectURL(item);
+        previewUrls.push(previewUrl);
+        filesToUpload.push({ previewUrl, file: item });
+      }
+    }
+
+    pendingImageFilesRef.current = [...pendingImageFilesRef.current, ...filesToUpload];
     setFormData(prev => ({
       ...prev,
-      images: [...prev.images, ...uploaded.filter(Boolean)]
+      images: [...prev.images, ...previewUrls]
     }));
+    setError('');
   };
 
   const handleRemoveImage = (indexToRemove) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, idx) => idx !== indexToRemove)
-    }));
+    setFormData(prev => {
+      const removedUrl = prev.images[indexToRemove];
+      if (removedUrl && typeof removedUrl === 'string' && removedUrl.startsWith('blob:')) {
+        try {
+          URL.revokeObjectURL(removedUrl);
+        } catch {
+          /* ignore */
+        }
+      }
+      return {
+        ...prev,
+        images: prev.images.filter((_, idx) => idx !== indexToRemove)
+      };
+    });
+    pendingImageFilesRef.current = pendingImageFilesRef.current.filter((_, idx) => idx !== indexToRemove);
   };
 
   const createNote = async () => {
-    const { title, date, time, description, images, author, authorContact } = formData;
+    const { title, date, time, description, images, author, authorContact, consentAgreed } = formData;
 
-    if (!author.trim()) {
-      setError("Please fill in the Contributor's Name.");
-      return null;
+    const errors = [];
+    if (!author || !author.trim()) {
+      errors.push("Please fill in the Contributor's Name.");
     }
     if (!date) {
-      setError('Please select the Date.');
-      return null;
+      errors.push('Please select the Date.');
+    }
+    if (!time || !time.trim()) {
+      errors.push('Please specify the Time of sighting.');
     }
     if (isFutureDateTime(date, time)) {
-      setError('Date and time of sighting cannot be in the future.');
-      return null;
+      errors.push('Date and time of sighting cannot be in the future.');
     }
-    if (!time) {
-      setError('Please specify the Time of sighting.');
-      return null;
+    if (!title || !title.trim()) {
+      errors.push('Please fill in the Location.');
     }
-    if (!title.trim()) {
-      setError('Please fill in the Location.');
-      return null;
+    if (!description || !description.trim()) {
+      errors.push('Please fill in the Description / Observation Details.');
     }
-    if (!description.trim()) {
-      setError('Please fill in the Description / Observation Details.');
-      return null;
+    if (!consentAgreed) {
+      errors.push('You must confirm copyright ownership and consent.');
     }
 
-    const imageArray = Array.isArray(images)
-      ? images
-      : typeof images === 'string' && images
-        ? images.split(',').map(s => s.trim()).filter(Boolean)
-        : [];
-
-    const finalAuthor = author.trim();
-    const status = isAdmin ? 'approved' : 'pending';
+    if (errors.length > 0) {
+      setError(errors.join(' • '));
+      return null;
+    }
 
     setError('');
     setSubmitting(true);
-    let saved;
+
     try {
-      saved = await addFieldNote({
+      // Upload pending File objects to Supabase Storage NOW upon submit
+      const uploadedMap = new Map();
+      if (pendingImageFilesRef.current.length > 0) {
+        await Promise.all(
+          pendingImageFilesRef.current.map(async ({ previewUrl, file }) => {
+            try {
+              const publicUrl = await uploadMediaFile(file, 'fieldnotes');
+              if (publicUrl) uploadedMap.set(previewUrl, publicUrl);
+            } catch (err) {
+              console.error('[useFieldNotes] upload failed:', err);
+              throw new Error(`Failed to upload "${file.name || 'photo'}": ${err.message || 'Storage error'}`);
+            }
+          })
+        );
+      }
+
+      // Replace preview blob URLs with uploaded storage URLs
+      const finalImageUrls = images
+        .map(img => (uploadedMap.has(img) ? uploadedMap.get(img) : img))
+        .filter(img => typeof img === 'string' && !img.startsWith('blob:'));
+
+      const finalAuthor = author.trim();
+      const status = isAdmin ? 'approved' : 'pending';
+
+      const saved = await addFieldNote({
         title: title.trim(),
         date,
         time: time.trim(),
         description: description.trim(),
         specialNote: (formData.specialNote || '').trim(),
-        images: imageArray,
+        images: finalImageUrls,
         author: finalAuthor,
         authorContact: (authorContact || '').trim(),
         status
       });
+
+      // Clean up object URLs
+      images.forEach(img => {
+        if (typeof img === 'string' && img.startsWith('blob:')) {
+          try {
+            URL.revokeObjectURL(img);
+          } catch {
+            /* ignore */
+          }
+        }
+      });
+      pendingImageFilesRef.current = [];
+
+      return {
+        success: true,
+        isPending: status === 'pending',
+        note: saved
+      };
     } catch (err) {
       setError(`Could not submit your field note: ${friendlyError(err)}`);
       return null;
     } finally {
       setSubmitting(false);
     }
-
-    return {
-      success: true,
-      isPending: status === 'pending',
-      note: saved
-    };
   };
 
   return {

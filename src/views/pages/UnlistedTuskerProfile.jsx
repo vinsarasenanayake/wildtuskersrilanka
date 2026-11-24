@@ -327,7 +327,7 @@ export default function UnlistedTuskerProfile() {
         <div className="w-16 h-16 rounded-full bg-amber-500/15 text-amber-600 flex items-center justify-center mb-4 border border-amber-500/30">
           <ShieldAlert size={32} />
         </div>
-        <h1 className="font-sans text-[2rem] font-bold text-[#111111] mb-2">Admin Access Required</h1>
+        <h1 className="font-sans text-2xl sm:text-[2rem] font-bold text-[#111111] mb-2">Admin Access Required</h1>
         <p className="font-sans text-[#666666] max-w-[480px] mb-8 text-[0.95rem] leading-relaxed">
           Unlisted Monitoring profiles are internal administrative records and are not available for public view.
         </p>
@@ -475,33 +475,33 @@ export default function UnlistedTuskerProfile() {
           </div>
         </div>
 
-        {/* PHOTOGRAPHIC COMPARISON (3x1 Horizontal Collage) */}
+        {/* PHOTOGRAPHIC COMPARISON */}
         {comparisonList && comparisonList.length > 0 && (
           <div className="mt-16 pt-10 border-t border-[#eeeeee]">
-            <div className="mb-8">
-              <h2 className="font-sans text-[1.6rem] font-bold text-[#111111] m-0">
+            <div className="mb-6 sm:mb-8">
+              <h2 className="font-sans text-[1.35rem] sm:text-[1.6rem] font-bold text-[#111111] leading-snug m-0">
                 Photographic Comparison
               </h2>
-              <p className="font-sans text-[0.9rem] text-[#666666] mt-1.5 mb-0 max-w-[760px] leading-relaxed">
-                Sequential photo comparison tracking baseline identification against observations over 3-5 year intervals to monitor tusk growth, breakages, ear tears, and distinct physical changes.
-              </p>
             </div>
 
-            {/* 3x1 Collage in One Horizontal Row - All 3 boxes identical */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Responsive Collage: 3 images per row on sm+, fixed size when 1 or 2 */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-6">
               {comparisonList.map((item, index) => (
                 <div
-                  key={index}
+                  key={item.recordNum || index}
                   className="bg-[#fcfdfd] border border-[#e5e7eb] rounded-[16px] overflow-hidden flex flex-col shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
                 >
-                  {/* Top Stage & Year Header */}
-                  <div className="px-4 py-3 bg-white border-b border-[#f0f0f0] flex items-center justify-between">
-                    <span className="font-sans text-[0.82rem] font-bold text-[#555555]">
-                      {item.stage || `Stage ${index + 1}`}
-                    </span>
-                    <span className="text-[#111111] font-sans text-[0.84rem] font-extrabold flex items-center gap-1.5">
-                      <Calendar size={13} />
-                      <span>{item.year}</span>
+                  {/* Top Location & Year Header Only (No title) */}
+                  <div className="px-4 py-3 bg-white border-b border-[#f0f0f0] flex items-center justify-between gap-2 min-h-[44px]">
+                    <div className="flex items-center gap-1.5 min-w-0 pr-2">
+                      <MapPin size={13} className="text-accent shrink-0" />
+                      <span className="font-sans text-[0.82rem] font-semibold text-[#555555] truncate">
+                        {item.location || tusker.location || '-'}
+                      </span>
+                    </div>
+                    <span className="text-[#111111] font-sans text-[0.84rem] font-extrabold flex items-center gap-1.5 shrink-0">
+                      <Calendar size={13} className="text-accent shrink-0" />
+                      <span>{item.year || '-'}</span>
                     </span>
                   </div>
 
@@ -516,8 +516,9 @@ export default function UnlistedTuskerProfile() {
                       <>
                         <img
                           src={item.photo}
-                          alt={`${tusker.id} ${item.year}`}
+                          alt={`${tusker.id} ${item.year || ''}`}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
                         />
                         <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-1.5 font-sans text-xs font-semibold">
                           <Maximize2 size={16} />
@@ -526,24 +527,15 @@ export default function UnlistedTuskerProfile() {
                       </>
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-[#f8faf9] to-[#edf3ef]">
-                        <div className="w-12 h-12 rounded-full bg-[#0b2518]/10 text-[#0b2518] flex items-center justify-center mb-2">
-                          <Camera size={22} className="opacity-70" />
-                        </div>
+                        <Camera size={22} className="opacity-70 text-[#0b2518] mb-2" />
                         <span className="font-sans text-xs font-bold text-[#2d4036] uppercase tracking-wider mb-1">
-                          {tusker.id} • {item.year}
+                          {tusker.id} {item.year ? `• ${item.year}` : ''}
                         </span>
                         <span className="font-sans text-[0.78rem] text-[#6b7c73] max-w-[200px] leading-tight">
-                          {item.stage} Photo
+                          {item.stage || 'Sighting Record'}
                         </span>
                       </div>
                     )}
-                  </div>
-
-                  {/* Sentence Below the Photo */}
-                  <div className="p-4 flex-1 flex flex-col justify-between bg-white">
-                    <p className="font-sans text-[0.85rem] text-[#2c3330] leading-[1.65] m-0 font-medium">
-                      {item.sentence}
-                    </p>
                   </div>
                 </div>
               ))}
@@ -556,10 +548,10 @@ export default function UnlistedTuskerProfile() {
           <div className="mt-14 pt-10 border-t border-[#eeeeee]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-3">
               <div>
-                <h2 className="font-sans text-[1.6rem] font-bold text-[#111111] m-0">
+                <h2 className="font-sans text-[1.35rem] sm:text-[1.6rem] font-bold text-[#111111] leading-snug m-0">
                   Ear Margin & Biometric Comparison
                 </h2>
-                <p className="font-sans text-[0.9rem] text-[#666666] mt-1.5 mb-0 max-w-[760px] leading-relaxed">
+                <p className="font-sans text-[0.84rem] sm:text-[0.92rem] text-[#666666] mt-1.5 mb-0 max-w-[760px] leading-relaxed">
                   High-resolution ear venation, tears, notch contours, and lobe folding diagnostics used as permanent biometric field identification markers.
                 </p>
               </div>

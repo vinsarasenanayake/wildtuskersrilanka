@@ -32,6 +32,7 @@ import ImageCropperModal from './ImageCropperModal';
 export default function ImageUploadBox({
   value,
   onChange,
+  onFilesChange,
   folder = 'uploads',
   label = 'Upload Photos',
   multiple,
@@ -44,9 +45,11 @@ export default function ImageUploadBox({
   cropTitle = 'Crop Ear Biometric Area',
   cropSubtitle = 'Drag the crop box or handles to focus directly on the ear pinna, margin notches, and venation.',
   cropAspect = 'free',
+  deferUpload = false,
 }) {
   const fileInputRef = useRef(null);
   const addMoreInputRef = useRef(null);
+  const pendingFilesRef = useRef([]);
   const [uploading, setUploading] = useState(false);
   const [uploadCount, setUploadCount] = useState(0);
   const [dragActive, setDragActive] = useState(false);
@@ -81,19 +84,20 @@ export default function ImageUploadBox({
     return [];
   }, [value]);
 
-  const emitChange = (nextList) => {
+  const emitChange = (nextList, nextFiles) => {
     if (!onChange) return;
     const cleanList = nextList.filter(Boolean);
+    const files = nextFiles !== undefined ? nextFiles : pendingFilesRef.current;
     if (!isMultiple) {
-      onChange(cleanList[0] || '');
+      onChange(cleanList[0] || '', files[0] || null);
     } else {
       // If parent passed an array initially, pass array; if parent passed a string or expects string, support both
       if (Array.isArray(value)) {
-        onChange(cleanList, cleanList[0] || '');
+        onChange(cleanList, cleanList[0] || '', files);
       } else if (typeof value === 'string') {
-        onChange(cleanList.join(', '), cleanList[0] || '');
+        onChange(cleanList.join(', '), cleanList[0] || '', files);
       } else {
-        onChange(cleanList, cleanList[0] || '');
+        onChange(cleanList, cleanList[0] || '', files);
       }
     }
   };
@@ -153,6 +157,20 @@ export default function ImageUploadBox({
     if (!isMultiple && allowCrop && autoCropOnSelect && filesToUpload.length > 0) {
       setCropperSource(filesToUpload[0]);
       setCropperOpen(true);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (addMoreInputRef.current) addMoreInputRef.current.value = '';
+      return;
+    }
+
+    // If deferUpload is enabled, do NOT upload immediately to Supabase Storage!
+    // Instead generate local object preview URLs and pass File objects to parent.
+    if (deferUpload) {
+      const newUrls = filesToUpload.map((f) => URL.createObjectURL(f));
+      const nextUrls = isMultiple ? [...imageList, ...newUrls] : newUrls;
+      const nextFiles = isMultiple ? [...pendingFilesRef.current, ...filesToUpload] : filesToUpload;
+      pendingFilesRef.current = nextFiles;
+      if (onFilesChange) onFilesChange(nextFiles);
+      emitChange(nextUrls, nextFiles);
       if (fileInputRef.current) fileInputRef.current.value = '';
       if (addMoreInputRef.current) addMoreInputRef.current.value = '';
       return;
@@ -321,13 +339,35 @@ export default function ImageUploadBox({
 
   const handleRemoveOne = (indexToRemove, e) => {
     if (e) e.stopPropagation();
+    const removedUrl = imageList[indexToRemove];
+    if (removedUrl && removedUrl.startsWith('blob:')) {
+      try {
+        URL.revokeObjectURL(removedUrl);
+      } catch {
+        /* ignore */
+      }
+    }
     const nextList = imageList.filter((_, i) => i !== indexToRemove);
-    emitChange(nextList);
+    const nextFiles = (pendingFilesRef.current || []).filter((_, i) => i !== indexToRemove);
+    pendingFilesRef.current = nextFiles;
+    if (onFilesChange) onFilesChange(nextFiles);
+    emitChange(nextList, nextFiles);
   };
 
   const handleRemoveAll = (e) => {
     if (e) e.stopPropagation();
-    emitChange([]);
+    imageList.forEach((url) => {
+      if (url && url.startsWith('blob:')) {
+        try {
+          URL.revokeObjectURL(url);
+        } catch {
+          /* ignore */
+        }
+      }
+    });
+    pendingFilesRef.current = [];
+    if (onFilesChange) onFilesChange([]);
+    emitChange([], []);
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (addMoreInputRef.current) addMoreInputRef.current.value = '';
   };
@@ -499,8 +539,8 @@ export default function ImageUploadBox({
                 </span>
                 <span className="font-sans text-[0.75rem] text-[#788880]">
                   {isMultiple
-                    ? 'Supports multiple images simultaneously (JPG, PNG, WEBP)'
-                    : 'Single image upload (JPG, PNG, WEBP)'}
+                    ? 'Supports multiple images up to 15 MB each (JPG, PNG, WEBP)'
+                    : 'Single image upload up to 15 MB (JPG, PNG, WEBP)'}
                 </span>
               </div>
             </div>

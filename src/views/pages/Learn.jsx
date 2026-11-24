@@ -19,7 +19,7 @@ export default function Learn() {
 
   useEffect(() => {
     const tabName = activeTab === 'identification' ? 'Tusker Identification' : 'Special Observations';
-    document.title = `Wild Tuskers Sri Lanka | Learn - ${tabName}`;
+    document.title = `Wild Tuskers Sri Lanka | ${tabName}`;
   }, [activeTab]);
 
   const handleTabChange = (tabKey) => {
@@ -41,7 +41,7 @@ export default function Learn() {
             Learn about Sri Lankan Wild Tuskers
           </h1>
 
-          <p className="font-sans text-xs sm:text-[0.96rem] text-[#555555] leading-relaxed max-w-3xl mx-auto m-0 text-center">
+          <p className="font-sans text-sm sm:text-[0.98rem] md:text-[1.02rem] text-[#555555] leading-relaxed max-w-3xl mx-auto m-0 text-center">
             Explore comprehensive field research and educational materials documenting Sri Lanka's rare wild tuskers.
             Follow in-depth annual behavioral records, musth cycles, and physical developments, or study scientific guides
             on individual tusker identification, ear biometrics, and field classification standards.

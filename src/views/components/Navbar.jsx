@@ -36,8 +36,8 @@ const navItems = [
   { name: 'Wild Tuskers List', path: '/tuskers',     icon: Database },
   { name: 'The Gallery',       path: '/gallery',     icon: Camera },
   { name: 'Field Notes',       path: '/field-notes', icon: BookOpen },
-  { name: 'Our Projects',      path: '/projects',    icon: Calendar },
-  { name: 'Special Observations', path: '/learn',       icon: Binoculars },
+  { name: 'Our Projects',      path: '/projects',             icon: Calendar },
+  { name: 'Special Observations', path: '/special-observations', icon: Binoculars },
 ];
 
 export default function Navbar() {
@@ -109,8 +109,10 @@ export default function Navbar() {
 
   const isActive = (path) => {
     if (path === '/') return location.pathname === '/';
-    if (path === '/learn') {
+    if (path === '/special-observations') {
       return (
+        location.pathname.startsWith('/special-observations') ||
+        location.pathname.startsWith('/special-observation') ||
         location.pathname.startsWith('/learn') ||
         location.pathname.startsWith('/observations') ||
         location.pathname.startsWith('/tusker-identification') ||
@@ -206,7 +208,7 @@ export default function Navbar() {
               href="https://www.facebook.com/groups/785810441596309/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center opacity-85 hover:opacity-100 hover:scale-110 transition-all duration-200 cursor-pointer mr-1"
+              className="inline-flex items-center justify-center opacity-85 hover:opacity-100 hover:scale-110 transition-all duration-200 cursor-pointer mr-1 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6cf7d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b2518]"
               title="Wild Tuskers Sri Lanka Facebook Group"
             >
               <Facebook size={24} className="sm:w-[26px] sm:h-[26px]" />
@@ -218,7 +220,7 @@ export default function Navbar() {
               {location.pathname !== '/admin' && (
                 <Link
                   to="/admin"
-                  className="font-semibold text-xs sm:text-[0.86rem] px-2.5 sm:px-3 2xl:px-4 py-1.5 sm:py-[0.55rem] rounded-[6px] hidden sm:inline-flex whitespace-nowrap items-center gap-1.5 transition-all duration-300 bg-white/15 text-white hover:bg-white/25 shadow-xs"
+                  className="font-semibold text-xs sm:text-[0.86rem] px-2.5 sm:px-3 2xl:px-4 py-1.5 sm:py-[0.55rem] rounded-[6px] hidden sm:inline-flex whitespace-nowrap items-center gap-1.5 transition-all duration-300 bg-white/15 text-white hover:bg-white/25 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6cf7d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b2518]"
                 >
                   <Shield size={14} />
                   <span>Admin Portal</span>
@@ -226,7 +228,7 @@ export default function Navbar() {
               )}
               <button
                 onClick={handleLogoutClick}
-                className="bg-primary-light text-white font-semibold text-xs sm:text-[0.85rem] px-2.5 sm:px-3 2xl:px-4 py-1.5 sm:py-[0.55rem] rounded-[6px] hidden sm:inline-flex whitespace-nowrap items-center gap-1 shadow-[0_4px_10px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-white/10! hover:border-white! transition-all duration-300 cursor-pointer border-none"
+                className="bg-primary-light text-white font-semibold text-xs sm:text-[0.85rem] px-2.5 sm:px-3 2xl:px-4 py-1.5 sm:py-[0.55rem] rounded-[6px] hidden sm:inline-flex whitespace-nowrap items-center gap-1 shadow-[0_4px_10px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-white/10! hover:border-white! transition-all duration-300 cursor-pointer border-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6cf7d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b2518]"
               >
                 <LogOut size={14} />
                 <span>Logout</span>
@@ -235,7 +237,7 @@ export default function Navbar() {
           ) : (
             <Link
               to="/login"
-              className={`hidden sm:inline-flex items-center gap-1.5 xl:gap-2 font-medium text-xs sm:text-[0.88rem] xl:text-[0.94rem] 2xl:text-[0.96rem] whitespace-nowrap relative py-2 px-1 transition-all duration-300 group ${
+              className={`hidden sm:inline-flex items-center gap-1.5 xl:gap-2 font-medium text-xs sm:text-[0.88rem] xl:text-[0.94rem] 2xl:text-[0.96rem] whitespace-nowrap relative py-2 px-1 transition-all duration-300 group rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6cf7d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b2518] ${
                 isActive('/login') || isActive('/admin')
                   ? 'opacity-100 text-accent font-semibold'
                   : 'text-white/85 hover:opacity-100 hover:text-accent'
@@ -256,7 +258,7 @@ export default function Navbar() {
 
           <button
             ref={toggleBtnRef}
-            className="flex xl:hidden items-center justify-center p-2 text-white opacity-90 hover:opacity-100 transition-opacity duration-200 rounded-lg hover:bg-white/10 cursor-pointer border-none bg-transparent"
+            className="flex xl:hidden items-center justify-center p-2 text-white opacity-90 hover:opacity-100 transition-opacity duration-200 rounded-lg hover:bg-white/10 cursor-pointer border-none bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6cf7d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b2518]"
             onClick={toggleMenu}
             aria-label="Toggle Navigation"
           >
@@ -279,6 +281,7 @@ export default function Navbar() {
           {/* Mobile Full-Height Drawer with Solid Opaque Professional Curved Left Edge */}
           <div
             ref={drawerRef}
+            data-nav-drawer=""
             className={`fixed top-0 right-0 bottom-0 h-screen h-[100dvh] w-[310px] sm:w-[350px] max-w-[86vw] bg-[#0b2518] bg-gradient-to-b from-[#081d13] via-[#0b2619] to-[#081d13] z-[9999] flex flex-col p-4 sm:p-6 pb-28 sm:pb-8 rounded-l-[26px] sm:rounded-l-[36px] shadow-[-20px_0_60px_rgba(0,0,0,0.85)] border-l border-white/15 text-white transition-all duration-300 ease-out overflow-y-auto overscroll-contain ${
               isOpen ? 'translate-x-0 opacity-100 pointer-events-auto' : 'translate-x-full opacity-0 pointer-events-none'
             }`}

@@ -47,15 +47,18 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* High-contrast keyboard accessibility focus outlines for dark navigation elements */
-  header a:focus-visible,
-  header button:focus-visible,
-  nav a:focus-visible,
-  nav button:focus-visible {
-    outline: 2px solid #f6cf7d !important;
-    outline-offset: 3px !important;
-    box-shadow: 0 0 0 4px rgba(11, 37, 24, 0.85) !important;
-  }
+/* High-contrast keyboard accessibility focus outlines for dark navigation elements */
+header a:focus-visible,
+header button:focus-visible,
+header [role="button"]:focus-visible,
+nav a:focus-visible,
+nav button:focus-visible,
+[data-nav-drawer] a:focus-visible,
+[data-nav-drawer] button:focus-visible {
+  outline: 2.5px solid #f6cf7d !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 4px rgba(11, 37, 24, 0.95), 0 0 12px rgba(246, 207, 125, 0.6) !important;
+}
 
   /* Never show harsh outline on input fields, textareas, selects */
   input:focus,

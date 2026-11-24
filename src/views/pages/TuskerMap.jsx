@@ -256,7 +256,7 @@ export default function TuskerMap() {
             </div>
 
             <div className="flex items-center justify-between gap-2 mb-1">
-              <h1 className="text-lg font-bold text-[#0b2518] m-0 flex items-center gap-2">
+              <h1 className="text-base sm:text-lg font-bold text-[#0b2518] m-0 flex items-center gap-2">
                 <Layers size={18} className="text-accent" /> WTS Conservation Zones
               </h1>
               {selectedZone && (
@@ -269,7 +269,7 @@ export default function TuskerMap() {
                 </button>
               )}
             </div>
-            <p className="text-xs text-[#6a7c73] m-0 mt-0.5">
+            <p className="text-xs sm:text-[0.8rem] text-[#6a7c73] m-0 mt-0.5">
               {loading ? 'Loading tuskers…' : `4 Strategic Elephant Landscapes across Sri Lanka · ${tuskers.length} Registered Tuskers`}
             </p>
 

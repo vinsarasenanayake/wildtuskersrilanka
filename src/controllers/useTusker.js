@@ -236,15 +236,6 @@ export function useTuskerList() {
     [locationCounts]
   );
 
-  const statusCounts = useMemo(() => {
-    const counts = { ALL: tuskers.length };
-    tuskers.forEach(t => {
-      const k = t.livingStatus || 'Unknown';
-      counts[k] = (counts[k] || 0) + 1;
-    });
-    return counts;
-  }, [tuskers]);
-
   const [nameQuery, setNameQuery] = useState(() => {
     try { return sessionStorage.getItem('wts_nameQuery') || ''; } catch { return ''; }
   });
@@ -290,7 +281,10 @@ export function useTuskerList() {
   const districtSuggestions = useMemo(() => {
     const q = (districtQuery || '').trim().toLowerCase();
     const isBrowsingAll = !q || (selectedDistrict && q === selectedDistrict.toLowerCase().trim());
-    const base = isBrowsingAll ? DISTRICTS : DISTRICTS.filter(d => d.toLowerCase().includes(q));
+    // L3 fix: hide 0-tusker districts when browsing without a search query
+    const base = isBrowsingAll
+      ? DISTRICTS.filter(d => countInDistrict(d) > 0)
+      : DISTRICTS.filter(d => d.toLowerCase().includes(q));
     return [...base].sort((a, b) => {
       const cA = countInDistrict(a);
       const cB = countInDistrict(b);
@@ -466,7 +460,8 @@ export function useTuskerList() {
     setShowLocDrop(true);
   };
 
-  const filtered = useMemo(() => {
+  // L4 Fix: Dynamic status counts update reflecting search, district, and location filters
+  const baseFilteredForStatus = useMemo(() => {
     let list = [...tuskers];
     if (nameQuery.trim()) {
       list = list.filter(t => matchesTuskerSearch(t, nameQuery));
@@ -478,6 +473,20 @@ export function useTuskerList() {
     if (activeLoc) {
       list = list.filter(t => tuskerRoamsIn(t, activeLoc, !selectedLocation));
     }
+    return list;
+  }, [nameQuery, selectedDistrict, selectedLocation, locationQuery, tuskers, tuskerRoamsIn]);
+
+  const statusCounts = useMemo(() => {
+    const counts = { ALL: baseFilteredForStatus.length };
+    baseFilteredForStatus.forEach(t => {
+      const k = t.livingStatus || 'Unknown';
+      counts[k] = (counts[k] || 0) + 1;
+    });
+    return counts;
+  }, [baseFilteredForStatus]);
+
+  const filtered = useMemo(() => {
+    let list = [...baseFilteredForStatus];
     if (statusFilter !== 'ALL') {
       list = list.filter(t => t.livingStatus === statusFilter);
     }
@@ -493,7 +502,7 @@ export function useTuskerList() {
       list.sort((a, b) => compareTuskerId(b.id, a.id));
     }
     return list;
-  }, [nameQuery, selectedDistrict, selectedLocation, locationQuery, statusFilter, sortOrder, tuskers, tuskerRoamsIn]);
+  }, [baseFilteredForStatus, statusFilter, sortOrder]);
 
   return {
     tuskers,
@@ -566,10 +575,9 @@ export function useTuskerProfile(id) {
   }, [id]);
   const canAddSighting = isAdmin && tusker?.livingStatus !== 'Deceased';
 
-  // Only show comparisons that were actually recorded for this tusker.
-  // (The auto-generated narrative would invent history for real elephants.)
+  // Photographic progression comparisons derived directly from sightings history table
   const comparisonList = useMemo(
-    () => (tusker?.photographicComparison?.length ? getTuskerComparison(tusker) : []),
+    () => getTuskerComparison(tusker),
     [tusker]
   );
   const earComparisonList = useMemo(

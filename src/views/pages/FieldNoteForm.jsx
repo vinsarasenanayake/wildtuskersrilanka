@@ -19,7 +19,8 @@ import {
   X,
   CheckCircle2,
   ShieldCheck,
-  Loader2
+  Loader2,
+  Mail,
 } from 'lucide-react';
 import { useFieldNoteForm } from '../../controllers/useFieldNotes';
 import TuskerMultiSelect from '../components/TuskerMultiSelect';
@@ -153,18 +154,37 @@ export default function FieldNoteForm() {
 
               {/* Contributor's Name */}
               <div className="flex flex-col gap-1.5">
-                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center gap-1.5">
+                <label htmlFor="fieldnote-author" className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center gap-1.5">
                   <User size={14} className="text-[#888888]" />
                   <span>Contributor's Name<span className="text-[#e53e3e]"> *</span></span>
                 </label>
                 <input
+                  id="fieldnote-author"
                   type="text"
                   name="author"
                   maxLength={200}
                   required
-                  className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15"
+                  className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15 scroll-mt-28"
                   placeholder="Enter your name"
                   value={formData.author}
+                  onChange={handleChange}
+                />
+              </div>
+
+              {/* Contributor Email (Optional for follow-up) */}
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="fieldnote-contact" className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center gap-1.5">
+                  <Mail size={14} className="text-[#888888]" />
+                  <span>Contributor Email <span className="text-[#888888] font-normal normal-case">(optional, for verification & researcher follow-up)</span></span>
+                </label>
+                <input
+                  id="fieldnote-contact"
+                  type="email"
+                  name="authorContact"
+                  maxLength={200}
+                  className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15 scroll-mt-28"
+                  placeholder="your.email@example.com"
+                  value={formData.authorContact || ''}
                   onChange={handleChange}
                 />
               </div>
@@ -185,27 +205,29 @@ export default function FieldNoteForm() {
               {/* Date, Time & Location (All Required) */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 <div className="flex flex-col gap-1.5">
-                  <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center gap-1.5">
+                  <label htmlFor="fieldnote-date" className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center gap-1.5">
                     <Calendar size={14} className="text-[#888888]" />
                     <span>Date of Field Trip<span className="text-[#e53e3e]"> *</span></span>
                   </label>
                   <input
+                    id="fieldnote-date"
                     type="date"
                     name="date"
                     required
                     max={todayLocalISO()}
-                    className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15"
+                    className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15 scroll-mt-28"
                     value={formData.date}
                     onChange={handleChange}
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center gap-1.5">
+                  <label htmlFor="fieldnote-time" className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center gap-1.5">
                     <Clock size={14} className="text-[#888888]" />
                     <span>Time of Sighting<span className="text-[#e53e3e]"> *</span></span>
                   </label>
                   <ClockTimePicker
+                    id="fieldnote-time"
                     value={formData.time || ''}
                     onChange={handleChange}
                     selectedDate={formData.date}
@@ -214,31 +236,33 @@ export default function FieldNoteForm() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center gap-1.5">
+                  <label htmlFor="fieldnote-location" className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center gap-1.5">
                     <MapPin size={14} className="text-[#888888]" />
                     <span>Location<span className="text-[#e53e3e]"> *</span></span>
                   </label>
                   <LocationSearchInput
+                    id="fieldnote-location"
                     name="title"
                     required
                     placeholder="e.g. Minneriya National Park"
                     value={formData.title}
                     onChange={(e, val) => handleChange({ target: { name: 'title', value: val || e.target.value } })}
-                    className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15"
+                    className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15 scroll-mt-28"
                   />
                 </div>
               </div>
 
               {/* Description */}
               <div className="flex flex-col gap-1.5">
-                <label className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">
+                <label htmlFor="fieldnote-description" className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">
                   Description / Observation Details<span className="text-[#e53e3e]"> *</span>
                 </label>
                 <textarea
+                  id="fieldnote-description"
                   name="description"
                   maxLength={20000}
                   required
-                  className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15 resize-y leading-relaxed"
+                  className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15 resize-y leading-relaxed scroll-mt-28"
                   rows="6"
                   placeholder="Record times, exact coordinates or sector, herd interaction, physical demeanor, and behavior..."
                   value={formData.description}
@@ -294,7 +318,7 @@ export default function FieldNoteForm() {
                     {uploadingPhotos ? 'Uploading photos to database storage…' : 'Click to attach photos or drag & drop'}
                   </div>
                   <div className="font-sans text-xs text-[#777777]">
-                    Supports JPG, PNG, WEBP (multiple attachments allowed)
+                    Supports JPG, PNG, WEBP &bull; Max 15 MB per file
                   </div>
                 </label>
 
@@ -323,6 +347,24 @@ export default function FieldNoteForm() {
                     ))}
                   </div>
                 )}
+              </div>
+
+              {/* Copyright & Consent Confirmation */}
+              <div className="bg-[#fafafa] border border-[#e5e7eb] rounded-[10px] p-4 flex flex-col gap-1.5 mt-1">
+                <label className="flex items-start gap-2.5 cursor-pointer text-xs sm:text-[0.84rem] text-[#444444] leading-relaxed">
+                  <input
+                    id="fieldnote-consent"
+                    type="checkbox"
+                    name="consentAgreed"
+                    checked={Boolean(formData.consentAgreed)}
+                    onChange={handleChange}
+                    required
+                    className="mt-0.5 accent-primary cursor-pointer w-4 h-4 shrink-0 rounded"
+                  />
+                  <span>
+                    I confirm that this field observation and any attached photos are my own, and grant Wild Tuskers Sri Lanka non-exclusive permission to document and archive them for wildlife conservation and research. <span className="text-[#e53e3e]">*</span>
+                  </span>
+                </label>
               </div>
 
               {/* Actions */}

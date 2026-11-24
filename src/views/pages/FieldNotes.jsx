@@ -122,7 +122,7 @@ export default function FieldNotes() {
           <h1 className="font-sans text-[clamp(1.15rem,4.5vw,2.85rem)] font-bold text-[#111111] m-0 tracking-tight leading-snug whitespace-nowrap text-center">
             Field Notes On Wild Tuskers Sri Lanka
           </h1>
-          <p className="font-sans text-xs sm:text-[0.95rem] text-[#555555] leading-[1.75] max-w-3xl mx-auto m-0 text-center">
+          <p className="font-sans text-sm sm:text-[0.98rem] md:text-[1.02rem] text-[#555555] leading-relaxed max-w-3xl mx-auto m-0 text-center">
             A <strong>Field Note</strong> documents an authentic, on-the-ground encounter with a wild tusker in its natural habitat, capturing details such as location, behavior, physical condition, and herd interactions. Anyone, including wildlife photographers, safari guides, researchers, and everyday visitors, can submit sightings and photos here. Once reviewed by our team, approved field notes are published to help monitor and safeguard Sri Lanka’s rare tuskers.
           </p>
 
@@ -150,7 +150,7 @@ export default function FieldNotes() {
                 <p className="font-sans font-bold text-sm m-0">
                   {pendingNotes.length} Field Note{pendingNotes.length > 1 ? 's' : ''} Awaiting Your Review
                 </p>
-                <p className="font-sans text-xs text-amber-800/90 m-0">
+                <p className="font-sans text-xs sm:text-[0.84rem] text-amber-800/90 m-0">
                   Community submissions are hidden from the public until you review and accept them.
                 </p>
               </div>
@@ -490,7 +490,7 @@ export default function FieldNotes() {
             <div className="text-[#aaaaaa]">
               <FileText size={56} strokeWidth={1.2} />
             </div>
-            <h3 className="font-sans text-lg font-bold text-gray-800 m-0">No Field Notes Published Yet</h3>
+            <h3 className="font-sans text-base sm:text-lg font-bold text-gray-800 m-0">No Field Notes Published Yet</h3>
             <p className="font-sans text-[0.95rem] text-[#888888] max-w-[420px] m-0">
               {isAdmin
                 ? 'Community submissions will appear here once submitted and approved by admin.'

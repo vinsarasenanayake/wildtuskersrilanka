@@ -638,8 +638,8 @@ function CoverflowCarousel({ items, onSelectPhoto, getTuskerDisplayName }) {
                 draggable={false}
               />
 
-              {/* Bottom Gradient Overlay (Reveals on Hover) */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5 sm:p-7 text-white gap-1 text-left">
+              {/* Bottom Gradient Overlay (Reveals on Hover on desktop, visible on touch/mobile) */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent opacity-0 group-hover:opacity-100 max-[768px]:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5 sm:p-7 text-white gap-1 text-left">
                 {getTuskerDisplayName && getTuskerDisplayName(item) && (
                   <span className="font-sans text-[1rem] sm:text-[1.15rem] font-bold text-white tracking-wide drop-shadow-sm leading-tight block">
                     {getTuskerDisplayName(item)}
@@ -676,6 +676,36 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
     submit,
   } = useGallerySubmit(onSuccess);
 
+  const isDirty = useMemo(() => {
+    return (
+      (formData.images && formData.images.length > 0) ||
+      Boolean(formData.image) ||
+      formData.title.trim() !== '' ||
+      formData.tuskerName.trim() !== '' ||
+      formData.location.trim() !== '' ||
+      formData.photographer.trim() !== '' ||
+      formData.photographerContact.trim() !== ''
+    );
+  }, [formData]);
+
+  const handleSafeClose = useCallback(() => {
+    if (isDirty && !successMsg) {
+      const confirmDiscard = window.confirm('Discard unsaved photo submission? Any changes will be lost.');
+      if (!confirmDiscard) return;
+    }
+    // Clean up any preview blob URLs
+    (formData.images || []).forEach((u) => {
+      if (typeof u === 'string' && u.startsWith('blob:')) {
+        try {
+          URL.revokeObjectURL(u);
+        } catch {
+          /* ignore */
+        }
+      }
+    });
+    onClose();
+  }, [isDirty, successMsg, formData.images, onClose]);
+
   // Prevent background scrolling while modal is open
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;
@@ -685,37 +715,44 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
     };
   }, []);
 
-  // Keyboard escape listener to close modal
+  // Keyboard escape listener to close modal safely
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        handleSafeClose();
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, [handleSafeClose]);
 
   return createPortal(
     <div
       className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-fade-in"
-      onClick={onClose}
+      onClick={handleSafeClose}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="submit-photo-modal-title"
         className="relative bg-white rounded-2xl max-w-[560px] w-full p-6 sm:p-8 shadow-2xl border border-[#e8e8e8] my-auto max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center pb-4 mb-5 border-b border-[#eeeeee]">
           <div className="min-w-0 pr-3">
-            <h3 className="font-sans text-[1.15rem] sm:text-[1.25rem] font-bold text-[#111111] m-0 truncate">
+            <h3 id="submit-photo-modal-title" className="font-sans text-[1.15rem] sm:text-[1.25rem] font-bold text-[#111111] m-0 truncate">
               Submit a Tusker Photo
             </h3>
-            <p className="font-sans text-xs text-[#777777] m-0 mt-0.5 leading-snug">
+            <p className="font-sans text-xs sm:text-[0.84rem] text-[#777777] m-0 mt-0.5 leading-snug">
               Contribute your field photography to the Wild Tuskers Sri Lanka gallery.
             </p>
           </div>
-          <button aria-label="Close"
+          <button
+            aria-label="Close dialog"
             type="button"
-            onClick={onClose}
-            className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full shrink-0 bg-[#f4f4f4] hover:bg-[#e8e8e8] text-[#555555] flex items-center justify-center border-none cursor-pointer transition-colors shadow-xs"
+            onClick={handleSafeClose}
+            className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full shrink-0 bg-[#f4f4f4] hover:bg-[#e8e8e8] text-[#555555] flex items-center justify-center border-none cursor-pointer transition-colors shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             <X size={18} />
           </button>
@@ -737,7 +774,7 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
             </p>
             <button
               onClick={onClose}
-              className="mt-4 bg-primary text-white font-sans text-sm font-semibold rounded-lg px-6 py-2.5 border-none cursor-pointer"
+              className="mt-4 bg-primary text-white font-sans text-sm font-semibold rounded-lg px-6 py-2.5 border-none cursor-pointer hover:bg-primary-light transition-colors"
             >
               Done
             </button>
@@ -745,18 +782,19 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
         ) : (
           <form onSubmit={submit} className="flex flex-col gap-4 font-sans text-sm">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-3.5 py-2.5 rounded-lg text-xs font-medium">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-3.5 py-2.5 rounded-lg text-xs font-medium leading-relaxed">
                 {error}
               </div>
             )}
 
-            {/* Photo Upload Zone with Multi-Image Support */}
+            {/* Photo Upload Zone with Multi-Image Support & Deferred Upload */}
             <div className="flex flex-col gap-1.5">
               <ImageUploadBox
                 label="Photo Upload"
                 required
                 folder="gallery"
                 multiple
+                deferUpload
                 value={formData.images && formData.images.length > 0 ? formData.images : (formData.image ? [formData.image] : [])}
                 onChange={handlePhotosChange}
                 aspectClass="aspect-[16/10]"
@@ -781,63 +819,104 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
 
             {/* Location */}
             <div className="flex flex-col gap-1 min-w-0">
-              <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">
-                Location / Sanctuary
+              <label htmlFor="photo-location" className="text-xs font-bold text-[#555555] uppercase tracking-wider">
+                Location / Sanctuary <span className="text-red-500">*</span>
               </label>
               <LocationSearchInput
+                id="photo-location"
                 name="location"
+                required
                 placeholder="e.g. Udawalawe / Minneriya"
                 value={formData.location}
                 onChange={handleChange}
-                className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg py-2.5 outline-none focus:border-accent focus:bg-white text-sm"
+                className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg py-2.5 outline-none focus:border-accent focus:bg-white text-sm scroll-mt-28"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               {/* Photographer Name */}
               <div className="flex flex-col gap-1 w-full">
-                <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">
+                <label htmlFor="photo-photographer" className="text-xs font-bold text-[#555555] uppercase tracking-wider">
                   Photographer Name <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="photo-photographer"
                   type="text"
                   name="photographer"
                   maxLength={200}
-                  placeholder="Enter your name"
+                  required
+                  placeholder="Enter photographer's name"
                   value={formData.photographer}
                   onChange={handleChange}
-                  className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm"
+                  className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm scroll-mt-28"
                 />
               </div>
 
               {/* Date */}
               <div className="flex flex-col gap-1 w-full">
-                <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">
-                  Date Taken
+                <label htmlFor="photo-date" className="text-xs font-bold text-[#555555] uppercase tracking-wider">
+                  Date Taken (defaults to today) <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="photo-date"
                   type="date"
                   name="date"
+                  required
                   max={todayLocalISO()}
                   value={formData.date}
                   onChange={handleChange}
-                  className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm"
+                  className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm scroll-mt-28"
                 />
               </div>
             </div>
 
+            {/* Contributor Contact Email (Optional for Follow-up) */}
+            <div className="flex flex-col gap-1 w-full">
+              <label htmlFor="photo-contact" className="text-xs font-bold text-[#555555] uppercase tracking-wider">
+                Contributor Email <span className="text-[#888888] font-normal normal-case">(optional, for verification & attribution)</span>
+              </label>
+              <input
+                id="photo-contact"
+                type="email"
+                name="photographerContact"
+                maxLength={200}
+                placeholder="name@example.com"
+                value={formData.photographerContact}
+                onChange={handleChange}
+                className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm scroll-mt-28"
+              />
+            </div>
+
+            {/* Copyright Ownership Confirmation Checkbox */}
+            <div className="bg-[#fafafa] border border-[#e8e8e8] rounded-xl p-3 flex flex-col gap-1.5 mt-1">
+              <label className="flex items-start gap-2.5 cursor-pointer text-xs text-[#444444] leading-relaxed">
+                <input
+                  id="photo-consent"
+                  type="checkbox"
+                  name="consentAgreed"
+                  checked={Boolean(formData.consentAgreed)}
+                  onChange={handleChange}
+                  required
+                  className="mt-0.5 accent-primary cursor-pointer w-4 h-4 shrink-0 rounded"
+                />
+                <span>
+                  I confirm that I took this photograph or own the copyright, and grant Wild Tuskers Sri Lanka non-exclusive permission to document and display it for wildlife research, conservation, and education. <span className="text-red-500">*</span>
+                </span>
+              </label>
+            </div>
+
             {/* Admin review notice */}
-            <div className="bg-[#faf5ec] border border-[#c69b55]/30 rounded-xl p-3 flex items-start gap-2.5 mt-1">
+            <div className="bg-[#faf5ec] border border-[#c69b55]/30 rounded-xl p-3 flex items-start gap-2.5">
               <ShieldCheck size={16} className="text-accent shrink-0 mt-0.5" />
               <p className="text-[0.76rem] text-[#6d5120] leading-relaxed m-0">
                 To maintain ethical wildlife documentation standards, submissions are moderated by WTS Admins before appearing publicly in the gallery.
               </p>
             </div>
 
-            <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-[#eeeeee]">
+            <div className="flex items-center justify-end gap-3 mt-3 pt-3 border-t border-[#eeeeee]">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleSafeClose}
                 className="flex-1 sm:flex-none sm:min-w-[120px] h-10 bg-transparent border border-[#dddddd] text-[#666666] font-semibold rounded-lg px-5 cursor-pointer hover:bg-[#f5f5f5] inline-flex items-center justify-center box-border text-center"
               >
                 Cancel
@@ -845,12 +924,12 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
               <button
                 type="submit"
                 disabled={submitting || uploading}
-                className="flex-1 sm:flex-none sm:min-w-[160px] h-10 bg-primary hover:bg-primary-light text-white font-semibold rounded-lg px-6 border border-primary cursor-pointer disabled:opacity-60 transition-all inline-flex items-center justify-center gap-1.5 box-border whitespace-nowrap text-center"
+                className="flex-1 sm:flex-none sm:min-w-[160px] h-10 bg-primary hover:bg-primary-light text-white font-semibold rounded-lg px-6 border border-primary cursor-pointer disabled:opacity-60 transition-all inline-flex items-center justify-center gap-1.5 box-border whitespace-nowrap text-center shadow-xs"
               >
                 <Upload size={14} />
                 <span>
                   {submitting
-                    ? 'Submitting…'
+                    ? 'Uploading & Saving…'
                     : formData.images && formData.images.length > 1
                       ? `Submit ${formData.images.length} Photos`
                       : 'Submit Photo'}

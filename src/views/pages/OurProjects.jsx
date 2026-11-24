@@ -523,7 +523,7 @@ export default function OurProjects() {
           <h1 className="font-sans text-[clamp(1.25rem,4.5vw,2.75rem)] font-bold text-[#111111] m-0 tracking-tight leading-snug whitespace-nowrap text-center">
             Our Projects
           </h1>
-          <p className="font-sans text-xs sm:text-[0.95rem] text-[#555555] leading-[1.75] max-w-3xl mx-auto m-0 text-center">
+          <p className="font-sans text-sm sm:text-[0.98rem] md:text-[1.02rem] text-[#555555] leading-relaxed max-w-3xl mx-auto m-0 text-center">
             Events, field expeditions, and conservation outreach initiatives conducted by the Wild Tuskers Sri Lanka team
           </p>
         </div>

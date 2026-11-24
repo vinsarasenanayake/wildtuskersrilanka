@@ -11,7 +11,7 @@ import { SITE_ASSETS } from '../../constants/siteAssets';
 import hero960 from '../../assets/images/hero-bg-960.webp';
 import hero1600 from '../../assets/images/hero-bg-1600.webp';
 import hero2400 from '../../assets/images/hero-bg-2400.webp';
-import heroMobileBarana from '../../assets/images/hero-mobile-barana.jpg';
+import heroMobileBaranaOpt from '../../assets/images/hero-mobile-barana-opt.jpg';
 import { getTuskers } from '../../models/TuskerModel';
 
 const wtsLogo = SITE_ASSETS.wtsLogo;
@@ -79,24 +79,32 @@ export default function Home() {
     <div className="relative h-[100dvh] max-h-[100dvh] text-white bg-[#0b120e] overflow-hidden landscape:max-h-[500px]:overflow-y-auto flex flex-col justify-between select-none portrait:overscroll-none">
       {/* Full-screen fixed background image eliminating any white bar or gap */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        {/* Portrait Orientation Hero Image: Barana centered (Mobile phones & Tablets in portrait) */}
-        <img
-          src={heroMobileBarana}
-          alt=""
-          fetchPriority="high"
-          decoding="async"
-          className="portrait:block landscape:hidden absolute inset-0 w-full h-full object-cover object-[center_35%]"
-        />
-        {/* Landscape Orientation Hero Image: Barana on left (Desktops, laptops, landscape tablets/phones) */}
-        <img
-          src={hero1600}
-          srcSet={`${hero960} 960w, ${hero1600} 1600w, ${hero2400} 2400w`}
-          sizes="100vw"
-          alt=""
-          fetchPriority="high"
-          decoding="async"
-          className="hidden landscape:block absolute inset-0 w-full h-full object-cover object-center"
-        />
+        <picture className="absolute inset-0 w-full h-full">
+          {/* Portrait orientation (mobile phones & portrait tablets): only downloaded on portrait screens */}
+          <source
+            media="(orientation: portrait) and (max-width: 1024px)"
+            srcSet={heroMobileBaranaOpt}
+          />
+          {/* Landscape orientation: Large desktops, laptops */}
+          <source
+            media="(min-width: 1600px)"
+            srcSet={hero2400}
+          />
+          <source
+            media="(min-width: 960px)"
+            srcSet={hero1600}
+          />
+          <source
+            srcSet={hero960}
+          />
+          <img
+            src={hero1600}
+            alt=""
+            fetchPriority="high"
+            decoding="async"
+            className="w-full h-full object-cover object-center portrait:object-[center_35%]"
+          />
+        </picture>
         {/* Subtle dark overlay for vibrant background visibility with right-side contrast */}
         <div className="absolute inset-0 bg-black/20" />
         {/* Portrait: dark shade at top for logo, clear middle for tusker, dark shade at bottom for text & counts */}
@@ -132,7 +140,7 @@ export default function Home() {
               <span className="font-semibold text-white">Guardians of a Rare Legacy.</span> Wild Tuskers Sri Lanka unites passionate wildlife enthusiasts and conservationists in a shared mission to identify, protect, and preserve Sri Lanka's magnificent tusked elephants.
             </p>
             <p className="home-hero-landscape-sub-text font-sans text-[0.76rem] sm:text-[0.88rem] md:text-[0.96rem] text-[#e6c687] font-semibold tracking-wide drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] m-0">
-              Stand with us. Protect the giants. Preserve the legacy
+              Stand with us. Protect the giants. Preserve the legacy.
             </p>
           </div>
 

@@ -199,6 +199,22 @@ function locationNameFromNote(note) {
   try { return JSON.parse(note).location || null; } catch { return null; }
 }
 
+/**
+ * Robust date/timestamp parser for sightings and registry records.
+ * Returns epoch milliseconds for chronological sorting (oldest first).
+ */
+export function getRecordTimestamp(dateStr) {
+  if (!dateStr) return 0;
+  const str = String(dateStr).trim();
+  const parsed = new Date(str).getTime();
+  if (!isNaN(parsed) && parsed > 0) return parsed;
+  const match = str.match(/\b(19\d\d|20\d\d)\b/);
+  if (match) {
+    return new Date(parseInt(match[1], 10), 0, 1).getTime();
+  }
+  return 0;
+}
+
 function mapTusker(row) {
   const t = fromRow(row);
   t.photos = t.photos || [];
@@ -209,7 +225,12 @@ function mapTusker(row) {
   if (!t.earComparison) delete t.earComparison;
   t.sightings = (t.sightings || [])
     .map(mapSighting)
-    .sort((a, b) => a.id - b.id);
+    .sort((a, b) => {
+      const timeA = getRecordTimestamp(a.captureDate);
+      const timeB = getRecordTimestamp(b.captureDate);
+      if (timeA !== timeB) return timeA - timeB;
+      return (a.id || 0) - (b.id || 0);
+    });
   return t;
 }
 
@@ -306,7 +327,10 @@ export async function getTuskers(forceRefresh = false) {
     return tuskersCache;
   }
   const rows = await queryTuskers((q) => q);
-  const result = rows.map(mapTusker).sort((a, b) => compareTuskerId(a.id, b.id));
+  const result = rows
+    .map(mapTusker)
+    .sort((a, b) => compareTuskerId(a.id, b.id));
+
   tuskersCache = result;
   tuskersCacheTime = now;
   return result;
@@ -315,14 +339,18 @@ export async function getTuskers(forceRefresh = false) {
 export async function getTuskerById(id, forceRefresh = false) {
   if (!id) return null;
   const upper = id.toUpperCase();
+  const num = parseInt(upper.replace(/\D/g, ''), 10);
+  const normalizedId = !isNaN(num) ? `T${String(num).padStart(3, '0')}` : upper;
+
   if (!forceRefresh && tuskersCache) {
-    const cached = tuskersCache.find(t => t.id === upper);
+    const cached = tuskersCache.find((t) => t.id === upper || t.id === normalizedId);
     if (cached) return cached;
   }
-  const row = await queryTuskers((q) => q.eq('id', upper).maybeSingle());
+
+  const row = await queryTuskers((q) => q.or(`id.eq.${upper},id.eq.${normalizedId}`).maybeSingle());
   const mapped = row ? mapTusker(row) : null;
   if (mapped && tuskersCache) {
-    const idx = tuskersCache.findIndex(t => t.id === upper);
+    const idx = tuskersCache.findIndex((t) => t.id === upper || t.id === normalizedId);
     if (idx >= 0) tuskersCache[idx] = mapped;
     else tuskersCache.push(mapped);
   }
@@ -403,88 +431,68 @@ export async function deleteSighting(sightingId) {
 
 /* ==============================================================
    SECTION 3: PHOTOGRAPHIC PROGRESSION COMPARISON GENERATOR
+   Derives photographic progression directly from the chronological
+   sightings history table (Row 1 Baseline + Subsequent Sightings).
 ============================================================== */
 export function getTuskerComparison(tusker) {
   if (!tusker) return [];
 
-  // Return existing custom comparison if defined
-  if (Array.isArray(tusker.photographicComparison) && tusker.photographicComparison.length > 0) {
-    return tusker.photographicComparison;
+  const list = [];
+
+  const extractYear = (dateStr, fallback) => {
+    if (!dateStr && !fallback) return '';
+    const src = String(dateStr || fallback || '').trim();
+    const match = src.match(/\b(19\d\d|20\d\d)\b/);
+    if (match) return match[1];
+    return src;
+  };
+
+  // Row 1: Baseline Registration (1st Record if primary photo exists)
+  if (tusker.photos?.[0]) {
+    const baselineYear = extractYear(tusker.listedDate, tusker.birthYear || tusker.proximateBirthYear);
+    list.push({
+      photo: tusker.photos[0],
+      year: baselineYear,
+      location: tusker.location || '',
+      stage: 'Row 1 (1st Record)',
+      recordNum: 1,
+    });
   }
 
-  // Derive chronological years
-  let firstYear = 2017;
-  if (tusker.listedDate) {
-    const parsed = new Date(tusker.listedDate).getFullYear();
-    if (!isNaN(parsed) && parsed > 2000 && parsed <= 2026) {
-      firstYear = parsed;
+  // Subsequent Records: Sighting rows sorted chronologically ascending by year/date
+  const sightings = Array.isArray(tusker.sightings) ? [...tusker.sightings] : [];
+  sightings.sort((a, b) => {
+    const timeA = getRecordTimestamp(a.captureDate);
+    const timeB = getRecordTimestamp(b.captureDate);
+    if (timeA !== timeB) return timeA - timeB;
+    return (a.id || 0) - (b.id || 0);
+  });
+
+  sightings.forEach((sighting, idx) => {
+    const details = parseSightingDetails(sighting);
+    const allSightingImages = (details.images && details.images.length > 0)
+      ? details.images
+      : (sighting.imageUrl
+        ? (typeof sighting.imageUrl === 'string'
+            ? sighting.imageUrl.split(',').map((u) => u.trim()).filter(Boolean)
+            : [sighting.imageUrl])
+        : []);
+    const primaryPhoto = allSightingImages[0] || null;
+
+    if (primaryPhoto) {
+      const year = extractYear(sighting.captureDate, '');
+      const location = details.location || tusker.location || '';
+      list.push({
+        photo: primaryPhoto,
+        year: year,
+        location: location,
+        stage: `Row ${idx + 2} (Sighting #${idx + 1})`,
+        recordNum: idx + 2,
+      });
     }
-  }
+  });
 
-  // 3 to 5 years interval
-  const gap = firstYear <= 2021 ? 4 : 2;
-  const midYear = Math.min(firstYear + gap, 2024);
-  const recentYear = Math.max(midYear + 2, 2025);
-
-  const marks = (tusker.specialMarks || '').toLowerCase();
-  const wounds = (tusker.specialWounds || '').toLowerCase();
-
-  // Morphological change analysis (tusk breakage, ear tear, scars, etc.)
-  let hasChange = false;
-  let changeType = '';
-  let midSentence = '';
-  let recentSentence = '';
-
-  if (marks.includes('broken') || marks.includes('fracture') || wounds.includes('fracture')) {
-    hasChange = true;
-    changeType = 'Tusk Breakage';
-    midSentence = 'Significant morphological change: Breakage documented on tusk tip following a seasonal sparring clash.';
-    recentSentence = 'Fracture surface worn smooth from continuous debarking and foraging; robust physical condition.';
-  } else if (marks.includes('tear') || marks.includes('notch') || marks.includes('cut')) {
-    hasChange = true;
-    changeType = 'Ear Tear / Notch';
-    midSentence = 'Noticeable change: Distinct ear tear and margin notch formed along pinna from dense thorny terrain.';
-    recentSentence = 'Ear notch margin fully scarred and stabilized, providing a dependable individual field identifier.';
-  } else if (wounds && wounds !== 'none recorded.' && !wounds.includes('none')) {
-    hasChange = true;
-    changeType = 'Injury & Healing';
-    midSentence = `Injury documented during routine tracking (${tusker.specialWounds}); under active conservation observation.`;
-    recentSentence = 'Tissue completely healed into stable fibrous scarring; excellent mobility and vitality maintained.';
-  } else {
-    hasChange = false;
-    changeType = 'Tusk Growth';
-    midSentence = `Intermediate sighting after ${midYear - firstYear} years showing substantial ivory elongation and widening cranial girth.`;
-    recentSentence = `Recent monitoring confirming established individual traits (${tusker.specialMarks || 'symmetric ivory'}) in ${tusker.location}.`;
-  }
-
-  const p1 = tusker.photos?.[0] || null;
-  const p2 = tusker.photos?.[1] || tusker.sightings?.[0]?.imageUrl || null;
-  const p3 = tusker.photos?.[2] || tusker.sightings?.[1]?.imageUrl || tusker.photos?.[0] || null;
-
-  return [
-    {
-      year: String(firstYear),
-      stage: 'First Recorded Photo',
-      photo: p1,
-      changeSentence: `Baseline photographic documentation in ${tusker.location} recording initial ivory alignment and undisturbed physical condition.`,
-      hasChange: false
-    },
-    {
-      year: String(midYear),
-      stage: `${midYear - firstYear}-Year Progression`,
-      photo: p2,
-      changeSentence: midSentence,
-      hasChange: hasChange,
-      changeType: changeType
-    },
-    {
-      year: String(recentYear),
-      stage: 'Recent Assessment',
-      photo: p3,
-      changeSentence: recentSentence,
-      hasChange: false
-    }
-  ];
+  return list;
 }
 
 /* ==============================================================

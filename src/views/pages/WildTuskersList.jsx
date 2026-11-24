@@ -6,7 +6,7 @@
  */
 
 import React, { useRef, useEffect, useLayoutEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { Search, MapPin, X, ChevronDown, PlusCircle, Radar, ArrowUpDown, Check, Layers } from 'lucide-react';
 import { useTuskerList } from '../../controllers/useTusker';
 import { useAuth } from '../../controllers/useAuth';
@@ -65,11 +65,52 @@ export default function WildTuskersList() {
   } = useTuskerList();
 
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const nameRef     = useRef(null);
   const districtRef = useRef(null);
   const locationRef = useRef(null);
   const sortRef     = useRef(null);
   const [showSortDrop, setShowSortDrop] = useState(false);
+
+  /* ── Sync URL Search Parameters with Filter State (L6) ── */
+  useEffect(() => {
+    const qParam = searchParams.get('q');
+    if (qParam && qParam !== nameQuery) {
+      handleNameInput(qParam);
+    }
+    const distParam = searchParams.get('district');
+    if (distParam && distParam !== selectedDistrict) {
+      pickDistrict(distParam);
+    }
+    const locParam = searchParams.get('location');
+    if (locParam && locParam !== selectedLocation) {
+      pickLocation(locParam);
+    }
+    const statusParam = searchParams.get('status');
+    if (statusParam && statusParam !== statusFilter) {
+      setStatusFilter(statusParam);
+    }
+    const sortParam = searchParams.get('sort');
+    if (sortParam && sortParam !== sortOrder) {
+      setSortOrder(sortParam);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run on mount
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (nameQuery && nameQuery.trim()) params.set('q', nameQuery.trim());
+    if (selectedDistrict) params.set('district', selectedDistrict);
+    if (selectedLocation) params.set('location', selectedLocation);
+    if (statusFilter && statusFilter !== 'ALL') params.set('status', statusFilter);
+    if (sortOrder && sortOrder !== 'ID_DESC') params.set('sort', sortOrder);
+
+    const currentStr = searchParams.toString();
+    const nextStr = params.toString();
+    if (currentStr !== nextStr) {
+      setSearchParams(params, { replace: true });
+    }
+  }, [nameQuery, selectedDistrict, selectedLocation, statusFilter, sortOrder, searchParams, setSearchParams]);
 
   /* ── Sync status filter from navigation (e.g. Home stat click) ── */
   useEffect(() => {
@@ -244,14 +285,14 @@ export default function WildTuskersList() {
           <h1 className="font-sans text-2xl sm:text-3xl md:text-[2.25rem] font-bold text-[#111111] mb-1.5 whitespace-nowrap text-center sm:text-left">
             Wild Tuskers List
           </h1>
-          <p className="font-sans text-xs sm:text-[0.88rem] md:text-[0.95rem] text-[#777777] m-0 text-center sm:text-left">
+          <p className="font-sans text-[0.84rem] sm:text-[0.92rem] md:text-[0.98rem] text-[#777777] m-0 text-center sm:text-left">
             {tuskers.length} identified tuskers documented by the WTS team
           </p>
         </div>
 
         {/* Action Buttons: Add Tusker & Unlisted Monitoring for Admin */}
         {isAdmin && (
-          <div className="flex max-sm:flex-row sm:flex-col lg:flex-row items-stretch sm:items-end lg:items-center gap-2 sm:gap-2.5 w-full sm:w-auto shrink-0 landscape:mr-4 sm:landscape:mr-6 lg:mr-0">
+          <div className="flex max-sm:flex-row sm:flex-col lg:flex-row items-stretch sm:items-end lg:items-center gap-2 sm:gap-2.5 w-full sm:w-auto shrink-0">
             <Link
               to="/admin/add-tusker"
               className="max-sm:flex-1 sm:w-full sm:min-w-[195px] lg:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full bg-accent hover:bg-accent-hover text-primary font-semibold text-[0.78rem] sm:text-[0.85rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0 whitespace-nowrap text-center"
@@ -278,8 +319,10 @@ export default function WildTuskersList() {
           <div className="flex items-center gap-2 bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-2.5 transition-all focus-within:border-accent focus-within:bg-white focus-within:ring-3 focus-within:ring-accent/12">
             <Search size={16} className="text-[#aaaaaa] shrink-0" />
             <input
+              id="tusker-search-input"
+              aria-label="Search tusker name or ID"
               type="text"
-              className="border-none bg-transparent outline-none font-sans text-[0.88rem] sm:text-[0.9rem] text-[#111111] caret-[#111111] w-full placeholder:text-[#bbbbbb]"
+              className="border-none bg-transparent outline-none font-sans text-[0.88rem] sm:text-[0.9rem] text-[#111111] caret-[#111111] w-full placeholder:text-[#6b7280]"
               placeholder="Search tusker name or ID…"
               value={nameQuery}
               onChange={e => handleNameInput(e.target.value)}
@@ -309,8 +352,10 @@ export default function WildTuskersList() {
           <div className="flex items-center gap-2 bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-2.5 transition-all focus-within:border-accent focus-within:bg-white focus-within:ring-3 focus-within:ring-accent/12">
             <Layers size={16} className="text-[#aaaaaa] shrink-0 text-accent" />
             <input
+              id="district-filter-input"
+              aria-label="Filter tuskers by district"
               type="text"
-              className="border-none bg-transparent outline-none font-sans text-[0.88rem] sm:text-[0.9rem] text-[#111111] caret-[#111111] w-full placeholder:text-[#bbbbbb]"
+              className="border-none bg-transparent outline-none font-sans text-[0.88rem] sm:text-[0.9rem] text-[#111111] caret-[#111111] w-full placeholder:text-[#6b7280]"
               placeholder="Filter by district…"
               value={districtQuery}
               onChange={e => handleDistrictInput(e.target.value)}
@@ -372,8 +417,10 @@ export default function WildTuskersList() {
           <div className="flex items-center gap-2 bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-2.5 transition-all focus-within:border-accent focus-within:bg-white focus-within:ring-3 focus-within:ring-accent/12">
             <MapPin size={16} className="text-[#aaaaaa] shrink-0 text-accent" />
             <input
+              id="location-filter-input"
+              aria-label="Filter tuskers by roaming area or location"
               type="text"
-              className="border-none bg-transparent outline-none font-sans text-[0.88rem] sm:text-[0.9rem] text-[#111111] caret-[#111111] w-full placeholder:text-[#bbbbbb]"
+              className="border-none bg-transparent outline-none font-sans text-[0.88rem] sm:text-[0.9rem] text-[#111111] caret-[#111111] w-full placeholder:text-[#6b7280]"
               placeholder={selectedDistrict ? `Location in ${selectedDistrict}…` : 'Filter by location…'}
               value={locationQuery}
               onChange={e => handleLocInput(e.target.value)}
@@ -519,8 +566,8 @@ export default function WildTuskersList() {
                   />
                 ) : (
                   <>
-                    <span className="font-sans text-[1rem] font-semibold text-[#999999] tracking-widest">{tusker.id}</span>
-                    <span className="flex items-center gap-[3px] font-sans text-[0.72rem] text-[#bbbbbb]"><MapPin size={10} /> {tusker.location}</span>
+                    <span className="font-sans text-[1rem] font-semibold text-[#4a5568] tracking-widest">{tusker.id}</span>
+                    <span className="flex items-center gap-[3px] font-sans text-[0.74rem] text-[#4a5568]"><MapPin size={11} className="text-accent shrink-0" /> {tusker.location}</span>
                   </>
                 )}
                 {tusker.photos && tusker.photos[0] && (
@@ -544,10 +591,10 @@ export default function WildTuskersList() {
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center gap-4 min-h-[60vh] py-8 px-4 text-[#bbbbbb] font-sans text-[0.95rem]">
-          <Search size={40} strokeWidth={1.2} />
-          <p>No tuskers match your search.</p>
-          <button className="bg-none border-none font-sans text-[0.85rem] text-accent cursor-pointer font-medium underline p-0 hover:text-accent-hover" onClick={clearFilters}>
+        <div className="flex flex-col items-center justify-center gap-4 min-h-[60vh] py-8 px-4 text-[#4a5568] font-sans text-[0.95rem]">
+          <Search size={40} strokeWidth={1.5} className="text-[#4a5568]" />
+          <p className="font-medium text-[#2d3748]">No tuskers match your search.</p>
+          <button className="bg-none border-none font-sans text-[0.88rem] text-accent cursor-pointer font-semibold underline p-0 hover:text-accent-hover" onClick={clearFilters}>
             Clear filters
           </button>
         </div>

@@ -159,24 +159,24 @@ export default function AboutUs() {
           Wild Tuskers Sri Lanka
         </h1>
 
-        <div className="max-w-[960px] mx-auto font-sans text-xs sm:text-[0.98rem] md:text-[1.02rem] text-[#374151] leading-[1.8] flex flex-col gap-5 sm:gap-6 text-left">
-          <p className="m-0">
+        <div className="max-w-[960px] mx-auto font-sans text-sm sm:text-[0.98rem] md:text-[1.02rem] text-[#374151] leading-[1.8] flex flex-col gap-5 sm:gap-6 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
+          <p className="m-0 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
             Founded in 2013, Wild Tuskers Sri Lanka was established with a clear vision: to address a critical gap in the documentation and identification of Sri Lanka's tusked elephants. At the time, there was no comprehensive island-wide database dedicated to systematically identifying and tracking individual tuskers. Recognising the urgent need to preserve information about these rare and iconic animals, a group of passionate wildlife enthusiasts, photographers, and conservationists came together to create what became Sri Lanka's first dedicated tusker identification database.
           </p>
 
-          <p className="m-0">
+          <p className="m-0 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
             For over a decade, Wild Tuskers Sri Lanka has worked tirelessly to document, monitor, and study tusked elephants across the island's protected areas and wilderness landscapes. Through meticulous field observations, photography, data collection, and analysis, we continue to build an accurate and evolving repository of knowledge that supports conservation efforts and raises awareness about the importance of protecting these magnificent giants.
           </p>
 
-          <p className="m-0">
+          <p className="m-0 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
             The Sri Lankan tusker is far more than a wildlife icon. For over 2,500 years, tusked elephants have been deeply woven into the nation's history, culture, traditions, and spiritual heritage. Revered in ancient kingdoms, celebrated in art and literature, and honoured in religious and cultural ceremonies, they represent one of Sri Lanka's most treasured natural and cultural symbols.
           </p>
 
-          <p className="m-0">
+          <p className="m-0 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
             Today, these extraordinary animals face increasing threats from habitat loss, human-elephant conflict, shrinking ranges, and declining numbers. Their conservation is made even more critical by the fact that only 5-6% of Sri Lanka's male elephant population bears tusks, making sightings of wild tuskers a truly rare and remarkable experience. Wild Tuskers Sri Lanka is committed to ensuring that future generations inherit a landscape where these majestic giants continue to roam free, one of Asia's most extraordinary and endangered wildlife treasures.
           </p>
 
-          <p className="m-0 pt-2 font-medium text-[#15462d] sm:text-[1.05rem] italic">
+          <p className="m-0 pt-2 font-medium text-[#15462d] text-sm sm:text-[1.05rem] italic text-center sm:text-left">
             Stand with us. Protect the giants. Preserve the legacy.
           </p>
         </div>
@@ -203,7 +203,10 @@ export default function AboutUs() {
                 <h3 className="font-sans text-[1.05rem] sm:text-[1.1rem] font-bold text-[#111111] m-0">
                   {obj.title}
                 </h3>
-                <p className="font-sans text-[0.92rem] sm:text-[0.96rem] text-[#555555] leading-[1.7] m-0">
+                <p
+                  className="font-sans text-[0.92rem] sm:text-[0.96rem] text-[#555555] leading-[1.7] m-0 text-justify"
+                  style={{ textAlign: 'justify', textJustify: 'inter-word' }}
+                >
                   {obj.desc}
                 </p>
               </div>
@@ -215,8 +218,8 @@ export default function AboutUs() {
       {/* ── Admins Section ── */}
       <section className="mb-16">
         <div className="flex flex-row items-center justify-between mb-8 pb-3 border-b-2 border-[#f0f0f0] gap-2 sm:gap-4 flex-wrap">
-          <h2 className="font-sans text-[1.05rem] font-bold text-[#111111] flex items-center gap-2 m-0 shrink-0">
-            Admins <span className="font-normal text-[0.9rem] text-[#aaaaaa]">{admins.length}</span>
+          <h2 className="font-sans text-[1.15rem] sm:text-[1.35rem] font-bold text-[#111111] flex items-center gap-2 m-0 shrink-0">
+            Admins <span className="font-normal text-[0.88rem] sm:text-[0.95rem] text-[#aaaaaa]">{admins.length}</span>
           </h2>
 
           {isAdmin && (
@@ -266,14 +269,14 @@ export default function AboutUs() {
             <div className="font-sans text-[0.92rem] sm:text-[0.96rem] text-[#444444] leading-[1.75] flex flex-col gap-3.5 text-left">
               <p className="m-0">Copyright &copy; 2026</p>
               <p className="m-0 font-medium text-[#222222]">Wild Tuskers Sri Lanka</p>
-              <p className="m-0 text-[#555555] text-left">
+              <p className="m-0 text-[#555555] text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
                 All Rights Reserved. No part of this website may be reproduced in any form, by any means without prior written permission from the copyright holders.
               </p>
               <div className="mt-2 text-[#444444] leading-[1.6]">
                 <p className="m-0 font-medium text-[#222222]">Milinda Wattegedara,</p>
-                <p className="m-0">462/4/C, Lake Road, Akuregoda, Battaramulla</p>
+                <p className="m-0">462/4/C, Lake Road, Akuregoda, Battaramulla.</p>
                 <p className="m-0">
-                  Email &mdash;{' '}
+                  Email -{' '}
                   <a
                     href="mailto:milindawattegedara@gmail.com"
                     className="text-primary hover:text-primary-light hover:underline font-medium transition-colors"
@@ -290,7 +293,7 @@ export default function AboutUs() {
             <h2 className="font-sans text-[1.2rem] sm:text-[1.3rem] font-bold text-[#111111] mb-5 tracking-tight text-center">
               Copyright &copy; Photographs
             </h2>
-            <p className="m-0 font-sans text-[0.92rem] sm:text-[0.96rem] text-[#555555] leading-[1.75] text-left">
+            <p className="m-0 font-sans text-[0.92rem] sm:text-[0.96rem] text-[#555555] leading-[1.75] text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
               The copyrights of all the photographs displayed here are owned by Wild Tuskers Sri Lanka and the original Photographer. Unauthorised reproduction, distribution, or use of these images is prohibited without the explicit permission of the original photographer or Wild Tuskers Sri Lanka Team.
             </p>
           </div>
@@ -317,10 +320,10 @@ export default function AboutUs() {
                     <Shield size={20} />
                   </div>
                   <div>
-                    <h3 className="font-sans text-lg font-bold text-gray-900 m-0">
+                    <h3 className="font-sans text-base sm:text-lg font-bold text-gray-900 m-0">
                       {editingMember ? 'Edit Admin / Team Member' : 'Add New Admin / Team Member'}
                     </h3>
-                    <p className="font-sans text-xs text-gray-500 m-0">
+                    <p className="font-sans text-xs sm:text-[0.84rem] text-gray-500 m-0">
                       Changes are directly saved to database and displayed on About Us
                     </p>
                   </div>
