@@ -5,12 +5,12 @@
  * community field note reviews, project/expedition events, photo gallery moderation, and team members.
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Shield, PlusCircle, Trash2, Edit3, Eye, FileText, Binoculars, Calendar,
-  Radar, Database, CheckCircle2, XCircle, Search, LogOut, RefreshCw, AlertCircle, Check, Users, ExternalLink, Save, X, Layers,
+  Radar, Database, CheckCircle2, XCircle, Search, RefreshCw, AlertCircle, Check, Users, ExternalLink, Save, X, Layers,
   Map as MapIcon,
 } from 'lucide-react';
 import { getTuskers, getCachedTuskers, deleteTusker } from '../../models/TuskerModel';
@@ -27,13 +27,14 @@ import ImageUploadBox from '../components/ImageUploadBox';
 import EditGalleryPhotoModal from '../components/EditGalleryPhotoModal';
 import LocationSearchInput from '../components/LocationSearchInput';
 import { todayLocalISO } from '../../utils/localDate';
+import useFocusTrap from '../../hooks/useFocusTrap';
 
 /* ==============================================================
    CENTRAL ADMINISTRATIVE CONSOLE COMPONENT
 ============================================================== */
 export default function AdminPortal() {
   const navigate = useNavigate();
-  const { isAdmin, authLoading, logout } = useAuth();
+  const { isAdmin, authLoading } = useAuth();
 
   const [activeTab, setActiveTab] = useState('tuskers');
   const [searchQuery, setSearchQuery] = useState('');
@@ -86,6 +87,22 @@ export default function AdminPortal() {
   });
   const [savingUnlisted, setSavingUnlisted] = useState(false);
   const [unlistedError, setUnlistedError] = useState('');
+
+  // Team Admin Modal focus trap
+  const teamModalRef = useRef(null);
+  const teamCloseBtnRef = useRef(null);
+  useFocusTrap(teamModalRef, showTeamModal, {
+    initialFocusRef: teamCloseBtnRef,
+    onEscape: () => setShowTeamModal(false),
+  });
+
+  // Add Unlisted Tusker Modal focus trap
+  const unlistedModalRef = useRef(null);
+  const unlistedCloseBtnRef = useRef(null);
+  useFocusTrap(unlistedModalRef, showAddUnlistedModal, {
+    initialFocusRef: unlistedCloseBtnRef,
+    onEscape: () => setShowAddUnlistedModal(false),
+  });
 
   useEffect(() => {
     document.title = 'Wild Tuskers Sri Lanka | Admin Portal';
@@ -388,29 +405,9 @@ export default function AdminPortal() {
             <h1 className="font-serif text-2xl sm:text-[2.2rem] md:text-[2.6rem] font-bold tracking-tight text-white m-0">
               Admin Portal
             </h1>
-            <p className="text-[#a4b8af] text-xs sm:text-sm md:text-base mt-2 max-w-[340px] sm:max-w-[360px] lg:max-w-[500px] xl:max-w-[640px] leading-relaxed m-0 text-left">
+            <p className="text-[#a4b8af] text-xs sm:text-sm md:text-base mt-2 max-w-3xl leading-relaxed m-0 text-left">
               Consolidated registry control center. Manage wild tuskers, unlisted sightings, field observations, project events, and community field notes from a single command portal.
             </p>
-          </div>
-
-          <div className="flex flex-col gap-2.5 sm:gap-3 shrink-0 w-full sm:w-auto lg:flex-row lg:items-center">
-            <Link
-              to="/"
-              className="w-full lg:w-auto whitespace-nowrap shrink-0 justify-center text-center bg-white/10 hover:bg-white/20 text-white font-medium text-xs sm:text-sm px-4 py-2 sm:py-2.5 rounded-lg border border-white/15 transition-all flex items-center gap-2 no-underline"
-            >
-              <Eye size={16} className="shrink-0" />
-              <span className="whitespace-nowrap">View Live Website</span>
-            </Link>
-            <button
-              onClick={async () => {
-                await logout();
-                navigate('/login');
-              }}
-              className="w-full lg:w-auto whitespace-nowrap shrink-0 justify-center text-center bg-[#c2410c] hover:bg-[#9a3412] text-white font-semibold text-xs sm:text-sm px-4 py-2 sm:py-2.5 rounded-lg transition-all flex items-center gap-2 cursor-pointer border-none shadow-sm"
-            >
-              <LogOut size={16} className="shrink-0" />
-              <span className="whitespace-nowrap">Sign Out</span>
-            </button>
           </div>
         </div>
       </div>
@@ -1563,6 +1560,11 @@ export default function AdminPortal() {
             onClick={() => setShowTeamModal(false)}
           >
             <div
+              ref={teamModalRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="team-modal-title"
+              tabIndex={-1}
               className="bg-white rounded-2xl max-w-[500px] w-full p-6 sm:p-8 shadow-2xl relative my-8"
               onClick={(e) => e.stopPropagation()}
             >
@@ -1572,7 +1574,7 @@ export default function AdminPortal() {
                     <Shield size={20} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-sans text-[0.95rem] sm:text-lg font-bold text-gray-900 m-0 whitespace-nowrap truncate">
+                    <h3 id="team-modal-title" className="font-sans text-[0.95rem] sm:text-lg font-bold text-gray-900 m-0 whitespace-nowrap truncate">
                       {editingTeamMember ? 'Edit Admin / Team Member' : 'Add New Admin / Team Member'}
                     </h3>
                     <p className="font-sans text-[0.72rem] sm:text-xs text-gray-500 m-0 whitespace-nowrap truncate">
@@ -1581,9 +1583,11 @@ export default function AdminPortal() {
                   </div>
                 </div>
                 <button
+                  ref={teamCloseBtnRef}
                   type="button"
+                  aria-label="Close dialog"
                   onClick={() => setShowTeamModal(false)}
-                  className="text-gray-400 hover:text-gray-600 bg-none border-none cursor-pointer p-1 shrink-0"
+                  className="text-gray-400 hover:text-gray-600 bg-none border-none cursor-pointer p-1 shrink-0 focus-visible:ring-2 focus-visible:ring-accent rounded-lg"
                 >
                   <X size={20} />
                 </button>
@@ -1695,6 +1699,11 @@ export default function AdminPortal() {
             onClick={() => setShowAddUnlistedModal(false)}
           >
             <div
+              ref={unlistedModalRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="unlisted-modal-title"
+              tabIndex={-1}
               className="bg-white rounded-2xl max-w-[540px] w-full p-6 sm:p-8 shadow-2xl relative my-8"
               onClick={(e) => e.stopPropagation()}
             >
@@ -1704,7 +1713,7 @@ export default function AdminPortal() {
                     <Radar size={20} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-sans text-[0.98rem] sm:text-lg font-bold text-gray-900 m-0 whitespace-nowrap truncate">
+                    <h3 id="unlisted-modal-title" className="font-sans text-[0.98rem] sm:text-lg font-bold text-gray-900 m-0 whitespace-nowrap truncate">
                       Add Unlisted Tusker
                     </h3>
                     <p className="font-sans text-[0.72rem] sm:text-xs text-gray-500 m-0 whitespace-nowrap truncate">
@@ -1713,9 +1722,11 @@ export default function AdminPortal() {
                   </div>
                 </div>
                 <button
+                  ref={unlistedCloseBtnRef}
                   type="button"
+                  aria-label="Close dialog"
                   onClick={() => setShowAddUnlistedModal(false)}
-                  className="text-gray-400 hover:text-gray-600 bg-none border-none cursor-pointer p-1 shrink-0"
+                  className="text-gray-400 hover:text-gray-600 bg-none border-none cursor-pointer p-1 shrink-0 focus-visible:ring-2 focus-visible:ring-accent rounded-lg"
                 >
                   <X size={20} />
                 </button>

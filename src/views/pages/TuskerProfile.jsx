@@ -54,6 +54,7 @@ import PhotoWatermarkBadge from '../components/PhotoWatermarkBadge';
 // Loaded only when a risk assessment is opened, so the risk data is not part of the main site download
 const RiskAssessmentModal = lazy(() => import('../components/RiskAssessmentModal'));
 import { getCachedAspect, setCachedAspect, probeImageAspect } from '../../utils/photoAspectCache';
+import useFocusTrap from '../../hooks/useFocusTrap';
 
 /* ── Fullscreen Zoom Lightbox ─────────────────────────────────── */
 function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onClose }) {
@@ -64,6 +65,7 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
   const dragStartRef = useRef({ x: 0, y: 0 });
   const hasDraggedRef = useRef(false);
   const containerRef = useRef(null);
+  const closeBtnRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const changeIndex = useCallback((newIdx) => {
@@ -107,6 +109,17 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
     setScale(1);
     setPosition({ x: 0, y: 0 });
   }, []);
+
+  useFocusTrap(containerRef, true, {
+    initialFocusRef: closeBtnRef,
+    onEscape: () => {
+      if (scale > 1) {
+        resetZoom();
+      } else {
+        onClose();
+      }
+    },
+  });
 
   const toggleZoom = (e) => {
     e?.stopPropagation();
@@ -380,9 +393,12 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
           </button>
 
           <button
+            ref={closeBtnRef}
+            type="button"
             onClick={onClose}
             title="Close (Esc)"
-            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-red-500/80 flex items-center justify-center text-white border-none cursor-pointer transition-colors ml-1"
+            aria-label="Close dialog"
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-red-500/80 flex items-center justify-center text-white border-none cursor-pointer transition-colors ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             <X size={18} />
           </button>
@@ -817,6 +833,13 @@ function ComparisonFormModal({
   const [changeType, setChangeType] = useState(initialData?.changeType || 'Tusk Growth');
   const [earSide, setEarSide] = useState(initialData?.earSide || 'Right Ear');
   const [formErr, setFormErr] = useState('');
+  const containerRef = useRef(null);
+  const closeBtnRef = useRef(null);
+
+  useFocusTrap(containerRef, isOpen, {
+    initialFocusRef: closeBtnRef,
+    onEscape: onClose,
+  });
 
   const calculateAutoStage = useCallback((inputYear, compType) => {
     const parsed = parseInt(inputYear, 10);
@@ -921,7 +944,12 @@ function ComparisonFormModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-[20px] max-w-2xl w-full p-4 sm:p-7 md:p-8 shadow-2xl border border-[#e5e7eb] flex flex-col gap-4 sm:gap-5 relative my-auto max-h-[92vh] overflow-y-auto"
+        ref={containerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="comp-form-title"
+        tabIndex={-1}
+        className="bg-white rounded-[20px] max-w-2xl w-full p-4 sm:p-7 md:p-8 shadow-2xl border border-[#e5e7eb] flex flex-col gap-4 sm:gap-5 relative my-auto max-h-[92vh] overflow-y-auto focus-visible:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -931,7 +959,7 @@ function ComparisonFormModal({
               {activeType === 'photographic' ? <Camera size={20} /> : <Sliders size={20} />}
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="font-sans text-[0.95rem] sm:text-[1.15rem] font-bold text-[#111111] m-0 leading-tight whitespace-nowrap truncate">
+              <h3 id="comp-form-title" className="font-sans text-[0.95rem] sm:text-[1.15rem] font-bold text-[#111111] m-0 leading-tight whitespace-nowrap truncate">
                 {isEditing ? 'Edit' : 'Add'} {activeType === 'photographic' ? 'Photographic Comparison' : 'Ear Biometric Comparison'}
               </h3>
               <p className="font-sans text-[0.72rem] sm:text-[0.78rem] text-[#777777] m-0 mt-0.5 whitespace-nowrap truncate">
@@ -940,10 +968,11 @@ function ComparisonFormModal({
             </div>
           </div>
           <button
+            ref={closeBtnRef}
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full border-none bg-[#f4f4f4] hover:bg-[#e8e8e8] text-[#555555] cursor-pointer flex items-center justify-center transition-colors p-0 shrink-0"
-            aria-label="Close"
+            className="w-8 h-8 rounded-full border-none bg-[#f4f4f4] hover:bg-[#e8e8e8] text-[#555555] cursor-pointer flex items-center justify-center transition-colors p-0 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            aria-label="Close dialog"
           >
             <X size={18} />
           </button>
@@ -1160,6 +1189,7 @@ function ComparisonPhotoLightbox({
   const dragStartRef = useRef({ x: 0, y: 0 });
   const hasDraggedRef = useRef(false);
   const containerRef = useRef(null);
+  const closeBtnRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Fullscreen support
@@ -1225,6 +1255,17 @@ function ComparisonPhotoLightbox({
     setScale(1);
     setPosition({ x: 0, y: 0 });
   }, []);
+
+  useFocusTrap(containerRef, true, {
+    initialFocusRef: closeBtnRef,
+    onEscape: () => {
+      if (scale > 1) {
+        resetZoom();
+      } else {
+        onClose();
+      }
+    },
+  });
 
   const toggleZoom = (e) => {
     e?.stopPropagation();
@@ -1477,9 +1518,12 @@ function ComparisonPhotoLightbox({
           </button>
 
           <button
+            ref={closeBtnRef}
+            type="button"
             onClick={onClose}
             title="Close (Esc)"
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-red-500/80 text-white flex items-center justify-center border border-white/20 cursor-pointer transition-all ml-1"
+            aria-label="Close dialog"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-red-500/80 text-white flex items-center justify-center border border-white/20 cursor-pointer transition-all ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             <X size={18} />
           </button>
@@ -1683,6 +1727,7 @@ function SightingPhotoLightbox({
   const dragStartRef = useRef({ x: 0, y: 0 });
   const hasDraggedRef = useRef(false);
   const containerRef = useRef(null);
+  const closeBtnRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const toggleFullscreen = useCallback(async (e) => {
@@ -1747,6 +1792,17 @@ function SightingPhotoLightbox({
     setScale(1);
     setPosition({ x: 0, y: 0 });
   }, []);
+
+  useFocusTrap(containerRef, true, {
+    initialFocusRef: closeBtnRef,
+    onEscape: () => {
+      if (scale > 1) {
+        resetZoom();
+      } else {
+        onClose();
+      }
+    },
+  });
 
   const toggleZoom = (e) => {
     e?.stopPropagation();
@@ -1995,9 +2051,12 @@ function SightingPhotoLightbox({
           </button>
 
           <button
+            ref={closeBtnRef}
+            type="button"
             onClick={onClose}
             title="Close (Esc)"
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-red-500/80 text-white flex items-center justify-center border border-white/20 cursor-pointer transition-all ml-1"
+            aria-label="Close dialog"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-red-500/80 text-white flex items-center justify-center border border-white/20 cursor-pointer transition-all ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             <X size={18} />
           </button>
@@ -2175,6 +2234,130 @@ function SightingPhotoLightbox({
       </div>
     </div>,
     document.body
+  );
+}
+
+/* ── Accessible Delete Comparison Milestone Confirmation Modal ── */
+function DeleteComparisonConfirmModal({ item, type, isSaving, onCancel, onConfirm }) {
+  const containerRef = useRef(null);
+  const cancelBtnRef = useRef(null);
+
+  useFocusTrap(containerRef, true, {
+    initialFocusRef: cancelBtnRef,
+    onEscape: () => !isSaving && onCancel(),
+  });
+
+  return (
+    <div
+      className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
+      onClick={() => !isSaving && onCancel()}
+    >
+      <div
+        ref={containerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-comp-title"
+        tabIndex={-1}
+        className="bg-white rounded-[16px] max-w-[420px] w-full p-6 shadow-2xl border border-[#e8e8e8] flex flex-col gap-4 relative my-auto focus-visible:outline-none"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="w-11 h-11 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto">
+          <Trash2 size={22} />
+        </div>
+        <div className="text-center">
+          <h3 id="delete-comp-title" className="font-sans text-[1.1rem] font-bold text-[#111111] m-0">
+            Delete Comparison Record?
+          </h3>
+          <p className="font-sans text-[0.84rem] text-[#666666] mt-2 mb-0 leading-relaxed">
+            Are you sure you want to delete this {type === 'photographic' ? 'photographic progression' : 'ear biometric'} record ({item?.year} • {item?.stage})? This action cannot be undone.
+          </p>
+        </div>
+        <div className="flex items-center gap-3 pt-2">
+          <button
+            ref={cancelBtnRef}
+            type="button"
+            onClick={onCancel}
+            disabled={isSaving}
+            className="flex-1 py-2.5 px-4 rounded-[10px] bg-[#f4f4f4] hover:bg-[#eaeaea] text-[#555555] font-sans text-sm font-semibold border-none cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={isSaving}
+            className="flex-1 py-2.5 px-4 rounded-[10px] bg-red-600 hover:bg-red-700 text-white font-sans text-sm font-semibold border-none cursor-pointer transition-colors flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+          >
+            {isSaving && <Loader2 size={16} className="animate-spin" />}
+            <span>{isSaving ? 'Deleting...' : 'Delete'}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Accessible Delete Sighting Confirmation Modal ── */
+function DeleteSightingConfirmModal({ deletingSighting, tusker, isDeleting, onCancel, onConfirm, formatDate }) {
+  const containerRef = useRef(null);
+  const cancelBtnRef = useRef(null);
+
+  useFocusTrap(containerRef, true, {
+    initialFocusRef: cancelBtnRef,
+    onEscape: () => !isDeleting && onCancel(),
+  });
+
+  return (
+    <div
+      className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in"
+      onClick={() => !isDeleting && onCancel()}
+    >
+      <div
+        ref={containerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-sighting-title"
+        tabIndex={-1}
+        className="bg-white rounded-[16px] max-w-md w-full shadow-2xl border border-[#e5e7eb] p-6 flex flex-col gap-4 focus-visible:outline-none"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-3 text-[#dc2626] min-w-0">
+          <div className="w-10 h-10 rounded-full bg-[#fdecea] flex items-center justify-center shrink-0 aspect-square">
+            <Trash2 size={20} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 id="delete-sighting-title" className="font-sans text-[0.98rem] sm:text-[1.1rem] font-bold text-[#111111] m-0 whitespace-nowrap truncate">
+              Delete Sighting #{deletingSighting.sightingNum}?
+            </h3>
+            <span className="text-xs text-[#777777] block whitespace-nowrap truncate">
+              Row {deletingSighting.rowNum} • {formatDate(deletingSighting.sighting?.captureDate) || 'Verified Sighting'}
+            </span>
+          </div>
+        </div>
+        <p className="font-sans text-[0.88rem] text-[#555555] leading-relaxed m-0">
+          Are you sure you want to delete this sighting record for <strong>{tusker?.name}</strong>? This will permanently remove this sighting and its coordinates from the profile and sightings map. This action cannot be undone.
+        </p>
+        <div className="flex items-center justify-end gap-3 pt-2">
+          <button
+            ref={cancelBtnRef}
+            type="button"
+            disabled={isDeleting}
+            onClick={onCancel}
+            className="h-9 px-4 rounded-[10px] border border-[#d5d5d5] bg-white text-[#444444] font-sans text-xs font-semibold hover:bg-[#f5f5f5] transition-all cursor-pointer inline-flex items-center justify-center box-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={isDeleting}
+            onClick={onConfirm}
+            className="h-9 px-4 rounded-[10px] bg-[#dc2626] text-white font-sans text-xs font-bold hover:bg-[#b91c1c] transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 disabled:opacity-50 box-border border border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+          >
+            {isDeleting ? 'Deleting...' : 'Delete Sighting'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -3542,46 +3725,13 @@ export default function TuskerProfile() {
 
       {/* Delete Comparison Milestone Confirmation Modal */}
       {deletingComparison && createPortal(
-        <div
-          className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => !isSavingComparison && setDeletingComparison(null)}
-        >
-          <div
-            className="bg-white rounded-[16px] max-w-[420px] w-full p-6 shadow-2xl border border-[#e8e8e8] flex flex-col gap-4 relative my-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="w-11 h-11 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto">
-              <Trash2 size={22} />
-            </div>
-            <div className="text-center">
-              <h3 className="font-sans text-[1.1rem] font-bold text-[#111111] m-0">
-                Delete Comparison Record?
-              </h3>
-              <p className="font-sans text-[0.84rem] text-[#666666] mt-2 mb-0 leading-relaxed">
-                Are you sure you want to delete this {deletingComparison.type === 'photographic' ? 'photographic progression' : 'ear biometric'} record ({deletingComparison.item?.year} • {deletingComparison.item?.stage})? This action cannot be undone.
-              </p>
-            </div>
-            <div className="flex items-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setDeletingComparison(null)}
-                disabled={isSavingComparison}
-                className="flex-1 py-2.5 px-4 rounded-[10px] bg-[#f4f4f4] hover:bg-[#eaeaea] text-[#555555] font-sans text-sm font-semibold border-none cursor-pointer transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmDeleteComparison}
-                disabled={isSavingComparison}
-                className="flex-1 py-2.5 px-4 rounded-[10px] bg-red-600 hover:bg-red-700 text-white font-sans text-sm font-semibold border-none cursor-pointer transition-colors flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-60"
-              >
-                {isSavingComparison && <Loader2 size={16} className="animate-spin" />}
-                <span>{isSavingComparison ? 'Deleting...' : 'Delete'}</span>
-              </button>
-            </div>
-          </div>
-        </div>,
+        <DeleteComparisonConfirmModal
+          item={deletingComparison.item}
+          type={deletingComparison.type}
+          isSaving={isSavingComparison}
+          onCancel={() => setDeletingComparison(null)}
+          onConfirm={handleConfirmDeleteComparison}
+        />,
         document.body
       )}
 
@@ -3649,46 +3799,14 @@ export default function TuskerProfile() {
 
       {/* Delete Sighting Confirmation Modal */}
       {deletingSighting && createPortal(
-        <div
-          className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in"
-          onClick={() => !isDeleting && setDeletingSighting(null)}
-        >
-          <div
-            className="bg-white rounded-[16px] max-w-md w-full shadow-2xl border border-[#e5e7eb] p-6 flex flex-col gap-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center gap-3 text-[#dc2626] min-w-0">
-              <div className="w-10 h-10 rounded-full bg-[#fdecea] flex items-center justify-center shrink-0 aspect-square">
-                <Trash2 size={20} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="font-sans text-[0.98rem] sm:text-[1.1rem] font-bold text-[#111111] m-0 whitespace-nowrap truncate">Delete Sighting #{deletingSighting.sightingNum}?</h3>
-                <span className="text-xs text-[#777777] block whitespace-nowrap truncate">Row {deletingSighting.rowNum} • {formatDate(deletingSighting.sighting?.captureDate) || 'Verified Sighting'}</span>
-              </div>
-            </div>
-            <p className="font-sans text-[0.88rem] text-[#555555] leading-relaxed m-0">
-              Are you sure you want to delete this sighting record for <strong>{tusker?.name}</strong>? This will permanently remove this sighting and its coordinates from the profile and sightings map. This action cannot be undone.
-            </p>
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <button
-                type="button"
-                disabled={isDeleting}
-                onClick={() => setDeletingSighting(null)}
-                className="h-9 px-4 rounded-[10px] border border-[#d5d5d5] bg-white text-[#444444] font-sans text-xs font-semibold hover:bg-[#f5f5f5] transition-all cursor-pointer inline-flex items-center justify-center box-border"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={isDeleting}
-                onClick={handleConfirmDeleteSighting}
-                className="h-9 px-4 rounded-[10px] bg-[#dc2626] text-white font-sans text-xs font-bold hover:bg-[#b91c1c] transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 disabled:opacity-50 box-border border border-transparent"
-              >
-                {isDeleting ? 'Deleting...' : 'Delete Sighting'}
-              </button>
-            </div>
-          </div>
-        </div>,
+        <DeleteSightingConfirmModal
+          deletingSighting={deletingSighting}
+          tusker={tusker}
+          isDeleting={isDeleting}
+          onCancel={() => setDeletingSighting(null)}
+          onConfirm={handleConfirmDeleteSighting}
+          formatDate={formatDate}
+        />,
         document.body
       )}
     </div>

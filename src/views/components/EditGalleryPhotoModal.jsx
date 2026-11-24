@@ -4,12 +4,13 @@
  * location tagging, encounter date, and moderation status.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CheckCircle2, Save, MapPin, Camera, Calendar, UserCheck } from 'lucide-react';
 import TuskerMultiSelect from './TuskerMultiSelect';
 import LocationSearchInput from './LocationSearchInput';
 import { todayLocalISO } from '../../utils/localDate';
+import useFocusTrap from '../../hooks/useFocusTrap';
 
 /**
  * EditGalleryPhotoModal
@@ -33,6 +34,15 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  const containerRef = useRef(null);
+  const closeBtnRef = useRef(null);
+
+  // Focus trap for accessible edit photo dialog
+  useFocusTrap(containerRef, Boolean(photo), {
+    initialFocusRef: closeBtnRef,
+    onEscape: onClose,
+  });
 
   // Lock background scroll while modal is open
   useEffect(() => {
@@ -111,7 +121,12 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl w-full max-w-[580px] overflow-hidden shadow-2xl border border-amber-900/10 animate-fade-in my-auto"
+        ref={containerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-photo-modal-title"
+        tabIndex={-1}
+        className="bg-white rounded-2xl w-full max-w-[580px] overflow-hidden shadow-2xl border border-amber-900/10 animate-fade-in my-auto focus-visible:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -121,16 +136,18 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
               <Camera size={18} />
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="font-serif text-[0.98rem] sm:text-lg font-bold m-0 leading-tight whitespace-nowrap truncate">Edit Photo Details</h3>
+              <h3 id="edit-photo-modal-title" className="font-serif text-[0.98rem] sm:text-lg font-bold m-0 leading-tight whitespace-nowrap truncate">Edit Photo Details</h3>
               <p className="font-sans text-[0.72rem] sm:text-xs text-white/70 m-0 mt-0.5 whitespace-nowrap truncate">
                 Admin tool: correct mislabeled tuskers, titles, locations, and photographers
               </p>
             </div>
           </div>
           <button
+            ref={closeBtnRef}
             type="button"
             onClick={onClose}
-            className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border-none cursor-pointer transition-colors shrink-0 shadow-xs"
+            aria-label="Close dialog"
+            className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border-none cursor-pointer transition-colors shrink-0 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             title="Close"
           >
             <X size={16} />

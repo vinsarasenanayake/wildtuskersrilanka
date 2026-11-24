@@ -4,7 +4,7 @@
  * photos, encounter dates, location coordinates, and health status biometrics.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Save, MapPin, Camera, Calendar, UserCheck, HeartPulse, ShieldAlert, FileText } from 'lucide-react';
 import LocationSearchInput from './LocationSearchInput';
@@ -12,6 +12,7 @@ import ImageUploadBox from './ImageUploadBox';
 import { parseSightingDetails, THREAT_LEVELS } from '../../models/TuskerModel';
 import { getLocationCoordinates } from '../../utils/sriLankaLocations';
 import { todayLocalISO } from '../../utils/localDate';
+import useFocusTrap from '../../hooks/useFocusTrap';
 
 const INPUT_CLASS =
   'w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.9rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12';
@@ -126,6 +127,14 @@ export default function EditSightingModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  const containerRef = useRef(null);
+  const closeBtnRef = useRef(null);
+
+  useFocusTrap(containerRef, Boolean(sighting), {
+    initialFocusRef: closeBtnRef,
+    onEscape: onClose,
+  });
+
   // Lock background scroll while modal is open
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;
@@ -220,7 +229,12 @@ export default function EditSightingModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-[16px] max-w-xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-[#e5e7eb] overflow-hidden"
+        ref={containerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-sighting-modal-title"
+        tabIndex={-1}
+        className="bg-white rounded-[16px] max-w-xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-[#e5e7eb] overflow-hidden focus-visible:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
@@ -235,15 +249,17 @@ export default function EditSightingModal({
                   Row {rowNum} • Sighting #{sightingNum}
                 </span>
               </div>
-              <h3 className="font-sans text-[0.92rem] sm:text-[1.05rem] font-bold text-white m-0 mt-0.5 whitespace-nowrap truncate">
+              <h3 id="edit-sighting-modal-title" className="font-sans text-[0.92rem] sm:text-[1.05rem] font-bold text-white m-0 mt-0.5 whitespace-nowrap truncate">
                 Edit Sighting for {tusker?.name || 'Tusker'}
               </h3>
             </div>
           </div>
-          <button aria-label="Close"
+          <button
+            ref={closeBtnRef}
+            aria-label="Close dialog"
             type="button"
             onClick={onClose}
-            className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border-none cursor-pointer transition-colors shrink-0 ml-2 shadow-xs"
+            className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border-none cursor-pointer transition-colors shrink-0 ml-2 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             <X size={16} />
           </button>

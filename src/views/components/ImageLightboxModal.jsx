@@ -11,6 +11,7 @@ import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { X, MapPin, Camera, Calendar, Pencil, Trash2, CheckCircle2, ExternalLink, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getTuskers } from '../../models/TuskerModel';
+import useFocusTrap from '../../hooks/useFocusTrap';
 
 function formatDisplayDate(dateStr) {
   if (!dateStr) return '';
@@ -56,6 +57,8 @@ export default function ImageLightboxModal({
   const dragStartRef = useRef({ x: 0, y: 0 });
   const hasDraggedRef = useRef(false);
   const rafRef = useRef(null);
+  const containerRef = useRef(null);
+  const closeButtonRef = useRef(null);
 
   const [tuskersList, setTuskersList] = useState(passedTuskers);
 
@@ -115,6 +118,18 @@ export default function ImageLightboxModal({
     setPosition({ x: 0, y: 0 });
     setIsDragging(false);
   }, []);
+
+  // Trap keyboard focus inside lightbox, focus close button on open, and restore focus on exit
+  useFocusTrap(containerRef, Boolean(photo), {
+    initialFocusRef: closeButtonRef,
+    onEscape: () => {
+      if (scale > 1) {
+        resetZoom();
+      } else {
+        onClose();
+      }
+    },
+  });
 
   const zoomIn = useCallback((e) => {
     e?.stopPropagation();
@@ -352,10 +367,12 @@ export default function ImageLightboxModal({
 
   return createPortal(
     <div
+      ref={containerRef}
       role="dialog"
       aria-modal="true"
       aria-label="Image lightbox"
-      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex flex-col items-center justify-between p-2.5 sm:p-5 md:p-6 overflow-hidden select-none animate-fade-in lightbox-mobile-landscape-root"
+      tabIndex={-1}
+      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex flex-col items-center justify-between p-2.5 sm:p-5 md:p-6 overflow-hidden select-none animate-fade-in lightbox-mobile-landscape-root outline-none"
       onClick={onClose}
     >
       {/* ── Top Bar: Zoom Controls & Close Button ── */}
@@ -366,7 +383,7 @@ export default function ImageLightboxModal({
             type="button"
             onClick={zoomOut}
             disabled={scale <= 1}
-            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none border-none bg-transparent cursor-pointer transition-colors p-0"
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none border-none bg-transparent cursor-pointer transition-colors p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             title="Zoom Out"
             aria-label="Zoom out"
           >
@@ -379,7 +396,7 @@ export default function ImageLightboxModal({
             type="button"
             onClick={zoomIn}
             disabled={scale >= 5}
-            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none border-none bg-transparent cursor-pointer transition-colors p-0"
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none border-none bg-transparent cursor-pointer transition-colors p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             title="Zoom In"
             aria-label="Zoom in"
           >
@@ -389,7 +406,7 @@ export default function ImageLightboxModal({
             <button
               type="button"
               onClick={resetZoom}
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 border-none bg-transparent cursor-pointer transition-colors p-0 ml-0.5"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 border-none bg-transparent cursor-pointer transition-colors p-0 ml-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               title="Reset Zoom"
               aria-label="Reset zoom"
             >
@@ -399,8 +416,10 @@ export default function ImageLightboxModal({
         </div>
 
         <button
+          ref={closeButtonRef}
+          type="button"
           onClick={onClose}
-          className="w-9 h-9 sm:w-10 sm:h-10 landscape:w-8 landscape:h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border border-white/20 backdrop-blur-md cursor-pointer transition-all shadow-lg hover:scale-105 active:scale-95 shrink-0"
+          className="w-9 h-9 sm:w-10 sm:h-10 landscape:w-8 landscape:h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border border-white/20 backdrop-blur-md cursor-pointer transition-all shadow-lg hover:scale-105 active:scale-95 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           title="Close (Esc)"
           aria-label="Close photo view"
         >
@@ -470,7 +489,7 @@ export default function ImageLightboxModal({
               onClick={goToPrev}
               aria-label="Previous photo"
               title="Previous photo (Left Arrow)"
-              className="absolute left-2 sm:left-4 z-40 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 hover:bg-black/85 text-white/90 hover:text-white border border-white/20 flex items-center justify-center cursor-pointer transition-all shadow-xl hover:scale-110 active:scale-95"
+              className="absolute left-2 sm:left-4 z-40 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 hover:bg-black/85 text-white/90 hover:text-white border border-white/20 flex items-center justify-center cursor-pointer transition-all shadow-xl hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
               <ChevronLeft size={24} />
             </button>
@@ -479,7 +498,7 @@ export default function ImageLightboxModal({
               onClick={goToNext}
               aria-label="Next photo"
               title="Next photo (Right Arrow)"
-              className="absolute right-2 sm:right-4 z-40 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 hover:bg-black/85 text-white/90 hover:text-white border border-white/20 flex items-center justify-center cursor-pointer transition-all shadow-xl hover:scale-110 active:scale-95"
+              className="absolute right-2 sm:right-4 z-40 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 hover:bg-black/85 text-white/90 hover:text-white border border-white/20 flex items-center justify-center cursor-pointer transition-all shadow-xl hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
               <ChevronRight size={24} />
             </button>
@@ -531,8 +550,9 @@ export default function ImageLightboxModal({
               <>
                 {onEdit && (
                   <button
+                    type="button"
                     onClick={() => onEdit(photo)}
-                    className="bg-amber-600 hover:bg-amber-700 text-white font-sans text-[0.72rem] sm:text-xs font-semibold py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg border-none cursor-pointer flex items-center gap-1 shadow-sm transition-colors lightbox-mobile-landscape-btn"
+                    className="bg-amber-600 hover:bg-amber-700 text-white font-sans text-[0.72rem] sm:text-xs font-semibold py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg border-none cursor-pointer flex items-center gap-1 shadow-sm transition-colors lightbox-mobile-landscape-btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
                     title="Edit details"
                   >
                     <Pencil size={11} />
@@ -541,11 +561,12 @@ export default function ImageLightboxModal({
                 )}
                 {photo.status === 'pending' && onApprove && (
                   <button
+                    type="button"
                     onClick={() => {
                       onApprove(photo.id || photo);
                       onClose();
                     }}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-sans text-[0.72rem] sm:text-xs font-semibold py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg border-none cursor-pointer flex items-center gap-1 shadow-sm transition-colors lightbox-mobile-landscape-btn"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-sans text-[0.72rem] sm:text-xs font-semibold py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg border-none cursor-pointer flex items-center gap-1 shadow-sm transition-colors lightbox-mobile-landscape-btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
                   >
                     <CheckCircle2 size={11} />
                     <span>Approve</span>
@@ -553,11 +574,12 @@ export default function ImageLightboxModal({
                 )}
                 {onDelete && (
                   <button
+                    type="button"
                     onClick={() => {
                       onDelete(photo.id || photo);
                       onClose();
                     }}
-                    className="bg-rose-600 hover:bg-rose-700 text-white font-sans text-[0.72rem] sm:text-xs font-semibold py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg border-none cursor-pointer flex items-center gap-1 shadow-sm transition-colors lightbox-mobile-landscape-btn"
+                    className="bg-rose-600 hover:bg-rose-700 text-white font-sans text-[0.72rem] sm:text-xs font-semibold py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg border-none cursor-pointer flex items-center gap-1 shadow-sm transition-colors lightbox-mobile-landscape-btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
                     title="Delete"
                   >
                     <Trash2 size={11} />
@@ -579,7 +601,7 @@ export default function ImageLightboxModal({
                   } catch { /* ignore */ }
                 }}
                 state={{ from: fromPath || '/gallery', returnPhotoId: photo.id }}
-                className="bg-white/10 hover:bg-white/20 text-[#f5ecd7] hover:text-white font-sans text-[0.72rem] sm:text-xs font-semibold py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg border border-white/20 transition-all flex items-center gap-1 no-underline shadow-xs shrink-0 lightbox-mobile-landscape-btn"
+                className="bg-white/10 hover:bg-white/20 text-[#f5ecd7] hover:text-white font-sans text-[0.72rem] sm:text-xs font-semibold py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg border border-white/20 transition-all flex items-center gap-1 no-underline shadow-xs shrink-0 lightbox-mobile-landscape-btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <span>{allMatchedTuskers.length > 1 ? `${t.id} - ${t.name} Profile` : (t.name ? `${t.name} Profile` : 'Tusker Profile')}</span>
                 <ExternalLink size={10} />

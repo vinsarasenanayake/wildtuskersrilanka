@@ -4,7 +4,7 @@
  * conservation leadership team, and admin team member management.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { PlusCircle, Edit2, Trash2, X, Save, Shield, ExternalLink, Loader2 } from 'lucide-react';
 import { getTeamMembers, getCachedTeamMembers, addTeamMember, updateTeamMember, deleteTeamMember } from '../../models/TeamModel';
@@ -12,6 +12,7 @@ import { useAuth } from '../../controllers/useAuth';
 import ImageUploadBox from '../components/ImageUploadBox';
 import { safeUrl } from '../../utils/safeUrl';
 import Footer from '../components/Footer';
+import useFocusTrap from '../../hooks/useFocusTrap';
 
 const OBJECTIVES = [
   {
@@ -58,6 +59,13 @@ export default function AboutUs() {
   });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
+  const modalRef = useRef(null);
+  const closeBtnRef = useRef(null);
+
+  useFocusTrap(modalRef, showModal, {
+    initialFocusRef: closeBtnRef,
+    onEscape: () => setShowModal(false),
+  });
 
   const loadTeam = async () => {
     try {
@@ -311,7 +319,12 @@ export default function AboutUs() {
             onClick={() => setShowModal(false)}
           >
             <div
-              className="bg-white rounded-2xl max-w-[500px] w-full p-6 sm:p-8 shadow-2xl relative my-8"
+              ref={modalRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="about-admin-modal-title"
+              tabIndex={-1}
+              className="bg-white rounded-2xl max-w-[500px] w-full p-6 sm:p-8 shadow-2xl relative my-8 focus-visible:outline-none"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
@@ -320,7 +333,7 @@ export default function AboutUs() {
                     <Shield size={20} />
                   </div>
                   <div>
-                    <h3 className="font-sans text-base sm:text-lg font-bold text-gray-900 m-0">
+                    <h3 id="about-admin-modal-title" className="font-sans text-base sm:text-lg font-bold text-gray-900 m-0">
                       {editingMember ? 'Edit Admin / Team Member' : 'Add New Admin / Team Member'}
                     </h3>
                     <p className="font-sans text-xs sm:text-[0.84rem] text-gray-500 m-0">
@@ -329,11 +342,13 @@ export default function AboutUs() {
                   </div>
                 </div>
                 <button
+                  ref={closeBtnRef}
                   type="button"
+                  aria-label="Close dialog"
                   onClick={() => setShowModal(false)}
-                  className="text-gray-400 hover:text-gray-600 bg-none border-none cursor-pointer p-1"
+                  className="w-8 h-8 rounded-full border-none bg-gray-100 hover:bg-gray-200 text-gray-500 cursor-pointer flex items-center justify-center transition-colors shrink-0 p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
-                  <X size={20} />
+                  <X size={18} />
                 </button>
               </div>
 

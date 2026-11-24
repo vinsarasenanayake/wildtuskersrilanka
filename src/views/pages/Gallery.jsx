@@ -20,6 +20,7 @@ import {
   Pencil,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from 'lucide-react';
 import { useGallery, useGallerySubmit } from '../../controllers/useGallery';
 import { getTuskers } from '../../models/TuskerModel';
@@ -30,6 +31,7 @@ import EditGalleryPhotoModal from '../components/EditGalleryPhotoModal';
 import ImageLightboxModal from '../components/ImageLightboxModal';
 import LocationSearchInput from '../components/LocationSearchInput';
 import Footer from '../components/Footer';
+import useFocusTrap from '../../hooks/useFocusTrap';
 
 export default function Gallery() {
   const location = useLocation();
@@ -64,6 +66,32 @@ export default function Gallery() {
 
   const [tuskers, setTuskers] = useState([]);
   const [editingPhoto, setEditingPhoto] = useState(null);
+  const [photoToDelete, setPhotoToDelete] = useState(null);
+  const [isDeletingPhoto, setIsDeletingPhoto] = useState(false);
+  const deleteModalRef = useRef(null);
+  const cancelDeleteBtnRef = useRef(null);
+
+  // Focus trap for accessible delete confirmation dialog
+  useFocusTrap(deleteModalRef, Boolean(photoToDelete), {
+    initialFocusRef: cancelDeleteBtnRef,
+    onEscape: () => !isDeletingPhoto && setPhotoToDelete(null),
+  });
+
+  const executeDeletePhoto = async () => {
+    if (!photoToDelete) return;
+    setIsDeletingPhoto(true);
+    try {
+      await handleDelete(photoToDelete.id || photoToDelete, true);
+      if (activePhoto && (activePhoto.id === photoToDelete.id || activePhoto.id === photoToDelete)) {
+        setActivePhoto(null);
+      }
+      setPhotoToDelete(null);
+    } catch (err) {
+      console.error('Delete error:', err);
+    } finally {
+      setIsDeletingPhoto(false);
+    }
+  };
 
   // When returning from Tusker Profile, position directly at the grid photo instantly before paint
   useLayoutEffect(() => {
@@ -330,6 +358,9 @@ function normalizeTuskerName(str) {
               <div
                 key={item.id}
                 id={`gallery-photo-${item.id}`}
+                role="button"
+                tabIndex={0}
+                aria-label={`View photo of ${getTuskerDisplayName(item) || item.title || 'Wild Tusker'}`}
                 onClick={() => {
                   try {
                     sessionStorage.setItem('wts_last_gallery_scroll', String(window.scrollY));
@@ -337,7 +368,17 @@ function normalizeTuskerName(str) {
                   } catch { /* ignore */ }
                   setActivePhoto(item);
                 }}
-                className="group relative aspect-[3/4] sm:aspect-[4/5] rounded-[20px] sm:rounded-[22px] overflow-hidden cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.15)] transition-all duration-300 bg-[#e8ece9]"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    try {
+                      sessionStorage.setItem('wts_last_gallery_scroll', String(window.scrollY));
+                      sessionStorage.setItem('wts_last_gallery_photo_id', String(item.id));
+                    } catch { /* ignore */ }
+                    setActivePhoto(item);
+                  }
+                }}
+                className="group relative aspect-[3/4] sm:aspect-[4/5] rounded-[20px] sm:rounded-[22px] overflow-hidden cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.15)] transition-all duration-300 bg-[#e8ece9] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-accent focus-visible:ring-offset-2"
               >
                 {/* Edge-to-edge photo filling entire card */}
                 <img
@@ -373,7 +414,7 @@ function normalizeTuskerName(str) {
                 {/* Admin Quick Actions (Positioned top-right so bottom location/name details are never obstructed) */}
                 {isAdmin && (
                   <div
-                    className="absolute top-3 right-3 flex items-center gap-1.5 z-20 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-3 right-3 flex items-center gap-1.5 z-20 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
@@ -381,7 +422,7 @@ function normalizeTuskerName(str) {
                         e.stopPropagation();
                         setEditingPhoto(item);
                       }}
-                      className="bg-amber-600/90 hover:bg-amber-600 text-white text-xs p-1.5 rounded-md border-none cursor-pointer shadow-md transition-transform hover:scale-105"
+                      className="bg-amber-600/90 hover:bg-amber-600 text-white text-xs p-1.5 rounded-md border-none cursor-pointer shadow-md transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                       title="Edit Photo Details"
                     >
                       <Pencil size={13} />
@@ -389,15 +430,15 @@ function normalizeTuskerName(str) {
                     {item.status === 'pending' && (
                       <button
                         onClick={() => handleApprove(item.id)}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-2 py-1.5 rounded-md border-none cursor-pointer flex items-center gap-1 shadow-md transition-transform hover:scale-105"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-2 py-1.5 rounded-md border-none cursor-pointer flex items-center gap-1 shadow-md transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                         title="Approve Photo"
                       >
                         <CheckCircle2 size={12} />
                       </button>
                     )}
                     <button
-                      onClick={() => handleDelete(item.id)}
-                      className="bg-red-600/90 hover:bg-red-700 text-white text-xs p-1.5 rounded-md border-none cursor-pointer shadow-md transition-transform hover:scale-105"
+                      onClick={() => setPhotoToDelete(item)}
+                      className="bg-red-600/90 hover:bg-red-700 text-white text-xs p-1.5 rounded-md border-none cursor-pointer shadow-md transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                       title="Delete Photo"
                     >
                       <Trash2 size={13} />
@@ -424,7 +465,7 @@ function normalizeTuskerName(str) {
           onClose={handleCloseLightbox}
           isAdmin={isAdmin}
           onApprove={handleApprove}
-          onDelete={handleDelete}
+          onDelete={(p) => setPhotoToDelete(p)}
           onEdit={(p) => setEditingPhoto(p)}
           fromPath="/gallery"
         />
@@ -440,6 +481,57 @@ function normalizeTuskerName(str) {
             setEditingPhoto(null);
           }}
         />
+      )}
+
+      {/* ── Accessible Delete Photo Confirmation Modal ── */}
+      {photoToDelete && createPortal(
+        <div
+          className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => !isDeletingPhoto && setPhotoToDelete(null)}
+        >
+          <div
+            ref={deleteModalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-photo-dialog-title"
+            tabIndex={-1}
+            className="bg-white rounded-[16px] max-w-[420px] w-full p-6 shadow-2xl border border-[#e8e8e8] flex flex-col gap-4 relative my-auto focus-visible:outline-none"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-11 h-11 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto">
+              <Trash2 size={22} />
+            </div>
+            <div className="text-center">
+              <h3 id="delete-photo-dialog-title" className="font-sans text-[1.1rem] font-bold text-[#111111] m-0">
+                Delete Gallery Photo?
+              </h3>
+              <p className="font-sans text-[0.84rem] text-[#666666] mt-2 mb-0 leading-relaxed">
+                Are you sure you want to delete this photo from the gallery? This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                ref={cancelDeleteBtnRef}
+                type="button"
+                onClick={() => setPhotoToDelete(null)}
+                disabled={isDeletingPhoto}
+                className="flex-1 py-2.5 px-4 rounded-[10px] bg-[#f4f4f4] hover:bg-[#eaeaea] text-[#555555] font-sans text-sm font-semibold border-none cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={executeDeletePhoto}
+                disabled={isDeletingPhoto}
+                className="flex-1 py-2.5 px-4 rounded-[10px] bg-red-600 hover:bg-red-700 text-white font-sans text-sm font-semibold border-none cursor-pointer transition-colors flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+              >
+                {isDeletingPhoto && <Loader2 size={16} className="animate-spin" />}
+                <span>{isDeletingPhoto ? 'Deleting...' : 'Delete Photo'}</span>
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* ── Submit Photo Modal ── */}
@@ -688,6 +780,9 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
     );
   }, [formData]);
 
+  const containerRef = useRef(null);
+  const closeBtnRef = useRef(null);
+
   const handleSafeClose = useCallback(() => {
     if (isDirty && !successMsg) {
       const confirmDiscard = window.confirm('Discard unsaved photo submission? Any changes will be lost.');
@@ -706,6 +801,12 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
     onClose();
   }, [isDirty, successMsg, formData.images, onClose]);
 
+  // Focus trap for community submit modal: focus close button on open, loop Tab keys, restore focus to opener on close
+  useFocusTrap(containerRef, true, {
+    initialFocusRef: closeBtnRef,
+    onEscape: handleSafeClose,
+  });
+
   // Prevent background scrolling while modal is open
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;
@@ -715,28 +816,18 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
     };
   }, []);
 
-  // Keyboard escape listener to close modal safely
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        handleSafeClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleSafeClose]);
-
   return createPortal(
     <div
       className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-fade-in"
       onClick={handleSafeClose}
     >
       <div
+        ref={containerRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="submit-photo-modal-title"
-        className="relative bg-white rounded-2xl max-w-[560px] w-full p-6 sm:p-8 shadow-2xl border border-[#e8e8e8] my-auto max-h-[92vh] overflow-y-auto"
+        tabIndex={-1}
+        className="relative bg-white rounded-2xl max-w-[560px] w-full p-6 sm:p-8 shadow-2xl border border-[#e8e8e8] my-auto max-h-[92vh] overflow-y-auto focus-visible:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center pb-4 mb-5 border-b border-[#eeeeee]">
@@ -749,6 +840,7 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
             </p>
           </div>
           <button
+            ref={closeBtnRef}
             aria-label="Close dialog"
             type="button"
             onClick={handleSafeClose}

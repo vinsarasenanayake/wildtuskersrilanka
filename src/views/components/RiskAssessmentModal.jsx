@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ShieldAlert, X, Info, Activity, Scale, EyeOff } from 'lucide-react';
 import { getRiskBand, getTuskerRiskData, FRAMEWORK_DIMENSIONS, RISK_BANDS } from '../../utils/riskFramework';
+import useFocusTrap from '../../hooks/useFocusTrap';
 
 export default function RiskAssessmentModal({ tusker, onClose }) {
+  const containerRef = useRef(null);
+  const closeBtnRef = useRef(null);
+
+  useFocusTrap(containerRef, Boolean(tusker), {
+    initialFocusRef: closeBtnRef,
+    onEscape: onClose,
+  });
+
   if (!tusker) return null;
 
   const scoreNum = parseFloat(tusker.riskScore);
@@ -22,7 +31,9 @@ export default function RiskAssessmentModal({ tusker, onClose }) {
       aria-labelledby="risk-modal-title"
     >
       <div
-        className="bg-white rounded-[20px] max-w-[640px] w-full max-h-[92vh] flex flex-col shadow-2xl border border-[#e8ecea] relative my-auto overflow-hidden text-[#111111]"
+        ref={containerRef}
+        tabIndex={-1}
+        className="bg-white rounded-[20px] max-w-[640px] w-full max-h-[92vh] flex flex-col shadow-2xl border border-[#e8ecea] relative my-auto overflow-hidden text-[#111111] focus-visible:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Top Header ── */}
@@ -50,10 +61,11 @@ export default function RiskAssessmentModal({ tusker, onClose }) {
             </div>
           </div>
           <button
+            ref={closeBtnRef}
             type="button"
-            className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full border border-white/10 bg-white/10 hover:bg-white/20 text-white cursor-pointer flex items-center justify-center transition-colors shrink-0 ml-2 shadow-xs"
+            className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full border border-white/10 bg-white/10 hover:bg-white/20 text-white cursor-pointer flex items-center justify-center transition-colors shrink-0 ml-2 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             onClick={onClose}
-            aria-label="Close modal"
+            aria-label="Close dialog"
           >
             <X size={16} />
           </button>

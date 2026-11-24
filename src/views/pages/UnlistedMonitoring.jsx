@@ -13,6 +13,7 @@ import ImageUploadBox from '../components/ImageUploadBox';
 import LocationSearchInput from '../components/LocationSearchInput';
 import PhotoWatermarkBadge from '../components/PhotoWatermarkBadge';
 import { todayLocalISO } from '../../utils/localDate';
+import useFocusTrap from '../../hooks/useFocusTrap';
 
 export default function UnlistedMonitoring() {
   const navigate = useNavigate();
@@ -54,6 +55,13 @@ export default function UnlistedMonitoring() {
 
   // Modal states for admin adding new entries
   const [showAddModal, setShowAddModal] = useState(false);
+  const addModalRef = useRef(null);
+  const closeAddBtnRef = useRef(null);
+
+  useFocusTrap(addModalRef, showAddModal, {
+    initialFocusRef: closeAddBtnRef,
+    onEscape: () => setShowAddModal(false),
+  });
   const [newFormData, setNewFormData] = useState({
     id: '',
     location: '',
@@ -425,7 +433,12 @@ export default function UnlistedMonitoring() {
           onClick={() => setShowAddModal(false)}
         >
           <div
-            className="bg-white rounded-[16px] max-w-[540px] w-full p-6 shadow-2xl border border-[#e8e8e8] flex flex-col gap-4 my-auto"
+            ref={addModalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="add-unlisted-modal-title"
+            tabIndex={-1}
+            className="bg-white rounded-[16px] max-w-[540px] w-full p-6 shadow-2xl border border-[#e8e8e8] flex flex-col gap-4 my-auto focus-visible:outline-none"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center pb-3 border-b border-[#eeeeee]">
@@ -434,12 +447,15 @@ export default function UnlistedMonitoring() {
                   <ShieldAlert size={18} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-sans text-[0.98rem] sm:text-[1.15rem] font-bold text-[#111111] m-0 whitespace-nowrap truncate">Add Unlisted Tusker</h3>
+                  <h3 id="add-unlisted-modal-title" className="font-sans text-[0.98rem] sm:text-[1.15rem] font-bold text-[#111111] m-0 whitespace-nowrap truncate">Add Unlisted Tusker</h3>
                   <p className="font-sans text-[0.72rem] sm:text-xs text-[#888888] m-0 whitespace-nowrap truncate">Create a provisional monitoring entry</p>
                 </div>
               </div>
               <button
-                className="w-8 h-8 rounded-full border-none bg-[#f5f5f5] hover:bg-[#e8e8e8] text-[#555555] cursor-pointer flex items-center justify-center transition-colors shrink-0"
+                ref={closeAddBtnRef}
+                type="button"
+                aria-label="Close dialog"
+                className="w-8 h-8 rounded-full border-none bg-[#f5f5f5] hover:bg-[#e8e8e8] text-[#555555] cursor-pointer flex items-center justify-center transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 onClick={() => setShowAddModal(false)}
               >
                 ✕

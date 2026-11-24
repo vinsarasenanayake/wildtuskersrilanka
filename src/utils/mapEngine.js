@@ -172,7 +172,7 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
     keyboardShortcuts: false,
     clickableIcons: false,
     gestureHandling,
-    isFractionalZoomEnabled: true, // smoother wheel/trackpad zoom where Google supports it
+    isFractionalZoomEnabled: false, // Clean integer zoom steps without continuous raster bicubic re-tessellation lag
   });
   // Google draws a grey "can't load Google Maps correctly" box on errors
   // (quota reached, key problems). Spot it and switch to the free maps.
@@ -348,10 +348,10 @@ function createLeafletMap(L, container, { center, zoom, gestureHandling: _gestur
     zoomControl: false,
     attributionControl: false,
     preferCanvas: true, // Hardware-accelerated GPU canvas for vector polygons and paths
-    zoomSnap: 0.5,      // Fluid zoom step increments
-    zoomDelta: 0.5,      // Responsive zooming
-    wheelPxPerZoomLevel: 55, // Responsive mouse wheel zooming
-    wheelDebounceTime: 15,
+    zoomSnap: 1,        // Clean integer zoom step increments (prevents raster tile blur/stretching)
+    zoomDelta: 1,       // Responsive single-step zooming
+    wheelPxPerZoomLevel: 60, // Smooth mouse wheel sensitivity
+    wheelDebounceTime: 40,   // Prevents overlapping zoom animation collisions
     scrollWheelZoom: true,
     touchZoom: true,
     doubleClickZoom: true,
@@ -376,6 +376,8 @@ function createLeafletMap(L, container, { center, zoom, gestureHandling: _gestur
     leafletRo.observe(container);
   }
   addBaseLayers(L, map, { defaultLayer: 'satellite', showControl: false });
+  // Shared GPU canvas renderer with 50% buffer padding for smooth vector panning and zooming
+  const canvasRenderer = L.canvas({ padding: 0.5, tolerance: 10 });
   const areaLayer = L.layerGroup().addTo(map);
   const layer = L.layerGroup().addTo(map);
 
@@ -420,17 +422,17 @@ function createLeafletMap(L, container, { center, zoom, gestureHandling: _gestur
     clearMarkers() { layer.clearLayers(); },
     closePopup() { map.closePopup(); },
     addArea(shape, { fill = '#f59e0b', fillOpacity = 0.3, stroke = '#fbbf24', strokeWeight = 1.5, onClick } = {}) {
-      const style = { color: stroke, weight: strokeWeight, opacity: 0.9, fillColor: fill, fillOpacity };
+      const style = { color: stroke, weight: strokeWeight, opacity: 0.9, fillColor: fill, fillOpacity, smoothFactor: 1.5, renderer: canvasRenderer };
       const obj = shape.kind === 'circle'
         ? L.circle([shape.center.lat, shape.center.lng], { radius: shape.radius, ...style })
-        : L.geoJSON(shape.geojson, { style: () => style });
+        : L.geoJSON(shape.geojson, { style: () => style, smoothFactor: 1.5, renderer: canvasRenderer });
       if (onClick) obj.on('click', onClick);
       obj.addTo(areaLayer);
       return { remove() { areaLayer.removeLayer(obj); } };
     },
     clearAreas() { areaLayer.clearLayers(); },
     addPolyline(points, { stroke = '#c69b55', strokeWeight = 2.5, dashArray = '6, 8' } = {}) {
-      const line = L.polyline(points, { color: stroke, weight: strokeWeight, opacity: 0.85, dashArray }).addTo(areaLayer);
+      const line = L.polyline(points, { color: stroke, weight: strokeWeight, opacity: 0.85, dashArray, smoothFactor: 1.5, renderer: canvasRenderer }).addTo(areaLayer);
       return { remove() { areaLayer.removeLayer(line); } };
     },
     onClick(cb) { map.on('click', (e) => cb({ lat: e.latlng.lat, lng: e.latlng.lng })); },

@@ -16,6 +16,7 @@ import {
   Grid3X3,
   Info,
 } from 'lucide-react';
+import useFocusTrap from '../../hooks/useFocusTrap';
 
 /**
  * Universal Image Cropper Modal
@@ -42,6 +43,13 @@ export default function ImageCropperModal({
   const containerRef = useRef(null);
   const imageRef = useRef(null);
   const previewCanvasRef = useRef(null);
+  const modalRef = useRef(null);
+  const closeBtnRef = useRef(null);
+
+  useFocusTrap(modalRef, isOpen, {
+    initialFocusRef: closeBtnRef,
+    onEscape: onClose,
+  });
 
   const [imageLoaded, setImageLoaded] = useState(false);
   const [loadError, setLoadError] = useState('');
@@ -511,7 +519,12 @@ export default function ImageCropperModal({
       onClick={onClose}
     >
       <div
-        className="bg-[#181c19] text-[#e8ebe9] rounded-[18px] sm:rounded-[22px] max-w-4xl w-full p-4 sm:p-7 shadow-2xl border border-[#2b352f] flex flex-col gap-3.5 sm:gap-4 relative my-auto max-h-[94vh] overflow-y-auto"
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cropper-modal-title"
+        tabIndex={-1}
+        className="bg-[#181c19] text-[#e8ebe9] rounded-[18px] sm:rounded-[22px] max-w-4xl w-full p-4 sm:p-7 shadow-2xl border border-[#2b352f] flex flex-col gap-3.5 sm:gap-4 relative my-auto max-h-[94vh] overflow-y-auto focus-visible:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -521,7 +534,7 @@ export default function ImageCropperModal({
               <Crop size={18} className="sm:w-5 sm:h-5" />
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="font-sans text-[0.92rem] sm:text-[1.12rem] font-bold text-white m-0 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap truncate">
+              <h3 id="cropper-modal-title" className="font-sans text-[0.92rem] sm:text-[1.12rem] font-bold text-white m-0 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap truncate">
                 <span className="truncate">{title}</span>
                 <span className="text-[0.65rem] sm:text-[0.7rem] px-2 py-0.5 rounded-full bg-[#0b2518] text-[#c69b55] font-semibold border border-[#c69b55]/30 uppercase tracking-wider shrink-0">
                   Biometric Tool
@@ -533,10 +546,11 @@ export default function ImageCropperModal({
             </div>
           </div>
           <button
+            ref={closeBtnRef}
             type="button"
             onClick={onClose}
-            className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full border-none bg-[#242b26] hover:bg-[#2f3832] text-[#9ba8a0] hover:text-white cursor-pointer flex items-center justify-center transition-colors p-0 shrink-0 ml-2 shadow-xs"
-            aria-label="Close"
+            className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full border-none bg-[#242b26] hover:bg-[#2f3832] text-[#9ba8a0] hover:text-white cursor-pointer flex items-center justify-center transition-colors p-0 shrink-0 ml-2 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            aria-label="Close dialog"
           >
             <X size={18} />
           </button>

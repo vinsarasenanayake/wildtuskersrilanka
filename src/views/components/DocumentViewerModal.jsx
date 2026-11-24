@@ -15,6 +15,7 @@ import {
   FileText,
   Image as ImageIcon
 } from 'lucide-react';
+import useFocusTrap from '../../hooks/useFocusTrap';
 
 export default function DocumentViewerModal({ item, onClose }) {
   const titleId = useId();
@@ -22,10 +23,17 @@ export default function DocumentViewerModal({ item, onClose }) {
   const [iframeLoading, setIframeLoading] = useState(true);
   const [iframeError, setIframeError] = useState(false);
 
+  const modalRef = useRef(null);
+  const closeBtnRef = useRef(null);
   const containerRef = useRef(null);
   const iframeRef = useRef(null);
   const touchStartYRef = useRef(0);
   const touchStartXRef = useRef(0);
+
+  useFocusTrap(modalRef, Boolean(item), {
+    initialFocusRef: closeBtnRef,
+    onEscape: onClose,
+  });
 
   const fileUrl = item?.fileUrl || '';
   const fileType = (item?.fileType || (fileUrl ? fileUrl.split('.').pop() : 'pptx')).toLowerCase();
@@ -182,7 +190,9 @@ export default function DocumentViewerModal({ item, onClose }) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[10000] bg-black/95 backdrop-blur-md flex flex-col text-white animate-fade-in select-none"
+      ref={modalRef}
+      tabIndex={-1}
+      className="fixed inset-0 z-[10000] bg-black/95 backdrop-blur-md flex flex-col text-white animate-fade-in select-none focus-visible:outline-none"
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
@@ -221,7 +231,7 @@ export default function DocumentViewerModal({ item, onClose }) {
               download={item.fileName || 'presentation'}
               target="_blank"
               rel="noopener noreferrer"
-              className="h-8 sm:h-9 px-2.5 sm:px-3.5 rounded-lg inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-primary bg-accent hover:bg-accent-hover transition-all no-underline shadow-xs cursor-pointer shrink-0"
+              className="h-8 sm:h-9 px-2.5 sm:px-3.5 rounded-lg inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-primary bg-accent hover:bg-accent-hover transition-all no-underline shadow-xs cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               title="Download presentation file"
             >
               <Download size={15} />
@@ -236,9 +246,10 @@ export default function DocumentViewerModal({ item, onClose }) {
 
           {/* Close Viewer Modal */}
           <button
+            ref={closeBtnRef}
             type="button"
             onClick={onClose}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-red-600/80 hover:bg-red-600 text-white flex items-center justify-center transition-all cursor-pointer border-none shadow-xs shrink-0"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-red-600/80 hover:bg-red-600 text-white flex items-center justify-center transition-all cursor-pointer border-none shadow-xs shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             aria-label="Close reader (Esc)"
             title="Close reader (Esc)"
           >

@@ -34,9 +34,9 @@ export function addBaseLayers(L, map, { position = 'topright', showControl = fal
     maxZoom: 19,
     maxNativeZoom: 18,
     attribution: ESRI_CREDIT,
-    keepBuffer: 8,
+    keepBuffer: 2,
     updateWhenZooming: false,
-    updateWhenIdle: false,
+    updateWhenIdle: true,
   });
   imagery.on('tileerror', (e) => {
     const { x, y, z } = e.coords;
@@ -49,9 +49,9 @@ export function addBaseLayers(L, map, { position = 'topright', showControl = fal
     maxZoom: 19,
     maxNativeZoom: 18,
     pane: 'overlayPane',
-    keepBuffer: 8,
+    keepBuffer: 2,
     updateWhenZooming: false,
-    updateWhenIdle: false,
+    updateWhenIdle: true,
   });
   const satellite = L.layerGroup([imagery, labels]);
 
@@ -60,9 +60,12 @@ export function addBaseLayers(L, map, { position = 'topright', showControl = fal
   const street = CARTO_KEY
     ? L.tileLayer(CARTO_VOYAGER, {
         maxZoom: 19,
+        keepBuffer: 2,
+        updateWhenZooming: false,
+        updateWhenIdle: true,
         attribution: `${osmCredit} &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>`,
       })
-    : L.tileLayer(OSM_STANDARD, { maxZoom: 19, attribution: osmCredit });
+    : L.tileLayer(OSM_STANDARD, { maxZoom: 19, keepBuffer: 2, updateWhenZooming: false, updateWhenIdle: true, attribution: osmCredit });
 
   // Default to satellite on every map
   satellite.addTo(map);

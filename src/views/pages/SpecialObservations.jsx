@@ -417,60 +417,62 @@ export default function SpecialObservations({ embedded = false }) {
         </div>
       )}
 
-      {/* Controls Bar: Search (Left) + Add Observation (Right) on ONE horizontal line */}
-      <div className="flex flex-col gap-2.5">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          {/* Search Box */}
-          <div className="relative w-full sm:max-w-md flex-1">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#999999] pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search by tusker, title, location..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-10 sm:h-10 bg-white border border-[#e2e8f0] rounded-xl sm:rounded-lg pl-9 pr-9 text-xs sm:text-[0.88rem] text-[#111111] placeholder:text-[#999999] outline-none focus:border-accent transition-all shadow-2xs box-border"
-            />
-            {searchQuery && (
+      {/* Controls Bar: Search (Left) + Add Observation (Right) - Visible strictly to authenticated admins */}
+      {isAdmin && (
+        <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            {/* Admin Search Box */}
+            <div className="relative w-full sm:max-w-md flex-1">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#999999] pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search by tusker, title, location..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-10 sm:h-10 bg-white border border-[#e2e8f0] rounded-xl sm:rounded-lg pl-9 pr-9 text-xs sm:text-[0.88rem] text-[#111111] placeholder:text-[#999999] outline-none focus:border-accent transition-all shadow-2xs box-border"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 border-none bg-none cursor-pointer p-0 text-base leading-none"
+                  aria-label="Clear search"
+                >
+                  &times;
+                </button>
+              )}
+            </div>
+
+            {/* Add Special Observation Button */}
+            {canAddObservation && (
               <button
                 type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 border-none bg-none cursor-pointer p-0 text-base leading-none"
-                aria-label="Clear search"
+                onClick={() => navigate('/admin/add-observation')}
+                className="h-10 sm:h-10 bg-accent text-primary font-bold text-xs sm:text-[0.88rem] px-5 sm:px-6 rounded-xl sm:rounded-lg inline-flex items-center justify-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors whitespace-nowrap shadow-xs shrink-0"
               >
-                &times;
+                <PlusCircle size={16} />
+                <span>Add Special Observation</span>
               </button>
             )}
           </div>
 
-          {/* Add Special Observation Button */}
-          {canAddObservation && (
-            <button
-              type="button"
-              onClick={() => navigate('/admin/add-observation')}
-              className="h-10 sm:h-10 bg-accent text-primary font-bold text-xs sm:text-[0.88rem] px-5 sm:px-6 rounded-xl sm:rounded-lg inline-flex items-center justify-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors whitespace-nowrap shadow-xs shrink-0"
-            >
-              <PlusCircle size={16} />
-              <span>Add Special Observation</span>
-            </button>
+          {/* Records Found Indicator */}
+          {searchQuery.trim() && (
+            <div className="font-sans text-xs sm:text-[0.85rem] text-[#666666] px-1 font-medium flex items-center gap-1.5 animate-fade-in">
+              <span>
+                Found <strong className="text-primary font-bold">{observations.length}</strong> {observations.length === 1 ? 'record' : 'records'} matching &ldquo;<span className="text-[#111111] font-semibold">{searchQuery}</span>&rdquo;
+              </span>
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="text-accent hover:underline cursor-pointer border-none bg-none font-semibold text-xs ml-1"
+              >
+                Clear search
+              </button>
+            </div>
           )}
         </div>
-
-        {/* Records Found Indicator */}
-        {searchQuery.trim() && (
-          <div className="font-sans text-xs sm:text-[0.85rem] text-[#666666] px-1 font-medium flex items-center gap-1.5 animate-fade-in">
-            <span>
-              Found <strong className="text-primary font-bold">{observations.length}</strong> {observations.length === 1 ? 'record' : 'records'} matching &ldquo;<span className="text-[#111111] font-semibold">{searchQuery}</span>&rdquo;
-            </span>
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              className="text-accent hover:underline cursor-pointer border-none bg-none font-semibold text-xs ml-1"
-            >
-              Clear search
-            </button>
-          </div>
-        )}
-      </div>
+      )}
 
         {/* Observations List & Loading Skeleton */}
         {loading && allObservations.length === 0 ? (
@@ -503,7 +505,7 @@ export default function SpecialObservations({ embedded = false }) {
                   item,
                 }));
 
-                const visiblePairs = searchQuery
+                const visiblePairs = (isAdmin && searchQuery)
                   ? LOOKALIKE_EXPANDED_PAIRS.filter(
                       (p) =>
                         p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -513,7 +515,7 @@ export default function SpecialObservations({ embedded = false }) {
                     )
                   : LOOKALIKE_EXPANDED_PAIRS;
 
-                if (searchQuery && visiblePairs.length === 0 && !item.title.toLowerCase().includes(searchQuery.toLowerCase())) {
+                if (isAdmin && searchQuery && visiblePairs.length === 0 && !item.title.toLowerCase().includes(searchQuery.toLowerCase())) {
                   return null;
                 }
 
@@ -778,11 +780,11 @@ export default function SpecialObservations({ embedded = false }) {
             <p className="font-sans text-[0.88rem] sm:text-[0.92rem] text-[#777777] max-w-sm sm:max-w-md m-0 leading-relaxed">
               {allObservations.length === 0
                 ? <>No special observations have been <span className="inline-block whitespace-nowrap">recorded yet.</span></>
-                : searchQuery
+                : (isAdmin && searchQuery)
                 ? 'No observations match your current search query. Try clearing the search.'
                 : <>No observations recorded yet.</>}
             </p>
-            {searchQuery && (
+            {isAdmin && searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
                 className="mt-2 text-accent text-[0.88rem] font-semibold hover:underline cursor-pointer border-none bg-none"

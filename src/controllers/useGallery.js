@@ -74,11 +74,12 @@ export function useGallery(initialActivePhoto = null) {
     await reloadPhotos();
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Delete this photo from the gallery?')) {
-      await deleteGalleryPhoto(id);
-      await reloadPhotos();
+  const handleDelete = async (id, skipConfirm = false) => {
+    if (!skipConfirm && typeof window !== 'undefined' && !window.confirm('Delete this photo from the gallery?')) {
+      return;
     }
+    await deleteGalleryPhoto(id);
+    await reloadPhotos();
   };
 
   const handleUpdate = async (id, updates) => {

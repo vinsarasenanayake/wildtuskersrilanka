@@ -16,6 +16,7 @@ import {
   searchPlacesLive,
 } from '../../utils/sriLankaLocations';
 import { createMap } from '../../utils/mapEngine';
+import useFocusTrap from '../../hooks/useFocusTrap';
 
 const parseLocations = (val) => {
   if (!val) return [];
@@ -62,6 +63,13 @@ export default function LocationSearchInput({
   const inputRef = useRef(null);
   const debounceTimerRef = useRef(null);
   const modalDebounceRef = useRef(null);
+  const mapModalRef = useRef(null);
+  const mapCloseBtnRef = useRef(null);
+
+  useFocusTrap(mapModalRef, showMapModal, {
+    initialFocusRef: mapCloseBtnRef,
+    onEscape: () => setShowMapModal(false),
+  });
   const modalMapContainerRef = useRef(null);
   const modalMapRef = useRef(null);
   const modalMarkerRef = useRef(null);
@@ -681,7 +689,9 @@ export default function LocationSearchInput({
           onClick={() => setShowMapModal(false)}
         >
           <div
-            className="bg-[#181c19] text-[#e8ebe9] rounded-[22px] max-w-4xl w-full p-3.5 sm:p-6 shadow-2xl border border-[#2b352f] flex flex-col gap-3 sm:gap-4 font-sans my-auto max-h-[94vh] overflow-y-auto"
+            ref={mapModalRef}
+            tabIndex={-1}
+            className="bg-[#181c19] text-[#e8ebe9] rounded-[22px] max-w-4xl w-full p-3.5 sm:p-6 shadow-2xl border border-[#2b352f] flex flex-col gap-3 sm:gap-4 font-sans my-auto max-h-[94vh] overflow-y-auto focus-visible:outline-none"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -701,10 +711,11 @@ export default function LocationSearchInput({
                 </div>
               </div>
               <button
+                ref={mapCloseBtnRef}
                 type="button"
                 onClick={() => setShowMapModal(false)}
-                className="w-8 h-8 rounded-full border-none bg-[#242b26] hover:bg-[#2f3832] text-[#9ba8a0] hover:text-white cursor-pointer flex items-center justify-center transition-colors p-0 shrink-0"
-                aria-label="Close"
+                className="w-8 h-8 rounded-full border-none bg-[#242b26] hover:bg-[#2f3832] text-[#9ba8a0] hover:text-white cursor-pointer flex items-center justify-center transition-colors p-0 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                aria-label="Close dialog"
               >
                 <X size={18} />
               </button>

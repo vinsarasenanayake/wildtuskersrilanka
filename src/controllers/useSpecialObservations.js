@@ -25,7 +25,14 @@ export function useSpecialObservationsFeed() {
   const [loading, setLoading] = useState(() => !cached || cached.length === 0);
   const [selectedYear, setSelectedYear] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
-  const { isAdmin } = useAuth();
+  const { isAdmin, authLoading } = useAuth();
+
+  // Security measure: if user is not an authenticated admin, clear search state immediately
+  useEffect(() => {
+    if (!authLoading && !isAdmin && searchQuery) {
+      setSearchQuery('');
+    }
+  }, [isAdmin, authLoading, searchQuery]);
 
   const loadObservations = async (force = false) => {
     try {
@@ -52,6 +59,12 @@ export function useSpecialObservationsFeed() {
     return Array.from(yearsSet).sort((a, b) => Number(b) - Number(a));
   }, [observations]);
 
+  // Sanitized search query - strictly validated and only accessible to authenticated admins
+  const sanitizedSearchQuery = useMemo(() => {
+    if (!isAdmin || typeof searchQuery !== 'string') return '';
+    return searchQuery.trim().slice(0, 100);
+  }, [isAdmin, searchQuery]);
+
   // Filtered observations
   const filteredObservations = useMemo(() => {
     return observations.filter(item => {
@@ -62,9 +75,10 @@ export function useSpecialObservationsFeed() {
 
       if (!matchesYear) return false;
 
-      if (!searchQuery.trim()) return true;
+      // Security check: search filtering is strictly ignored for unauthenticated / non-admin users
+      if (!isAdmin || !sanitizedSearchQuery) return true;
 
-      const q = searchQuery.toLowerCase();
+      const q = sanitizedSearchQuery.toLowerCase();
       return (
         (item.title && item.title.toLowerCase().includes(q)) ||
         (item.tuskerName && item.tuskerName.toLowerCase().includes(q)) ||
@@ -72,7 +86,17 @@ export function useSpecialObservationsFeed() {
         (item.description && item.description.toLowerCase().includes(q))
       );
     });
-  }, [observations, selectedYear, searchQuery]);
+  }, [observations, selectedYear, isAdmin, sanitizedSearchQuery]);
+
+  // Safe search query setter that verifies admin status
+  const handleSetSearchQuery = (val) => {
+    if (!isAdmin) {
+      setSearchQuery('');
+      return;
+    }
+    const clean = typeof val === 'string' ? val.slice(0, 100) : '';
+    setSearchQuery(clean);
+  };
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this special observation?')) {
@@ -92,8 +116,8 @@ export function useSpecialObservationsFeed() {
     availableYears,
     selectedYear,
     setSelectedYear,
-    searchQuery,
-    setSearchQuery,
+    searchQuery: isAdmin ? searchQuery : '',
+    setSearchQuery: handleSetSearchQuery,
     canAddObservation: isAdmin,
     isAdmin,
     handleDelete,

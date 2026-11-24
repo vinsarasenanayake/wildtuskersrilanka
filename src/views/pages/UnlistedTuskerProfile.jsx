@@ -33,6 +33,7 @@ import { getCachedAspect, setCachedAspect, probeImageAspect } from '../../utils/
 import ImageUploadBox from '../components/ImageUploadBox';
 import LocationSearchInput from '../components/LocationSearchInput';
 import { todayLocalISO } from '../../utils/localDate';
+import useFocusTrap from '../../hooks/useFocusTrap';
 import PhotoWatermarkBadge from '../components/PhotoWatermarkBadge';
 
 /* ── Photo Slideshow Component ───────────────────────────────── */
@@ -259,6 +260,20 @@ export default function UnlistedTuskerProfile() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
   const [editError, setEditError] = useState('');
+  const editModalRef = useRef(null);
+  const closeEditBtnRef = useRef(null);
+  const compModalRef = useRef(null);
+  const closeCompBtnRef = useRef(null);
+
+  useFocusTrap(editModalRef, showEditModal, {
+    initialFocusRef: closeEditBtnRef,
+    onEscape: () => setShowEditModal(false),
+  });
+
+  useFocusTrap(compModalRef, Boolean(selectedComparisonImg), {
+    initialFocusRef: closeCompBtnRef,
+    onEscape: () => setSelectedComparisonImg(null),
+  });
   const [editFormData, setEditFormData] = useState({
     location: '',
     listedDate: '',
@@ -635,7 +650,12 @@ export default function UnlistedTuskerProfile() {
             onClick={() => setSelectedComparisonImg(null)}
           >
             <div
-              className="relative max-w-[900px] w-full bg-[#111111] rounded-2xl overflow-hidden border border-white/10 shadow-2xl my-auto"
+              ref={compModalRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Comparison photo view"
+              tabIndex={-1}
+              className="relative max-w-[900px] w-full bg-[#111111] rounded-2xl overflow-hidden border border-white/10 shadow-2xl my-auto focus-visible:outline-none"
               onClick={e => e.stopPropagation()}
             >
               <div className="p-4 bg-black/60 flex items-center justify-between text-white border-b border-white/10">
@@ -643,9 +663,11 @@ export default function UnlistedTuskerProfile() {
                   {tusker.id} • {selectedComparisonImg.year}
                 </span>
                 <button
+                  ref={closeCompBtnRef}
                   type="button"
+                  aria-label="Close dialog"
                   onClick={() => setSelectedComparisonImg(null)}
-                  className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border-none cursor-pointer transition-colors shrink-0 shadow-xs"
+                  className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border-none cursor-pointer transition-colors shrink-0 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
                   <X size={18} />
                 </button>
@@ -676,18 +698,25 @@ export default function UnlistedTuskerProfile() {
             onClick={() => setShowEditModal(false)}
           >
             <div
-              className="bg-white rounded-[20px] max-w-[620px] w-full p-6 sm:p-7 shadow-2xl border border-[#e8e8e8] flex flex-col gap-5 relative max-h-[92vh] overflow-y-auto"
+              ref={editModalRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="edit-unlisted-modal-title"
+              tabIndex={-1}
+              className="bg-white rounded-[20px] max-w-[620px] w-full p-6 sm:p-7 shadow-2xl border border-[#e8e8e8] flex flex-col gap-5 relative max-h-[92vh] overflow-y-auto focus-visible:outline-none"
               onClick={e => e.stopPropagation()}
             >
               <div className="flex justify-between items-center pb-3 border-b border-[#eeeeee]">
                 <div className="min-w-0 flex-1 mr-2">
-                  <h3 className="font-sans text-[1.05rem] sm:text-[1.25rem] font-bold text-[#111111] m-0 whitespace-nowrap truncate">Edit Unlisted Profile</h3>
+                  <h3 id="edit-unlisted-modal-title" className="font-sans text-[1.05rem] sm:text-[1.25rem] font-bold text-[#111111] m-0 whitespace-nowrap truncate">Edit Unlisted Profile</h3>
                   <p className="font-sans text-[0.74rem] sm:text-[0.82rem] text-[#888888] m-0 mt-0.5 whitespace-nowrap truncate">{tusker.id} • Active Observation</p>
                 </div>
                 <button
+                  ref={closeEditBtnRef}
                   type="button"
+                  aria-label="Close dialog"
                   onClick={() => setShowEditModal(false)}
-                  className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full border-none bg-[#f5f5f5] hover:bg-[#e8e8e8] text-[#555555] cursor-pointer flex items-center justify-center transition-colors shrink-0 shadow-xs"
+                  className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full border-none bg-[#f5f5f5] hover:bg-[#e8e8e8] text-[#555555] cursor-pointer flex items-center justify-center transition-colors shrink-0 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
                   <X size={18} />
                 </button>
