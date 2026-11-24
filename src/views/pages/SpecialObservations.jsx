@@ -27,26 +27,42 @@ import { useSpecialObservationsFeed } from '../../controllers/useSpecialObservat
 import ImageLightboxModal from '../components/ImageLightboxModal';
 import { formatDisplayTime } from '../../utils/localDate';
 
-const LOOKALIKE_PAIRS_META = [
+const LOOKALIKE_EXPANDED_PAIRS = [
   {
     pattern: /wijaya|walagamba/i,
-    tuskersText: 'T119 - Wijaya vs T219 - Walagamba',
-    title: 'Wilpattu Wijaya (Left) vs. Thabbowa Karuwalagaswewa Walagamba (Right)',
+    idSuffix: 'pair-01',
+    tuskerName: 'T119 - Wijaya vs T219 - Walagamba',
+    location: 'Wilpattu / Karuwalagaswewa',
+    title: 'Pair 01: Wilpattu Wijaya (Left) vs. Thabbowa Karuwalagaswewa Walagamba (Right)',
+    image: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/observations/lookalikes/1_wijaya_vs_walagamba.jpg',
+    description: `• Left Tusker: Wilpattu Wijaya (T119) - Roaming Range: Wilpattu / Eluwankulama / Pomparippu\n• Right Tusker: Walagamba (T219) - Roaming Range: Wilpattu / Karuwalagaswewa / Thabbowa / Puttalam\n• Diagnostic Differences:\n  - Tusks: Wijaya possesses slightly convergent tusks with a downward curve, whereas Walagamba features thicker, more divergent tusks pointing forward.\n  - Ears & Depigmentation: Wijaya exhibits heavy pink depigmentation across both ear lobes and a distinct roll on his upper ear fold. Walagamba displays prominent jagged tear notches on his right ear margin with differing depigmentation distribution on the forehead and trunk base.`,
   },
   {
     pattern: /agbo|gajabahu/i,
-    tuskersText: 'T096 - Agbo vs T232 - Gajabahu',
-    title: 'Agbo (Left) vs. Gajabahu (Right)',
+    idSuffix: 'pair-02',
+    tuskerName: 'T096 - Agbo vs T232 - Gajabahu',
+    location: 'Thirappane / Padaviya',
+    title: 'Pair 02: Agbo (Left) vs. Gajabahu (Right)',
+    image: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/observations/lookalikes/2_agbo_vs_gajabahu.jpg',
+    description: `• Left Tusker: Agbo (T096) - Roaming Range: Thirappane / Manankattiya / Mahakanadarawa\n• Right Tusker: Gajabahu (T232) - Roaming Range: Padaviya / Wahalkada / Kebithigollewa\n• Diagnostic Differences:\n  - Tusks: Agbo's tusks are long, divergent, and curve gracefully upward with clean tips. Gajabahu's left tusk features distinctive wear and mud-caking patterns with a slightly steeper downward angle.\n  - Ears: Agbo's ear pinnae have a broad, flat top fold with fine marginal nicks. Gajabahu displays pronounced lateral ear folds with distinct depigmentation patches across the upper ear cartilage and temporal regions.`,
   },
   {
     pattern: /missaka|homo/i,
-    tuskersText: 'T078 - Missaka vs T073 - Homo',
-    title: 'Missaka (Left) vs. Homo (Right)',
+    idSuffix: 'pair-03',
+    tuskerName: 'T078 - Missaka vs T073 - Homo',
+    location: 'Galgamuwa / Kala Wewa',
+    title: 'Pair 03: Missaka (Left) vs. Homo (Right)',
+    image: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/observations/lookalikes/3_missaka_vs_homo.jpg',
+    description: `• Left Tusker: Missaka (T078) - Roaming Range: Galgamuwa\n• Right Tusker: Homo (T073) - Roaming Range: Kala Wewa / Galgamuwa\n• Diagnostic Differences:\n  - Tusks: Both bulls bear short, thick, convergent tusks. However, Missaka's tusks are slightly more widely spaced at the base, while Homo's tusks point more sharply inward toward the trunk.\n  - Facial & Ear Features: Missaka has prominent vertical forehead creases with a distinctive scar line on his trunk base. Homo has an iconic dome-shaped double cranial bump and subtle ear notch patterns near the bottom ear lobes that differentiate him in close encounters.`,
   },
   {
     pattern: /devra|parinda/i,
-    tuskersText: 'T173 - Devra vs T162 - Parinda',
-    title: 'T173 - Devra (Left) vs. Parinda (Right)',
+    idSuffix: 'pair-04',
+    tuskerName: 'T173 - Devra vs T162 - Parinda',
+    location: 'Yala',
+    title: 'Pair 04: Devra (Left) vs. Parinda (Right)',
+    image: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/observations/lookalikes/4_devra_vs_parinda.jpg',
+    description: `• Left Tusker: Devra (T173) - Roaming Range: Yala\n• Right Tusker: Parinda (T162) - Roaming Range: Yala / Yala Block 3, 5\n• Diagnostic Differences:\n  - Tusks: Devra bears short, parallel tusks with slight asymmetrical elevation (left tusk slightly higher). Parinda's tusks are slightly longer, more divergent, and curve forward with sharper tapering tips.\n  - Ears & Head Conformation: Devra has broad, forward-pointing ear folds with distinctive edge frills. Parinda features smaller, more rounded ear folds and distinctive depigmentation flecks along the inner ear border and trunk bridge.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nKey Takeaway for Field Researchers:\nAlways look beyond tusks alone. Ear notch biometrics, top-fold rolling degree, tears, and depigmentation patterns remain the immutable biometric fingerprints of Sri Lanka's wild tuskers.`,
   },
 ];
 
@@ -64,11 +80,11 @@ function buildObservationPhotos(item) {
       hideDate = true;
       hideLocation = true;
       const pairMeta =
-        LOOKALIKE_PAIRS_META.find((m) => m.pattern.test(imgUrl)) ||
-        LOOKALIKE_PAIRS_META[idx];
+        LOOKALIKE_EXPANDED_PAIRS.find((m) => m.pattern.test(imgUrl)) ||
+        LOOKALIKE_EXPANDED_PAIRS[idx];
       if (pairMeta) {
         title = pairMeta.title;
-        tuskerName = pairMeta.tuskersText;
+        tuskerName = pairMeta.tuskerName;
       }
     }
 
@@ -472,111 +488,286 @@ export default function SpecialObservations({ embedded = false }) {
           </div>
         ) : observations.length > 0 ? (
           <div className="flex flex-col gap-6">
-            {observations.map((item) => (
-              <article
-                key={item.id}
-                className="bg-white rounded-2xl border border-[#e8ece9] p-4 sm:p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 flex flex-col gap-3 sm:gap-4 relative"
-              >
-                {/* Top Meta Bar */}
-                <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 pb-3 border-b border-[#f0f2f0]">
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-                    {/* Tusker Tag */}
-                    <span className="font-sans text-[0.75rem] sm:text-[0.82rem] font-bold px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-accent/15 text-[#9a7020] border border-accent/30 tracking-wide">
-                      {item.tuskerName}
-                    </span>
+            {observations.map((item) => {
+              const isLookalikes = item.id === 5 || /lookalike|alike/i.test(item.title);
 
-                    {/* Date (hidden if multi-year/comparative observation specifies hideDate) */}
-                    {item.date && !item.hideDate && (
-                      <span className="inline-flex items-center gap-1.5 font-sans text-[0.75rem] sm:text-[0.82rem] text-[#666666] font-medium">
-                        <Calendar size={13} className="text-accent" />
-                        {formatDate(item.date)}
-                      </span>
-                    )}
+              if (isLookalikes) {
+                const allLookalikePhotos = LOOKALIKE_EXPANDED_PAIRS.map((p, pIdx) => ({
+                  id: `${item.id}_${pIdx}`,
+                  imageUrl: p.image,
+                  title: p.title,
+                  tuskerName: p.tuskerName,
+                  location: p.location,
+                  hideDate: true,
+                  author: item.author || 'Wild Tuskers Sri Lanka Team',
+                  item,
+                }));
 
-                    {/* Time of Observation */}
-                    {item.time && (
-                      <span className="inline-flex items-center gap-1.5 font-sans text-[0.75rem] sm:text-[0.82rem] text-emerald-800 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        <Clock size={12} className="text-emerald-700" />
-                        {formatDisplayTime(item.time) || item.time}
-                      </span>
-                    )}
+                const visiblePairs = searchQuery
+                  ? LOOKALIKE_EXPANDED_PAIRS.filter(
+                      (p) =>
+                        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        p.tuskerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        p.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        p.description.toLowerCase().includes(searchQuery.toLowerCase())
+                    )
+                  : LOOKALIKE_EXPANDED_PAIRS;
 
-                    {/* Location */}
-                    {item.location && (
-                      <span className="inline-flex items-center gap-1.5 font-sans text-[0.75rem] sm:text-[0.82rem] text-[#666666] font-medium">
-                        <MapPin size={13} className="text-accent" />
-                        {item.location}
+                if (searchQuery && visiblePairs.length === 0 && !item.title.toLowerCase().includes(searchQuery.toLowerCase())) {
+                  return null;
+                }
+
+                const pairsToRender = visiblePairs.length > 0 ? visiblePairs : LOOKALIKE_EXPANDED_PAIRS;
+
+                return (
+                  <React.Fragment key={item.id}>
+                    {/* ── Main Title & Introductory Paragraph (Header without section card box) ── */}
+                    <div className="pt-2 pb-1 flex flex-col gap-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <h2 className="font-sans text-xl sm:text-2xl md:text-[1.75rem] font-bold text-[#111111] leading-snug m-0">
+                          {item.title}
+                        </h2>
+                        {isAdmin && (
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              onClick={() => navigate(`/admin/edit-observation/${item.id}`)}
+                              className="p-1.5 text-[#777777] hover:text-accent hover:bg-[#f5f5f5] rounded-md transition-colors cursor-pointer border-none bg-none"
+                              title="Edit Observation"
+                            >
+                              <Edit3 size={15} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(item.id)}
+                              className="p-1.5 text-[#777777] hover:text-rose-600 hover:bg-[#fff0f0] rounded-md transition-colors cursor-pointer border-none bg-none"
+                              title="Delete Observation"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-2.5 text-xs sm:text-[0.94rem] text-[#4b5563] leading-[1.8] text-justify">
+                        <p className="m-0" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
+                          In the field, wild tuskers often share remarkably similar silhouettes, tusk lengths, and head shapes, leading to frequent misidentifications even among experienced observers and wildlife photographers. Systematic morphological identification-focusing on ear venation, top-fold curvatures, tears, facial depigmentation, and tusk angles-is essential to correctly distinguish these lookalike individuals.
+                        </p>
+                        <p className="m-0" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
+                          This comparative study examines 4 pairs (8 iconic Sri Lankan tuskers) that look remarkably alike at first glance, detailing the key diagnostic features that separate them:
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* ── 4 Separate Observation Sections for the 4 Comparison Pairs ── */}
+                    {pairsToRender.map((pair, pIdx) => {
+                      const photoMeta = {
+                        id: `${item.id}_${pIdx}`,
+                        imageUrl: pair.image,
+                        title: pair.title,
+                        tuskerName: pair.tuskerName,
+                        location: pair.location,
+                        hideDate: true,
+                        author: item.author || 'Wild Tuskers Sri Lanka Team',
+                        allPhotos: allLookalikePhotos,
+                      };
+
+                      return (
+                        <article
+                          key={`${item.id}-${pair.idSuffix}`}
+                          className="bg-white rounded-2xl border border-[#e8ece9] p-4 sm:p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 flex flex-col gap-3 sm:gap-4 relative"
+                        >
+                          {/* Top Meta Bar */}
+                          <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 pb-3 border-b border-[#f0f2f0]">
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+                              {/* Tusker Tag */}
+                              <span className="font-sans text-[0.75rem] sm:text-[0.82rem] font-bold px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-accent/15 text-[#9a7020] border border-accent/30 tracking-wide">
+                                {pair.tuskerName}
+                              </span>
+
+                              {/* Location */}
+                              {pair.location && (
+                                <span className="inline-flex items-center gap-1.5 font-sans text-[0.75rem] sm:text-[0.82rem] text-[#666666] font-medium">
+                                  <MapPin size={13} className="text-accent" />
+                                  {pair.location}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Title */}
+                          <h2 className="font-sans text-lg sm:text-[1.35rem] md:text-[1.5rem] font-bold text-[#111111] leading-snug m-0">
+                            {pair.title}
+                          </h2>
+
+                          {/* Description: Scrollable with Justified Paragraphs */}
+                          <div
+                            tabIndex={0}
+                            role="region"
+                            aria-label={`Description for ${pair.title}`}
+                            className="max-h-[220px] sm:max-h-[260px] overflow-y-auto pr-2 sm:pr-3 flex flex-col gap-2.5 overscroll-contain focus:outline-hidden"
+                            style={{
+                              scrollbarWidth: 'thin',
+                              scrollbarColor: '#c5a059 transparent',
+                            }}
+                          >
+                            {pair.description.split(/\n+/).map((para, paraIdx) => (
+                              <p
+                                key={paraIdx}
+                                className="font-sans text-xs sm:text-[0.93rem] text-[#374151] leading-[1.8] text-justify m-0"
+                                style={{ textAlign: 'justify', textJustify: 'inter-word' }}
+                              >
+                                {para}
+                              </p>
+                            ))}
+                          </div>
+
+                          {/* Photograph in Full View across the section */}
+                          <div className="pt-2 flex flex-col gap-2">
+                            <div className="flex items-center justify-between">
+                              <span className="font-sans text-[0.72rem] sm:text-[0.78rem] font-bold text-[#888888] uppercase tracking-wider flex items-center gap-1.5">
+                                <ImageIcon size={14} className="text-accent shrink-0" />
+                                <span>Comparison Photograph</span>
+                              </span>
+                              <span className="text-[0.7rem] sm:text-[0.75rem] text-[#888888]">
+                                Click to enlarge
+                              </span>
+                            </div>
+                            <div
+                              onClick={() => setActiveLightboxPhoto(photoMeta)}
+                              className="relative w-full rounded-2xl overflow-hidden bg-[#f8f9fa] border border-[#e5e7eb] cursor-pointer group shadow-2xs"
+                            >
+                              <img
+                                src={pair.image}
+                                alt={`${pair.title} photograph`}
+                                className="w-full h-auto max-h-[580px] object-contain block mx-auto transition-transform duration-300 group-hover:scale-[1.01]"
+                                loading="lazy"
+                              />
+                              <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                <ExternalLink size={22} />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Footer Attribution */}
+                          <div className="pt-3 border-t border-[#f5f5f5] flex items-center justify-between text-[0.8rem] text-[#888888] font-sans">
+                            <span className="inline-flex items-center gap-1.5">
+                              <User size={13} className="text-[#999999]" />
+                              Recorded by: <strong className="text-[#555555] font-semibold">{item.author || 'Wild Tuskers Sri Lanka Team'}</strong>
+                            </span>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </React.Fragment>
+                );
+              }
+
+              // Normal Observation (e.g. Deega 2, Gemunu)
+              return (
+                <article
+                  key={item.id}
+                  className="bg-white rounded-2xl border border-[#e8ece9] p-4 sm:p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 flex flex-col gap-3 sm:gap-4 relative"
+                >
+                  {/* Top Meta Bar */}
+                  <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 pb-3 border-b border-[#f0f2f0]">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+                      {/* Tusker Tag */}
+                      <span className="font-sans text-[0.75rem] sm:text-[0.82rem] font-bold px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-accent/15 text-[#9a7020] border border-accent/30 tracking-wide">
+                        {item.tuskerName}
                       </span>
+
+                      {/* Date (hidden if multi-year/comparative observation specifies hideDate) */}
+                      {item.date && !item.hideDate && (
+                        <span className="inline-flex items-center gap-1.5 font-sans text-[0.75rem] sm:text-[0.82rem] text-[#666666] font-medium">
+                          <Calendar size={13} className="text-accent" />
+                          {formatDate(item.date)}
+                        </span>
+                      )}
+
+                      {/* Time of Observation */}
+                      {item.time && (
+                        <span className="inline-flex items-center gap-1.5 font-sans text-[0.75rem] sm:text-[0.82rem] text-emerald-800 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                          <Clock size={12} className="text-emerald-700" />
+                          {formatDisplayTime(item.time) || item.time}
+                        </span>
+                      )}
+
+                      {/* Location */}
+                      {item.location && (
+                        <span className="inline-flex items-center gap-1.5 font-sans text-[0.75rem] sm:text-[0.82rem] text-[#666666] font-medium">
+                          <MapPin size={13} className="text-accent" />
+                          {item.location}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Admin Actions */}
+                    {isAdmin && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => navigate(`/admin/edit-observation/${item.id}`)}
+                          className="p-1.5 text-[#777777] hover:text-accent hover:bg-[#f5f5f5] rounded-md transition-colors cursor-pointer border-none bg-none"
+                          title="Edit Observation"
+                        >
+                          <Edit3 size={15} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="p-1.5 text-[#777777] hover:text-rose-600 hover:bg-[#fff0f0] rounded-md transition-colors cursor-pointer border-none bg-none"
+                          title="Delete Observation"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
                     )}
                   </div>
 
-                  {/* Admin Actions */}
-                  {isAdmin && (
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => navigate(`/admin/edit-observation/${item.id}`)}
-                        className="p-1.5 text-[#777777] hover:text-accent hover:bg-[#f5f5f5] rounded-md transition-colors cursor-pointer border-none bg-none"
-                        title="Edit Observation"
-                      >
-                        <Edit3 size={15} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="p-1.5 text-[#777777] hover:text-rose-600 hover:bg-[#fff0f0] rounded-md transition-colors cursor-pointer border-none bg-none"
-                        title="Delete Observation"
-                      >
-                        <Trash2 size={15} />
-                      </button>
+                  {/* Title */}
+                  <h2 className="font-sans text-lg sm:text-[1.35rem] md:text-[1.5rem] font-bold text-[#111111] leading-snug m-0">
+                    {item.title}
+                  </h2>
+
+                  {/* Description: Scrollable with Justified Paragraphs */}
+                  {item.description && (
+                    <div
+                      tabIndex={0}
+                      role="region"
+                      aria-label={`Description for ${item.title}`}
+                      className="max-h-[220px] sm:max-h-[260px] overflow-y-auto pr-2 sm:pr-3 flex flex-col gap-2.5 overscroll-contain focus:outline-hidden"
+                      style={{
+                        scrollbarWidth: 'thin',
+                        scrollbarColor: '#c5a059 transparent',
+                      }}
+                    >
+                      {item.description.split(/\n+/).map((para, pIdx) => (
+                        <p
+                          key={pIdx}
+                          className="font-sans text-xs sm:text-[0.93rem] text-[#374151] leading-[1.8] text-justify m-0"
+                          style={{ textAlign: 'justify', textJustify: 'inter-word' }}
+                        >
+                          {para}
+                        </p>
+                      ))}
                     </div>
                   )}
-                </div>
 
-                {/* Title */}
-                <h2 className="font-sans text-lg sm:text-[1.35rem] md:text-[1.5rem] font-bold text-[#111111] leading-snug m-0">
-                  {item.title}
-                </h2>
+                  {/* Photos / Images Gallery */}
+                  <ObservationPhotosGallery
+                    item={item}
+                    setActiveLightboxPhoto={setActiveLightboxPhoto}
+                  />
 
-                {/* Description: Scrollable with Justified Paragraphs */}
-                {item.description && (
-                  <div
-                    tabIndex={0}
-                    role="region"
-                    aria-label={`Description for ${item.title}`}
-                    className="max-h-[220px] sm:max-h-[260px] overflow-y-auto pr-2 sm:pr-3 flex flex-col gap-2.5 overscroll-contain focus:outline-hidden"
-                    style={{
-                      scrollbarWidth: 'thin',
-                      scrollbarColor: '#c5a059 transparent',
-                    }}
-                  >
-                    {item.description.split(/\n+/).map((para, pIdx) => (
-                      <p
-                        key={pIdx}
-                        className="font-sans text-xs sm:text-[0.93rem] text-[#374151] leading-[1.8] text-justify m-0"
-                        style={{ textAlign: 'justify', textJustify: 'inter-word' }}
-                      >
-                        {para}
-                      </p>
-                    ))}
-                  </div>
-                )}
-
-                {/* Photos / Images Gallery */}
-                <ObservationPhotosGallery
-                  item={item}
-                  setActiveLightboxPhoto={setActiveLightboxPhoto}
-                />
-
-                {/* Footer Attribution */}
-                {item.author && (
-                  <div className="pt-3 border-t border-[#f5f5f5] flex items-center justify-between text-[0.8rem] text-[#888888] font-sans">
-                    <span className="inline-flex items-center gap-1.5">
-                      <User size={13} className="text-[#999999]" />
-                      Recorded by: <strong className="text-[#555555] font-semibold">{item.author}</strong>
-                    </span>
-                  </div>
-                )}
-              </article>
-            ))}
+                  {/* Footer Attribution */}
+                  {item.author && (
+                    <div className="pt-3 border-t border-[#f5f5f5] flex items-center justify-between text-[0.8rem] text-[#888888] font-sans">
+                      <span className="inline-flex items-center gap-1.5">
+                        <User size={13} className="text-[#999999]" />
+                        Recorded by: <strong className="text-[#555555] font-semibold">{item.author}</strong>
+                      </span>
+                    </div>
+                  )}
+                </article>
+              );
+            })}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 px-6 bg-white rounded-2xl border border-[#e8ece9] text-center gap-3">

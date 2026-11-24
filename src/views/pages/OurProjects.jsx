@@ -44,8 +44,42 @@ function parseImages(imageField) {
     .filter(Boolean);
 }
 
-function renderJustifiedParagraphs(text) {
-  if (!text) return null;
+function orderDescriptionLanguages(text) {
+  if (!text) return text;
+  const hasSinhala = /[\u0D80-\u0DFF]/.test(text);
+  const hasLatin = /[a-zA-Z]/.test(text);
+  if (!hasSinhala || !hasLatin) return text;
+
+  // Split by divider or double newlines
+  const parts = text.split(/(?:^[━─=\-_]{6,}$|\n{2,}[━─=\-_]{6,}\n{2,}|\n{3,})/m);
+  if (parts.length >= 2) {
+    const firstPart = parts[0].trim();
+    const isFirstSinhala = /[\u0D80-\u0DFF]/.test(firstPart) && !/[a-zA-Z]{10,}/.test(firstPart);
+    if (isFirstSinhala) {
+      const sinhalaParts = [];
+      const englishParts = [];
+      parts.forEach((p) => {
+        const trimmed = p.trim();
+        if (!trimmed) return;
+        const sinhalaChars = (trimmed.match(/[\u0D80-\u0DFF]/g) || []).length;
+        const englishChars = (trimmed.match(/[a-zA-Z]/g) || []).length;
+        if (sinhalaChars > englishChars) {
+          sinhalaParts.push(trimmed);
+        } else {
+          englishParts.push(trimmed);
+        }
+      });
+      if (englishParts.length > 0 && sinhalaParts.length > 0) {
+        return `${englishParts.join('\n\n')}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n${sinhalaParts.join('\n\n')}`;
+      }
+    }
+  }
+  return text;
+}
+
+function renderJustifiedParagraphs(rawText) {
+  if (!rawText) return null;
+  const text = orderDescriptionLanguages(rawText);
   const paragraphs = text
     .split(/\n+/)
     .map(p => p.trim())
@@ -62,15 +96,22 @@ function renderJustifiedParagraphs(text) {
     );
   }
 
-  return paragraphs.map((para, idx) => (
-    <p
-      key={idx}
-      className="font-sans text-[0.84rem] sm:text-[0.92rem] text-[#374151] leading-[1.8] text-justify m-0"
-      style={{ textAlign: 'justify', textJustify: 'inter-word' }}
-    >
-      {para}
-    </p>
-  ));
+  return paragraphs.map((para, idx) => {
+    if (/^[━─=\-_]{6,}$/.test(para)) {
+      return (
+        <div key={idx} className="my-2.5 border-t border-[#e5e7eb]" role="separator" />
+      );
+    }
+    return (
+      <p
+        key={idx}
+        className="font-sans text-[0.84rem] sm:text-[0.92rem] text-[#374151] leading-[1.8] text-justify m-0"
+        style={{ textAlign: 'justify', textJustify: 'inter-word' }}
+      >
+        {para}
+      </p>
+    );
+  });
 }
 
 function PhotosScrollRow({ images, event, onPhotoClick }) {

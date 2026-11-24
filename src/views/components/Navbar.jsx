@@ -7,7 +7,7 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, Home, Info, Database, BookOpen, Calendar, Shield, Camera, GraduationCap } from 'lucide-react';
+import { Menu, X, LogOut, Home, Info, Database, BookOpen, Calendar, Shield, Camera, Binoculars } from 'lucide-react';
 import { SITE_ASSETS } from '../../constants/siteAssets';
 import { useAuth } from '../../controllers/useAuth';
 
@@ -37,7 +37,7 @@ const navItems = [
   { name: 'The Gallery',       path: '/gallery',     icon: Camera },
   { name: 'Field Notes',       path: '/field-notes', icon: BookOpen },
   { name: 'Our Projects',      path: '/projects',    icon: Calendar },
-  { name: 'Learn',             path: '/learn',       icon: GraduationCap },
+  { name: 'Special Observations', path: '/learn',       icon: Binoculars },
 ];
 
 export default function Navbar() {

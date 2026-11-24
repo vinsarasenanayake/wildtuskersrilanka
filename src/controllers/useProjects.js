@@ -37,7 +37,7 @@ export function useProjectFeed() {
 
   useEffect(() => {
     let active = true;
-    getEvents()
+    getEvents(true)
       .then(data => { if (active) setEvents(data); })
       .catch(err => console.error(err))
       .finally(() => { if (active) setLoading(false); });
