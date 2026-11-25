@@ -387,22 +387,22 @@ function ProjectCard({ event, isAdmin, onEdit, onDelete, onPhotoClick }) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto shrink-0 pt-1 sm:pt-0">
             <a
               href={event.pdfUrl || "/documents/wts_kalawewa_identification_guide_2018.pdf"}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-2.5 rounded-lg bg-white hover:bg-gray-100 text-[#111827] font-bold text-xs sm:text-[0.82rem] border border-[#d1d5db] shadow-2xs transition-all no-underline cursor-pointer text-center"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-white hover:bg-gray-100 text-[#111827] font-bold text-xs sm:text-[0.84rem] border border-[#d1d5db] shadow-2xs transition-all no-underline cursor-pointer text-center"
               title="Open publication in new tab"
             >
-              <ExternalLink size={14} />
+              <ExternalLink size={15} />
               <span>View Guide</span>
             </a>
 
             <button
               type="button"
               onClick={() => setShowPdfModal(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 sm:py-2.5 rounded-lg bg-accent hover:bg-accent-hover text-primary font-bold text-xs sm:text-[0.82rem] shadow-xs transition-all border-none shrink-0 cursor-pointer text-center"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-primary font-bold text-xs sm:text-[0.84rem] shadow-xs transition-all border-none cursor-pointer text-center"
             >
               <Download size={15} />
               <span>Download Guide (PDF · 83.6 MB)</span>

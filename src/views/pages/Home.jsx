@@ -31,6 +31,13 @@ export default function Home() {
     document.title = 'Wild Tuskers Sri Lanka | Home';
     let active = true;
 
+    // Harmonize mobile browser status bar tint with the dark hero backdrop
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    const originalTheme = metaTheme?.getAttribute('content') || '#0b2518';
+    if (metaTheme) {
+      metaTheme.setAttribute('content', '#0b120e');
+    }
+
     // Lock document scroll on Home in portrait to completely prevent any bounce/scrolling
     const updateScrollLock = () => {
       const isPortrait = window.matchMedia('(orientation: portrait)').matches;
@@ -67,6 +74,9 @@ export default function Home() {
 
     return () => {
       active = false;
+      if (metaTheme) {
+        metaTheme.setAttribute('content', originalTheme);
+      }
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
       document.body.style.overscrollBehavior = '';

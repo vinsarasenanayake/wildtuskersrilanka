@@ -1,11 +1,28 @@
 {
   "rewrites": [
     {
+      "source": "/download/kalawewa-guide.pdf",
+      "destination": "/documents/wts_kalawewa_identification_guide_2018.pdf"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ],
   "headers": [
+    {
+      "source": "/download/(.*)",
+      "headers": [
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"WTS_Kalawewa_Identification_Guide_2018.pdf\""
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/pdf"
+        }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [

@@ -6,20 +6,20 @@
 
 import React, { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { FileText, Download, ExternalLink, X, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { FileText, Download, ExternalLink, X, AlertCircle, CheckCircle2 } from 'lucide-react';
 import useFocusTrap from '../../hooks/useFocusTrap';
 
 export default function PdfDownloadConfirmModal({
   isOpen,
   onClose,
   pdfUrl = '/documents/wts_kalawewa_identification_guide_2018.pdf',
+  downloadUrl = '/download/kalawewa-guide.pdf',
   title = 'Kalawewa Tusker Identification Guide (2018)',
   fileSize = '83.6 MB',
   filename = 'WTS_Kalawewa_Identification_Guide_2018.pdf',
 }) {
   const modalRef = useRef(null);
   const cancelBtnRef = useRef(null);
-  const [downloading, setDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   useFocusTrap(modalRef, isOpen, {
@@ -29,33 +29,12 @@ export default function PdfDownloadConfirmModal({
 
   if (!isOpen) return null;
 
-  const handleConfirmDownload = () => {
-    setDownloading(true);
-
-    try {
-      // Trigger native download
-      const a = document.createElement('a');
-      a.href = pdfUrl;
-      a.download = filename;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-
-      setDownloadSuccess(true);
-      setTimeout(() => {
-        setDownloading(false);
-        setTimeout(() => {
-          onClose();
-          setDownloadSuccess(false);
-        }, 1200);
-      }, 800);
-    } catch {
-      setDownloading(false);
-      window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+  const handleDownloadClick = () => {
+    setDownloadSuccess(true);
+    setTimeout(() => {
       onClose();
-    }
+      setDownloadSuccess(false);
+    }, 1500);
   };
 
   return createPortal(
@@ -123,42 +102,33 @@ export default function PdfDownloadConfirmModal({
           </div>
         )}
 
-        {/* Actions: View and Download in one horizontal line, Cancel below */}
+        {/* Actions: Download and View in Tab stacked vertically on mobile phone portrait, Cancel below */}
         <div className="flex flex-col gap-2.5 pt-1">
-          {/* Row 1: View in Tab & Download side by side */}
-          <div className="flex items-center gap-2.5 w-full">
+          {/* Download & View in Tab: stacked vertically on mobile phone portrait, side-by-side on sm+ */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full">
             <a
               href={pdfUrl}
               target="_blank"
               rel="noopener noreferrer"
               onClick={onClose}
-              className="flex-1 py-2.5 px-3 rounded-xl bg-white hover:bg-gray-50 text-gray-800 font-sans text-xs sm:text-sm font-semibold border border-gray-300 transition-colors flex items-center justify-center gap-1.5 no-underline shadow-2xs"
+              className="w-full sm:flex-1 py-2.5 px-3 rounded-xl bg-white hover:bg-gray-50 text-gray-800 font-sans text-xs sm:text-sm font-semibold border border-gray-300 transition-colors flex items-center justify-center gap-1.5 no-underline shadow-2xs order-2 sm:order-1 text-center"
             >
               <ExternalLink size={14} />
               <span>View in Tab</span>
             </a>
 
-            <button
-              type="button"
-              onClick={handleConfirmDownload}
-              disabled={downloading}
-              className="flex-1 py-2.5 px-3 rounded-xl bg-accent hover:bg-accent-hover text-primary font-sans text-xs sm:text-sm font-bold border-none cursor-pointer transition-colors flex items-center justify-center gap-2 shadow-xs disabled:opacity-60"
+            <a
+              href={downloadUrl || "/download/kalawewa-guide.pdf"}
+              download={filename}
+              onClick={handleDownloadClick}
+              className="w-full sm:flex-1 py-2.5 px-3 rounded-xl bg-accent hover:bg-accent-hover text-primary font-sans text-xs sm:text-sm font-bold border-none cursor-pointer transition-colors flex items-center justify-center gap-2 shadow-xs order-1 sm:order-2 text-center no-underline"
             >
-              {downloading ? (
-                <>
-                  <Loader2 size={16} className="animate-spin text-primary" />
-                  <span>Downloading...</span>
-                </>
-              ) : (
-                <>
-                  <Download size={15} />
-                  <span>Download ({fileSize})</span>
-                </>
-              )}
-            </button>
+              <Download size={15} />
+              <span>Download ({fileSize})</span>
+            </a>
           </div>
 
-          {/* Row 2: Cancel below those two */}
+          {/* Cancel below those two */}
           <button
             ref={cancelBtnRef}
             type="button"
