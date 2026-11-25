@@ -207,8 +207,8 @@ export default function TuskerForm() {
               )}
               {formData.livingStatus === 'Deceased' && (
                 <>
-                  <Field label="Year of Death">
-                    <input type="text" name="deathYear" className={INPUT_CLASS} placeholder="e.g. 2024" value={formData.deathYear} onChange={handleChange} inputMode="numeric" />
+                  <Field label="Year / Date of Death">
+                    <input type="text" name="deathYear" className={INPUT_CLASS} placeholder="e.g. 2024 or 2024-05" value={formData.deathYear} onChange={handleChange} />
                   </Field>
                   <Field label="Cause of Death">
                     <input type="text" name="deathReason" className={INPUT_CLASS} placeholder="e.g. Electrocution" value={formData.deathReason} onChange={handleChange} />
@@ -224,7 +224,7 @@ export default function TuskerForm() {
                   className={INPUT_CLASS}
                 />
               </Field>
-              <Field label={formData.livingStatus === 'Deceased' ? "Last Recorded Month" : "Last Seen (Month)"}>
+              <Field label={formData.livingStatus === 'Deceased' ? "Final Spotted Date / Year" : "Last Seen Date / Year"}>
                 <input type="month" name="lastSeen" className={INPUT_CLASS} placeholder="" value={formData.lastSeen} onChange={handleChange} />
               </Field>
               <Field label="Proximate Birth Year">
