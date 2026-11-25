@@ -13,11 +13,19 @@ import {
 import { getTuskers, LIVING_STATUSES, DISTRICTS } from '../../models/TuskerModel';
 import { createMap } from '../../utils/mapEngine';
 import { cleanAreaName } from '../../utils/areaShapes';
+import { getLocationCoordinates } from '../../utils/sriLankaLocations';
+import { escapeHtml } from '../../utils/escapeHtml';
 import { tuskerIsInDistrict } from '../../controllers/useTusker';
 import SRI_LANKA_DISTRICTS_DATA from '../../data/sriLankaDistrictsData.json';
 
 const SRI_LANKA_CENTER = [7.8731, 80.7718];
-const STATUS_COLORS = { Alive: '#16a34a', 'No Recent Record': '#d97706', Deceased: '#6b7280' };
+const STATUS_COLORS = {
+  Alive: '#16a34a',
+  'No Recent Record': '#d97706',
+  'No Recent Records': '#d97706',
+  Deceased: '#dc2626',
+};
+const statusColor = (s) => STATUS_COLORS[s] || '#16a34a';
 
 function tuskerAreaInfo(t) {
   const isDeceased = t.livingStatus === 'Deceased';
@@ -214,6 +222,54 @@ export default function DistrictMap() {
       }
     });
 
+    // Render tusker last seen / final spotted location small circle markers
+    const locCounts = new Map();
+    filteredTuskers.forEach((t) => {
+      const areaInfo = tuskerAreaInfo(t);
+      if (!areaInfo?.name) return;
+
+      const coords = t.lastSeenCoords || t.coords || getLocationCoordinates(areaInfo.name) || (t.location ? getLocationCoordinates(cleanAreaName(t.location)) : null);
+      if (!coords || !coords.lat || !coords.lng) return;
+
+      const coordKey = `${coords.lat.toFixed(4)},${coords.lng.toFixed(4)}`;
+      const countAtLoc = locCounts.get(coordKey) || 0;
+      locCounts.set(coordKey, countAtLoc + 1);
+
+      let finalLat = coords.lat;
+      let finalLng = coords.lng;
+      if (countAtLoc > 0) {
+        // Disperse overlapping points in a small tight circle so all circles are visible
+        const angle = (countAtLoc * 137.5 * Math.PI) / 180;
+        const radius = 0.003 * Math.sqrt(countAtLoc);
+        finalLat += Math.cos(angle) * radius;
+        finalLng += Math.sin(angle) * radius;
+      }
+
+      const sColor = statusColor(t.livingStatus);
+      const isDeceased = t.livingStatus === 'Deceased';
+      const label = isDeceased ? 'Final Spotted' : 'Last Seen';
+
+      const markerHtml = `
+        <div title="${escapeHtml(t.id)}: ${escapeHtml(t.name || 'Unnamed')} (${t.livingStatus || 'Alive'} • ${label}: ${escapeHtml(areaInfo.name)})" style="width: 12px; height: 12px; border-radius: 50%; background: ${sColor}; border: 2px solid #ffffff; box-shadow: 0 0 0 1.2px rgba(0,0,0,0.4), 0 2px 5px rgba(0,0,0,0.5); cursor: pointer; transition: transform 0.15s ease;"></div>
+      `;
+
+      map.addMarker([finalLat, finalLng], {
+        html: markerHtml,
+        height: 12,
+        centered: true,
+        popup: {
+          badge: t.livingStatus || 'Alive',
+          date: areaInfo.date || 'Recorded baseline',
+          title: `${t.id} - ${t.name || 'Tusker'}`,
+          lines: [
+            `${label}: ${areaInfo.name}`,
+            t.district ? `District: ${t.district}` : '',
+            t.zone ? `Conservation Landscape: ${t.zone}` : '',
+          ].filter(Boolean),
+        },
+      });
+    });
+
     if (selectedDistrict) {
       const distObj = SRI_LANKA_DISTRICTS_DATA[selectedDistrict];
       if (distObj && distObj.bbox) {
@@ -226,7 +282,7 @@ export default function DistrictMap() {
         map.fitBounds([[5.92, 79.6], [9.85, 81.9]], { padding: 30, maxZoom: 9 });
       } catch {}
     }
-  }, [mapReady, selectedDistrict, handleSelectDistrict]);
+  }, [mapReady, selectedDistrict, filteredTuskers, handleSelectDistrict]);
 
   const handleReset = () => {
     setSelectedDistrict(null);

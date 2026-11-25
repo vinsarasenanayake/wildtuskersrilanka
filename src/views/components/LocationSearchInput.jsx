@@ -526,8 +526,8 @@ export default function LocationSearchInput({
 
   const dynamicPlaceholder = multi
     ? selectedLocations.length > 0
-      ? 'Search & add another roaming location (e.g. Wellawaya)...'
-      : placeholder || 'Search & select roaming area (e.g. Buttala)...'
+      ? 'Search & add another home range location (e.g. Wellawaya)...'
+      : placeholder || 'Search & select home range (e.g. Buttala)...'
     : placeholder;
 
   return (

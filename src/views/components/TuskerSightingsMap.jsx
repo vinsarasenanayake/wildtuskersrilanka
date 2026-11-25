@@ -153,6 +153,44 @@ function cleanToken(s) {
   return String(s || '').replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim();
 }
 
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const parts = String(dateStr).split('-');
+  if (parts.length === 3) {
+    const year = parts[0];
+    const monthIndex = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    if (parts[1] === '01' && parts[2] === '01') {
+      return year;
+    }
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    if (monthIndex >= 0 && monthIndex < 12) {
+      return `${day} ${months[monthIndex]} ${year}`;
+    }
+  }
+  return dateStr;
+}
+
+function formatMonth(dateStr) {
+  if (!dateStr) return '';
+  const parts = String(dateStr).trim().split('-');
+  if (parts.length === 1 && /^\d{4}$/.test(parts[0])) {
+    return parts[0];
+  }
+  if (parts.length === 3 && parts[1] === '01' && parts[2] === '01') {
+    return parts[0];
+  }
+  const y = parts[0];
+  const m = parts[1];
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const idx = parseInt(m, 10) - 1;
+  const monthName = idx >= 0 && idx < 12 ? months[idx] : m;
+  if (parts.length === 3 && parts[2] !== '01') {
+    return `${parseInt(parts[2], 10)} ${monthName} ${y}`;
+  }
+  return `${monthName} ${y}`;
+}
+
 /** Splits a LOCATION field into its places. "Yala Block 3,5" becomes
  *  "Yala Block 3" and "Yala Block 5" so both blocks are on the map. */
 function splitLocationParts(raw) {
@@ -193,8 +231,8 @@ function getStatusTheme(status) {
     return {
       fill: 'rgba(239, 68, 68, 0.18)',
       stroke: '#ef4444',
-      pinFill: '#e11d48',
-      pinInner: '#be123c',
+      pinFill: '#dc2626',
+      pinInner: '#b91c1c',
       badgeBg: 'rgba(55, 10, 14, 0.96)',
       pillBg: 'bg-rose-50 border-rose-200 text-rose-900',
       dotBg: 'bg-rose-500',
@@ -219,16 +257,16 @@ function getStatusTheme(status) {
       cardInactive: 'bg-white text-gray-700 border-gray-200 hover:border-amber-300',
       subtextColor: 'text-amber-700/80',
       checkColor: 'text-amber-600',
-      label: 'Roaming Area',
-      disclaimerText: 'recorded roaming area (no recent records)',
+      label: 'Home Range',
+      disclaimerText: 'recorded home range (no recent records)',
     };
   }
   // Default: Alive
   return {
     fill: 'rgba(34, 197, 94, 0.18)',
     stroke: '#22c55e',
-    pinFill: '#059669',
-    pinInner: '#047857',
+    pinFill: '#16a34a',
+    pinInner: '#15803d',
     badgeBg: 'rgba(11, 37, 24, 0.96)',
     pillBg: 'bg-emerald-50 border-emerald-200 text-emerald-900',
     dotBg: 'bg-emerald-500',
@@ -236,8 +274,8 @@ function getStatusTheme(status) {
     cardInactive: 'bg-white text-gray-700 border-gray-200 hover:border-emerald-300',
     subtextColor: 'text-emerald-700/80',
     checkColor: 'text-emerald-600',
-    label: 'Roaming Area',
-    disclaimerText: 'registered roaming area',
+    label: 'Home Range',
+    disclaimerText: 'registered home range',
   };
 }
 
@@ -313,10 +351,21 @@ export default function TuskerSightingsMap({
       }
     }
 
+    // 4. Resolve First Recorded Location coordinate if present
+    if (tusker?.firstRecordedLocation) {
+      const loc = cleanToken(tusker.firstRecordedLocation);
+      const syncCoords = getLocationCoordinates(loc);
+      if (!syncCoords && !resolvedCoordsMap['first-recorded-loc']) {
+        resolveLocationCoordinatesAsync(loc).then((coords) => {
+          if (isMounted && coords) setResolvedCoordsMap((prev) => ({ ...prev, 'first-recorded-loc': coords }));
+        });
+      }
+    }
+
     return () => {
       isMounted = false;
     };
-  }, [tusker?.location, tusker?.sightings, tusker?.lastSeenArea, resolvedCoordsMap]);
+  }, [tusker?.location, tusker?.sightings, tusker?.lastSeenArea, tusker?.firstRecordedLocation, resolvedCoordsMap]);
 
   // Load the real park and Yala block boundaries once
   useEffect(() => {
@@ -334,8 +383,8 @@ export default function TuskerSightingsMap({
   }, [tusker]);
 
   // Assemble habitat anchors (from LOCATION field), Last Seen pin, and field sightings (Row 2+)
-  const { anchorCoords, sightingPoints, homeRangeShape, lastSeenPoint } = useMemo(() => {
-    if (!tusker) return { anchorCoords: [], sightingPoints: [], homeRangeShape: null, lastSeenPoint: null };
+  const { anchorCoords, sightingPoints, homeRangeShape, lastSeenPoint, firstRecordedPoint } = useMemo(() => {
+    if (!tusker) return { anchorCoords: [], sightingPoints: [], homeRangeShape: null, lastSeenPoint: null, firstRecordedPoint: null };
 
     // ── 1. Resolve LOCATION field corridor anchors into unified coordinates ──
     const rawLoc = String(tusker.location || '').trim();
@@ -396,19 +445,30 @@ export default function TuskerSightingsMap({
     // ── 4. Determine Last Seen Pin in this range (exact name + coordinates) ──
     const rawParts = rawLoc ? rawLoc.split(/\s*[/]\s*/).map(cleanToken).filter(Boolean) : [];
     let lastSeenAreaName = '';
+    let latestSightingCoords = null;
     if (tusker.lastSeenArea && tusker.lastSeenArea.trim()) {
       lastSeenAreaName = cleanToken(tusker.lastSeenArea);
     } else if (sortedSightings.length > 0) {
       const last = sortedSightings[sortedSightings.length - 1];
       const parsed = parseSightingDetails(last);
       lastSeenAreaName = cleanToken(parsed.location || '');
+      if (last.coords || parsed.coords) {
+        latestSightingCoords = last.coords || parsed.coords;
+      }
     } else if (rawParts.length > 0) {
       const matched = rawParts.find((p) => tusker.name && tusker.name.toLowerCase().includes(p.toLowerCase()));
       lastSeenAreaName = matched || rawParts[0];
     }
 
-    let lastSeenCoords = null;
-    if (lastSeenAreaName) {
+    let lastSeenCoords = (tusker.lastSeenCoords && typeof tusker.lastSeenCoords.lat === 'number')
+      ? tusker.lastSeenCoords
+      : (tusker.lastSeenAreaCoords && typeof tusker.lastSeenAreaCoords.lat === 'number')
+      ? tusker.lastSeenAreaCoords
+      : (tusker.coords && typeof tusker.coords.lat === 'number')
+      ? tusker.coords
+      : latestSightingCoords;
+
+    if (lastSeenAreaName && !lastSeenCoords) {
       if (isDistrictTown(lastSeenAreaName)) {
         // "Last seen: Trincomalee" means the Trincomalee area, not the town
         // centre: pin the tusker's nearest wildlife place, or the wildlife
@@ -485,16 +545,36 @@ export default function TuskerSightingsMap({
           title: `${tusker.name} - ${isDeceased ? 'Last Known Location' : 'Last Seen Location'}: ${lastSeenAreaName}`,
           location: lastSeenAreaName,
           coords: lastSeenCoords,
-          date: tusker.lastSeen || (sortedSightings.length > 0 ? sortedSightings[sortedSightings.length - 1].captureDate : 'Registered baseline'),
+          date: (isDeceased && tusker.deathYear ? String(tusker.deathYear) : null) || formatMonth(tusker.lastSeen) || (sortedSightings.length > 0 ? sortedSightings[sortedSightings.length - 1].captureDate : 'Registered baseline'),
           badge: isDeceased ? 'Last Known Location' : 'Last Seen Location',
         }
       : null;
+
+    let firstRecordedPoint = null;
+    if (tusker?.firstRecordedLocation && tusker.firstRecordedLocation.trim()) {
+      const firstLoc = cleanToken(tusker.firstRecordedLocation);
+      const firstCoords = getLocationCoordinates(firstLoc) || resolvedCoordsMap['first-recorded-loc'] || null;
+      if (firstCoords) {
+        firstRecordedPoint = {
+          id: 'first-recorded-pin',
+          type: 'firstRecorded',
+          name: firstLoc,
+          title: `${tusker.name || 'Tusker'} (${tusker.id}) - First Recorded Location`,
+          location: firstLoc,
+          coords: firstCoords,
+          date: formatDate(tusker.listedDate) || tusker.listedDate || 'Baseline Registration',
+          author: tusker.recordedBy || 'WTS Admin',
+          badge: 'Row 1 • First Recorded Location',
+        };
+      }
+    }
 
     return {
       anchorCoords: anchors,
       sightingPoints: sightings,
       homeRangeShape: shape,
       lastSeenPoint: lastSeen,
+      firstRecordedPoint,
     };
   }, [tusker, resolvedCoordsMap, isDeceased, parkBoundaries, parksFailed]);
 
@@ -539,6 +619,9 @@ export default function TuskerSightingsMap({
     if (lastSeenPoint?.coords) {
       allPts.push([lastSeenPoint.coords.lat, lastSeenPoint.coords.lng]);
     }
+    if (firstRecordedPoint?.coords) {
+      allPts.push([firstRecordedPoint.coords.lat, firstRecordedPoint.coords.lng]);
+    }
 
     const uniquePts = [];
     const seenSet = new Set();
@@ -555,7 +638,7 @@ export default function TuskerSightingsMap({
     } else if (uniquePts.length > 1) {
       map.fitBounds(uniquePts, { padding: 45, maxZoom: 11 });
     }
-  }, [homeRangeShape, anchorCoords, activeSightings, lastSeenPoint]);
+  }, [homeRangeShape, anchorCoords, activeSightings, lastSeenPoint, firstRecordedPoint]);
 
   // Select / isolate a specific sighting or last seen point
   const handleSelectPoint = useCallback((point) => {
@@ -607,6 +690,12 @@ export default function TuskerSightingsMap({
       });
     } else {
       anchorCoords.forEach((c) => allPts.push([c.lat, c.lng]));
+    }
+    if (lastSeenPoint?.coords && (!selectedPoint || selectedPoint.id === 'last-seen-pin')) {
+      allPts.push([lastSeenPoint.coords.lat, lastSeenPoint.coords.lng]);
+    }
+    if (firstRecordedPoint?.coords && (!selectedPoint || selectedPoint.id === 'first-recorded-pin')) {
+      allPts.push([firstRecordedPoint.coords.lat, firstRecordedPoint.coords.lng]);
     }
     displayedSightings.forEach((p) => {
       if (p.coords) allPts.push([p.coords.lat, p.coords.lng]);
@@ -672,7 +761,72 @@ export default function TuskerSightingsMap({
     const latLngs = [];
     let lastPin = null;
 
-    // ── 2. Render Field Sightings (Row 2+) if any exist ──
+    // ── 2. Render Final Spotted / Last Seen Location Pin (Exact point marked) ──
+    if (lastSeenPoint?.coords && (!selectedPoint || selectedPoint.id === 'last-seen-pin')) {
+      const pos = [lastSeenPoint.coords.lat, lastSeenPoint.coords.lng];
+      latLngs.push(pos);
+      const isSelected = selectedPoint?.id === 'last-seen-pin';
+      const markerLabel = isDeceased ? 'Final Spotted Location' : 'Last Seen Location';
+
+      const markerHtml = `
+        <div title="${escapeHtml(markerLabel)}: ${escapeHtml(lastSeenPoint.name)}" style="width: 14px; height: 14px; border-radius: 50%; background: ${statusTheme.pinFill}; border: 2.5px solid #ffffff; box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.6); cursor: pointer; transition: transform 0.15s ease; ${isSelected ? 'transform: scale(1.3);' : ''}"></div>
+      `;
+
+      const m = map.addMarker(pos, {
+        html: markerHtml,
+        height: 14,
+        centered: true,
+        popup: {
+          badge: markerLabel,
+          date: lastSeenPoint.date || 'Registered baseline',
+          title: lastSeenPoint.name,
+          lines: [
+            tusker?.name ? `${tusker.name} (${tusker.id})` : '',
+            tusker?.location ? `Corridor: ${tusker.location}` : '',
+            tusker?.livingStatus ? `Status: ${tusker.livingStatus}` : '',
+          ].filter(Boolean),
+        },
+        onClick: () => handleSelectPoint(lastSeenPoint),
+      });
+
+      if (isSelected) {
+        lastPin = m;
+      }
+    }
+
+    // ── 2.5. Render First Recorded Location Pin (Row 1 Baseline) ──
+    if (firstRecordedPoint?.coords && (!selectedPoint || selectedPoint.id === 'first-recorded-pin')) {
+      const pos = [firstRecordedPoint.coords.lat, firstRecordedPoint.coords.lng];
+      latLngs.push(pos);
+      const isSelected = selectedPoint?.id === 'first-recorded-pin';
+
+      const markerHtml = `
+        <div title="First Recorded Location: ${escapeHtml(firstRecordedPoint.name)}" style="width: 14px; height: 14px; border-radius: 50%; background: #0b2518; border: 2.5px solid #c69b55; box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.6); cursor: pointer; transition: transform 0.15s ease; ${isSelected ? 'transform: scale(1.3);' : ''}"></div>
+      `;
+
+      const m = map.addMarker(pos, {
+        html: markerHtml,
+        height: 14,
+        centered: true,
+        popup: {
+          badge: 'Row 1 • First Recorded Location',
+          date: firstRecordedPoint.date || 'Baseline Registration',
+          title: firstRecordedPoint.name,
+          lines: [
+            tusker?.name ? `${tusker.name} (${tusker.id})` : '',
+            tusker?.recordedBy ? `Recorded By: ${tusker.recordedBy}` : '',
+            tusker?.livingStatus ? `Status: ${tusker.livingStatus}` : '',
+          ].filter(Boolean),
+        },
+        onClick: () => handleSelectPoint(firstRecordedPoint),
+      });
+
+      if (isSelected) {
+        lastPin = m;
+      }
+    }
+
+    // ── 3. Render Field Sightings (Row 2+) if any exist ──
     displayedSightings.forEach((point) => {
       if (!point.coords) return;
       const pos = [point.coords.lat, point.coords.lng];
@@ -714,7 +868,7 @@ export default function TuskerSightingsMap({
     } else if (uniquePts.length > 1) {
       map.fitBounds(uniquePts, { padding: 45, maxZoom: selectedPoint ? 12 : 11 });
     }
-  }, [displayedSightings, isMapLoaded, selectedPoint, homeRangeShape, statusTheme, anchorCoords, isDeceased, handleSelectPoint, handleViewHomeRange, tusker?.location, tusker?.livingStatus, tusker?.zone, tuskerZoneName, tuskerDistricts]);
+  }, [displayedSightings, isMapLoaded, selectedPoint, homeRangeShape, statusTheme, anchorCoords, lastSeenPoint, firstRecordedPoint, isDeceased, handleSelectPoint, handleViewHomeRange, tusker?.id, tusker?.name, tusker?.location, tusker?.livingStatus, tusker?.zone, tuskerZoneName, tuskerDistricts]);
 
   return (
     <div className="mt-8 bg-white border border-[#e2e8e0] rounded-[16px] overflow-hidden shadow-xs font-sans">
@@ -772,6 +926,14 @@ export default function TuskerSightingsMap({
               <span className={`inline-flex items-center gap-1.5 text-[0.72rem] font-bold border px-2.5 py-0.5 rounded-full shadow-2xs ${statusTheme.pillBg}`}>
                 <span className={`w-2 h-2 rounded-full ${statusTheme.dotBg}`} />
                 <span>{isDeceased ? 'Final Spotted' : 'Last Seen'}: {lastSeenPoint.name}</span>
+              </span>
+            )}
+
+            {/* First Recorded Location Pill */}
+            {firstRecordedPoint && (
+              <span className="inline-flex items-center gap-1.5 text-[0.72rem] font-bold border px-2.5 py-0.5 rounded-full shadow-2xs bg-amber-50/80 border-amber-300 text-amber-900">
+                <span className="w-2 h-2 rounded-full bg-[#c69b55]" />
+                <span>First Record: {firstRecordedPoint.name}</span>
               </span>
             )}
 
@@ -835,7 +997,11 @@ export default function TuskerSightingsMap({
           <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:max-w-xs bg-white/95 rounded-xl p-3.5 shadow-xl border border-black/10 z-[1000] animate-in fade-in">
             <div className="flex items-start justify-between gap-2 mb-2">
               <div>
-                <span className="inline-block px-2 py-0.5 rounded text-[0.68rem] font-bold bg-[#e8f5ec] text-[#1f7a3d]">
+                <span className={`inline-block px-2 py-0.5 rounded text-[0.68rem] font-bold ${
+                  selectedPoint.id === 'first-recorded-pin'
+                    ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                    : 'bg-[#e8f5ec] text-[#1f7a3d]'
+                }`}>
                   {selectedPoint.badge}
                 </span>
                 <h4 className="font-sans text-sm font-bold text-[#111111] m-0 mt-1">
@@ -1011,6 +1177,70 @@ export default function TuskerSightingsMap({
               <Check size={12} className={!selectedPoint ? statusTheme.checkColor : 'text-gray-400'} />
             </div>
           ) : null}
+
+          {/* Last Seen / Final Spotted Location Pin Card */}
+          {lastSeenPoint && (
+            <div
+              onClick={() => handleSelectPoint(lastSeenPoint)}
+              className={`shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs cursor-pointer transition-all select-none ${
+                selectedPoint?.id === 'last-seen-pin'
+                  ? `${statusTheme.cardActive} shadow-xs`
+                  : `${statusTheme.cardInactive} shadow-2xs`
+              }`}
+            >
+              <div
+                className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-2xs"
+                style={{ backgroundColor: statusTheme.pinFill }}
+              >
+                ●
+              </div>
+              <div>
+                <div className="font-bold flex items-center gap-1">
+                  <span>{isDeceased ? 'Final Spotted Location' : 'Last Seen Location'}</span>
+                </div>
+                <div className={`text-[11px] truncate max-w-[180px] ${selectedPoint?.id === 'last-seen-pin' ? statusTheme.subtextColor : 'text-[#666666]'}`}>
+                  {lastSeenPoint.name}
+                </div>
+              </div>
+              {selectedPoint?.id === 'last-seen-pin' ? (
+                <Check size={12} className={statusTheme.checkColor} />
+              ) : (
+                <MapPin size={12} className="text-gray-400" />
+              )}
+            </div>
+          )}
+
+          {/* First Recorded Location Pin Card */}
+          {firstRecordedPoint && (
+            <div
+              onClick={() => handleSelectPoint(firstRecordedPoint)}
+              className={`shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs cursor-pointer transition-all select-none ${
+                selectedPoint?.id === 'first-recorded-pin'
+                  ? 'bg-amber-50 text-amber-950 border-amber-400 ring-2 ring-amber-300/40 shadow-xs'
+                  : 'bg-white text-gray-700 border-gray-200 hover:border-amber-300 shadow-2xs'
+              }`}
+            >
+              <div
+                className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-[#c69b55] shadow-2xs"
+                style={{ backgroundColor: '#0b2518' }}
+              >
+                ●
+              </div>
+              <div>
+                <div className="font-bold flex items-center gap-1">
+                  <span>First Recorded Location</span>
+                </div>
+                <div className={`text-[11px] truncate max-w-[180px] ${selectedPoint?.id === 'first-recorded-pin' ? 'text-amber-800 font-medium' : 'text-[#666666]'}`}>
+                  {firstRecordedPoint.name}
+                </div>
+              </div>
+              {selectedPoint?.id === 'first-recorded-pin' ? (
+                <Check size={12} className="text-amber-700" />
+              ) : (
+                <MapPin size={12} className="text-gray-400" />
+              )}
+            </div>
+          )}
 
           {/* Sighting Points (Row 2+) */}
           {sightingPoints.map((point) => {

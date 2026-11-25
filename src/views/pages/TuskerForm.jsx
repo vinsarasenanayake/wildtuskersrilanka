@@ -148,11 +148,11 @@ export default function TuskerForm() {
               <Field label="Sinhala Name">
                 <input type="text" name="sinhala" className={INPUT_CLASS} placeholder="e.g. පානම පුට්ටුව" value={formData.sinhala} onChange={handleChange} />
               </Field>
-              <Field label="Roaming Area">
+              <Field label="Home Range">
                 <LocationSearchInput
                   name="location"
                   multi={true}
-                  placeholder="Search & add roaming area (e.g. Buttala, Wellawaya, Kumana)..."
+                  placeholder="Search & add home range (e.g. Buttala, Wellawaya, Kumana)..."
                   value={formData.location}
                   onChange={handleChange}
                   className={INPUT_CLASS}
@@ -160,6 +160,15 @@ export default function TuskerForm() {
               </Field>
               <Field label="First Recorded Date">
                 <input type="date" name="listedDate" max={todayLocalISO()} className={INPUT_CLASS} placeholder="" value={formData.listedDate} onChange={handleChange} />
+              </Field>
+              <Field label="First Recorded Location">
+                <LocationSearchInput
+                  name="firstRecordedLocation"
+                  placeholder="e.g. Okanda, Kumana, Galgamuwa..."
+                  value={formData.firstRecordedLocation}
+                  onChange={handleChange}
+                  className={INPUT_CLASS}
+                />
               </Field>
               <Field label="Recorded By">
                 <input type="text" name="recordedBy" className={INPUT_CLASS} placeholder="e.g. WTS Admin" value={formData.recordedBy} onChange={handleChange} />

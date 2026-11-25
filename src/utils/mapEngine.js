@@ -5,10 +5,10 @@
  * when offline or without Google credentials.
  */
 
-import { loadLeaflet } from './leafletLoader';
-import { addBaseLayers } from './mapLayers';
+import { loadLeaflet } from './leafletLoader.js';
+import { addBaseLayers } from './mapLayers.js';
 
-const GOOGLE_KEY = (import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '').trim();
+const GOOGLE_KEY = (import.meta.env?.VITE_GOOGLE_MAPS_API_KEY || '').trim();
 let googlePromise = null;
 
 // If Google refuses the key (demo limit reached, key expired, billing off…)

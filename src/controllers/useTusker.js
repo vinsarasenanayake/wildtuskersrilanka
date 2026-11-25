@@ -573,7 +573,7 @@ export function useTuskerProfile(id) {
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [id]);
-  const canAddSighting = isAdmin && tusker?.livingStatus !== 'Deceased';
+  const canAddSighting = isAdmin;
 
   // Photographic progression comparisons derived directly from sightings history table
   const comparisonList = useMemo(
@@ -709,6 +709,18 @@ export function useSightingForm(tuskerId) {
       setError('Sighting date cannot be in the future.');
       return false;
     }
+
+    const isDeceased = initialTusker?.livingStatus === 'Deceased';
+    if (isDeceased) {
+      const deathYear = initialTusker.deathYear;
+      const deathDate = initialTusker.deathDate;
+      const deceasedLimit = deathDate || (deathYear ? `${deathYear}-12-31` : null);
+      if (deceasedLimit && captureDate > deceasedLimit) {
+        setError(`For a deceased tusker, the sighting date must be before or during the deceased year (${deathYear || deathDate}).`);
+        return false;
+      }
+    }
+
     if (!String(formData.lastSeenArea || '').trim()) {
       setError('Please add the location where this sighting was recorded.');
       return false;
@@ -742,28 +754,57 @@ export function useSightingForm(tuskerId) {
       // 2. Update tusker's current profile state (for both admin and public)
       // Note: First Recorded By, First Recorded Date, and Nickname By are NEVER modified here!
       const profileUpdates = {};
-      if (lastSeenArea && lastSeenArea.trim()) {
-        profileUpdates.lastSeenArea = lastSeenArea.trim();
-      }
-      if (captureDate) {
-        // PostgreSQL date requires YYYY-MM-DD
-        const monthStr = captureDate.slice(0, 7);
-        profileUpdates.lastSeen = `${monthStr}-01`;
-      }
-      if (healthCondition) {
-        profileUpdates.healthCondition = healthCondition;
-      }
-      if (threatLevel) {
-        profileUpdates.threatLevel = threatLevel;
-      }
-      if (specialMarks && specialMarks.trim()) {
-        profileUpdates.specialMarks = specialMarks.trim();
-      }
-      if (specialWounds && specialWounds.trim()) {
-        profileUpdates.specialWounds = specialWounds.trim();
-      }
-      if (remarks && remarks.trim()) {
-        profileUpdates.remarks = remarks.trim();
+      const isDeceased = initialTusker?.livingStatus === 'Deceased';
+
+      // Compare new sighting captureDate with tusker's current lastSeen date / year
+      // For deceased tuskers, deathYear is the last seen year!
+      const existingLastSeen = isDeceased && initialTusker?.deathYear
+        ? String(initialTusker.deathYear)
+        : (initialTusker?.lastSeen ? String(initialTusker.lastSeen).trim() : '');
+      const captureYear = parseInt(String(captureDate).slice(0, 4), 10);
+      const existingYear = existingLastSeen ? parseInt(existingLastSeen.slice(0, 4), 10) : 0;
+
+      // Sighting is chronologically newer or equal if:
+      // 1. There is no existing lastSeen recorded yet
+      // 2. Capture year is strictly greater than existing year
+      // 3. Or capture year equals existing year and capture date is >= existing lastSeen date
+      const isNewerOrEqual = !existingLastSeen || (captureYear > existingYear) || (
+        captureYear === existingYear && String(captureDate).slice(0, 10) >= existingLastSeen.slice(0, 10)
+      );
+
+      if (isDeceased) {
+        // For deceased tuskers, maintain their permanent death record and final spotted location.
+        // Earlier historical sightings must NEVER overwrite the final spotted record.
+        if (!existingLastSeen && lastSeenArea && lastSeenArea.trim()) {
+          profileUpdates.lastSeenArea = lastSeenArea.trim();
+          profileUpdates.lastSeen = captureDate;
+        }
+      } else {
+        // For living / unconfirmed tuskers:
+        // ONLY update lastSeenArea and lastSeen if the newly added sighting is AFTER or EQUAL to the last seen year/date.
+        // If the newly added sighting is earlier than the last seen year, last seen is NOT updated in profile or map!
+        if (isNewerOrEqual) {
+          if (lastSeenArea && lastSeenArea.trim()) {
+            profileUpdates.lastSeenArea = lastSeenArea.trim();
+          }
+          profileUpdates.lastSeen = captureDate;
+
+          if (healthCondition) {
+            profileUpdates.healthCondition = healthCondition;
+          }
+          if (threatLevel) {
+            profileUpdates.threatLevel = threatLevel;
+          }
+          if (specialMarks && specialMarks.trim()) {
+            profileUpdates.specialMarks = specialMarks.trim();
+          }
+          if (specialWounds && specialWounds.trim()) {
+            profileUpdates.specialWounds = specialWounds.trim();
+          }
+          if (remarks && remarks.trim()) {
+            profileUpdates.remarks = remarks.trim();
+          }
+        }
       }
 
       if (Object.keys(profileUpdates).length > 0) {
@@ -797,6 +838,7 @@ const EMPTY_TUSKER_FORM = {
   name: '',
   sinhala: '',
   location: '',
+  firstRecordedLocation: '',
   listedDate: '',
   recordedBy: '',
   nicknameGivenBy: '',
@@ -881,7 +923,7 @@ export function useTuskerForm(id) {
       return false;
     }
     if (!String(f.location || '').trim()) {
-      setError('Please add at least one roaming area.');
+      setError('Please add at least one home range area.');
       return false;
     }
     if (f.deathYear && !/^\d{4}$/.test(f.deathYear)) {
@@ -902,12 +944,13 @@ export function useTuskerForm(id) {
     const birthNum = f.proximateBirthYear ? Number(f.proximateBirthYear) : (f.birthYear ? Number(f.birthYear) : null);
     const payload = {
       ...f,
+      firstRecordedLocation: f.firstRecordedLocation && f.firstRecordedLocation.trim() ? f.firstRecordedLocation.trim() : null,
       proximateBirthYear: birthNum,
       birthYear: birthNum,
       riskLink: f.riskLink && f.riskLink.trim() ? f.riskLink.trim() : '#risk-assessment',
       deathYear: isDeceased && f.deathYear ? Number(f.deathYear) : null,
       deathReason: isDeceased ? f.deathReason : '',
-      lastSeen: f.lastSeen ? `${f.lastSeen}-01` : '',
+      lastSeen: f.lastSeen ? `${f.lastSeen}-01` : (isDeceased && f.deathYear ? `${f.deathYear}-01-01` : ''),
       photos: photosArray,
     };
     delete payload.id;

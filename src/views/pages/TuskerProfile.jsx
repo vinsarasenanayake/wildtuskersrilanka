@@ -728,13 +728,25 @@ function DetailRow({ icon, label, value }) {
   );
 }
 
-/** "2026-05-01" → "May 2026" (last-seen dates are month precision). */
+/** Flexible date/year formatter: handles "YYYY", "YYYY-MM", or "YYYY-MM-DD". */
 function formatMonth(dateStr) {
   if (!dateStr) return '';
-  const [y, m] = dateStr.split('-');
+  const parts = String(dateStr).trim().split('-');
+  if (parts.length === 1 && /^\d{4}$/.test(parts[0])) {
+    return parts[0];
+  }
+  if (parts.length === 3 && parts[1] === '01' && parts[2] === '01') {
+    return parts[0];
+  }
+  const y = parts[0];
+  const m = parts[1];
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const idx = parseInt(m, 10) - 1;
-  return idx >= 0 && idx < 12 ? `${months[idx]} ${y}` : dateStr;
+  const monthName = idx >= 0 && idx < 12 ? months[idx] : m;
+  if (parts.length === 3 && parts[2] !== '01') {
+    return `${parseInt(parts[2], 10)} ${monthName} ${y}`;
+  }
+  return `${monthName} ${y}`;
 }
 
 const THREAT_STYLES = {
@@ -2891,7 +2903,7 @@ export default function TuskerProfile() {
               {tusker.location && tusker.location !== 'Not Applicable' && (
                 <DetailRow
                   icon={<MapPin size={16} />}
-                  label="Location"
+                  label="Home Range"
                   value={tusker.location}
                 />
               )}
@@ -2921,6 +2933,13 @@ export default function TuskerProfile() {
                   icon={<Calendar size={16} />}
                   label={/^\d{4}$/.test(formatDate(tusker.listedDate)) ? "First Recorded Year" : "First Recorded Date"}
                   value={formatDate(tusker.listedDate)}
+                />
+              )}
+              {tusker.firstRecordedLocation && tusker.firstRecordedLocation !== 'Not Applicable' && (
+                <DetailRow
+                  icon={<MapPin size={16} />}
+                  label="First Recorded Location"
+                  value={tusker.firstRecordedLocation}
                 />
               )}
               {/* Special Marks (hide if Not Applicable and no wounds) */}
@@ -3034,7 +3053,12 @@ export default function TuskerProfile() {
                 <DetailRow
                   icon={<Eye size={16} />}
                   label={isDeceased ? "Final Spotted Location" : "Last Seen"}
-                  value={[tusker.lastSeenArea, formatMonth(tusker.lastSeen)].filter(Boolean).join(' · ')}
+                  value={[
+                    tusker.lastSeenArea,
+                    isDeceased
+                      ? (tusker.deathYear ? String(tusker.deathYear) : formatMonth(tusker.lastSeen))
+                      : formatMonth(tusker.lastSeen)
+                  ].filter(Boolean).join(' · ')}
                 />
               )}
               {(tusker.zone || tusker.district || tusker.province) && (
@@ -3081,7 +3105,7 @@ export default function TuskerProfile() {
                     </div>
                     <span className="text-[#111111] font-sans text-[0.84rem] font-extrabold flex items-center gap-1.5 shrink-0">
                       <Calendar size={13} className="text-accent shrink-0" />
-                      <span>{item.year || '-'}</span>
+                      <span>{item.year || item.date || (index === 0 && (tusker.listedDate || tusker.firstRecordedDate || tusker.firstRecordDate || tusker.sightings?.[0]?.captureDate) ? formatDate(tusker.listedDate || tusker.firstRecordedDate || tusker.firstRecordDate || tusker.sightings?.[0]?.captureDate) : '') || '-'}</span>
                     </span>
                   </div>
 
@@ -3317,7 +3341,7 @@ export default function TuskerProfile() {
                     <td className="py-3.5 px-4 text-[#333333]">
                       <div className="flex items-center gap-1">
                         <MapPin size={13} className="text-accent shrink-0" />
-                        <span>{tusker.location || '-'}</span>
+                        <span>{tusker.firstRecordedLocation || '-'}</span>
                       </div>
                     </td>
 

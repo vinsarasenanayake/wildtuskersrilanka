@@ -60,6 +60,14 @@ export const SRI_LANKA_WILDLIFE_LOCATIONS = [
   { name: 'Kumana', type: 'National Park', region: 'Ampara, Eastern Province', lat: 6.5362, lng: 81.6857 },
   { name: 'Kumana Villu', type: 'Lagoon / Wetland', region: 'Ampara, Eastern Province', lat: 6.5250, lng: 81.7150 },
   { name: 'Yala East', type: 'National Park', region: 'Kumana Border, Eastern Province', lat: 6.5100, lng: 81.5700 },
+  { name: 'Okanda', type: 'Sanctuary & Kumana Entrance', region: 'Ampara District, Eastern Province', lat: 6.6231, lng: 81.7772 },
+  { name: 'Okanda Beach', type: 'Coastal Habitat', region: 'Kumana Border, Ampara District', lat: 6.6280, lng: 81.7850 },
+  { name: 'Kudumbigala', type: 'Monastery & Wildlife Sanctuary', region: 'Panama / Kumana, Ampara District', lat: 6.6800, lng: 81.7500 },
+  { name: 'Panama', type: 'Wildlife Fringe & Tank Area', region: 'Ampara District, Eastern Province', lat: 6.7550, lng: 81.8050 },
+  { name: 'Panama Tank', type: 'Reservoir / Tank', region: 'Ampara District, Eastern Province', lat: 6.7450, lng: 81.7950 },
+  { name: 'Panama Wewa', type: 'Reservoir / Tank', region: 'Ampara District, Eastern Province', lat: 6.7450, lng: 81.7950 },
+  { name: 'Kumana / Panama', type: 'Elephant Range', region: 'Ampara District, Eastern Province', lat: 6.6400, lng: 81.7400 },
+  { name: 'Panama Puttuwa', type: 'Home Range', region: 'Kumana / Panama', lat: 6.6231, lng: 81.7772 },
   { name: 'Minneriya National Park', type: 'National Park', region: 'North Central Province', lat: 8.0333, lng: 80.8333 },
   { name: 'Minneriya', type: 'National Park', region: 'North Central Province', lat: 8.0387, lng: 80.9064 },
   { name: 'Kaudulla National Park', type: 'National Park', region: 'North Central Province', lat: 8.1500, lng: 80.9000 },
@@ -226,9 +234,36 @@ export function getLocationCoordinates(locationName) {
   let primaryName = locationName.split(/\s*[/]\s*/)[0].trim();
   if (!primaryName) return null;
 
+  // 0. Check client-side cached geocode (exact pin placed by admin or map picker)
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      const keysToCheck = [
+        `wts_geocache_${locationName.toLowerCase().trim()}`,
+        `wts_geocache_${primaryName.toLowerCase().trim()}`,
+      ];
+      if (primaryName.includes(',')) {
+        keysToCheck.push(`wts_geocache_${primaryName.split(',')[0].toLowerCase().trim()}`);
+      }
+      for (const key of keysToCheck) {
+        const cached = localStorage.getItem(key);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (typeof parsed?.lat === 'number' && typeof parsed?.lng === 'number') {
+            return { lat: parsed.lat, lng: parsed.lng, name: parsed.name || locationName };
+          }
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
   // Normalize phonetic aliases & typos
   const aliasLower = primaryName.toLowerCase();
-  if (aliasLower === 'athimale') primaryName = 'Ethimale';
+  if (aliasLower.includes('okanda')) primaryName = 'Okanda';
+  else if (aliasLower.includes('kudumbigala')) primaryName = 'Kudumbigala';
+  else if (aliasLower.includes('panama tank') || aliasLower.includes('panama wewa')) primaryName = 'Panama Tank';
+  else if (aliasLower === 'athimale') primaryName = 'Ethimale';
   else if (aliasLower === 'mawara') primaryName = 'Mau Ara';
   else if (aliasLower === 'anganmadiila') primaryName = 'Angammedilla';
   else if (aliasLower === 'bundangala') primaryName = 'Buddhangala';
@@ -290,18 +325,26 @@ export function getLocationCoordinates(locationName) {
   const primaryLower = primaryName.toLowerCase();
   const normalizedPrimary = normalizePlaceName(primaryName);
 
-  // 1. Exact match on raw name
-  const exact = SRI_LANKA_WILDLIFE_LOCATIONS.find(
-    (l) => l.name.toLowerCase() === primaryLower
-  );
+  // Parse specific place name when formatted with district/province suffix (e.g. "Okanda, Ampara District")
+  const specificPlace = primaryName.split(',')[0].trim();
+  const specificLower = specificPlace.toLowerCase();
+  const normalizedSpecific = normalizePlaceName(specificPlace);
+  const isCompound = primaryName.includes(',');
+
+  // 1. Exact match on raw name or specific place
+  const exact = SRI_LANKA_WILDLIFE_LOCATIONS.find((l) => {
+    const lLow = l.name.toLowerCase();
+    return lLow === primaryLower || (isCompound && lLow === specificLower);
+  });
   if (exact && typeof exact.lat === 'number') {
     return { lat: exact.lat, lng: exact.lng, name: exact.name };
   }
 
   // 2. Exact match on normalized stem (e.g. "Yala Block 5" -> "yala block 5")
-  const exactNorm = SRI_LANKA_WILDLIFE_LOCATIONS.find(
-    (l) => normalizePlaceName(l.name) === normalizedPrimary
-  );
+  const exactNorm = SRI_LANKA_WILDLIFE_LOCATIONS.find((l) => {
+    const normL = normalizePlaceName(l.name);
+    return normL === normalizedPrimary || (isCompound && normL === normalizedSpecific);
+  });
   if (exactNorm && typeof exactNorm.lat === 'number') {
     return { lat: exactNorm.lat, lng: exactNorm.lng, name: exactNorm.name };
   }
@@ -320,12 +363,16 @@ export function getLocationCoordinates(locationName) {
   }
 
   // 4. Substring / stemmed match (prefer longer/more specific entries first)
-  if (normalizedPrimary.length >= 3) {
+  if (normalizedSpecific.length >= 3 || normalizedPrimary.length >= 3) {
     const candidates = SRI_LANKA_WILDLIFE_LOCATIONS.filter((l) => {
+      // If query is compound (e.g. "Okanda, Ampara District"), never match a generic district town
+      if (isCompound && (l.type?.includes('District') || l.type?.includes('Province'))) {
+        return false;
+      }
       const normLoc = normalizePlaceName(l.name);
       return (
-        (normLoc.length >= 4 && normalizedPrimary.includes(normLoc)) ||
-        (normalizedPrimary.length >= 4 && normLoc.includes(normalizedPrimary))
+        (normLoc.length >= 4 && (normalizedSpecific.includes(normLoc) || normalizedPrimary.includes(normLoc))) ||
+        (normalizedSpecific.length >= 4 && normLoc.includes(normalizedSpecific))
       );
     }).sort((a, b) => b.name.length - a.name.length);
 
@@ -335,27 +382,19 @@ export function getLocationCoordinates(locationName) {
   }
 
   // 5. Substring includes match
-  const partial = SRI_LANKA_WILDLIFE_LOCATIONS.find(
-    (l) => primaryLower.includes(l.name.toLowerCase()) || l.name.toLowerCase().includes(primaryLower)
-  );
+  const partial = SRI_LANKA_WILDLIFE_LOCATIONS.find((l) => {
+    if (isCompound && (l.type?.includes('District') || l.type?.includes('Province'))) {
+      return false;
+    }
+    const lLow = l.name.toLowerCase();
+    return (
+      primaryLower.includes(lLow) ||
+      specificLower.includes(lLow) ||
+      lLow.includes(specificLower)
+    );
+  });
   if (partial && typeof partial.lat === 'number') {
     return { lat: partial.lat, lng: partial.lng, name: partial.name };
-  }
-
-  // 4. Check client-side cached geocode if available
-  if (typeof window !== 'undefined' && window.localStorage) {
-    try {
-      const cacheKey = `wts_geocache_${primaryLower}`;
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (typeof parsed?.lat === 'number' && typeof parsed?.lng === 'number') {
-          return parsed;
-        }
-      }
-    } catch {
-      /* ignore */
-    }
   }
 
   return null;

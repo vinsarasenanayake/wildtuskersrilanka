@@ -19,7 +19,7 @@ const TUSKER_FIELDS = [
   // Official registry fields
   'livingStatus', 'deathYear', 'deathReason', 'lastSeenArea', 'lastSeen',
   'zone', 'district', 'province', 'ageRange', 'proximateBirthYear', 'birthYear', 'healthCondition',
-  'threatLevel', 'remarks',
+  'threatLevel', 'remarks', 'firstRecordedLocation',
 ];
 
 export const LIVING_STATUSES = ['Alive', 'No Recent Record', 'Deceased'];
@@ -220,6 +220,13 @@ function mapTusker(row) {
   t.photos = t.photos || [];
   t.earPhotos = t.earPhotos || [];
   if (t.threatLevel === 'Highest') t.threatLevel = 'Critical';
+  if (!t.firstRecordedLocation && typeof window !== 'undefined' && window.localStorage && t.id) {
+    try {
+      t.firstRecordedLocation = localStorage.getItem(`wts_first_record_loc_${t.id.toUpperCase()}`) || '';
+    } catch {
+      /* ignore */
+    }
+  }
   // No invented defaults: missing values stay empty and the UI hides them.
   if (!t.photographicComparison) delete t.photographicComparison;
   if (!t.earComparison) delete t.earComparison;
@@ -368,22 +375,77 @@ export async function tuskerExists(id) {
 export async function addTusker(tusker) {
   const payload = { ...tusker, id: tusker.id.toUpperCase().trim() };
   if (payload.threatLevel === 'Critical') payload.threatLevel = 'Highest';
-  if (payload.lastSeen && typeof payload.lastSeen === 'string' && /^\d{4}-\d{2}$/.test(payload.lastSeen)) {
-    payload.lastSeen = `${payload.lastSeen}-01`;
+  if (payload.lastSeen && typeof payload.lastSeen === 'string') {
+    const s = payload.lastSeen.trim();
+    if (/^\d{4}$/.test(s)) {
+      payload.lastSeen = `${s}-01-01`;
+    } else if (/^\d{4}-\d{2}$/.test(s)) {
+      payload.lastSeen = `${s}-01`;
+    }
+  }
+  if (typeof window !== 'undefined' && window.localStorage && payload.id) {
+    try {
+      if (payload.firstRecordedLocation) {
+        localStorage.setItem(`wts_first_record_loc_${payload.id}`, payload.firstRecordedLocation);
+      } else {
+        localStorage.removeItem(`wts_first_record_loc_${payload.id}`);
+      }
+    } catch {
+      /* ignore */
+    }
   }
   const row = toRow(payload, TUSKER_FIELDS);
-  unwrap(await supabase.from('tuskers').insert(row));
+  try {
+    unwrap(await supabase.from('tuskers').insert(row));
+  } catch (err) {
+    if (err?.message && err.message.includes('first_recorded_location')) {
+      const fallback = { ...row };
+      delete fallback.first_recorded_location;
+      unwrap(await supabase.from('tuskers').insert(fallback));
+    } else {
+      throw err;
+    }
+  }
   invalidateTuskersCache();
 }
 
 export async function updateTusker(id, updated) {
+  const upperId = id.toUpperCase();
   const payload = { ...updated };
   if (payload.threatLevel === 'Critical') payload.threatLevel = 'Highest';
-  if (payload.lastSeen && typeof payload.lastSeen === 'string' && /^\d{4}-\d{2}$/.test(payload.lastSeen)) {
-    payload.lastSeen = `${payload.lastSeen}-01`;
+  if (payload.lastSeen && typeof payload.lastSeen === 'string') {
+    const s = payload.lastSeen.trim();
+    if (/^\d{4}$/.test(s)) {
+      payload.lastSeen = `${s}-01-01`;
+    } else if (/^\d{4}-\d{2}$/.test(s)) {
+      payload.lastSeen = `${s}-01`;
+    }
+  }
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      if (payload.firstRecordedLocation !== undefined) {
+        if (payload.firstRecordedLocation) {
+          localStorage.setItem(`wts_first_record_loc_${upperId}`, payload.firstRecordedLocation);
+        } else {
+          localStorage.removeItem(`wts_first_record_loc_${upperId}`);
+        }
+      }
+    } catch {
+      /* ignore */
+    }
   }
   const row = toRow(payload, TUSKER_FIELDS.filter(f => f !== 'id'));
-  unwrap(await supabase.from('tuskers').update(row).eq('id', id.toUpperCase()));
+  try {
+    unwrap(await supabase.from('tuskers').update(row).eq('id', upperId));
+  } catch (err) {
+    if (err?.message && err.message.includes('first_recorded_location')) {
+      const fallback = { ...row };
+      delete fallback.first_recorded_location;
+      unwrap(await supabase.from('tuskers').update(fallback).eq('id', upperId));
+    } else {
+      throw err;
+    }
+  }
   invalidateTuskersCache();
 }
 
@@ -437,7 +499,22 @@ export async function deleteSighting(sightingId) {
 export function getTuskerComparison(tusker) {
   if (!tusker) return [];
 
-  const list = [];
+  const formatDisplayDate = (dateStr) => {
+    if (!dateStr) return '';
+    const s = String(dateStr).trim();
+    const parts = s.split('-');
+    if (parts.length === 3) {
+      const year = parts[0];
+      const monthIndex = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      if (parts[1] === '01' && parts[2] === '01') return year;
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      if (monthIndex >= 0 && monthIndex < 12) {
+        return `${day} ${months[monthIndex]} ${year}`;
+      }
+    }
+    return s;
+  };
 
   const extractYear = (dateStr, fallback) => {
     if (!dateStr && !fallback) return '';
@@ -447,13 +524,34 @@ export function getTuskerComparison(tusker) {
     return src;
   };
 
+  // If custom comparison records are explicitly saved, ensure first card has baseline date
+  if (Array.isArray(tusker.photographicComparison) && tusker.photographicComparison.length > 0) {
+    const rawFirstDate = tusker.listedDate || tusker.firstRecordedDate || tusker.firstRecordDate || (tusker.sightings?.[0]?.captureDate) || '';
+    const formattedDate = formatDisplayDate(rawFirstDate);
+    return tusker.photographicComparison.map((item, idx) => {
+      if (idx === 0 && (!item.year || item.year === '-')) {
+        return {
+          ...item,
+          year: formattedDate || rawFirstDate || item.year || '',
+          date: rawFirstDate || formattedDate || item.date || '',
+        };
+      }
+      return item;
+    });
+  }
+
+  const list = [];
+
   // Row 1: Baseline Registration (1st Record if primary photo exists)
   if (tusker.photos?.[0]) {
-    const baselineYear = extractYear(tusker.listedDate, tusker.birthYear || tusker.proximateBirthYear);
+    const rawFirstDate = tusker.listedDate || tusker.firstRecordedDate || tusker.firstRecordDate || (tusker.sightings?.[0]?.captureDate) || '';
+    const formattedDate = formatDisplayDate(rawFirstDate);
+    const baselineYear = extractYear(rawFirstDate, tusker.birthYear || tusker.proximateBirthYear);
     list.push({
       photo: tusker.photos[0],
-      year: baselineYear,
-      location: tusker.location || '',
+      year: formattedDate || baselineYear || '',
+      date: rawFirstDate || formattedDate || baselineYear || '',
+      location: tusker.firstRecordedLocation || '',
       stage: 'Row 1 (1st Record)',
       recordNum: 1,
     });

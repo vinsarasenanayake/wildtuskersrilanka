@@ -447,7 +447,7 @@ export default function UnlistedTuskerProfile() {
             <div className="flex flex-col gap-4">
               <DetailRow
                 icon={<MapPin size={16} />}
-                label="Location"
+                label="Home Range"
                 value={tusker.location}
               />
               <DetailRow
@@ -466,6 +466,13 @@ export default function UnlistedTuskerProfile() {
                 label="First Recorded Date"
                 value={formatDate(tusker.listedDate)}
               />
+              {tusker.firstRecordedLocation && (
+                <DetailRow
+                  icon={<MapPin size={16} />}
+                  label="First Recorded Location"
+                  value={tusker.firstRecordedLocation}
+                />
+              )}
               <DetailRow
                 icon={<Tag size={16} />}
                 label="Special Marks"
@@ -516,7 +523,7 @@ export default function UnlistedTuskerProfile() {
                     </div>
                     <span className="text-[#111111] font-sans text-[0.84rem] font-extrabold flex items-center gap-1.5 shrink-0">
                       <Calendar size={13} className="text-accent shrink-0" />
-                      <span>{item.year || '-'}</span>
+                      <span>{item.year || item.date || (index === 0 && (tusker.listedDate || tusker.firstRecordedDate || tusker.firstRecordDate || tusker.sightings?.[0]?.captureDate) ? formatDate(tusker.listedDate || tusker.firstRecordedDate || tusker.firstRecordDate || tusker.sightings?.[0]?.captureDate) : '') || '-'}</span>
                     </span>
                   </div>
 

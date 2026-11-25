@@ -11,7 +11,7 @@
 
 // CARTO needs a free key since Sept 2026 (carto.com/basemaps/apikey).
 // Without one the "Map" option falls back to the standard OpenStreetMap style.
-const CARTO_KEY = (import.meta.env.VITE_CARTO_API_KEY || '').trim();
+const CARTO_KEY = (import.meta.env?.VITE_CARTO_API_KEY || '').trim();
 const CARTO_VOYAGER = `https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(CARTO_KEY)}`;
 const OSM_STANDARD = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 

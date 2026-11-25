@@ -40,6 +40,10 @@ export default function AddTuskerSighting() {
     ? `${initialTusker.id} - ${initialTusker.name}`
     : id.toUpperCase();
 
+  const isDeceased = initialTusker?.livingStatus === 'Deceased';
+  const deathLimit = initialTusker?.deathDate || (initialTusker?.deathYear ? `${initialTusker.deathYear}-12-31` : null);
+  const maxCaptureDate = deathLimit && deathLimit < todayLocalISO() ? deathLimit : todayLocalISO();
+
   return (
     <div className="w-full min-h-screen bg-white pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2rem)] pb-20">
       <div className="w-full max-w-[840px] mx-auto px-4 sm:px-6 md:px-8">
@@ -100,11 +104,16 @@ export default function AddTuskerSighting() {
                     type="date"
                     name="captureDate"
                     required
-                    max={todayLocalISO()}
+                    max={maxCaptureDate}
                     className={INPUT_CLASS}
                     value={formData.captureDate}
                     onChange={handleChange}
                   />
+                  {isDeceased && (initialTusker?.deathYear || initialTusker?.deathDate) && (
+                    <span className="text-[0.72rem] text-rose-600 font-medium leading-snug">
+                      Deceased record ({initialTusker.deathYear || initialTusker.deathDate}). Sighting date must be before or during his lifetime.
+                    </span>
+                  )}
                 </div>
 
                 {/* Recorded / Sighted By */}

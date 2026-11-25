@@ -11,7 +11,7 @@ import { supabase, fromRow, toRow, unwrap } from '../lib/supabaseClient';
    admin-only (enforced by Row Level Security).
 ============================================================== */
 const UNLISTED_FIELDS = [
-  'id', 'location', 'listedDate', 'recordedBy', 'description',
+  'id', 'location', 'firstRecordedLocation', 'listedDate', 'recordedBy', 'description',
   'specialMarks', 'specialWounds', 'photos', 'earPhotos',
   'photographicComparison', 'earComparison',
 ];
