@@ -10,7 +10,9 @@ import React, { useEffect, useState } from 'react';
 import {
   BookOpen,
   ZoomIn,
-  Info
+  Info,
+  Download,
+  FileText
 } from 'lucide-react';
 import ImageLightboxModal from '../components/ImageLightboxModal';
 
@@ -27,6 +29,33 @@ const IDENTIFICATION_DIAGRAMS = [
   { id: 'back-shapes', imageUrl: backShapesImg, title: 'Back Shapes Classification Diagram', bgWhite: true },
   { id: 'tail-brush', imageUrl: tailBrushImg, title: 'Tail Brush & Conformation Diagram', bgWhite: true },
   { id: 'tusk-shapes', imageUrl: tuskShapesImg, title: 'Shape of Tusks Classification Diagram', bgWhite: true },
+];
+
+const KALAWEWA_GUIDE_PHOTOS = [
+  {
+    id: 'kalawewa-cover',
+    imageUrl: '/images/publications/kalawewa_2018/cover_tuskers_of_kalawewa.jpg',
+    title: 'Tuskers of Kalawewa National Park (Book Cover)',
+    caption: 'Official field identification publication developed by Wild Tuskers Sri Lanka for Kalawewa National Park.'
+  },
+  {
+    id: 'kalawewa-handover',
+    imageUrl: '/images/publications/kalawewa_2018/handover_to_park_officials.jpg',
+    title: 'Presentation to Kalawewa National Park Wildlife Officials',
+    caption: 'WTS team presenting the Kalawewa Tusker Identification Guide to park officials in 2018.'
+  },
+  {
+    id: 'kalawewa-team-officials',
+    imageUrl: '/images/publications/kalawewa_2018/team_and_officials_group.jpg',
+    title: 'WTS Team and Wildlife Officials at Kalawewa NP',
+    caption: 'Collaborative initiative establishing long-term monitoring foundation for Kalawewa tuskers.'
+  },
+  {
+    id: 'kalawewa-team-page',
+    imageUrl: '/images/publications/kalawewa_2018/wts_team_page.jpg',
+    title: 'Team of the Wild Tuskers Sri Lanka (Publication Page)',
+    caption: 'Dedicated founding field researchers and documentation team of Wild Tuskers Sri Lanka.'
+  },
 ];
 
 const IMPORTANCE_POINTS = [
@@ -61,6 +90,17 @@ const CITATION_TEXT = 'Source: Individual Identification in Asian Elephants - T.
 
 export default function TuskerIdentification({ embedded = false }) {
   const [activeZoomImg, setActiveZoomImg] = useState(null);
+  const [activeZoomList, setActiveZoomList] = useState(IDENTIFICATION_DIAGRAMS);
+
+  const handleOpenDiagramZoom = (diagram) => {
+    setActiveZoomList(IDENTIFICATION_DIAGRAMS);
+    setActiveZoomImg(diagram);
+  };
+
+  const handleOpenKalawewaZoom = (photo) => {
+    setActiveZoomList(KALAWEWA_GUIDE_PHOTOS);
+    setActiveZoomImg(photo);
+  };
 
   useEffect(() => {
     if (!embedded) {
@@ -151,7 +191,7 @@ export default function TuskerIdentification({ embedded = false }) {
 
         {/* Diagram Image */}
         <div
-          onClick={() => setActiveZoomImg(IDENTIFICATION_DIAGRAMS[0])}
+          onClick={() => handleOpenDiagramZoom(IDENTIFICATION_DIAGRAMS[0])}
           className="relative rounded-xl overflow-hidden border border-[#e5e7eb] bg-[#f9fafb] cursor-pointer group shadow-2xs hover:shadow-md transition-all"
           title="Click to view full diagram"
         >
@@ -210,7 +250,7 @@ export default function TuskerIdentification({ embedded = false }) {
 
         {/* Diagram Image */}
         <div
-          onClick={() => setActiveZoomImg(IDENTIFICATION_DIAGRAMS[1])}
+          onClick={() => handleOpenDiagramZoom(IDENTIFICATION_DIAGRAMS[1])}
           className="relative rounded-xl overflow-hidden border border-[#e5e7eb] bg-[#f9fafb] cursor-pointer group shadow-2xs hover:shadow-md transition-all"
           title="Click to view full diagram"
         >
@@ -263,7 +303,7 @@ export default function TuskerIdentification({ embedded = false }) {
 
         {/* Diagram Image */}
         <div
-          onClick={() => setActiveZoomImg(IDENTIFICATION_DIAGRAMS[2])}
+          onClick={() => handleOpenDiagramZoom(IDENTIFICATION_DIAGRAMS[2])}
           className="relative rounded-xl overflow-hidden border border-[#e5e7eb] bg-[#f9fafb] cursor-pointer group shadow-2xs hover:shadow-md transition-all"
           title="Click to view full diagram"
         >
@@ -321,7 +361,7 @@ export default function TuskerIdentification({ embedded = false }) {
 
         {/* Diagram Image */}
         <div
-          onClick={() => setActiveZoomImg(IDENTIFICATION_DIAGRAMS[3])}
+          onClick={() => handleOpenDiagramZoom(IDENTIFICATION_DIAGRAMS[3])}
           className="relative rounded-xl overflow-hidden border border-[#e5e7eb] bg-[#f9fafb] cursor-pointer group shadow-2xs hover:shadow-md transition-all"
           title="Click to view full diagram"
         >
@@ -382,7 +422,7 @@ export default function TuskerIdentification({ embedded = false }) {
 
         {/* Diagram Image */}
         <div
-          onClick={() => setActiveZoomImg(IDENTIFICATION_DIAGRAMS[4])}
+          onClick={() => handleOpenDiagramZoom(IDENTIFICATION_DIAGRAMS[4])}
           className="relative rounded-xl overflow-hidden border border-[#e5e7eb] bg-[#f9fafb] cursor-pointer group shadow-2xs hover:shadow-md transition-all"
           title="Click to view full diagram"
         >
@@ -432,14 +472,75 @@ export default function TuskerIdentification({ embedded = false }) {
         </div>
       </section>
 
+      {/* ── Section 6: Kalawewa Tusker Identification Guide (2018) ── */}
+      <section className="bg-white rounded-2xl p-6 sm:p-10 border border-[#e5e7eb] shadow-xs flex flex-col gap-6">
+        <div className="pb-3 border-b-2 border-[#f0f0f0] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-accent text-xs font-bold uppercase tracking-wider mb-1">
+              <FileText size={14} className="text-accent" />
+              <span>Published Field Guide & Official Handover</span>
+            </div>
+            <h2 className="font-sans text-[1.35rem] sm:text-[1.5rem] font-bold text-[#111111] m-0 tracking-tight">
+              Kalawewa Tusker Identification Guide (2018)
+            </h2>
+          </div>
+
+          <a
+            href="/documents/wts_kalawewa_identification_guide_2018.pdf"
+            download="WTS_Kalawewa_Identification_Guide_2018.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-primary font-bold text-xs sm:text-sm shadow-sm transition-all no-underline shrink-0 cursor-pointer"
+          >
+            <Download size={16} />
+            <span>Download Guide (PDF · 83.6 MB)</span>
+          </a>
+        </div>
+
+        <div className="font-sans text-sm sm:text-[0.96rem] text-[#374151] leading-[1.8] flex flex-col gap-3.5 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
+          <p className="m-0 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
+            In 2018, <strong>Wild Tuskers Sri Lanka</strong> developed and presented the <strong>Kalawewa Tusker Identification Book</strong> to the wildlife officials of Kalawewa National Park. The publication documented the tuskers regularly visiting and residing in the Kalawewa landscape, providing detailed identification profiles for each individual.
+          </p>
+          <p className="m-0 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
+            The primary objective of the book was to support park officials in accurately identifying tuskers, monitoring their movements, and recording behavioral observations. This initiative established a valuable foundation for long-term monitoring and conservation of the iconic tuskers of Kalawewa.
+          </p>
+        </div>
+
+        {/* 4 Photo Showcase */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-2">
+          {KALAWEWA_GUIDE_PHOTOS.map((photo) => (
+            <div
+              key={photo.id}
+              onClick={() => handleOpenKalawewaZoom(photo)}
+              className="group relative aspect-[3/4] sm:aspect-[4/5] rounded-xl overflow-hidden bg-[#f3f4f6] border border-[#e5e7eb] shadow-2xs hover:shadow-md cursor-pointer transition-all"
+            >
+              <img
+                src={photo.imageUrl}
+                alt={photo.title}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent opacity-90 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2.5 sm:p-3 text-white">
+                <span className="text-[11px] sm:text-xs font-bold leading-tight line-clamp-2">
+                  {photo.title}
+                </span>
+                <span className="text-[10px] text-accent flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity font-semibold">
+                  <ZoomIn size={12} /> Click to enlarge
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ── High-Resolution Zoom Lightbox Modal ── */}
       {activeZoomImg && (
         <ImageLightboxModal
           photo={activeZoomImg}
-          allPhotos={IDENTIFICATION_DIAGRAMS}
+          allPhotos={activeZoomList}
           onNavigatePhoto={(nextPhoto) => setActiveZoomImg(nextPhoto)}
           onClose={() => setActiveZoomImg(null)}
-          fromPath={embedded ? '/special-observations?tab=identification' : '/special-observations?tab=identification'}
+          fromPath={embedded ? '/tusker-insights?tab=identification' : '/tusker-insights?tab=identification'}
         />
       )}
 

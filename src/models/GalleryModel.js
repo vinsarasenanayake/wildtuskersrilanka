@@ -43,17 +43,23 @@ export function getCachedGalleryPhotos(admin = false) {
     if (!admin && galleryCacheAdmin) {
       return galleryCache.filter((p) => p.status === 'approved');
     }
+    // If asking for admin records, but the cache in memory is only public, do not return it
+    if (admin && !galleryCacheAdmin) {
+      return null;
+    }
     return galleryCache;
   }
   try {
     const key = `wts_gallery_photos_${admin ? 'admin' : 'pub'}`;
-    const saved =
-      sessionStorage.getItem(key) ||
-      localStorage.getItem(key) ||
-      sessionStorage.getItem('wts_gallery_photos_pub') ||
-      localStorage.getItem('wts_gallery_photos_pub');
+    // If admin is requested, only read the admin storage key, never fall back to public
+    const saved = admin
+      ? (sessionStorage.getItem(key) || localStorage.getItem(key))
+      : (sessionStorage.getItem(key) || localStorage.getItem(key) || sessionStorage.getItem('wts_gallery_photos_admin') || localStorage.getItem('wts_gallery_photos_admin'));
     if (saved) {
       const parsed = JSON.parse(saved);
+      if (admin && !Array.isArray(parsed)) {
+        return null;
+      }
       galleryCache = parsed;
       galleryCacheAdmin = admin;
       galleryCacheTime = now;
@@ -68,6 +74,7 @@ export function getCachedGalleryPhotos(admin = false) {
 
 export function invalidateGalleryCache() {
   galleryCache = null;
+  galleryCacheAdmin = false;
   galleryCacheTime = 0;
   try {
     sessionStorage.removeItem('wts_gallery_photos_admin');
@@ -77,9 +84,15 @@ export function invalidateGalleryCache() {
   } catch { /* ignore */ }
 }
 
-export async function getGalleryPhotos({ admin = false } = {}) {
-  const cached = getCachedGalleryPhotos(admin);
-  if (cached) return cached;
+export async function getGalleryPhotos({ admin = false, force = false } = {}) {
+  // Admins always get fresh data or if force is true
+  if (!force && !admin) {
+    const cached = getCachedGalleryPhotos(admin);
+    if (cached) return cached;
+  } else if (!force && admin) {
+    const cached = getCachedGalleryPhotos(true);
+    if (cached && cached.some((p) => p.status === 'pending')) return cached;
+  }
 
   try {
     let query = supabase

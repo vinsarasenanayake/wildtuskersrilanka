@@ -758,9 +758,9 @@ export function useSightingForm(tuskerId) {
 
       // Compare new sighting captureDate with tusker's current lastSeen date / year
       // For deceased tuskers, deathYear is the last seen year!
-      const existingLastSeen = isDeceased && initialTusker?.deathYear
-        ? String(initialTusker.deathYear)
-        : (initialTusker?.lastSeen ? String(initialTusker.lastSeen).trim() : '');
+      const existingLastSeen = initialTusker?.lastSeen
+        ? String(initialTusker.lastSeen).trim()
+        : (isDeceased && initialTusker?.deathYear ? String(initialTusker.deathYear) : '');
       const captureYear = parseInt(String(captureDate).slice(0, 4), 10);
       const existingYear = existingLastSeen ? parseInt(existingLastSeen.slice(0, 4), 10) : 0;
 
@@ -852,6 +852,7 @@ const EMPTY_TUSKER_FORM = {
   // Official registry fields
   livingStatus: 'Alive',
   deathYear: '',
+  deathDate: '',
   deathReason: '',
   lastSeenArea: '',
   lastSeen: '',        // "YYYY-MM" in the form, stored as YYYY-MM-01
@@ -885,7 +886,12 @@ export function useTuskerForm(id) {
       Object.keys(next).forEach(k => {
         if (existing[k] !== null && existing[k] !== undefined) next[k] = String(existing[k]);
       });
-      next.lastSeen = existing.lastSeen ? existing.lastSeen.slice(0, 7) : '';
+      next.lastSeen = existing.lastSeen ? String(existing.lastSeen).slice(0, 10) : '';
+      if (existing.deathDate) {
+        next.deathDate = String(existing.deathDate);
+      } else if (existing.livingStatus === 'Deceased') {
+        next.deathDate = existing.lastSeen ? String(existing.lastSeen).slice(0, 10) : (existing.deathYear ? String(existing.deathYear) : '');
+      }
       if (existing.photos && existing.photos.length > 0) {
         next.photos = existing.photos;
         next.photo = existing.photos[0];
@@ -926,9 +932,13 @@ export function useTuskerForm(id) {
       setError('Please add at least one home range area.');
       return false;
     }
-    if (f.deathYear && !/^\d{4}$/.test(f.deathYear)) {
-      setError('Year of death must be a 4-digit year.');
-      return false;
+    if (f.deathYear) {
+      const dyStr = String(f.deathYear).trim();
+      const match = dyStr.match(/^(\d{4})/);
+      if (!match) {
+        setError('Year of death must start with a valid 4-digit year (e.g. 2007).');
+        return false;
+      }
     }
     if (f.listedDate && f.listedDate > todayLocalISO()) {
       setError('Registration / listed date cannot be in the future.');
@@ -942,19 +952,55 @@ export function useTuskerForm(id) {
       : (f.photo ? (typeof f.photo === 'string' ? f.photo.split(',').map(s => s.trim()).filter(Boolean) : [f.photo]) : []);
 
     const birthNum = f.proximateBirthYear ? Number(f.proximateBirthYear) : (f.birthYear ? Number(f.birthYear) : null);
+    let normalizedLastSeen = '';
+    if (f.lastSeen) {
+      const s = String(f.lastSeen).trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+        normalizedLastSeen = s;
+      } else if (/^\d{4}-\d{2}$/.test(s)) {
+        normalizedLastSeen = `${s}-01`;
+      } else if (/^\d{4}$/.test(s)) {
+        normalizedLastSeen = `${s}-01-01`;
+      }
+    }
+
+    let deathYearNum = null;
+    let normalizedDeathDate = '';
+    if (isDeceased) {
+      if (f.deathDate) {
+        normalizedDeathDate = String(f.deathDate).trim();
+        const m = normalizedDeathDate.match(/^(\d{4})/);
+        if (m) deathYearNum = Number(m[1]);
+      } else if (f.deathYear) {
+        const m = String(f.deathYear).trim().match(/^(\d{4})/);
+        if (m) deathYearNum = Number(m[1]);
+      } else if (normalizedLastSeen) {
+        deathYearNum = Number(normalizedLastSeen.slice(0, 4));
+      }
+    }
+
+    let remarksToSave = f.remarks || '';
+    if (isDeceased && normalizedDeathDate) {
+      remarksToSave = `${remarksToSave.replace(/<!--death_date:.*?-->/g, '').trim()} <!--death_date:${normalizedDeathDate}-->`.trim();
+    } else {
+      remarksToSave = remarksToSave.replace(/<!--death_date:.*?-->/g, '').trim();
+    }
+
     const payload = {
       ...f,
       firstRecordedLocation: f.firstRecordedLocation && f.firstRecordedLocation.trim() ? f.firstRecordedLocation.trim() : null,
       proximateBirthYear: birthNum,
       birthYear: birthNum,
       riskLink: f.riskLink && f.riskLink.trim() ? f.riskLink.trim() : '#risk-assessment',
-      deathYear: isDeceased && f.deathYear ? Number(f.deathYear) : null,
+      deathYear: deathYearNum,
       deathReason: isDeceased ? f.deathReason : '',
-      lastSeen: f.lastSeen ? `${f.lastSeen}-01` : (isDeceased && f.deathYear ? `${f.deathYear}-01-01` : ''),
+      lastSeen: normalizedLastSeen,
+      remarks: remarksToSave,
       photos: photosArray,
     };
     delete payload.id;
     delete payload.photo;
+    delete payload.deathDate;
 
     setError('');
     setSaving(true);

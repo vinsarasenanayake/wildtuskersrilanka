@@ -227,6 +227,22 @@ function mapTusker(row) {
       /* ignore */
     }
   }
+  // Extract embedded deathDate from remarks if present
+  if (t.remarks && typeof t.remarks === 'string') {
+    const ddMatch = t.remarks.match(/<!--death_date:(.*?)-->/);
+    if (ddMatch) {
+      t.deathDate = ddMatch[1].trim();
+      t.remarks = t.remarks.replace(/<!--death_date:.*?-->/g, '').trim();
+    }
+  }
+  // Fallback deathDate for deceased tuskers if not explicitly set
+  if (!t.deathDate && t.livingStatus === 'Deceased') {
+    if (t.lastSeen) {
+      t.deathDate = String(t.lastSeen).slice(0, 10);
+    } else if (t.deathYear) {
+      t.deathDate = String(t.deathYear);
+    }
+  }
   // No invented defaults: missing values stay empty and the UI hides them.
   if (!t.photographicComparison) delete t.photographicComparison;
   if (!t.earComparison) delete t.earComparison;

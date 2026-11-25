@@ -30,7 +30,7 @@ export function useGallery(initialActivePhoto = null) {
 
   const reloadPhotos = useCallback(async () => {
     try {
-      const data = await getGalleryPhotos({ admin: isAdmin });
+      const data = await getGalleryPhotos({ admin: isAdmin, force: true });
       setPhotos(data);
     } catch (err) {
       console.error(err);
@@ -185,30 +185,32 @@ export function useGallerySubmit(onSuccess) {
   };
 
   const handlePhotosChange = (urls, primaryUrl, files) => {
+    // Gallery form strictly accepts a single photo
     const list = Array.isArray(urls) ? urls : (urls ? [urls] : []);
+    const singleUrl = list[0] || (typeof urls === 'string' ? urls : null);
+    const singleFiles = Array.isArray(files) ? files.slice(0, 1) : (files ? [files] : []);
+
     setFormData((prev) => ({
       ...prev,
-      images: list,
-      image: list[0] || null,
-      pendingFiles: files !== undefined ? files : (prev.pendingFiles || []),
+      images: singleUrl ? [singleUrl] : [],
+      image: singleUrl || null,
+      pendingFiles: singleFiles,
     }));
-    if (list.length > 0) {
-      setError((prevErr) => (prevErr && prevErr.includes('at least one photo') ? '' : prevErr));
+    if (singleUrl) {
+      setError((prevErr) => (prevErr && prevErr.includes('photo') ? '' : prevErr));
     }
   };
 
   const submit = async (e) => {
     e.preventDefault();
-    const imagesToSubmit =
+    const imageToSubmit =
       formData.images.length > 0
-        ? formData.images
-        : formData.image
-        ? [formData.image]
-        : [];
+        ? formData.images[0]
+        : formData.image;
 
     const errors = [];
-    if (imagesToSubmit.length === 0) {
-      errors.push('Please select at least one photo to upload.');
+    if (!imageToSubmit) {
+      errors.push('Please select a photo to upload.');
     }
     if (!formData.photographer.trim()) {
       errors.push("Please provide the photographer's name.");
@@ -222,9 +224,6 @@ export function useGallerySubmit(onSuccess) {
     if (!formData.consentAgreed) {
       errors.push('You must confirm copyright ownership and consent.');
     }
-    if ((formData.tuskerName || '').length > 200) {
-      errors.push('Too many tuskers selected for one photo.');
-    }
 
     if (errors.length > 0) {
       setError(errors.join(' • '));
@@ -235,59 +234,42 @@ export function useGallerySubmit(onSuccess) {
       setSubmitting(true);
       setError('');
 
-      // Upload deferred File objects to Supabase Storage only on actual submit
+      // Upload deferred File object to Supabase Storage only on actual submit
       const files = formData.pendingFiles || [];
-      let uploadedUrls = [];
-      if (files.length > 0) {
-        uploadedUrls = await Promise.all(
-          files.map(async (file) => {
-            if (file instanceof File || file instanceof Blob) {
-              return await uploadMediaFile(file, 'gallery');
-            }
-            return file;
-          })
-        );
+      let uploadedUrl = null;
+      if (files.length > 0 && (files[0] instanceof File || files[0] instanceof Blob)) {
+        uploadedUrl = await uploadMediaFile(files[0], 'gallery');
+      } else if (typeof imageToSubmit === 'string' && !imageToSubmit.startsWith('blob:')) {
+        uploadedUrl = imageToSubmit;
       }
 
-      // Combine pre-existing URLs (if non-blob) with newly uploaded storage URLs
-      const finalUrls = [
-        ...imagesToSubmit.filter((url) => typeof url === 'string' && !url.startsWith('blob:')),
-        ...uploadedUrls.filter(Boolean),
-      ];
-
-      if (finalUrls.length === 0) {
-        throw new Error('No photos could be uploaded to storage. Please try again.');
+      if (!uploadedUrl) {
+        throw new Error('No photo could be uploaded to storage. Please try again.');
       }
 
-      // Submit each photo to gallery_photos table
-      await Promise.all(
-        finalUrls.map((imgUrl) =>
-          submitGalleryPhoto({
-            ...formData,
-            title: formData.title.trim() || formData.tuskerName || 'Wild Tusker Observation',
-            location: formData.location.trim(),
-            photographer: formData.photographer.trim(),
-            photographerContact: formData.photographerContact.trim(),
-            image: imgUrl,
-          })
-        )
-      );
-
-      // Revoke any temporary object URLs
-      imagesToSubmit.forEach((url) => {
-        if (typeof url === 'string' && url.startsWith('blob:')) {
-          try {
-            URL.revokeObjectURL(url);
-          } catch {
-            /* ignore */
-          }
-        }
+      // Submit photo to gallery_photos table
+      await submitGalleryPhoto({
+        ...formData,
+        title: formData.title.trim() || formData.tuskerName || 'Wild Tusker Observation',
+        location: formData.location.trim(),
+        photographer: formData.photographer.trim(),
+        photographerContact: formData.photographerContact.trim(),
+        image: uploadedUrl,
       });
+
+      // Revoke temporary object URL
+      if (typeof imageToSubmit === 'string' && imageToSubmit.startsWith('blob:')) {
+        try {
+          URL.revokeObjectURL(imageToSubmit);
+        } catch {
+          /* ignore */
+        }
+      }
 
       setSuccessMsg(true);
       if (onSuccess) onSuccess();
     } catch (err) {
-      setError(friendlyError(err) || 'Failed to submit photo(s).');
+      setError(friendlyError(err) || 'Failed to submit photo.');
     } finally {
       setSubmitting(false);
     }

@@ -165,7 +165,7 @@ function ObservationPhotosScrollRow({ item, obsPhotos, onPhotoClick }) {
   };
 
   return (
-    <div className="pt-2 flex flex-col gap-2 relative">
+    <div className="pt-2 flex flex-col gap-2 relative w-full min-w-0 max-w-full overflow-hidden">
       <div className="flex items-center justify-between">
         <span className="font-sans text-[0.72rem] sm:text-[0.78rem] font-bold text-[#888888] uppercase tracking-wider flex items-center gap-1.5">
           <ImageIcon size={14} className="text-accent shrink-0" />
@@ -261,7 +261,7 @@ function ObservationPhotosGallery({ item, setActiveLightboxPhoto }) {
   }
 
   return (
-    <div className="pt-2 flex flex-col gap-2">
+    <div className="pt-2 flex flex-col gap-2 w-full min-w-0 max-w-full">
       <div className="flex items-center justify-between">
         <span className="font-sans text-[0.72rem] sm:text-[0.78rem] font-bold text-[#888888] uppercase tracking-wider flex items-center gap-1.5">
           <ImageIcon size={14} className="text-accent shrink-0" />
@@ -404,7 +404,7 @@ export default function SpecialObservations({ embedded = false }) {
 
   const mainContent = (
     <>
-      <div className={embedded ? "w-full flex flex-col gap-6" : "max-w-[1100px] mx-auto px-4 sm:px-6 flex flex-col gap-6 sm:gap-8"}>
+      <div className={embedded ? "w-full min-w-0 max-w-full flex flex-col gap-6" : "w-full max-w-[1100px] mx-auto px-4 sm:px-6 flex flex-col gap-6 sm:gap-8 min-w-0"}>
       {/* Page Header (standalone only) */}
       {!embedded && (
         <div className="flex flex-col items-center justify-center text-center mb-6 pb-6 border-b border-[#e5e7eb] gap-3">
@@ -448,7 +448,7 @@ export default function SpecialObservations({ embedded = false }) {
               <button
                 type="button"
                 onClick={() => navigate('/admin/add-observation')}
-                className="h-10 sm:h-10 bg-accent text-primary font-bold text-xs sm:text-[0.88rem] px-5 sm:px-6 rounded-xl sm:rounded-lg inline-flex items-center justify-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors whitespace-nowrap shadow-xs shrink-0"
+                className="h-10 sm:h-10 bg-accent text-primary font-bold text-xs sm:text-[0.88rem] px-4 sm:px-6 rounded-xl sm:rounded-lg inline-flex items-center justify-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors whitespace-nowrap shadow-xs w-full sm:w-auto shrink-0"
               >
                 <PlusCircle size={16} />
                 <span>Add Special Observation</span>

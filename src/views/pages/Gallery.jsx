@@ -284,6 +284,10 @@ function normalizeTuskerName(str) {
             Wild Tuskers Sri Lanka Gallery
           </h1>
 
+          <p className="font-sans text-sm sm:text-[0.98rem] md:text-[1.02rem] text-[#555555] leading-relaxed max-w-2xl mx-auto m-0 text-center">
+            Every tusker has a story. Every photograph preserves a moment. Explore a visual legacy of Sri Lanka’s rare giants and the enduring efforts to protect them.
+          </p>
+
           {!isAdmin && (
             <div className="flex items-center justify-center gap-3 w-full sm:w-auto mt-1">
               <button
@@ -856,13 +860,10 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
               <CheckCircle2 size={32} />
             </div>
             <h4 className="font-sans text-lg font-bold text-[#111111] m-0">
-              {formData.images && formData.images.length > 1
-                ? `${formData.images.length} Photos Submitted Successfully!`
-                : 'Photo Submitted Successfully!'}
+              Photo Submitted Successfully!
             </h4>
             <p className="font-sans text-sm text-[#666666] max-w-[380px] leading-relaxed m-0">
-              Thank you for contributing. Your photograph
-              {formData.images && formData.images.length > 1 ? 's have' : ' has'} been queued and will appear in the gallery as soon as reviewed by a WTS admin.
+              Thank you for contributing. Your photograph has been queued and will appear in the gallery as soon as reviewed by a WTS admin.
             </p>
             <button
               onClick={onClose}
@@ -879,21 +880,21 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
               </div>
             )}
 
-            {/* Photo Upload Zone with Multi-Image Support & Deferred Upload */}
+            {/* Photo Upload Zone: Strictly Single Image */}
             <div className="flex flex-col gap-1.5">
               <ImageUploadBox
                 label="Photo Upload"
                 required
                 folder="gallery"
-                multiple
+                multiple={false}
                 deferUpload
-                value={formData.images && formData.images.length > 0 ? formData.images : (formData.image ? [formData.image] : [])}
+                value={formData.images && formData.images.length > 0 ? formData.images[0] : (formData.image || '')}
                 onChange={handlePhotosChange}
                 aspectClass="aspect-[16/10]"
               />
             </div>
 
-            {/* Tusker Multi-Select Dropdown with Search */}
+            {/* Tusker Multi-Select Dropdown with Search: Allows multiple tuskers */}
             <div className="w-full">
               <TuskerMultiSelect
                 label="Tusker Name / ID"
@@ -905,7 +906,7 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
                     handleChange({ target: { name: 'location', value: _list[0].location } });
                   }
                 }}
-                helperText="Select one or multiple tuskers featured in your photograph."
+                helperText="Select one or multiple tuskers featured in this photograph."
               />
             </div>
 
@@ -960,23 +961,6 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
                   className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm scroll-mt-28"
                 />
               </div>
-            </div>
-
-            {/* Contributor Contact Email (Optional for Follow-up) */}
-            <div className="flex flex-col gap-1 w-full">
-              <label htmlFor="photo-contact" className="text-xs font-bold text-[#555555] uppercase tracking-wider">
-                Contributor Email <span className="text-[#888888] font-normal normal-case">(optional, for verification & attribution)</span>
-              </label>
-              <input
-                id="photo-contact"
-                type="email"
-                name="photographerContact"
-                maxLength={200}
-                placeholder="name@example.com"
-                value={formData.photographerContact}
-                onChange={handleChange}
-                className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm scroll-mt-28"
-              />
             </div>
 
             {/* Copyright Ownership Confirmation Checkbox */}

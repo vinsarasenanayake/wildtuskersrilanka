@@ -37,7 +37,7 @@ const navItems = [
   { name: 'The Gallery',       path: '/gallery',     icon: Camera },
   { name: 'Field Notes',       path: '/field-notes', icon: BookOpen },
   { name: 'Our Projects',      path: '/projects',             icon: Calendar },
-  { name: 'Special Observations', path: '/special-observations', icon: Binoculars },
+  { name: 'Tusker Insights',   path: '/tusker-insights',      icon: Binoculars },
 ];
 
 export default function Navbar() {
@@ -56,7 +56,7 @@ export default function Navbar() {
   const drawerRef = useRef(null);
   const toggleBtnRef = useRef(null);
 
-  // Close mobile drawer on outside click or tap
+  // Close mobile drawer on outside click, Escape key, or desktop viewport resize
   useEffect(() => {
     if (!isOpen) return;
 
@@ -75,14 +75,22 @@ export default function Navbar() {
       if (e.key === 'Escape') closeMenu();
     };
 
+    const handleResize = () => {
+      if (window.innerWidth >= 1280) {
+        closeMenu();
+      }
+    };
+
     document.addEventListener('mousedown', handleOutsideClick);
     document.addEventListener('touchstart', handleOutsideClick, { passive: true });
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('resize', handleResize);
 
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
       document.removeEventListener('touchstart', handleOutsideClick);
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('resize', handleResize);
     };
   }, [isOpen, closeMenu]);
 
@@ -109,8 +117,9 @@ export default function Navbar() {
 
   const isActive = (path) => {
     if (path === '/') return location.pathname === '/';
-    if (path === '/special-observations') {
+    if (path === '/tusker-insights' || path === '/special-observations') {
       return (
+        location.pathname.startsWith('/tusker-insights') ||
         location.pathname.startsWith('/special-observations') ||
         location.pathname.startsWith('/special-observation') ||
         location.pathname.startsWith('/learn') ||
@@ -272,8 +281,8 @@ export default function Navbar() {
         <>
           {/* Mobile Backdrop Overlay */}
           <div
-            className={`fixed inset-0 bg-black/60 backdrop-blur-xs z-[9998] transition-opacity duration-300 ${
-              isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+            className={`fixed inset-0 bg-black/60 backdrop-blur-xs z-[9998] transition-opacity duration-300 xl:hidden ${
+              isOpen ? 'opacity-100 pointer-events-auto visible' : 'opacity-0 pointer-events-none invisible'
             }`}
             onClick={closeMenu}
           />
@@ -282,8 +291,8 @@ export default function Navbar() {
           <div
             ref={drawerRef}
             data-nav-drawer=""
-            className={`fixed top-0 right-0 bottom-0 h-screen h-[100dvh] w-[310px] sm:w-[350px] max-w-[86vw] bg-[#0b2518] bg-gradient-to-b from-[#081d13] via-[#0b2619] to-[#081d13] z-[9999] flex flex-col p-4 sm:p-6 pb-28 sm:pb-8 rounded-l-[26px] sm:rounded-l-[36px] shadow-[-20px_0_60px_rgba(0,0,0,0.85)] border-l border-white/15 text-white transition-all duration-300 ease-out overflow-y-auto overscroll-contain ${
-              isOpen ? 'translate-x-0 opacity-100 pointer-events-auto' : 'translate-x-full opacity-0 pointer-events-none'
+            className={`fixed top-0 right-0 bottom-0 h-screen h-[100dvh] w-[310px] sm:w-[350px] max-w-[86vw] bg-[#0b2518] bg-gradient-to-b from-[#081d13] via-[#0b2619] to-[#081d13] z-[9999] flex flex-col p-4 sm:p-6 pb-28 sm:pb-8 rounded-l-[26px] sm:rounded-l-[36px] shadow-[-20px_0_60px_rgba(0,0,0,0.85)] border-l border-white/15 text-white transition-all duration-300 ease-out overflow-y-auto overscroll-contain xl:hidden ${
+              isOpen ? 'translate-x-0 opacity-100 pointer-events-auto visible' : 'translate-x-full opacity-0 pointer-events-none invisible'
             }`}
             style={{ WebkitOverflowScrolling: 'touch' }}
           >

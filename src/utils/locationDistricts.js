@@ -113,6 +113,13 @@ export const LOCATION_DISTRICT_MAP = {
   'tissa': ['Hambantota'],
   'lunugamvehera': ['Hambantota', 'Monaragala'],
   'yala': ['Hambantota', 'Monaragala'],
+  'yala national park': ['Hambantota', 'Monaragala'],
+  'manik river': ['Hambantota', 'Monaragala'],
+  'menik river': ['Hambantota', 'Monaragala'],
+  'manik ganga': ['Hambantota', 'Monaragala'],
+  'menik ganga': ['Hambantota', 'Monaragala'],
+  'kirindi oya': ['Hambantota', 'Monaragala'],
+  'kumbukkan oya': ['Monaragala', 'Ampara'],
   'yala block 1': ['Hambantota'],
   'yala block 2': ['Hambantota', 'Monaragala'],
   'yala block 3': ['Monaragala'],
@@ -152,6 +159,7 @@ export const LOCATION_DISTRICT_MAP = {
 
   // Eastern Province - Ampara District
   'ampara': ['Ampara'],
+  'okanda': ['Ampara'],
   'kumana': ['Ampara'],
   'lahugala': ['Ampara'],
   'panama': ['Ampara'],
@@ -256,8 +264,8 @@ export const LOCATION_DISTRICT_MAP = {
   'matara': ['Matara'],
 
   // Major Multi-District Wildlife Landscapes & Corridors
-  'wilpattu': ['Puttalam', 'Anuradhapura', 'Mannar'],
-  'wilpattu national park': ['Puttalam', 'Anuradhapura', 'Mannar'],
+  'wilpattu': ['Puttalam', 'Anuradhapura'],
+  'wilpattu national park': ['Puttalam', 'Anuradhapura'],
   'wasgamuwa': ['Matale', 'Polonnaruwa'],
   'wasgamuwa national park': ['Matale', 'Polonnaruwa'],
   'maduru oya': ['Polonnaruwa', 'Ampara', 'Badulla'],
@@ -274,6 +282,26 @@ export const LOCATION_DISTRICT_MAP = {
   'nuwaragala': ['Ampara', 'Polonnaruwa'],
   'pothana': ['Anuradhapura', 'Matale'],
   'diganpathaha': ['Matale', 'Anuradhapura'],
+  'arugam bay': ['Ampara'],
+  'balalu wewa': ['Anuradhapura'],
+  'deegawapi': ['Ampara'],
+  'eco park': ['Anuradhapura', 'Polonnaruwa'],
+  'hambegamuwa': ['Monaragala'],
+  'handapanagala': ['Monaragala'],
+  'hulannuge': ['Ampara'],
+  'hurulu wewa': ['Anuradhapura'],
+  'kahallapallekele': ['Kurunegala', 'Anuradhapura'],
+  'kekirawa': ['Anuradhapura'],
+  'kossapola': ['Kurunegala'],
+  'melsiripura': ['Kurunegala'],
+  'nimalawa wildlife sanctuary': ['Hambantota'],
+  'okkampitiya': ['Monaragala'],
+  'rambewa': ['Anuradhapura'],
+  'saagama': ['Ampara'],
+  'situlpawwa': ['Hambantota'],
+  'thalawa': ['Anuradhapura'],
+  'vanni': ['Vavuniya', 'Mannar'],
+  'wandama demaliya': ['Kurunegala'],
 };
 
 /**
@@ -290,17 +318,18 @@ export function getLocationDistricts(locName) {
     return LOCATION_DISTRICT_MAP[clean];
   }
 
-  // 2. Substring match against known locations in dictionary
-  for (const [key, dists] of Object.entries(LOCATION_DISTRICT_MAP)) {
-    if (clean === key || clean.startsWith(key + ' ') || clean.endsWith(' ' + key) || clean.includes(key)) {
-      return dists;
-    }
-  }
-
-  // 3. Check if the string itself contains a recognized District name
+  // 2. Check if the string itself contains a recognized District name
   for (const dist of DISTRICTS) {
     if (clean.includes(dist.toLowerCase())) {
       return [dist];
+    }
+  }
+
+  // 3. Substring match against known locations in dictionary (longest key first)
+  const sortedKeys = Object.keys(LOCATION_DISTRICT_MAP).sort((a, b) => b.length - a.length);
+  for (const key of sortedKeys) {
+    if (clean === key || clean.startsWith(key + ' ') || clean.endsWith(' ' + key) || clean.includes(key)) {
+      return LOCATION_DISTRICT_MAP[key];
     }
   }
 

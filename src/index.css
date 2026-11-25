@@ -20,6 +20,8 @@
   html {
     scroll-behavior: auto; /* Fast, responsive 1:1 hardware scroll */
     background-color: #0b2518;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
   body {
     font-family: var(--font-sans);
@@ -27,7 +29,12 @@
     color: var(--color-text-dark);
     line-height: 1.6;
     overflow-x: hidden;
+    max-width: 100vw;
     -webkit-font-smoothing: antialiased;
+  }
+  #root {
+    overflow-x: hidden;
+    max-width: 100vw;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-serif);
@@ -312,3 +319,24 @@ a[title*="Report errors"] {
 .leaflet-control-layers {
   display: none !important;
 }
+
+/* WTS Slim Minimalist Scrollbar */
+.wts-slim-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(11, 37, 24, 0.25) transparent;
+}
+.wts-slim-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.wts-slim-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.wts-slim-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(11, 37, 24, 0.25);
+  border-radius: 9999px;
+}
+.wts-slim-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(11, 37, 24, 0.45);
+}
+

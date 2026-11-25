@@ -31,30 +31,58 @@ import { getLocationDistricts } from '../../utils/locationDistricts';
 
 const SRI_LANKA_CENTER = [7.8731, 80.7718];
 
-/** Resolves district definition(s) from tusker.district or roaming areas */
+function normalizeDistrictName(name) {
+  if (!name) return '';
+  const s = String(name).trim();
+  const low = s.toLowerCase();
+  if (low.includes('hamban')) return 'Hambantota';
+  if (low.includes('ratna') || low.includes('rathna')) return 'Ratnapura';
+  if (low.includes('battic') || low.includes('batic')) return 'Batticaloa';
+  if (low.includes('nuwara')) return 'Nuwara Eliya';
+  if (low.includes('polon')) return 'Polonnaruwa';
+  if (low.includes('anuradh')) return 'Anuradhapura';
+  if (low.includes('kurun')) return 'Kurunegala';
+  if (low.includes('puttal')) return 'Puttalam';
+  if (low.includes('monar')) return 'Monaragala';
+  if (low.includes('ampar')) return 'Ampara';
+  if (low.includes('trinco')) return 'Trincomalee';
+  if (low.includes('vavun')) return 'Vavuniya';
+  if (low.includes('mannar')) return 'Mannar';
+  if (low.includes('mullai')) return 'Mullaitivu';
+  if (low.includes('matale')) return 'Matale';
+  if (low.includes('matara')) return 'Matara';
+  if (low.includes('badulla')) return 'Badulla';
+  if (low.includes('kandy')) return 'Kandy';
+  if (low.includes('kegall')) return 'Kegalle';
+  return s;
+}
+
+/** Resolves district definition(s) from tusker.district and roaming areas */
 function getTuskerDistrictData(tusker) {
   if (!tusker) return [];
   const foundNames = new Set();
 
+  const addIfValid = (name) => {
+    const norm = normalizeDistrictName(name);
+    if (SRI_LANKA_DISTRICTS_DATA[norm]) {
+      foundNames.add(norm);
+    }
+  };
+
   if (tusker.district) {
-    String(tusker.district).split(/[,/]/).forEach((d) => {
-      const clean = d.trim();
-      if (SRI_LANKA_DISTRICTS_DATA[clean]) foundNames.add(clean);
+    String(tusker.district).split(/[/,;]/).forEach(addIfValid);
+  }
+
+  // Also resolve from home range locations
+  if (tusker.location) {
+    String(tusker.location).split(/[/,;]/).forEach((loc) => {
+      getLocationDistricts(loc.trim()).forEach(addIfValid);
     });
   }
 
-  if (foundNames.size === 0 && tusker.lastSeenArea) {
-    const fromArea = getLocationDistricts(tusker.lastSeenArea);
-    fromArea.forEach((d) => {
-      if (SRI_LANKA_DISTRICTS_DATA[d]) foundNames.add(d);
-    });
-  }
-
-  if (foundNames.size === 0 && tusker.location) {
-    const fromLoc = getLocationDistricts(tusker.location);
-    fromLoc.forEach((d) => {
-      if (SRI_LANKA_DISTRICTS_DATA[d]) foundNames.add(d);
-    });
+  // And last seen area
+  if (tusker.lastSeenArea) {
+    getLocationDistricts(tusker.lastSeenArea.trim()).forEach(addIfValid);
   }
 
   return Array.from(foundNames).map((name) => SRI_LANKA_DISTRICTS_DATA[name]).filter(Boolean);
@@ -463,10 +491,10 @@ export default function TuskerSightingsMap({
     let lastSeenCoords = (tusker.lastSeenCoords && typeof tusker.lastSeenCoords.lat === 'number')
       ? tusker.lastSeenCoords
       : (tusker.lastSeenAreaCoords && typeof tusker.lastSeenAreaCoords.lat === 'number')
-      ? tusker.lastSeenAreaCoords
-      : (tusker.coords && typeof tusker.coords.lat === 'number')
-      ? tusker.coords
-      : latestSightingCoords;
+        ? tusker.lastSeenAreaCoords
+        : (tusker.coords && typeof tusker.coords.lat === 'number')
+          ? tusker.coords
+          : latestSightingCoords;
 
     if (lastSeenAreaName && !lastSeenCoords) {
       if (isDistrictTown(lastSeenAreaName)) {
@@ -539,15 +567,15 @@ export default function TuskerSightingsMap({
 
     const lastSeen = (lastSeenAreaName && lastSeenCoords)
       ? {
-          id: 'last-seen-pin',
-          type: 'lastSeen',
-          name: lastSeenAreaName,
-          title: `${tusker.name} - ${isDeceased ? 'Last Known Location' : 'Last Seen Location'}: ${lastSeenAreaName}`,
-          location: lastSeenAreaName,
-          coords: lastSeenCoords,
-          date: (isDeceased && tusker.deathYear ? String(tusker.deathYear) : null) || formatMonth(tusker.lastSeen) || (sortedSightings.length > 0 ? sortedSightings[sortedSightings.length - 1].captureDate : 'Registered baseline'),
-          badge: isDeceased ? 'Last Known Location' : 'Last Seen Location',
-        }
+        id: 'last-seen-pin',
+        type: 'lastSeen',
+        name: lastSeenAreaName,
+        title: `${tusker.name} - ${isDeceased ? 'Last Known Location' : 'Last Seen Location'}: ${lastSeenAreaName}`,
+        location: lastSeenAreaName,
+        coords: lastSeenCoords,
+        date: formatMonth(tusker.lastSeen) || (isDeceased && tusker.deathYear ? String(tusker.deathYear) : null) || (sortedSightings.length > 0 ? sortedSightings[sortedSightings.length - 1].captureDate : 'Registered baseline'),
+        badge: isDeceased ? 'Last Known Location' : 'Last Seen Location',
+      }
       : null;
 
     let firstRecordedPoint = null;
@@ -868,7 +896,27 @@ export default function TuskerSightingsMap({
     } else if (uniquePts.length > 1) {
       map.fitBounds(uniquePts, { padding: 45, maxZoom: selectedPoint ? 12 : 11 });
     }
-  }, [displayedSightings, isMapLoaded, selectedPoint, homeRangeShape, statusTheme, anchorCoords, lastSeenPoint, firstRecordedPoint, isDeceased, handleSelectPoint, handleViewHomeRange, tusker?.id, tusker?.name, tusker?.location, tusker?.livingStatus, tusker?.zone, tuskerZoneName, tuskerDistricts]);
+  }, [
+    displayedSightings,
+    isMapLoaded,
+    selectedPoint,
+    homeRangeShape,
+    statusTheme,
+    anchorCoords,
+    lastSeenPoint,
+    firstRecordedPoint,
+    isDeceased,
+    handleSelectPoint,
+    handleViewHomeRange,
+    tusker?.id,
+    tusker?.name,
+    tusker?.location,
+    tusker?.livingStatus,
+    tusker?.zone,
+    tusker?.recordedBy,
+    tuskerZoneName,
+    tuskerDistricts,
+  ]);
 
   return (
     <div className="mt-8 bg-white border border-[#e2e8e0] rounded-[16px] overflow-hidden shadow-xs font-sans">
@@ -965,8 +1013,8 @@ export default function TuskerSightingsMap({
             {homeRangeShape?.zoneData
               ? `(The shaded boundary represents ${tusker?.name}'s assigned WTS Conservation Landscape: ${homeRangeShape.zoneData.name}, encompassing ${homeRangeShape.zoneData.districts}. Home range: ${tusker?.location || '-'}.)`
               : (isDeceased
-                  ? `(Disclaimer: The shaded polygon outlines ${tusker?.name}'s ${statusTheme.disclaimerText} across ${tusker?.location || 'registered area'}.)`
-                  : `(Disclaimer: The shaded polygon outlines ${tusker?.name}'s ${statusTheme.disclaimerText} across ${tusker?.location || 'registered area'}. ${sightingPoints.length > 0 ? 'Individual field sightings are plotted within.' : ''})`)}
+                ? `(Disclaimer: The shaded polygon outlines ${tusker?.name}'s ${statusTheme.disclaimerText} across ${tusker?.location || 'registered area'}.)`
+                : `(Disclaimer: The shaded polygon outlines ${tusker?.name}'s ${statusTheme.disclaimerText} across ${tusker?.location || 'registered area'}. ${sightingPoints.length > 0 ? 'Individual field sightings are plotted within.' : ''})`)}
           </p>
         </div>
 
@@ -975,11 +1023,10 @@ export default function TuskerSightingsMap({
           <button
             type="button"
             onClick={handleViewHomeRange}
-            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
-              !selectedPoint
+            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${!selectedPoint
                 ? 'bg-emerald-50 text-emerald-900 border-emerald-300 shadow-xs cursor-default'
                 : 'bg-white text-gray-700 border-gray-200 hover:bg-emerald-50/50 hover:text-emerald-900 shadow-2xs'
-            }`}
+              }`}
             title="Display full conservation landscape on map"
           >
             <Eye size={14} className="text-emerald-600" />
@@ -997,11 +1044,10 @@ export default function TuskerSightingsMap({
           <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:max-w-xs bg-white/95 rounded-xl p-3.5 shadow-xl border border-black/10 z-[1000] animate-in fade-in">
             <div className="flex items-start justify-between gap-2 mb-2">
               <div>
-                <span className={`inline-block px-2 py-0.5 rounded text-[0.68rem] font-bold ${
-                  selectedPoint.id === 'first-recorded-pin'
+                <span className={`inline-block px-2 py-0.5 rounded text-[0.68rem] font-bold ${selectedPoint.id === 'first-recorded-pin'
                     ? 'bg-amber-100 text-amber-900 border border-amber-300'
                     : 'bg-[#e8f5ec] text-[#1f7a3d]'
-                }`}>
+                  }`}>
                   {selectedPoint.badge}
                 </span>
                 <h4 className="font-sans text-sm font-bold text-[#111111] m-0 mt-1">
@@ -1157,11 +1203,10 @@ export default function TuskerSightingsMap({
           ) : tusker?.location ? (
             <div
               onClick={handleViewHomeRange}
-              className={`shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs cursor-pointer transition-all select-none ${
-                !selectedPoint
+              className={`shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs cursor-pointer transition-all select-none ${!selectedPoint
                   ? `${statusTheme.cardActive} shadow-xs`
                   : `${statusTheme.cardInactive} shadow-2xs`
-              }`}
+                }`}
             >
               <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${statusTheme.dotBg} text-white shadow-2xs`}>
                 ●
@@ -1182,11 +1227,10 @@ export default function TuskerSightingsMap({
           {lastSeenPoint && (
             <div
               onClick={() => handleSelectPoint(lastSeenPoint)}
-              className={`shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs cursor-pointer transition-all select-none ${
-                selectedPoint?.id === 'last-seen-pin'
+              className={`shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs cursor-pointer transition-all select-none ${selectedPoint?.id === 'last-seen-pin'
                   ? `${statusTheme.cardActive} shadow-xs`
                   : `${statusTheme.cardInactive} shadow-2xs`
-              }`}
+                }`}
             >
               <div
                 className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-2xs"
@@ -1214,11 +1258,10 @@ export default function TuskerSightingsMap({
           {firstRecordedPoint && (
             <div
               onClick={() => handleSelectPoint(firstRecordedPoint)}
-              className={`shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs cursor-pointer transition-all select-none ${
-                selectedPoint?.id === 'first-recorded-pin'
+              className={`shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs cursor-pointer transition-all select-none ${selectedPoint?.id === 'first-recorded-pin'
                   ? 'bg-amber-50 text-amber-950 border-amber-400 ring-2 ring-amber-300/40 shadow-xs'
                   : 'bg-white text-gray-700 border-gray-200 hover:border-amber-300 shadow-2xs'
-              }`}
+                }`}
             >
               <div
                 className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-[#c69b55] shadow-2xs"
@@ -1251,11 +1294,10 @@ export default function TuskerSightingsMap({
               <div
                 key={point.id}
                 onClick={() => handleSelectPoint(point)}
-                className={`shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl border text-xs cursor-pointer transition-all select-none ${
-                  isSelected
+                className={`shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl border text-xs cursor-pointer transition-all select-none ${isSelected
                     ? 'bg-emerald-50 text-emerald-950 border-emerald-400 ring-2 ring-emerald-300/40 shadow-xs'
                     : 'bg-white text-gray-700 border-gray-200 hover:border-emerald-300 shadow-2xs'
-                }`}
+                  }`}
               >
                 <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-emerald-600 text-white shadow-2xs">
                   S{point.sightingNum}

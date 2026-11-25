@@ -24,6 +24,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Download,
+  FileText,
 } from 'lucide-react';
 import ImageLightboxModal from '../components/ImageLightboxModal';
 
@@ -363,6 +365,38 @@ function ProjectCard({ event, isAdmin, onEdit, onDelete, onPhotoClick }) {
         </div>
       )}
 
+      {/* Attached Document / Publication Download Card */}
+      {((event.title && event.title.toLowerCase().includes('kalawewa') && event.title.toLowerCase().includes('identification')) || event.pdfUrl) && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl bg-[#fafbfa] border border-[#e5e7eb] shadow-2xs">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-accent/20 text-accent flex items-center justify-center shrink-0">
+              <FileText size={20} className="text-accent" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-xs sm:text-[0.88rem] font-bold text-[#111827] truncate">
+                {event.title}
+              </div>
+              <div className="text-[11px] sm:text-xs text-[#6b7280] flex items-center gap-2 mt-0.5">
+                <span className="font-semibold text-emerald-800">Official Field Guide</span>
+                <span>·</span>
+                <span>PDF (83.6 MB)</span>
+              </div>
+            </div>
+          </div>
+
+          <a
+            href={event.pdfUrl || "/documents/wts_kalawewa_identification_guide_2018.pdf"}
+            download="WTS_Kalawewa_Identification_Guide_2018.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 sm:py-2.5 rounded-lg bg-accent hover:bg-accent-hover text-primary font-bold text-xs sm:text-[0.82rem] shadow-xs transition-all no-underline shrink-0 cursor-pointer text-center"
+          >
+            <Download size={15} />
+            <span>Download Guide (PDF · 83.6 MB)</span>
+          </a>
+        </div>
+      )}
+
       {/* Images Gallery: Rendered Under the Texts (Scrollable in one line) */}
       {images.length > 0 && (
         <PhotosScrollRow
@@ -524,7 +558,7 @@ export default function OurProjects() {
             Our Projects
           </h1>
           <p className="font-sans text-sm sm:text-[0.98rem] md:text-[1.02rem] text-[#555555] leading-relaxed max-w-3xl mx-auto m-0 text-center">
-            Events, field expeditions, and conservation outreach initiatives conducted by the Wild Tuskers Sri Lanka team
+            Conservation begins with knowledge. For more than a decade, Wild Tuskers Sri Lanka has led initiatives to identify, document, and monitor the island’s rare tusked elephants, creating valuable resources that support research, wildlife management, and conservation efforts. Each project showcased below is part of our mission to secure a future for Sri Lanka’s iconic tuskers, transforming passion, science, and field experience into meaningful conservation impact.
           </p>
         </div>
 

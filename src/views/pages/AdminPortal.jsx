@@ -122,7 +122,7 @@ export default function AdminPortal() {
         getSpecialObservations(),
         getEvents(),
         getFieldNotes({ admin: true }),
-        getGalleryPhotos({ admin: true }),
+        getGalleryPhotos({ admin: true, force: true }),
         getTeamMembers(),
       ]);
       setTuskers(tuskerList);

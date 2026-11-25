@@ -5,9 +5,9 @@
  * biometrics, conservation status, risk assessments, and interactive chronological sightings map.
  */
 
-import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   MapPin,
   User,
@@ -51,8 +51,6 @@ import EditSightingModal from '../components/EditSightingModal';
 import ImageUploadBox from '../components/ImageUploadBox';
 import LocationSearchInput from '../components/LocationSearchInput';
 import PhotoWatermarkBadge from '../components/PhotoWatermarkBadge';
-// Loaded only when a risk assessment is opened, so the risk data is not part of the main site download
-const RiskAssessmentModal = lazy(() => import('../components/RiskAssessmentModal'));
 import { getCachedAspect, setCachedAspect, probeImageAspect } from '../../utils/photoAspectCache';
 import useFocusTrap from '../../hooks/useFocusTrap';
 
@@ -2422,7 +2420,6 @@ export default function TuskerProfile() {
     });
   }, [tusker?.sightings]);
 
-  const [showRiskModal, setShowRiskModal] = useState(false);
   const [selectedComparisonImg, setSelectedComparisonImg] = useState(null);
   const [previewModalPhoto, setPreviewModalPhoto] = useState(null);
 
@@ -2768,14 +2765,14 @@ export default function TuskerProfile() {
   }, [tusker?.photos, tusker?.photo, tusker?.sightings]);
 
   useEffect(() => {
-    if (selectedComparisonImg || showRiskModal || previewModalPhoto || comparisonModal || deletingComparison) {
+    if (selectedComparisonImg || previewModalPhoto || comparisonModal || deletingComparison) {
       const prevOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       return () => {
         document.body.style.overflow = prevOverflow === 'hidden' ? '' : (prevOverflow || '');
       };
     }
-  }, [selectedComparisonImg, showRiskModal, previewModalPhoto, comparisonModal, deletingComparison]);
+  }, [selectedComparisonImg, previewModalPhoto, comparisonModal, deletingComparison]);
 
   if (loading) {
     return (
@@ -2971,7 +2968,17 @@ export default function TuskerProfile() {
                   value={
                     <div className="flex flex-col gap-0.5">
                       <span className="font-semibold text-red-700">
-                        {[tusker.deathYear ? `Year: ${tusker.deathYear}` : null, tusker.deathReason ? `Cause: ${tusker.deathReason}` : null].filter(Boolean).join(' · ') || 'Details not recorded'}
+                        {[
+                          (() => {
+                            const dateToUse = tusker.deathDate || (isDeceased ? tusker.lastSeen : null);
+                            const formattedDate = formatMonth(dateToUse);
+                            if (formattedDate) {
+                              return formattedDate.includes(' ') ? `Date: ${formattedDate}` : `Year: ${formattedDate}`;
+                            }
+                            return tusker.deathYear ? `Year: ${tusker.deathYear}` : null;
+                          })(),
+                          tusker.deathReason ? `Cause: ${tusker.deathReason}` : null,
+                        ].filter(Boolean).join(' · ') || 'Details not recorded'}
                       </span>
                     </div>
                   }
@@ -2988,22 +2995,12 @@ export default function TuskerProfile() {
                       <span className="font-sans text-[0.92rem] font-bold text-[#111111]">
                         {tusker.riskScore}
                       </span>
-                      {(tusker.riskLink || tusker.riskScore) && (
-                        <a
-                          href={tusker.riskLink && tusker.riskLink.startsWith('http') ? tusker.riskLink : '#risk-assessment'}
-                          target={tusker.riskLink?.startsWith('http') ? '_blank' : undefined}
-                          rel="noopener noreferrer"
-                          onClick={(e) => {
-                            if (!tusker.riskLink || tusker.riskLink === '#' || tusker.riskLink === '#risk-assessment') {
-                              e.preventDefault();
-                              setShowRiskModal(true);
-                            }
-                          }}
-                          className="inline-flex items-center gap-1 font-sans text-[0.82rem] font-semibold text-accent hover:text-accent-hover hover:underline transition-colors cursor-pointer"
-                        >
-                          View Risk Calculation <ExternalLink size={12} />
-                        </a>
-                      )}
+                      <Link
+                        to="/tusker-insights?tab=risk-framework"
+                        className="inline-flex items-center gap-1 font-sans text-[0.82rem] font-semibold text-accent hover:text-accent-hover hover:underline transition-colors"
+                      >
+                        View Risk Calculation <ExternalLink size={12} />
+                      </Link>
                     </div>
                   }
                 />
@@ -3056,7 +3053,7 @@ export default function TuskerProfile() {
                   value={[
                     tusker.lastSeenArea,
                     isDeceased
-                      ? (tusker.deathYear ? String(tusker.deathYear) : formatMonth(tusker.lastSeen))
+                      ? (formatMonth(tusker.lastSeen) || (tusker.deathYear ? String(tusker.deathYear) : ''))
                       : formatMonth(tusker.lastSeen)
                   ].filter(Boolean).join(' · ')}
                 />
@@ -3065,7 +3062,19 @@ export default function TuskerProfile() {
                 <DetailRow
                   icon={<MapIcon size={16} />}
                   label="Region"
-                  value={[tusker.zone, tusker.district, tusker.province].filter(v => v && v !== 'Not Applicable' && v !== 'N/A').join(' · ')}
+                  value={
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span>{[tusker.zone, tusker.district, tusker.province].filter(v => v && v !== 'Not Applicable' && v !== 'N/A').join(' · ')}</span>
+                      {tusker.zone && (
+                        <Link
+                          to={`/tusker-insights?tab=zones${tusker.zone ? `&zone=${encodeURIComponent(tusker.zone.match(/Zone\s*([1-4])/i) ? `Zone ${tusker.zone.match(/Zone\s*([1-4])/i)[1]}` : tusker.zone)}` : ''}`}
+                          className="inline-flex items-center gap-1 font-sans text-[0.82rem] font-semibold text-accent hover:text-accent-hover hover:underline transition-colors ml-1"
+                        >
+                          View Conservation Zones <ExternalLink size={12} />
+                        </Link>
+                      )}
+                    </div>
+                  }
                 />
               )}
               {tusker.remarks && (
@@ -3711,15 +3720,6 @@ export default function TuskerProfile() {
         )}
       </div>
 
-      {/* Risk Assessment Modal */}
-      {showRiskModal && (
-        <Suspense fallback={null}>
-          <RiskAssessmentModal
-            tusker={tusker}
-            onClose={() => setShowRiskModal(false)}
-          />
-        </Suspense>
-      )}
 
       {/* Gallery-Style Comparison Photo Lightbox with Zoom & Fullscreen */}
       {selectedComparisonImg && (

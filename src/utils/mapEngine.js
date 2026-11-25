@@ -270,7 +270,12 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
       const b = new maps.LatLngBounds();
       validPoints.forEach((p) => b.extend({ lat: p[0], lng: p[1] }));
       map.fitBounds(b, padding);
-      maps.event.addListenerOnce(map, 'idle', () => { if (map.getZoom() > maxZoom) map.setZoom(maxZoom); });
+      maps.event.addListenerOnce(map, 'idle', () => {
+        if (map.getZoom() > maxZoom) {
+          map.setZoom(maxZoom);
+          map.setCenter(b.getCenter());
+        }
+      });
     },
     addMarker(pos, { html, popup, onClick, height = 42, centered = false } = {}) {
       const lat = Array.isArray(pos) ? pos[0] : (pos?.lat ?? 0);
@@ -393,8 +398,9 @@ function createLeafletMap(L, container, { center, zoom, gestureHandling: _gestur
   return {
     engine: 'leaflet',
     setView(pos, z, { animate = true } = {}) { map.setView(pos, z, { animate }); },
-    fitBounds(points, { padding = 50, maxZoom = 13 } = {}) {
-      map.fitBounds(L.latLngBounds(points), { padding: [padding, padding], maxZoom, animate: true });
+    fitBounds(points, { padding = 50, maxZoom = 13, animate = false } = {}) {
+      map.invalidateSize();
+      map.fitBounds(L.latLngBounds(points), { padding: [padding, padding], maxZoom, animate });
     },
     addMarker(pos, { html, popup, onClick, height = 42, centered = false } = {}) {
       const lat = Array.isArray(pos) ? pos[0] : (pos?.lat ?? 0);

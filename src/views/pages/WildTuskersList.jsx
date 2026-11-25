@@ -5,7 +5,7 @@
  * session-based scroll & card focus restoration, and admin creation shortcuts.
  */
 
-import React, { useRef, useEffect, useLayoutEffect, useState } from 'react';
+import React, { useRef, useEffect, useLayoutEffect, useState, useMemo } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { Search, MapPin, X, ChevronDown, PlusCircle, Radar, ArrowUpDown, Check, Layers } from 'lucide-react';
 import { useTuskerList } from '../../controllers/useTusker';
@@ -66,10 +66,10 @@ export default function WildTuskersList() {
 
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const nameRef     = useRef(null);
+  const nameRef = useRef(null);
   const districtRef = useRef(null);
   const locationRef = useRef(null);
-  const sortRef     = useRef(null);
+  const sortRef = useRef(null);
   const [showSortDrop, setShowSortDrop] = useState(false);
 
   /* ── Sync URL Search Parameters with Filter State (L6) ── */
@@ -128,7 +128,7 @@ export default function WildTuskersList() {
       try {
         sessionStorage.removeItem('wts_last_tusker_id');
         sessionStorage.removeItem('wts_last_tusker_scroll');
-      } catch {}
+      } catch { }
       window.scrollTo({ top: 0, behavior: 'instant' });
       return;
     }
@@ -138,7 +138,7 @@ export default function WildTuskersList() {
     try {
       savedId = sessionStorage.getItem('wts_last_tusker_id');
       savedScroll = sessionStorage.getItem('wts_last_tusker_scroll');
-    } catch {}
+    } catch { }
 
     if (!savedId && !savedScroll) return;
 
@@ -169,7 +169,7 @@ export default function WildTuskersList() {
       try {
         sessionStorage.removeItem('wts_last_tusker_id');
         sessionStorage.removeItem('wts_last_tusker_scroll');
-      } catch {}
+      } catch { }
     }, 300);
 
     return () => {
@@ -212,9 +212,8 @@ export default function WildTuskersList() {
         tabIndex={0}
         onClick={() => setShowSortDrop(prev => !prev)}
         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowSortDrop(prev => !prev); } }}
-        className={`flex items-center gap-2 bg-[#f7f7f8] border-1.5 rounded-[10px] px-3.5 py-2.5 transition-all cursor-pointer select-none ${
-          showSortDrop ? 'border-accent bg-white ring-3 ring-accent/12' : 'border-[#e8e8e8] hover:border-accent/60'
-        }`}
+        className={`flex items-center gap-2 bg-[#f7f7f8] border-1.5 rounded-[10px] px-3.5 py-2.5 transition-all cursor-pointer select-none ${showSortDrop ? 'border-accent bg-white ring-3 ring-accent/12' : 'border-[#e8e8e8] hover:border-accent/60'
+          }`}
       >
         <ArrowUpDown size={16} className="text-accent shrink-0" />
         <span className="font-sans text-[0.9rem] font-normal flex-1 truncate select-none text-[#111111]">
@@ -237,9 +236,8 @@ export default function WildTuskersList() {
         ) : (
           <ChevronDown
             size={14}
-            className={`text-[#aaaaaa] shrink-0 transition-transform duration-200 pointer-events-none ${
-              showSortDrop ? 'rotate-180 text-accent' : ''
-            }`}
+            className={`text-[#aaaaaa] shrink-0 transition-transform duration-200 pointer-events-none ${showSortDrop ? 'rotate-180 text-accent' : ''
+              }`}
           />
         )}
       </div>
@@ -249,9 +247,8 @@ export default function WildTuskersList() {
           {SORT_OPTIONS.map(opt => (
             <li
               key={opt.id}
-              className={`flex items-center justify-between px-4 py-2.5 cursor-pointer font-sans text-[0.88rem] transition-colors hover:bg-[#faf5ec] ${
-                sortOrder === opt.id ? 'bg-[#faf5ec] text-accent font-semibold' : 'text-[#333333]'
-              }`}
+              className={`flex items-center justify-between px-4 py-2.5 cursor-pointer font-sans text-[0.88rem] transition-colors hover:bg-[#faf5ec] ${sortOrder === opt.id ? 'bg-[#faf5ec] text-accent font-semibold' : 'text-[#333333]'
+                }`}
               onMouseDown={() => {
                 setSortOrder(opt.id);
                 setShowSortDrop(false);
@@ -276,12 +273,30 @@ export default function WildTuskersList() {
     sortOrder !== 'ID_DESC'
   );
 
+  const overallCounts = useMemo(() => {
+    let living = 0;
+    let missing = 0;
+    let deceased = 0;
+    tuskers.forEach(t => {
+      const s = t.livingStatus || 'Unknown';
+      if (s === 'Alive') living++;
+      else if (s === 'No Recent Record') missing++;
+      else if (s === 'Deceased') deceased++;
+    });
+    return {
+      total: tuskers.length,
+      living,
+      missing,
+      deceased,
+    };
+  }, [tuskers]);
+
   return (
     <div className="w-full max-w-[1280px] mx-auto pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2.5rem)] pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-white">
 
       {/* ── Page Header ── */}
-      <div className="flex flex-col sm:flex-row items-center sm:items-center justify-between gap-4 mb-8 sm:mb-10 pb-6 border-b border-[#eeeeee]">
-        <div className="text-center sm:text-left w-full sm:w-auto">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-5 mb-8 sm:mb-10 pb-6 border-b border-[#eeeeee]">
+        <div className="text-center sm:text-left w-full sm:w-auto shrink-0">
           <h1 className="font-sans text-2xl sm:text-3xl md:text-[2.25rem] font-bold text-[#111111] mb-1.5 whitespace-nowrap text-center sm:text-left">
             Wild Tuskers List
           </h1>
@@ -290,19 +305,100 @@ export default function WildTuskersList() {
           </p>
         </div>
 
+        {/* Compact Frosted Glass Population Counts Box (Public Only) */}
+        {!isAdmin && (
+          <div className="w-full sm:w-auto shrink-0 sm:ml-auto">
+            <div className="rounded-[14px] bg-white/70 backdrop-blur-md border border-[#e2e2e4] shadow-[0_4px_16px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,0.9)] overflow-hidden">
+              <div className="grid grid-cols-4 divide-x divide-[#e8e8e8]">
+                {/* 1. Total Recorded */}
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('ALL')}
+                  title="Filter by All Recorded Tuskers"
+                  className={`flex flex-col items-center justify-center text-center py-1.5 sm:py-2 px-2.5 sm:px-3.5 min-w-[68px] sm:min-w-[80px] md:min-w-[86px] border-none transition-all cursor-pointer ${statusFilter === 'ALL'
+                    ? 'bg-black/[0.05]'
+                    : 'bg-transparent hover:bg-black/[0.025]'
+                    }`}
+                >
+                  <span className="font-sans text-[1.1rem] sm:text-[1.22rem] font-bold text-[#111111] leading-none tracking-tight">
+                    {overallCounts.total}
+                  </span>
+                  <span className="font-sans text-[0.54rem] sm:text-[0.6rem] font-semibold text-[#111111] uppercase tracking-[0.4px] mt-1 whitespace-nowrap">
+                    Total Recorded
+                  </span>
+                </button>
+
+                {/* 2. Living */}
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('Alive')}
+                  title="Filter by Living Tuskers"
+                  className={`flex flex-col items-center justify-center text-center py-1.5 sm:py-2 px-2.5 sm:px-3.5 min-w-[68px] sm:min-w-[80px] md:min-w-[86px] border-none transition-all cursor-pointer ${statusFilter === 'Alive'
+                    ? 'bg-black/[0.05]'
+                    : 'bg-transparent hover:bg-black/[0.025]'
+                    }`}
+                >
+                  <span className="font-sans text-[1.1rem] sm:text-[1.22rem] font-bold text-[#111111] leading-none tracking-tight">
+                    {overallCounts.living}
+                  </span>
+                  <span className="font-sans text-[0.54rem] sm:text-[0.6rem] font-semibold text-[#111111] uppercase tracking-[0.4px] mt-1 whitespace-nowrap">
+                    Living
+                  </span>
+                </button>
+
+                {/* 3. No Recent Record */}
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('No Recent Record')}
+                  title="Filter by No Recent Record"
+                  className={`flex flex-col items-center justify-center text-center py-1.5 sm:py-2 px-2.5 sm:px-3.5 min-w-[68px] sm:min-w-[80px] md:min-w-[86px] border-none transition-all cursor-pointer ${statusFilter === 'No Recent Record'
+                    ? 'bg-black/[0.05]'
+                    : 'bg-transparent hover:bg-black/[0.025]'
+                    }`}
+                >
+                  <span className="font-sans text-[1.1rem] sm:text-[1.22rem] font-bold text-[#111111] leading-none tracking-tight">
+                    {overallCounts.missing}
+                  </span>
+                  <span className="font-sans text-[0.54rem] sm:text-[0.6rem] font-semibold text-[#111111] uppercase tracking-[0.4px] mt-1 whitespace-nowrap">
+                    No Recent Record
+                  </span>
+                </button>
+
+                {/* 4. Deceased */}
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('Deceased')}
+                  title="Filter by Deceased Tuskers"
+                  className={`flex flex-col items-center justify-center text-center py-1.5 sm:py-2 px-2.5 sm:px-3.5 min-w-[68px] sm:min-w-[80px] md:min-w-[86px] border-none transition-all cursor-pointer ${statusFilter === 'Deceased'
+                    ? 'bg-black/[0.05]'
+                    : 'bg-transparent hover:bg-black/[0.025]'
+                    }`}
+                >
+                  <span className="font-sans text-[1.1rem] sm:text-[1.22rem] font-bold text-[#111111] leading-none tracking-tight">
+                    {overallCounts.deceased}
+                  </span>
+                  <span className="font-sans text-[0.54rem] sm:text-[0.6rem] font-semibold text-[#111111] uppercase tracking-[0.4px] mt-1 whitespace-nowrap">
+                    Deceased
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Action Buttons: Add Tusker & Unlisted Monitoring for Admin */}
         {isAdmin && (
-          <div className="flex max-sm:flex-row sm:flex-col lg:flex-row items-stretch sm:items-end lg:items-center gap-2 sm:gap-2.5 w-full sm:w-auto shrink-0">
+          <div className="flex max-sm:flex-row sm:flex-row items-center gap-2 sm:gap-2.5 w-full sm:w-auto shrink-0 justify-center sm:justify-end">
             <Link
               to="/admin/add-tusker"
-              className="max-sm:flex-1 sm:w-full sm:min-w-[195px] lg:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full bg-accent hover:bg-accent-hover text-primary font-semibold text-[0.78rem] sm:text-[0.85rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0 whitespace-nowrap text-center"
+              className="max-sm:flex-1 sm:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full bg-accent hover:bg-accent-hover text-primary font-semibold text-[0.78rem] sm:text-[0.85rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0 whitespace-nowrap text-center"
             >
               <PlusCircle size={15} />
               <span>Add a New Tusker</span>
             </Link>
             <Link
               to="/unlisted"
-              className="max-sm:flex-1 sm:w-full sm:min-w-[195px] lg:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full bg-[#faf5ec] hover:bg-[#f3ebd9] text-primary border border-accent/40 font-semibold text-[0.78rem] sm:text-[0.85rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0 whitespace-nowrap text-center"
+              className="max-sm:flex-1 sm:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full bg-[#faf5ec] hover:bg-[#f3ebd9] text-primary border border-accent/40 font-semibold text-[0.78rem] sm:text-[0.85rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0 whitespace-nowrap text-center"
             >
               <Radar size={15} className="text-accent" />
               <span>Unlisted Monitoring</span>
@@ -391,11 +487,10 @@ export default function WildTuskersList() {
                 return (
                   <li
                     key={dist}
-                    className={`flex items-center gap-2 px-4 py-2.5 font-sans text-[0.88rem] transition-colors ${
-                      isZero
-                        ? 'opacity-40 cursor-not-allowed bg-transparent text-[#888888]'
-                        : `cursor-pointer text-[#333333] hover:bg-[#faf5ec] ${selectedDistrict === dist ? 'bg-[#faf5ec]' : ''}`
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-2.5 font-sans text-[0.88rem] transition-colors ${isZero
+                      ? 'opacity-40 cursor-not-allowed bg-transparent text-[#888888]'
+                      : `cursor-pointer text-[#333333] hover:bg-[#faf5ec] ${selectedDistrict === dist ? 'bg-[#faf5ec]' : ''}`
+                      }`}
                     onMouseDown={() => {
                       if (!isZero) pickDistrict(dist);
                     }}
@@ -481,11 +576,10 @@ export default function WildTuskersList() {
               key={st}
               type="button"
               onClick={() => setStatusFilter(st)}
-              className={`font-sans text-[0.8rem] sm:text-[0.82rem] font-semibold rounded-full px-3.5 py-1.5 border cursor-pointer transition-all flex items-center justify-center ${
-                statusFilter === st
-                  ? 'bg-primary text-white border-primary shadow-sm'
-                  : 'bg-white text-[#555555] border-[#e8e8e8] hover:border-accent hover:text-accent'
-              }`}
+              className={`font-sans text-[0.8rem] sm:text-[0.82rem] font-semibold rounded-full px-3.5 py-1.5 border cursor-pointer transition-all flex items-center justify-center ${statusFilter === st
+                ? 'bg-primary text-white border-primary shadow-sm'
+                : 'bg-white text-[#555555] border-[#e8e8e8] hover:border-accent hover:text-accent'
+                }`}
             >
               <span>{st === 'ALL' ? 'All' : st}</span>
               <span className={`ml-1.5 font-normal ${statusFilter === st ? 'text-white/70' : 'text-[#aaaaaa]'}`}>
@@ -539,7 +633,7 @@ export default function WildTuskersList() {
                 try {
                   sessionStorage.setItem('wts_last_tusker_id', tusker.id.toLowerCase());
                   sessionStorage.setItem('wts_last_tusker_scroll', String(window.scrollY));
-                } catch {}
+                } catch { }
               }}
               className="flex flex-col gap-2.5 cursor-pointer group no-underline text-inherit"
             >

@@ -80,7 +80,7 @@ class ErrorBoundary extends React.Component {
 /* ── Legacy Route Redirect Helper ──────────────────────────── */
 function LearnRedirect() {
   const loc = useLocation();
-  return <Navigate to={{ pathname: '/special-observations', search: loc.search }} replace />;
+  return <Navigate to={{ pathname: '/tusker-insights', search: loc.search }} replace />;
 }
 
 /* ── Application Router ────────────────────────────────────── */
@@ -111,7 +111,7 @@ function App() {
   return (
     <>
       {showNavbar && <Navbar />}
-      <main id="main-content" key={location.pathname} className="animate-fade-in">
+      <main id="main-content" key={location.pathname} className="animate-fade-in flex-1 flex flex-col w-full max-w-full overflow-x-hidden">
         <ErrorBoundary>
           <Routes>
             {/* Public Core Routes */}
@@ -123,11 +123,12 @@ function App() {
             <Route path="/projects" element={<OurProjects />} />
             <Route path="/field-notes" element={<FieldNotes />} />
             <Route path="/add-field-note" element={<VisitorOnly adminTo="/field-notes"><FieldNoteForm /></VisitorOnly>} />
-            <Route path="/special-observations" element={<Learn />} />
+            <Route path="/tusker-insights" element={<Learn />} />
+            <Route path="/special-observations" element={<LearnRedirect />} />
             <Route path="/learn" element={<LearnRedirect />} />
-            <Route path="/observations" element={<Navigate to="/special-observations?tab=observations" replace />} />
-            <Route path="/special-observation" element={<Navigate to="/special-observations" replace />} />
-            <Route path="/tusker-identification" element={<Navigate to="/special-observations?tab=identification" replace />} />
+            <Route path="/observations" element={<Navigate to="/tusker-insights?tab=observations" replace />} />
+            <Route path="/special-observation" element={<Navigate to="/tusker-insights" replace />} />
+            <Route path="/tusker-identification" element={<Navigate to="/tusker-insights?tab=identification" replace />} />
             <Route path="/gallery" element={<Gallery />} />
 
             {/* AI Re-identification routes hidden until separate standalone app release */}
