@@ -65,7 +65,7 @@ export default function UnlistedMonitoring() {
   const [newFormData, setNewFormData] = useState({
     id: '',
     location: '',
-    listedDate: todayLocalISO(),
+    listedDate: '',
     recordedBy: 'WTS Admin',
     description: '',
     specialMarks: '',
@@ -127,7 +127,7 @@ export default function UnlistedMonitoring() {
     setNewFormData({
       id: '',
       location: 'Yala',
-      listedDate: todayLocalISO(),
+      listedDate: '',
       recordedBy: 'WTS Admin',
       description: '',
       specialMarks: '',
@@ -497,8 +497,9 @@ export default function UnlistedMonitoring() {
                   </label>
                   <input
                     type="date"
+                    placeholder="DD/MM/YYYY"
                     max={todayLocalISO()}
-                    value={newFormData.listedDate}
+                    value={newFormData.listedDate || ''}
                     onChange={e => setNewFormData({ ...newFormData, listedDate: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent"
                   />

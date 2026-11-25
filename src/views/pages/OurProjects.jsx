@@ -26,8 +26,10 @@ import {
   ChevronRight,
   Download,
   FileText,
+  ExternalLink,
 } from 'lucide-react';
 import ImageLightboxModal from '../components/ImageLightboxModal';
+import PdfDownloadConfirmModal from '../components/PdfDownloadConfirmModal';
 
 function formatEventDate(dateStr) {
   if (!dateStr) return '';
@@ -264,6 +266,7 @@ function PhotosScrollRow({ images, event, onPhotoClick }) {
 function ProjectCard({ event, isAdmin, onEdit, onDelete, onPhotoClick }) {
   const images = parseImages(event.image);
   const isUpcoming = event.type === 'upcoming';
+  const [showPdfModal, setShowPdfModal] = useState(false);
 
   return (
     <article className="bg-white rounded-2xl border border-[#e5e7eb] p-4 sm:p-6 md:p-7 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 flex flex-col gap-3.5 sm:gap-4 relative">
@@ -384,16 +387,38 @@ function ProjectCard({ event, isAdmin, onEdit, onDelete, onPhotoClick }) {
             </div>
           </div>
 
-          <a
-            href={event.pdfUrl || "/documents/wts_kalawewa_identification_guide_2018.pdf"}
-            download="WTS_Kalawewa_Identification_Guide_2018.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 sm:py-2.5 rounded-lg bg-accent hover:bg-accent-hover text-primary font-bold text-xs sm:text-[0.82rem] shadow-xs transition-all no-underline shrink-0 cursor-pointer text-center"
-          >
-            <Download size={15} />
-            <span>Download Guide (PDF · 83.6 MB)</span>
-          </a>
+          <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
+            <a
+              href={event.pdfUrl || "/documents/wts_kalawewa_identification_guide_2018.pdf"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-2.5 rounded-lg bg-white hover:bg-gray-100 text-[#111827] font-bold text-xs sm:text-[0.82rem] border border-[#d1d5db] shadow-2xs transition-all no-underline cursor-pointer text-center"
+              title="Open publication in new tab"
+            >
+              <ExternalLink size={14} />
+              <span>View Guide</span>
+            </a>
+
+            <button
+              type="button"
+              onClick={() => setShowPdfModal(true)}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 sm:py-2.5 rounded-lg bg-accent hover:bg-accent-hover text-primary font-bold text-xs sm:text-[0.82rem] shadow-xs transition-all border-none shrink-0 cursor-pointer text-center"
+            >
+              <Download size={15} />
+              <span>Download Guide (PDF · 83.6 MB)</span>
+            </button>
+          </div>
+
+          {showPdfModal && (
+            <PdfDownloadConfirmModal
+              isOpen={showPdfModal}
+              onClose={() => setShowPdfModal(false)}
+              pdfUrl={event.pdfUrl || "/documents/wts_kalawewa_identification_guide_2018.pdf"}
+              title={event.title || "Kalawewa Tusker Identification Guide (2018)"}
+              fileSize="83.6 MB"
+              filename="WTS_Kalawewa_Identification_Guide_2018.pdf"
+            />
+          )}
         </div>
       )}
 

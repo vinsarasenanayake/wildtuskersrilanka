@@ -32,6 +32,16 @@ export default function Learn() {
 
   const handleTabChange = (tabKey) => {
     setSearchParams({ tab: tabKey }, { replace: true });
+    if (tabKey === 'zones') {
+      setTimeout(() => {
+        const el = document.getElementById('zones-map-container');
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          const targetY = Math.max(0, window.pageYOffset + rect.top - (window.innerWidth >= 640 ? 84 : 70) - 8);
+          window.scrollTo({ top: Math.round(targetY), behavior: 'smooth' });
+        }
+      }, 100);
+    }
   };
 
   return (

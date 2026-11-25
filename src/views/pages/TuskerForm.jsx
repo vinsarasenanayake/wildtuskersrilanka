@@ -213,7 +213,7 @@ export default function TuskerForm() {
                 />
               </Field>
               <Field label="First Recorded Date">
-                <input type="date" name="listedDate" max={todayLocalISO()} className={INPUT_CLASS} placeholder="" value={formData.listedDate} onChange={handleChange} />
+                <input type="date" name="listedDate" max={todayLocalISO()} className={INPUT_CLASS} placeholder="DD/MM/YYYY" value={formData.listedDate || ''} onChange={handleChange} />
               </Field>
               <Field label="First Recorded Location">
                 <LocationSearchInput
@@ -294,6 +294,8 @@ export default function TuskerForm() {
                       <input
                         type="date"
                         name="deathDate"
+                        placeholder="DD/MM/YYYY"
+                        max={todayLocalISO()}
                         className={INPUT_CLASS}
                         value={formData.deathDate ? (formData.deathDate.length === 7 ? `${formData.deathDate}-01` : formData.deathDate.slice(0, 10)) : ''}
                         onChange={(e) => {
@@ -349,6 +351,8 @@ export default function TuskerForm() {
                       <input
                         type="date"
                         name="lastSeen"
+                        placeholder="DD/MM/YYYY"
+                        max={todayLocalISO()}
                         className={INPUT_CLASS}
                         value={formData.lastSeen ? (formData.lastSeen.length === 7 ? `${formData.lastSeen}-01` : formData.lastSeen.slice(0, 10)) : ''}
                         onChange={handleChange}
@@ -474,6 +478,8 @@ export default function TuskerForm() {
                       <input
                         type="date"
                         name="lastSeen"
+                        placeholder="DD/MM/YYYY"
+                        max={todayLocalISO()}
                         className={INPUT_CLASS}
                         value={formData.lastSeen ? (formData.lastSeen.length === 7 ? `${formData.lastSeen}-01` : formData.lastSeen.slice(0, 10)) : ''}
                         onChange={handleChange}

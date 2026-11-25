@@ -788,6 +788,10 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
   const closeBtnRef = useRef(null);
 
   const handleSafeClose = useCallback(() => {
+    // If a nested child dialog (like location map picker) is open, do NOT close the submission modal
+    if (document.querySelector('[role="dialog"][aria-label*="location" i], [role="dialog"][aria-label*="map" i], .leaflet-container')) {
+      return;
+    }
     if (isDirty && !successMsg) {
       const confirmDiscard = window.confirm('Discard unsaved photo submission? Any changes will be lost.');
       if (!confirmDiscard) return;
@@ -808,7 +812,12 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
   // Focus trap for community submit modal: focus close button on open, loop Tab keys, restore focus to opener on close
   useFocusTrap(containerRef, true, {
     initialFocusRef: closeBtnRef,
-    onEscape: handleSafeClose,
+    onEscape: () => {
+      if (document.querySelector('[role="dialog"][aria-label*="location" i], [role="dialog"][aria-label*="map" i], .leaflet-container')) {
+        return;
+      }
+      handleSafeClose();
+    },
   });
 
   // Prevent background scrolling while modal is open
@@ -823,7 +832,10 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
   return createPortal(
     <div
       className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-fade-in"
-      onClick={handleSafeClose}
+      onClick={(e) => {
+        if (e.target !== e.currentTarget) return;
+        handleSafeClose();
+      }}
     >
       <div
         ref={containerRef}
@@ -948,15 +960,16 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
               {/* Date */}
               <div className="flex flex-col gap-1 w-full">
                 <label htmlFor="photo-date" className="text-xs font-bold text-[#555555] uppercase tracking-wider">
-                  Date Taken (defaults to today) <span className="text-red-500">*</span>
+                  Date Taken <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="photo-date"
                   type="date"
                   name="date"
                   required
+                  placeholder="DD/MM/YYYY"
                   max={todayLocalISO()}
-                  value={formData.date}
+                  value={formData.date || ''}
                   onChange={handleChange}
                   className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm scroll-mt-28"
                 />

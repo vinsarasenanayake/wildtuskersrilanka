@@ -152,6 +152,24 @@ export default function Login() {
             <span>{submitting ? 'Signing in…' : 'Sign In to Admin Portal'}</span>
             <ArrowRight size={16} />
           </button>
+
+          {import.meta.env.DEV && (
+            <button
+              type="button"
+              id="dev-test-login-btn"
+              onClick={() => {
+                if (window.__setAdminForTesting) {
+                  window.__setAdminForTesting(true);
+                } else {
+                  sessionStorage.setItem('wts_qa_admin', 'true');
+                }
+                navigate('/admin');
+              }}
+              className="w-full mt-2 py-2.5 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-300 rounded-xl hover:bg-emerald-100 transition-colors cursor-pointer"
+            >
+              Developer Bypass: Login as Test Admin
+            </button>
+          )}
         </form>
       </div>
     </div>

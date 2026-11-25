@@ -26,7 +26,6 @@ import StatusBadge from '../components/StatusBadge';
 import ImageUploadBox from '../components/ImageUploadBox';
 import EditGalleryPhotoModal from '../components/EditGalleryPhotoModal';
 import LocationSearchInput from '../components/LocationSearchInput';
-import { todayLocalISO } from '../../utils/localDate';
 import useFocusTrap from '../../hooks/useFocusTrap';
 
 /* ==============================================================
@@ -78,7 +77,7 @@ export default function AdminPortal() {
   const [unlistedFormData, setUnlistedFormData] = useState({
     id: '',
     location: '',
-    listedDate: todayLocalISO(),
+    listedDate: '',
     recordedBy: 'WTS Admin',
     description: '',
     specialMarks: '',
@@ -316,7 +315,7 @@ export default function AdminPortal() {
       setUnlistedFormData({
         id: '',
         location: '',
-        listedDate: todayLocalISO(),
+        listedDate: '',
         recordedBy: 'WTS Admin',
         description: '',
         specialMarks: '',
@@ -1773,7 +1772,9 @@ export default function AdminPortal() {
                     </label>
                     <input
                       type="date"
-                      value={unlistedFormData.listedDate}
+                      placeholder="DD/MM/YYYY"
+                      max={todayLocalISO()}
+                      value={unlistedFormData.listedDate || ''}
                       onChange={(e) => setUnlistedFormData({ ...unlistedFormData, listedDate: e.target.value })}
                       className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-accent font-sans"
                     />

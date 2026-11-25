@@ -89,7 +89,7 @@ export default function ImageUploadBox({
     const cleanList = nextList.filter(Boolean);
     const files = nextFiles !== undefined ? nextFiles : pendingFilesRef.current;
     if (!isMultiple) {
-      onChange(cleanList[0] || '', files[0] || null);
+      onChange(cleanList[0] || '', files[0] || null, files);
     } else {
       // If parent passed an array initially, pass array; if parent passed a string or expects string, support both
       if (Array.isArray(value)) {

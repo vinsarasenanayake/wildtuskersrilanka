@@ -605,7 +605,11 @@ export default function LocationSearchInput({
           {showMapButton && (
             <button
               type="button"
-              onClick={() => setShowMapModal(true)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowMapModal(true);
+              }}
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[0.72rem] font-bold text-[#0b2518] bg-[#faf5ec] hover:bg-[#f3ebd9] border border-accent/30 transition-all cursor-pointer shadow-xs"
               title="Open the map to search or click any location"
             >
@@ -686,13 +690,18 @@ export default function LocationSearchInput({
       {showMapModal && createPortal(
         <div
           className="fixed inset-0 z-[11000] bg-black/80 backdrop-blur-md flex items-center justify-center p-2.5 sm:p-5 animate-fade-in overscroll-contain overflow-y-auto"
-          onClick={() => setShowMapModal(false)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowMapModal(false);
+          }}
         >
           <div
             ref={mapModalRef}
             tabIndex={-1}
             className="bg-[#181c19] text-[#e8ebe9] rounded-[22px] max-w-4xl w-full p-3.5 sm:p-6 shadow-2xl border border-[#2b352f] flex flex-col gap-3 sm:gap-4 font-sans my-auto max-h-[94vh] overflow-y-auto focus-visible:outline-none"
             onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
             aria-label="Select a location on the map"
@@ -713,7 +722,10 @@ export default function LocationSearchInput({
               <button
                 ref={mapCloseBtnRef}
                 type="button"
-                onClick={() => setShowMapModal(false)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowMapModal(false);
+                }}
                 className="w-8 h-8 rounded-full border-none bg-[#242b26] hover:bg-[#2f3832] text-[#9ba8a0] hover:text-white cursor-pointer flex items-center justify-center transition-colors p-0 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 aria-label="Close dialog"
               >
@@ -827,7 +839,10 @@ export default function LocationSearchInput({
             <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#2b352f]">
               <button
                 type="button"
-                onClick={() => setShowMapModal(false)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowMapModal(false);
+                }}
                 className="flex-1 sm:flex-none sm:min-w-[120px] h-10 px-5 rounded-[10px] bg-[#242b26] hover:bg-[#2f3832] text-[#9ba8a0] hover:text-white font-sans text-xs sm:text-sm font-semibold transition-colors border-none cursor-pointer inline-flex items-center justify-center box-border text-center"
               >
                 {pendingPickedLocation && !multi ? 'Cancel' : 'Done'}
@@ -835,7 +850,8 @@ export default function LocationSearchInput({
               <button
                 type="button"
                 disabled={!pendingPickedLocation || isReverseGeocoding}
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   if (!pendingPickedLocation) return;
                   cacheLocationCoordinates(pendingPickedLocation.name, pendingPickedLocation);
                   handleSelectLocation(pendingPickedLocation.name, pendingPickedLocation);

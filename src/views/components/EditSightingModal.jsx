@@ -27,7 +27,7 @@ function getInitialFormData(sightingObj) {
     return {
       imageUrl: '',
       images: [],
-      captureDate: todayLocalISO(),
+      captureDate: '',
       author: 'WTS Admin',
       location: '',
       healthCondition: 'Good',
@@ -68,7 +68,7 @@ function getInitialFormData(sightingObj) {
     }
   }
   if (!captureDate) {
-    captureDate = todayLocalISO();
+    captureDate = '';
   }
 
   // Extract location
@@ -132,7 +132,10 @@ export default function EditSightingModal({
 
   useFocusTrap(containerRef, Boolean(sighting), {
     initialFocusRef: closeBtnRef,
-    onEscape: onClose,
+    onEscape: () => {
+      if (document.querySelector('[role="dialog"][aria-label*="location" i], [role="dialog"][aria-label*="map" i], .leaflet-container')) return;
+      onClose();
+    },
   });
 
   // Lock background scroll while modal is open
@@ -153,7 +156,10 @@ export default function EditSightingModal({
   // Keyboard escape listener
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        if (document.querySelector('[role="dialog"][aria-label*="location" i], [role="dialog"][aria-label*="map" i], .leaflet-container')) return;
+        onClose();
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -226,7 +232,11 @@ export default function EditSightingModal({
   const modalContent = (
     <div
       className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs animate-in fade-in"
-      onClick={onClose}
+      onClick={(e) => {
+        if (e.target !== e.currentTarget) return;
+        if (document.querySelector('[role="dialog"][aria-label*="location" i], [role="dialog"][aria-label*="map" i], .leaflet-container')) return;
+        onClose();
+      }}
     >
       <div
         ref={containerRef}
@@ -298,9 +308,10 @@ export default function EditSightingModal({
                 type="date"
                 name="captureDate"
                 required
+                placeholder="DD/MM/YYYY"
                 max={todayLocalISO()}
                 className={INPUT_CLASS}
-                value={formData.captureDate}
+                value={formData.captureDate || ''}
                 onChange={handleChange}
               />
             </div>

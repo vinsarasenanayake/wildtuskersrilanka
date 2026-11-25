@@ -120,7 +120,7 @@ export function useGallerySubmit(onSuccess) {
     title: '',
     tuskerName: '',
     location: '',
-    date: todayLocalISO(),
+    date: '',
     photographer: '',
     photographerContact: '',
     image: null,
@@ -188,15 +188,28 @@ export function useGallerySubmit(onSuccess) {
     // Gallery form strictly accepts a single photo
     const list = Array.isArray(urls) ? urls : (urls ? [urls] : []);
     const singleUrl = list[0] || (typeof urls === 'string' ? urls : null);
-    const singleFiles = Array.isArray(files) ? files.slice(0, 1) : (files ? [files] : []);
+
+    // Extract file safely from any argument position (files, primaryUrl, or urls)
+    let singleFile = null;
+    if (files instanceof File || files instanceof Blob) {
+      singleFile = files;
+    } else if (Array.isArray(files) && files.length > 0 && (files[0] instanceof File || files[0] instanceof Blob)) {
+      singleFile = files[0];
+    } else if (primaryUrl instanceof File || primaryUrl instanceof Blob) {
+      singleFile = primaryUrl;
+    } else if (Array.isArray(primaryUrl) && primaryUrl.length > 0 && (primaryUrl[0] instanceof File || primaryUrl[0] instanceof Blob)) {
+      singleFile = primaryUrl[0];
+    } else if (urls instanceof File || urls instanceof Blob) {
+      singleFile = urls;
+    }
 
     setFormData((prev) => ({
       ...prev,
       images: singleUrl ? [singleUrl] : [],
       image: singleUrl || null,
-      pendingFiles: singleFiles,
+      pendingFiles: singleFile ? [singleFile] : [],
     }));
-    if (singleUrl) {
+    if (singleUrl || singleFile) {
       setError((prevErr) => (prevErr && prevErr.includes('photo') ? '' : prevErr));
     }
   };
@@ -218,7 +231,9 @@ export function useGallerySubmit(onSuccess) {
     if (!formData.location.trim()) {
       errors.push('Please provide the sighting location.');
     }
-    if (formData.date && formData.date > todayLocalISO()) {
+    if (!formData.date) {
+      errors.push('Please select the date taken.');
+    } else if (formData.date > todayLocalISO()) {
       errors.push('Date taken cannot be in the future.');
     }
     if (!formData.consentAgreed) {
@@ -237,10 +252,26 @@ export function useGallerySubmit(onSuccess) {
       // Upload deferred File object to Supabase Storage only on actual submit
       const files = formData.pendingFiles || [];
       let uploadedUrl = null;
-      if (files.length > 0 && (files[0] instanceof File || files[0] instanceof Blob)) {
-        uploadedUrl = await uploadMediaFile(files[0], 'gallery');
-      } else if (typeof imageToSubmit === 'string' && !imageToSubmit.startsWith('blob:')) {
-        uploadedUrl = imageToSubmit;
+      try {
+        if (files.length > 0 && (files[0] instanceof File || files[0] instanceof Blob)) {
+          uploadedUrl = await uploadMediaFile(files[0], 'gallery');
+        } else if (typeof imageToSubmit === 'string' && imageToSubmit.startsWith('blob:')) {
+          // Fallback: recover Blob from local blob URL if pendingFiles was detached
+          try {
+            const res = await fetch(imageToSubmit);
+            const blob = await res.blob();
+            if (blob && blob.size > 0) {
+              uploadedUrl = await uploadMediaFile(blob, 'gallery');
+            }
+          } catch (fetchErr) {
+            console.error('[useGallerySubmit] Fallback blob fetch failed:', fetchErr);
+          }
+        } else if (typeof imageToSubmit === 'string' && !imageToSubmit.startsWith('blob:')) {
+          uploadedUrl = imageToSubmit;
+        }
+      } catch (uploadErr) {
+        console.error('[useGallerySubmit] Upload failed:', uploadErr);
+        throw new Error(`Photo upload failed: ${uploadErr.message || 'Storage error'}`);
       }
 
       if (!uploadedUrl) {
@@ -289,7 +320,7 @@ export function useGallerySubmit(onSuccess) {
       title: '',
       tuskerName: '',
       location: '',
-      date: todayLocalISO(),
+      date: '',
       photographer: '',
       photographerContact: '',
       image: null,

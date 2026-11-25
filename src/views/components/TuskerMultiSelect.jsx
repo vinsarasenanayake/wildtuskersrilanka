@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Search, X, Plus, Check } from 'lucide-react';
+import { Search, X, Plus, Check, ChevronDown } from 'lucide-react';
 import { getTuskers } from '../../models/TuskerModel';
 
 /**
@@ -37,6 +37,7 @@ export default function TuskerMultiSelect({
   const [searchQuery, setSearchQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   // Fetch latest tuskers from Supabase if available
   useEffect(() => {
@@ -95,7 +96,7 @@ export default function TuskerMultiSelect({
     }
   }, [value, tuskersList]);
 
-  // Click outside listener to close dropdown
+  // Click & tap outside listener to close dropdown on both desktop and mobile touch devices
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -103,7 +104,11 @@ export default function TuskerMultiSelect({
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   // Format the output string based on selected tuskers and connector
@@ -123,6 +128,10 @@ export default function TuskerMultiSelect({
     const nextList = [...selectedTuskers, tusker];
     setSelectedTuskers(nextList);
     setSearchQuery('');
+    setIsOpen(false); // Auto-close dropdown on selection
+    if (searchInputRef.current) {
+      searchInputRef.current.blur(); // Dismiss mobile keyboard
+    }
     if (onChange) {
       onChange(nextList, formatOutput(nextList, connector));
     }
@@ -253,8 +262,9 @@ export default function TuskerMultiSelect({
         <div className="relative">
           <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#999999] pointer-events-none" />
           <input
+            ref={searchInputRef}
             type="text"
-            className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg pl-9 pr-8 py-2.5 outline-none focus:border-accent focus:bg-white text-sm text-[#111111] placeholder:text-[#999999] transition-all"
+            className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg pl-9 pr-24 py-2.5 outline-none focus:border-accent focus:bg-white text-sm text-[#111111] placeholder:text-[#999999] transition-all"
             placeholder={
               selectedTuskers.length === 0
                 ? placeholder
@@ -262,25 +272,101 @@ export default function TuskerMultiSelect({
             }
             value={searchQuery}
             onFocus={() => setIsOpen(true)}
+            onBlur={() => {
+              setTimeout(() => {
+                if (!containerRef.current?.contains(document.activeElement)) {
+                  setIsOpen(false);
+                }
+              }, 200);
+            }}
             onChange={(e) => {
               setSearchQuery(e.target.value);
               setIsOpen(true);
             }}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                setIsOpen(false);
+                if (searchInputRef.current) searchInputRef.current.blur();
+              }
+            }}
           />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#999999] hover:text-[#555555] p-0.5 border-none bg-transparent cursor-pointer"
-            >
-              <X size={14} />
-            </button>
-          )}
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="text-[#999999] hover:text-[#555555] p-1 border-none bg-transparent cursor-pointer rounded"
+                title="Clear search"
+              >
+                <X size={13} />
+              </button>
+            )}
+            {isOpen ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsOpen(false);
+                  if (searchInputRef.current) searchInputRef.current.blur();
+                }}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-800 font-sans text-xs font-bold border-none cursor-pointer transition-colors shadow-2xs"
+                title="Close list"
+                aria-label="Close list"
+              >
+                <span>Close</span>
+                <X size={12} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(true);
+                  if (searchInputRef.current) searchInputRef.current.focus();
+                }}
+                className="text-[#888888] hover:text-[#111111] p-1.5 border-none bg-transparent cursor-pointer rounded flex items-center"
+                title="Open menu"
+                aria-label="Open menu"
+              >
+                <ChevronDown size={16} />
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Mobile Transparent Backdrop to close dropdown on tap outside */}
+        {isOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black/5 sm:hidden"
+            onClick={() => {
+              setIsOpen(false);
+              if (searchInputRef.current) searchInputRef.current.blur();
+            }}
+            aria-hidden="true"
+          />
+        )}
 
         {/* Floating Search Dropdown */}
         {isOpen && (
-          <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-[#e5e7eb] rounded-xl shadow-2xl max-h-60 overflow-y-auto z-50 divide-y divide-gray-100 animate-fade-in">
+          <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-[#e5e7eb] rounded-xl shadow-2xl max-h-64 overflow-y-auto z-50 divide-y divide-gray-100 animate-fade-in">
+            {/* Mobile & Desktop Sticky Header with Explicit Done / Close Button */}
+            <div className="sticky top-0 bg-[#f9fafb] border-b border-[#e5e7eb] px-3.5 py-1.5 flex items-center justify-between text-xs font-semibold text-[#555555] z-10 backdrop-blur-xs">
+              <span className="text-[11px] text-[#666666]">
+                {filteredTuskers.length} {filteredTuskers.length === 1 ? 'tusker' : 'tuskers'} found
+              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsOpen(false);
+                  if (searchInputRef.current) searchInputRef.current.blur();
+                }}
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#0b2518] hover:bg-[#133824] text-white font-sans text-[11px] font-bold border-none cursor-pointer shadow-2xs transition-colors"
+                title="Dismiss dropdown"
+              >
+                <span>Done</span>
+                <X size={11} />
+              </button>
+            </div>
             {filteredTuskers.length === 0 ? (
               <div className="p-4 text-center text-xs text-[#888888]">
                 No matching tuskers found for "{searchQuery}".
@@ -330,6 +416,21 @@ export default function TuskerMultiSelect({
                 );
               })
             )}
+            {/* Sticky Footer for Fast Dismiss on Long Lists */}
+            <div className="sticky bottom-0 bg-[#f9fafb] border-t border-[#e5e7eb] p-2 flex items-center justify-center z-10">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsOpen(false);
+                  if (searchInputRef.current) searchInputRef.current.blur();
+                }}
+                className="w-full py-1.5 px-3 rounded-lg bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold border border-gray-300 flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs transition-colors"
+              >
+                <Check size={13} className="text-emerald-600" />
+                <span>Done / Close Suggestions</span>
+              </button>
+            </div>
           </div>
         )}
       </div>

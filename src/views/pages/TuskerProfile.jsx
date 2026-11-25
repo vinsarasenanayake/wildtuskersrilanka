@@ -3067,7 +3067,8 @@ export default function TuskerProfile() {
                       <span>{[tusker.zone, tusker.district, tusker.province].filter(v => v && v !== 'Not Applicable' && v !== 'N/A').join(' · ')}</span>
                       {tusker.zone && (
                         <Link
-                          to={`/tusker-insights?tab=zones${tusker.zone ? `&zone=${encodeURIComponent(tusker.zone.match(/Zone\s*([1-4])/i) ? `Zone ${tusker.zone.match(/Zone\s*([1-4])/i)[1]}` : tusker.zone)}` : ''}`}
+                          to={`/tusker-insights?tab=zones${tusker.zone ? `&zone=${encodeURIComponent(tusker.zone.match(/Zone\s*([1-4])/i) ? `Zone ${tusker.zone.match(/Zone\s*([1-4])/i)[1]}` : tusker.zone)}` : ''}#zones-map`}
+                          state={{ scrollToMap: true }}
                           className="inline-flex items-center gap-1 font-sans text-[0.82rem] font-semibold text-accent hover:text-accent-hover hover:underline transition-colors ml-1"
                         >
                           View Conservation Zones <ExternalLink size={12} />

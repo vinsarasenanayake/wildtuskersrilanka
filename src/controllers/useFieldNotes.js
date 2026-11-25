@@ -5,7 +5,7 @@
  */
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { todayLocalISO, isFutureDateTime } from '../utils/localDate';
+import { isFutureDateTime } from '../utils/localDate';
 import {
   getFieldNotes,
   getCachedFieldNotes,
@@ -106,7 +106,7 @@ export function useFieldNoteForm() {
     author: isAdmin ? 'WTS Admin' : '',
     authorContact: '',
     title: '',
-    date: todayLocalISO(),
+    date: '',
     time: '',
     description: '',
     specialNote: '',

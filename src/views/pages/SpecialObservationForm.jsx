@@ -179,6 +179,7 @@ export default function SpecialObservationForm() {
                 <input
                   type="date"
                   name="date"
+                  placeholder="DD/MM/YYYY"
                   max={todayLocalISO()}
                   className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
                   value={formData.date || ''}

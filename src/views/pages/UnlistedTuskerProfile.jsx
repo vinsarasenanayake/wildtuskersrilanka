@@ -752,8 +752,9 @@ export default function UnlistedTuskerProfile() {
                     <label className="text-xs font-bold text-[#555555] uppercase tracking-wider">Recorded Date</label>
                     <input
                       type="date"
+                      placeholder="DD/MM/YYYY"
                       max={todayLocalISO()}
-                      value={editFormData.listedDate}
+                      value={editFormData.listedDate || ''}
                       onChange={(e) => setEditFormData({ ...editFormData, listedDate: e.target.value })}
                       className="border border-[#dde6e1] rounded-xl px-3.5 py-2.5 text-sm text-[#111111] focus:outline-none focus:border-accent"
                     />

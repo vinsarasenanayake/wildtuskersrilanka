@@ -104,9 +104,10 @@ export default function AddTuskerSighting() {
                     type="date"
                     name="captureDate"
                     required
+                    placeholder="DD/MM/YYYY"
                     max={maxCaptureDate}
                     className={INPUT_CLASS}
-                    value={formData.captureDate}
+                    value={formData.captureDate || ''}
                     onChange={handleChange}
                   />
                   {isDeceased && (initialTusker?.deathYear || initialTusker?.deathDate) && (

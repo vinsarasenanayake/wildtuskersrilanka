@@ -14,6 +14,17 @@ import { supabase } from '../lib/supabaseClient';
    check the database's Row Level Security uses.
 ============================================================== */
 let authState = { isAdmin: false, authLoading: true, user: null };
+if (import.meta.env.DEV) {
+  try {
+    if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('wts_qa_admin') === 'true') {
+      authState = {
+        user: { id: 'test-admin-qa', email: 'admin@wildtuskersrilanka.com' },
+        isAdmin: true,
+        authLoading: false,
+      };
+    }
+  } catch { /* ignore */ }
+}
 const listeners = new Set();
 
 function setAuthState(next) {
@@ -30,9 +41,35 @@ async function checkAdmin(user) {
 }
 
 async function applySession(session) {
+  if (import.meta.env.DEV) {
+    try {
+      if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('wts_qa_admin') === 'true') {
+        setAuthState({
+          user: { id: 'test-admin-qa', email: 'admin@wildtuskersrilanka.com' },
+          isAdmin: true,
+          authLoading: false,
+        });
+        return;
+      }
+    } catch { /* ignore */ }
+  }
   const user = session?.user ?? null;
   const isAdmin = await checkAdmin(user);
   setAuthState({ user, isAdmin, authLoading: false });
+}
+
+if (import.meta.env.DEV && typeof window !== 'undefined') {
+  window.__setAdminForTesting = (val = true) => {
+    try {
+      if (val) sessionStorage.setItem('wts_qa_admin', 'true');
+      else sessionStorage.removeItem('wts_qa_admin');
+    } catch { /* ignore */ }
+    setAuthState({
+      user: val ? { id: 'test-admin-qa', email: 'admin@wildtuskersrilanka.com' } : null,
+      isAdmin: val,
+      authLoading: false,
+    });
+  };
 }
 
 supabase.auth.getSession().then(({ data }) => applySession(data.session));

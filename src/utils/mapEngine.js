@@ -26,23 +26,38 @@ function readBrokenFlag() {
 }
 let googleBroken = readBrokenFlag();
 
-/** Switches the whole site to the free maps and reloads the page once. */
+/** Switches the site to free maps without ever reloading or disrupting open modals/forms. */
 function markGoogleBroken(reason) {
   if (googleBroken) return;
   googleBroken = true;
-  console.error(`[maps] Google Maps is not working (${reason}). Switching to the free maps.`);
+  console.warn(`[maps] Google Maps is not working (${reason}). Switching to the free maps.`);
   try {
     localStorage.setItem(BROKEN_FLAG, String(Date.now()));
-    // Reload once so maps already on screen are redrawn with the free maps
-    if (!sessionStorage.getItem('wts_maps_fallback_reloaded')) {
-      sessionStorage.setItem('wts_maps_fallback_reloaded', '1');
-      window.location.reload();
-    }
   } catch { /* storage blocked: new maps will still use the free maps */ }
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('wts_google_maps_broken'));
+  }
+}
+
+// Intercept console.error to catch Google demo key quota/billing limit immediately
+if (typeof window !== 'undefined' && !window.__wtsGoogleConsoleHooked) {
+  window.__wtsGoogleConsoleHooked = true;
+  const originalError = console.error;
+  console.error = function (...args) {
+    const text = args.map((a) => String(a?.message || a || '')).join(' ');
+    if (
+      text.includes('Maps Demo Key limit reached') ||
+      text.includes('daily quota for Maps JavaScript') ||
+      text.includes('Billing on the Google Cloud Project')
+    ) {
+      markGoogleBroken('google quota/billing error');
+    }
+    return originalError.apply(this, args);
+  };
 }
 
 export function isGoogleMapsEnabled() {
-  return Boolean(GOOGLE_KEY) && !googleBroken;
+  return Boolean(GOOGLE_KEY) && !googleBroken && !readBrokenFlag();
 }
 
 /* ── Google loader (one script tag for the whole app) ─────────────── */
@@ -263,8 +278,8 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
     fitBounds(points, { padding = 50, maxZoom = 13 } = {}) {
       const validPoints = (points || []).filter(
         (p) => Array.isArray(p) && p.length >= 2 &&
-               Number.isFinite(p[0]) && Number.isFinite(p[1]) &&
-               p[0] >= 5.5 && p[0] <= 10.0 && p[1] >= 79.5 && p[1] <= 82.5
+          Number.isFinite(p[0]) && Number.isFinite(p[1]) &&
+          p[0] >= 5.5 && p[0] <= 10.0 && p[1] >= 79.5 && p[1] <= 82.5
       );
       if (!validPoints.length) return;
       const b = new maps.LatLngBounds();
@@ -472,20 +487,152 @@ export async function createMap(host, options) {
   container.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';
   if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
   host.appendChild(container);
-  try {
-    if (isGoogleMapsEnabled()) {
-      try {
-        const maps = await loadGoogleMaps();
-        if (!googleBroken) return createGoogleMap(maps, container, opts);
-      } catch (err) {
-        console.warn('[maps] Using free maps instead of Google:', err.message);
-      }
+
+  if (!isGoogleMapsEnabled()) {
+    try {
+      const L = await loadLeaflet();
+      return createLeafletMap(L, container, opts);
+    } catch (err) {
+      container.remove();
+      showMapError(host, 'The map could not be loaded. Check your internet connection and refresh the page.');
+      throw err;
     }
+  }
+
+  try {
+    const maps = await loadGoogleMaps();
+    if (googleBroken) {
+      const L = await loadLeaflet();
+      return createLeafletMap(L, container, opts);
+    }
+
+    let activeMap = createGoogleMap(maps, container, opts);
+    let destroyed = false;
+    let currentCenter = opts.center;
+    let currentZoom = opts.zoom;
+    let onClickCb = null;
+    const trackedMarkers = new Set();
+    const trackedAreas = new Set();
+    const trackedPolylines = new Set();
+
+    const fallbackToLeaflet = async () => {
+      if (destroyed || activeMap?.engine === 'leaflet') return;
+      try {
+        if (activeMap) {
+          activeMap.destroy();
+          activeMap = null;
+        }
+        if (!host.contains(container)) {
+          host.appendChild(container);
+        }
+        container.innerHTML = '';
+        const L = await loadLeaflet();
+        if (destroyed) return;
+        activeMap = createLeafletMap(L, container, { ...opts, center: currentCenter, zoom: currentZoom });
+        activeMap.resize();
+        if (onClickCb) {
+          activeMap.onClick(onClickCb);
+        }
+        trackedMarkers.forEach((m) => {
+          m.ref = activeMap.addMarker(m.pos, m.opts);
+        });
+        trackedAreas.forEach((a) => {
+          a.ref = activeMap.addArea(a.shape, a.opts);
+        });
+        trackedPolylines.forEach((p) => {
+          p.ref = activeMap.addPolyline(p.points, p.opts);
+        });
+      } catch (e) {
+        console.error('[maps] Fallback to Leaflet failed:', e);
+      }
+    };
+
+    const brokenListener = () => {
+      fallbackToLeaflet();
+    };
+    window.addEventListener('wts_google_maps_broken', brokenListener);
+
+    // Watch for Google Maps quota error container if injected
+    const errObserver = new MutationObserver(() => {
+      if (container.querySelector('.gm-err-container') || container.querySelector('.gm-err-message')) {
+        markGoogleBroken('google error overlay detected');
+        errObserver.disconnect();
+      }
+    });
+    errObserver.observe(container, { childList: true, subtree: true });
+
+    return {
+      get engine() { return activeMap ? activeMap.engine : 'google'; },
+      closePopup() { activeMap?.closePopup(); },
+      setView(pos, z, viewOpts) {
+        currentCenter = pos;
+        if (typeof z === 'number') currentZoom = z;
+        activeMap?.setView(pos, z, viewOpts);
+      },
+      fitBounds(points, boundsOpts) { activeMap?.fitBounds(points, boundsOpts); },
+      addMarker(pos, markerOpts) {
+        const item = { pos, opts: markerOpts, ref: activeMap?.addMarker(pos, markerOpts) };
+        trackedMarkers.add(item);
+        return {
+          setPosition(p) {
+            item.pos = p;
+            item.ref?.setPosition(p);
+          },
+          setHtml(h) { item.ref?.setHtml(h); },
+          openPopup(p) { item.ref?.openPopup(p); },
+          remove() {
+            item.ref?.remove();
+            trackedMarkers.delete(item);
+          },
+        };
+      },
+      clearMarkers() {
+        trackedMarkers.clear();
+        activeMap?.clearMarkers();
+      },
+      addArea(shape, areaOpts) {
+        const item = { shape, opts: areaOpts, ref: activeMap?.addArea(shape, areaOpts) };
+        trackedAreas.add(item);
+        return {
+          remove() {
+            item.ref?.remove();
+            trackedAreas.delete(item);
+          },
+        };
+      },
+      clearAreas() {
+        trackedAreas.clear();
+        activeMap?.clearAreas();
+      },
+      addPolyline(points, polyOpts) {
+        const item = { points, opts: polyOpts, ref: activeMap?.addPolyline(points, polyOpts) };
+        trackedPolylines.add(item);
+        return {
+          remove() {
+            item.ref?.remove();
+            trackedPolylines.delete(item);
+          },
+        };
+      },
+      onClick(cb) {
+        onClickCb = cb;
+        activeMap?.onClick(cb);
+      },
+      resize() { activeMap?.resize(); },
+      destroy() {
+        destroyed = true;
+        window.removeEventListener('wts_google_maps_broken', brokenListener);
+        errObserver.disconnect();
+        trackedMarkers.clear();
+        trackedAreas.clear();
+        trackedPolylines.clear();
+        activeMap?.destroy();
+        activeMap = null;
+      },
+    };
+  } catch (err) {
+    console.warn('[maps] Using free maps instead of Google:', err.message);
     const L = await loadLeaflet();
     return createLeafletMap(L, container, opts);
-  } catch (err) {
-    container.remove();
-    showMapError(host, 'The map could not be loaded. Check your internet connection and refresh the page.');
-    throw err;
   }
 }

@@ -23,6 +23,29 @@ const EXT_BY_TYPE = {
   'image/heic': 'heic',
 };
 
+function generateUuid() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    try {
+      return crypto.randomUUID();
+    } catch {
+      /* fallback */
+    }
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+function normalizeMimeType(type) {
+  if (!type) return 'image/jpeg';
+  const lower = String(type).toLowerCase();
+  if (lower === 'image/jpg') return 'image/jpeg';
+  if (lower === 'image/heif') return 'image/heic';
+  return lower;
+}
+
 /** Thumbnail URL for a web-copy URL; any other URL is returned unchanged. */
 export function thumbUrl(url) {
   if (typeof url !== 'string') return url;
@@ -37,7 +60,7 @@ async function toBlob(fileOrDataUrl) {
 
 async function put(path, blob) {
   const { error } = await supabase.storage.from(MEDIA_BUCKET).upload(path, blob, {
-    contentType: blob.type || 'image/jpeg',
+    contentType: normalizeMimeType(blob.type),
     cacheControl: '31536000',   // unique names → browsers can cache for a year
     upsert: false,
   });
@@ -64,7 +87,7 @@ export async function uploadMediaFile(fileOrDataUrl, folder = 'uploads') {
 
   const safeFolder = String(folder).toLowerCase().replace(/[^a-z0-9-]/g, '-').slice(0, 40) || 'uploads';
   const ext = EXT_BY_TYPE[web.type] || 'jpg';
-  const name = `${safeFolder}/${new Date().getUTCFullYear()}/${crypto.randomUUID()}.${ext}`;
+  const name = `${safeFolder}/${new Date().getUTCFullYear()}/${generateUuid()}.${ext}`;
 
   await put(`web/${name}`, web);
   try {

@@ -135,7 +135,7 @@ export function useSpecialObservationForm(id) {
   const [formData, setFormData] = useState({
     title: '',
     tuskerName: '',
-    date: todayLocalISO(),
+    date: '',
     time: '',
     location: '',
     description: '',

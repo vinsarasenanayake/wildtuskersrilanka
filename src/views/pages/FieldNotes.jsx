@@ -14,7 +14,6 @@ import {
   Trash2,
   Clock,
   User,
-  Mail,
   Calendar,
   ShieldCheck,
   X,
@@ -98,11 +97,10 @@ export default function FieldNotes() {
         {/* Action Notice Toast */}
         {actionNotice && (
           <div
-            className={`p-3.5 sm:p-4 rounded-xl flex items-center justify-between shadow-sm animate-fade-in ${
-              actionNotice.type === 'success'
-                ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
-                : 'bg-gray-100 text-gray-800 border border-gray-300'
-            }`}
+            className={`p-3.5 sm:p-4 rounded-xl flex items-center justify-between shadow-sm animate-fade-in ${actionNotice.type === 'success'
+              ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
+              : 'bg-gray-100 text-gray-800 border border-gray-300'
+              }`}
           >
             <div className="flex items-center gap-2.5 font-sans text-xs sm:text-sm font-medium">
               <CheckCircle2 size={18} className="text-emerald-600 flex-shrink-0" />
@@ -167,23 +165,21 @@ export default function FieldNotes() {
         {/* Tabs Bar - Scrollable on mobile */}
         {(availableYears.length > 0 || (isAdmin && pendingNotes.length > 0)) && (
           <div className="bg-white p-2 rounded-t-[12px] shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex items-center gap-1 border-b-[3px] border-[#d1d5db] overflow-x-auto scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
-            
+
             {/* Admin Review & Accept Tab */}
             {isAdmin && (
               <button
                 onClick={() => setActiveTab('pending')}
-                className={`font-sans text-xs sm:text-[0.92rem] font-bold py-2 sm:py-2.5 px-3.5 sm:px-5 rounded-t-[8px] transition-all cursor-pointer border-none outline-none flex items-center gap-2 shrink-0 ${
-                  isPendingView
-                    ? 'bg-amber-500 text-white shadow-sm'
-                    : 'bg-amber-100 text-amber-900 hover:bg-amber-200'
-                }`}
+                className={`font-sans text-xs sm:text-[0.92rem] font-bold py-2 sm:py-2.5 px-3.5 sm:px-5 rounded-t-[8px] transition-all cursor-pointer border-none outline-none flex items-center gap-2 shrink-0 ${isPendingView
+                  ? 'bg-amber-500 text-white shadow-sm'
+                  : 'bg-amber-100 text-amber-900 hover:bg-amber-200'
+                  }`}
               >
                 <ShieldCheck size={16} />
                 <span>Review & Accept</span>
                 {pendingNotes.length > 0 && (
-                  <span className={`text-[0.72rem] font-extrabold px-2 py-0.5 rounded-full ${
-                    isPendingView ? 'bg-white text-amber-600' : 'bg-amber-600 text-white'
-                  }`}>
+                  <span className={`text-[0.72rem] font-extrabold px-2 py-0.5 rounded-full ${isPendingView ? 'bg-white text-amber-600' : 'bg-amber-600 text-white'
+                    }`}>
                     {pendingNotes.length}
                   </span>
                 )}
@@ -195,11 +191,10 @@ export default function FieldNotes() {
               <button
                 key={year}
                 onClick={() => setActiveTab(year)}
-                className={`font-sans text-xs sm:text-[0.95rem] font-bold py-2 sm:py-2.5 px-4 sm:px-6 rounded-t-[8px] transition-colors cursor-pointer border-none outline-none shrink-0 ${
-                  activeTab === year
-                    ? 'bg-[#f3f4f6] text-[#111111]' // Highlighted tab
-                    : 'bg-[#4b5563] text-white hover:bg-[#374151]' // Gray tab
-                }`}
+                className={`font-sans text-xs sm:text-[0.95rem] font-bold py-2 sm:py-2.5 px-4 sm:px-6 rounded-t-[8px] transition-colors cursor-pointer border-none outline-none shrink-0 ${activeTab === year
+                  ? 'bg-[#f3f4f6] text-[#111111]' // Highlighted tab
+                  : 'bg-[#4b5563] text-white hover:bg-[#374151]' // Gray tab
+                  }`}
               >
                 {year}
               </button>
@@ -271,12 +266,6 @@ export default function FieldNotes() {
                           <User size={13} className="text-gray-400" />
                           {note.author || 'Guest'}
                         </span>
-                        {note.authorContact && (
-                          <span className="flex items-center gap-1 text-gray-500">
-                            <Mail size={13} className="text-gray-400" />
-                            {note.authorContact}
-                          </span>
-                        )}
                       </div>
                     </div>
 
@@ -381,7 +370,7 @@ export default function FieldNotes() {
                     key={note.id}
                     className={`flex flex-col gap-3 sm:gap-4 ${index !== 0 ? 'mt-8 sm:mt-10 pt-8 sm:pt-10 border-t border-[#d1d5db]' : ''}`}
                   >
-                    
+
                     {/* Header with Title and Admin Delete */}
                     <div className="flex items-start justify-between gap-3 sm:gap-4">
                       <div className="flex items-start gap-2.5">
@@ -518,10 +507,10 @@ export default function FieldNotes() {
           onApprove={
             activeLightboxPhoto.status === 'pending'
               ? () => {
-                  const noteToApprove = activeLightboxPhoto.note;
-                  setActiveLightboxPhoto(null);
-                  handleApprove(noteToApprove);
-                }
+                const noteToApprove = activeLightboxPhoto.note;
+                setActiveLightboxPhoto(null);
+                handleApprove(noteToApprove);
+              }
               : undefined
           }
           onDelete={() => {

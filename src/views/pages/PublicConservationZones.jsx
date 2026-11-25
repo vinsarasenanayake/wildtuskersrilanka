@@ -10,7 +10,7 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import {
   Search,
   Layers,
@@ -33,6 +33,7 @@ const statusColor = (s) => STATUS_COLORS[s] || '#16a34a';
 
 export default function PublicConservationZones({ isActive = true }) {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const [tuskers, setTuskers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -44,7 +45,31 @@ export default function PublicConservationZones({ isActive = true }) {
 
   const hostRef = useRef(null);
   const mapRef = useRef(null);
+  const containerBoxRef = useRef(null);
   const [mapReady, setMapReady] = useState(false);
+
+  // Smoothly scrolls to the map container so it is in full view
+  const scrollToMapContainer = useCallback((smooth = true) => {
+    const doScroll = () => {
+      if (!containerBoxRef.current) return;
+      const rect = containerBoxRef.current.getBoundingClientRect();
+      const currentScrollY = window.pageYOffset || document.documentElement.scrollTop;
+      const containerTop = currentScrollY + rect.top;
+      const navbarOffset = window.innerWidth >= 640 ? 84 : 70;
+
+      // Position the top of the map container 8px below the fixed navbar
+      const targetY = Math.max(0, containerTop - navbarOffset - 8);
+
+      window.scrollTo({
+        top: Math.round(targetY),
+        behavior: smooth ? 'smooth' : 'instant',
+      });
+    };
+
+    // Stagger slightly to ensure layout and map canvas dimensions are rendered
+    setTimeout(doScroll, 80);
+    setTimeout(doScroll, 220);
+  }, []);
 
   // Check URL query param for initial zone selection (e.g. from Tusker Profile)
   useEffect(() => {
@@ -57,6 +82,19 @@ export default function PublicConservationZones({ isActive = true }) {
       }
     }
   }, [searchParams]);
+
+  // Auto-scroll so map container is in full view when arriving via link or zone selection
+  useEffect(() => {
+    const shouldScroll = Boolean(
+      searchParams.get('zone') ||
+      location.hash?.includes('zones-map') ||
+      location.state?.scrollToMap
+    );
+
+    if (shouldScroll && isActive) {
+      scrollToMapContainer(true);
+    }
+  }, [searchParams, location.hash, location.state, isActive, scrollToMapContainer]);
 
   useEffect(() => {
     getTuskers()
@@ -222,7 +260,11 @@ export default function PublicConservationZones({ isActive = true }) {
     <div className="w-full flex flex-col gap-4 animate-fade-in font-sans mb-3 sm:mb-6">
       
       {/* ── Main Map + Directory Container ── */}
-      <div className="w-full h-[540px] sm:h-[580px] md:h-[600px] lg:h-[620px] rounded-2xl overflow-hidden border border-[#e5e7eb] shadow-[0_8px_30px_rgba(0,0,0,0.06)] flex flex-col bg-white">
+      <div
+        id="zones-map-container"
+        ref={containerBoxRef}
+        className="w-full h-[540px] sm:h-[560px] md:h-[580px] lg:h-[600px] max-h-[calc(100vh-96px)] min-h-[440px] rounded-2xl overflow-hidden border border-[#e5e7eb] shadow-[0_8px_30px_rgba(0,0,0,0.06)] flex flex-col bg-white scroll-mt-24"
+      >
         
         {/* Mobile View Switcher */}
         <div className="portrait:flex landscape:hidden flex items-center justify-center p-2.5 bg-[#0b2518] border-b border-white/10 shrink-0">

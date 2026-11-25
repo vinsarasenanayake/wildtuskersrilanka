@@ -27,7 +27,7 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
     location: photo?.location || '',
     photographer: photo?.photographer || '',
     photographerContact: photo?.photographerContact || '',
-    date: photo?.date || todayLocalISO(),
+    date: photo?.date || '',
     status: photo?.status || 'approved',
   });
 
@@ -41,7 +41,10 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
   // Focus trap for accessible edit photo dialog
   useFocusTrap(containerRef, Boolean(photo), {
     initialFocusRef: closeBtnRef,
-    onEscape: onClose,
+    onEscape: () => {
+      if (document.querySelector('[role="dialog"][aria-label*="location" i], [role="dialog"][aria-label*="map" i], .leaflet-container')) return;
+      onClose();
+    },
   });
 
   // Lock background scroll while modal is open
@@ -62,7 +65,10 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
   // Keyboard escape listener
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        if (document.querySelector('[role="dialog"][aria-label*="location" i], [role="dialog"][aria-label*="map" i], .leaflet-container')) return;
+        onClose();
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -118,7 +124,11 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
   return createPortal(
     <div
       className="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
-      onClick={onClose}
+      onClick={(e) => {
+        if (e.target !== e.currentTarget) return;
+        if (document.querySelector('[role="dialog"][aria-label*="location" i], [role="dialog"][aria-label*="map" i], .leaflet-container')) return;
+        onClose();
+      }}
     >
       <div
         ref={containerRef}
@@ -266,8 +276,9 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
                   <input
                     type="date"
                     name="date"
+                    placeholder="DD/MM/YYYY"
                     max={todayLocalISO()}
-                    value={formData.date}
+                    value={formData.date || ''}
                     onChange={handleChange}
                     className="w-full bg-white border border-gray-300 rounded-lg px-3.5 py-2 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
                   />

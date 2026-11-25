@@ -103,10 +103,10 @@ function App() {
       );
     } catch { /* ignore */ }
 
-    if (navType === 'PUSH' && !location.state?.returnPhotoId && !location.state?.restoreScroll && !hasGalleryReturn) {
+    if (navType === 'PUSH' && !location.state?.returnPhotoId && !location.state?.restoreScroll && !hasGalleryReturn && !location.state?.scrollToMap && !location.hash?.includes('zones-map')) {
       window.scrollTo(0, 0);
     }
-  }, [location.pathname, location.state, navType]);
+  }, [location.pathname, location.state, location.hash, navType]);
 
   return (
     <>
@@ -136,8 +136,8 @@ function App() {
             <Route path="/ai-reidentification" element={<Navigate to="/" replace />} />
 
             {/* Unlisted Monitoring Routes (Admin Protected) */}
-            <Route path="/unlisted" element={<UnlistedMonitoring />} />
-            <Route path="/unlisted/:id" element={<UnlistedTuskerProfile />} />
+            <Route path="/unlisted" element={<RequireAdmin><UnlistedMonitoring /></RequireAdmin>} />
+            <Route path="/unlisted/:id" element={<RequireAdmin><UnlistedTuskerProfile /></RequireAdmin>} />
 
             {/* Authentication & Admin Portal Routes */}
             <Route path="/login" element={<Login />} />

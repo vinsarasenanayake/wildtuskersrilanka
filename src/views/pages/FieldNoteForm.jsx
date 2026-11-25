@@ -20,7 +20,6 @@ import {
   CheckCircle2,
   ShieldCheck,
   Loader2,
-  Mail,
 } from 'lucide-react';
 import { useFieldNoteForm } from '../../controllers/useFieldNotes';
 import TuskerMultiSelect from '../components/TuskerMultiSelect';
@@ -171,24 +170,6 @@ export default function FieldNoteForm() {
                 />
               </div>
 
-              {/* Contributor Email (Optional for follow-up) */}
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="fieldnote-contact" className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center gap-1.5">
-                  <Mail size={14} className="text-[#888888]" />
-                  <span>Contributor Email <span className="text-[#888888] font-normal normal-case">(optional, for verification & researcher follow-up)</span></span>
-                </label>
-                <input
-                  id="fieldnote-contact"
-                  type="email"
-                  name="authorContact"
-                  maxLength={200}
-                  className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15 scroll-mt-28"
-                  placeholder="your.email@example.com"
-                  value={formData.authorContact || ''}
-                  onChange={handleChange}
-                />
-              </div>
-
               {/* Tuskers Observed (Searchable Dropdown with Multi-Select) */}
               <div className="w-full">
                 <TuskerMultiSelect
@@ -214,9 +195,10 @@ export default function FieldNoteForm() {
                     type="date"
                     name="date"
                     required
+                    placeholder="DD/MM/YYYY"
                     max={todayLocalISO()}
                     className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15 scroll-mt-28"
-                    value={formData.date}
+                    value={formData.date || ''}
                     onChange={handleChange}
                   />
                 </div>

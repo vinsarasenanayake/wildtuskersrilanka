@@ -7,7 +7,7 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { MapPin, X, Check, ChevronDown, Search, Plus } from 'lucide-react';
-import { DISTRICTS } from '../../models/TuskerModel';
+import { DISTRICTS, DISTRICT_TO_PROVINCE_MAP } from '../../models/TuskerModel';
 import { parseDistricts, getProvincesForDistricts } from '../../utils/districtUtils';
 
 export default function DistrictMultiSelect({
@@ -204,7 +204,7 @@ export default function DistrictMultiSelect({
             ) : (
               filteredDistricts.map((d) => {
                 const isSelected = selectedDistricts.includes(d);
-                const province = DISTRICT_TO_PROVINCE_MAP[d];
+                const province = DISTRICT_TO_PROVINCE_MAP?.[d];
                 return (
                   <button
                     key={d}

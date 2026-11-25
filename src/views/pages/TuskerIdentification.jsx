@@ -12,9 +12,11 @@ import {
   ZoomIn,
   Info,
   Download,
-  FileText
+  FileText,
+  ExternalLink,
 } from 'lucide-react';
 import ImageLightboxModal from '../components/ImageLightboxModal';
+import PdfDownloadConfirmModal from '../components/PdfDownloadConfirmModal';
 
 // High-resolution local diagram assets
 import earFoldsImg from '../../assets/images/identification/ear-folds.png';
@@ -91,6 +93,7 @@ const CITATION_TEXT = 'Source: Individual Identification in Asian Elephants - T.
 export default function TuskerIdentification({ embedded = false }) {
   const [activeZoomImg, setActiveZoomImg] = useState(null);
   const [activeZoomList, setActiveZoomList] = useState(IDENTIFICATION_DIAGRAMS);
+  const [showKalawewaModal, setShowKalawewaModal] = useState(false);
 
   const handleOpenDiagramZoom = (diagram) => {
     setActiveZoomList(IDENTIFICATION_DIAGRAMS);
@@ -485,16 +488,27 @@ export default function TuskerIdentification({ embedded = false }) {
             </h2>
           </div>
 
-          <a
-            href="/documents/wts_kalawewa_identification_guide_2018.pdf"
-            download="WTS_Kalawewa_Identification_Guide_2018.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-primary font-bold text-xs sm:text-sm shadow-sm transition-all no-underline shrink-0 cursor-pointer"
-          >
-            <Download size={16} />
-            <span>Download Guide (PDF · 83.6 MB)</span>
-          </a>
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
+            <a
+              href="/documents/wts_kalawewa_identification_guide_2018.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-white hover:bg-gray-100 text-[#111827] font-bold text-xs sm:text-sm border border-[#d1d5db] shadow-2xs transition-all no-underline shrink-0 cursor-pointer text-center"
+              title="Open publication in new tab"
+            >
+              <ExternalLink size={15} />
+              <span>View Guide</span>
+            </a>
+
+            <button
+              type="button"
+              onClick={() => setShowKalawewaModal(true)}
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-primary font-bold text-xs sm:text-sm shadow-sm transition-all border-none shrink-0 cursor-pointer text-center"
+            >
+              <Download size={16} />
+              <span>Download Guide (PDF · 83.6 MB)</span>
+            </button>
+          </div>
         </div>
 
         <div className="font-sans text-sm sm:text-[0.96rem] text-[#374151] leading-[1.8] flex flex-col gap-3.5 text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
@@ -541,6 +555,18 @@ export default function TuskerIdentification({ embedded = false }) {
           onNavigatePhoto={(nextPhoto) => setActiveZoomImg(nextPhoto)}
           onClose={() => setActiveZoomImg(null)}
           fromPath={embedded ? '/tusker-insights?tab=identification' : '/tusker-insights?tab=identification'}
+        />
+      )}
+
+      {/* ── PDF Download Confirmation Modal ── */}
+      {showKalawewaModal && (
+        <PdfDownloadConfirmModal
+          isOpen={showKalawewaModal}
+          onClose={() => setShowKalawewaModal(false)}
+          pdfUrl="/documents/wts_kalawewa_identification_guide_2018.pdf"
+          title="Kalawewa Tusker Identification Guide (2018)"
+          fileSize="83.6 MB"
+          filename="WTS_Kalawewa_Identification_Guide_2018.pdf"
         />
       )}
 

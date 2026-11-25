@@ -624,7 +624,7 @@ export function useSightingForm(tuskerId) {
   const [formData, setFormData] = useState({
     imageUrl: '',
     imageUrls: [],
-    captureDate: todayLocalISO(),
+    captureDate: '',
     author: isAdmin ? 'WTS Admin' : 'WTS Researcher',
     note: '',
     lastSeenArea: '',
