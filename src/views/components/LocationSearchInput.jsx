@@ -698,7 +698,7 @@ export default function LocationSearchInput({
           <div
             ref={mapModalRef}
             tabIndex={-1}
-            className="bg-[#181c19] text-[#e8ebe9] rounded-[22px] max-w-4xl w-full p-3.5 sm:p-6 shadow-2xl border border-[#2b352f] flex flex-col gap-3 sm:gap-4 font-sans my-auto max-h-[94vh] overflow-y-auto focus-visible:outline-none"
+            className="bg-[#181c19] text-[#e8ebe9] rounded-[22px] max-w-4xl w-full p-3.5 sm:p-6 shadow-2xl border border-[#2b352f] flex flex-col gap-3 sm:gap-4 font-sans my-auto max-h-[90dvh] overflow-y-auto focus-visible:outline-none"
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
             onTouchStart={(e) => e.stopPropagation()}
@@ -796,7 +796,7 @@ export default function LocationSearchInput({
             </div>
 
             {/* Map */}
-            <div className="relative w-full h-[min(48vh,420px)] min-h-[180px] sm:min-h-[260px] bg-[#0e1210] rounded-[16px] overflow-hidden border border-[#2b352f] shrink-0">
+            <div className="relative w-full h-[min(40dvh,420px)] sm:h-[min(48vh,420px)] min-h-[180px] sm:min-h-[260px] bg-[#0e1210] rounded-[16px] overflow-hidden border border-[#2b352f] shrink-0">
               <div ref={modalMapContainerRef} className="w-full h-full z-[1]" />
 
               {isReverseGeocoding && (

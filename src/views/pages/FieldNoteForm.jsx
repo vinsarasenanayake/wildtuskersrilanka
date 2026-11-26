@@ -25,6 +25,7 @@ import { useFieldNoteForm } from '../../controllers/useFieldNotes';
 import TuskerMultiSelect from '../components/TuskerMultiSelect';
 import LocationSearchInput from '../components/LocationSearchInput';
 import ClockTimePicker from '../components/ClockTimePicker';
+import DateInput from '../components/DateInput';
 import { todayLocalISO } from '../../utils/localDate';
 
 export default function FieldNoteForm() {
@@ -78,7 +79,7 @@ export default function FieldNoteForm() {
   return (
     <div className="w-full min-h-screen bg-[#f8f9fa] pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2rem)] pb-20">
       <div className="w-full max-w-[840px] mx-auto px-4 sm:px-6 md:px-8">
-        
+
         {/* Back Link */}
         <button
           className="inline-flex items-center gap-1.5 font-sans text-xs sm:text-[0.88rem] font-medium text-[#777777] bg-none border-none cursor-pointer p-0 mb-6 transition-colors hover:text-accent"
@@ -89,20 +90,25 @@ export default function FieldNoteForm() {
 
         {submittedStatus === 'pending' ? (
           /* Submission Confirmation Card */
-          <div className="bg-white border border-[#e5e7eb] rounded-[16px] shadow-[0_10px_30px_rgba(0,0,0,0.04)] p-8 sm:p-12 text-center flex flex-col items-center">
-            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-4">
-              <CheckCircle2 size={36} />
+          <div className="bg-white border border-[#e5e7eb] rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.04)] p-6 sm:p-10 text-center flex flex-col items-center gap-3.5 max-w-[520px] mx-auto">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-600 flex items-center justify-center shadow-2xs">
+              <CheckCircle2 size={30} />
             </div>
-            <h2 className="font-sans text-2xl font-bold text-[#111111] mb-2">
-              Field Note Submitted for Review!
-            </h2>
-            <p className="font-sans text-[0.95rem] text-[#555555] max-w-[540px] leading-relaxed mb-6">
-              Thank you for contributing to Wild Tuskers Sri Lanka! Your observation has been securely logged and will appear on the public Field Notes page once an administrator reviews and approves it.
+            <div className="flex flex-col items-center gap-1.5">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[0.7rem] font-semibold tracking-wide uppercase">
+                Pending Admin Review
+              </span>
+              <h2 className="font-sans text-xl sm:text-2xl font-bold text-[#111111] m-0 mt-0.5 leading-snug">
+                Field Note Submitted for Review
+              </h2>
+            </div>
+            <p className="font-sans text-[0.88rem] sm:text-[0.95rem] text-[#555555] max-w-[440px] leading-relaxed m-0">
+              Thank you for contributing to Wild Tuskers Sri Lanka! Your observation has been logged and will appear on the Field Notes page once reviewed by an admin.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 w-full sm:w-auto mt-1.5">
               <button
                 onClick={() => navigate('/field-notes')}
-                className="bg-primary hover:bg-primary-light text-white font-sans text-sm font-semibold px-6 py-2.5 rounded-lg transition-colors cursor-pointer border-none shadow-sm"
+                className="w-full sm:w-auto bg-primary hover:bg-primary-light text-white font-sans text-sm font-semibold px-6 py-3 sm:py-2.5 rounded-xl transition-colors cursor-pointer border-none shadow-xs text-center"
               >
                 Return to Field Notes
               </button>
@@ -111,7 +117,7 @@ export default function FieldNoteForm() {
                   setSubmittedStatus(null);
                   window.location.reload();
                 }}
-                className="bg-white border border-[#d1d5db] text-[#374151] hover:bg-gray-50 font-sans text-sm font-medium px-5 py-2.5 rounded-lg transition-colors cursor-pointer"
+                className="w-full sm:w-auto bg-white border border-[#d1d5db] text-[#374151] hover:bg-gray-50 font-sans text-sm font-medium px-5 py-3 sm:py-2.5 rounded-xl transition-colors cursor-pointer text-center"
               >
                 Submit Another Observation
               </button>
@@ -120,7 +126,7 @@ export default function FieldNoteForm() {
         ) : (
           /* Submission Form */
           <div className="bg-white border border-[#e5e7eb] rounded-[16px] shadow-[0_8px_30px_rgba(0,0,0,0.03)] p-7 sm:p-10">
-            
+
             {/* Header */}
             <div className="text-center flex flex-col items-center gap-2 mb-8 pb-6 border-b border-[#eeeeee]">
               <div className="w-[48px] h-[48px] sm:w-[52px] sm:h-[52px] rounded-[14px] bg-accent/15 text-accent flex items-center justify-center mb-1 shrink-0 aspect-square">
@@ -185,19 +191,18 @@ export default function FieldNoteForm() {
 
               {/* Date, Time & Location (All Required) */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-1.5 min-w-0">
                   <label htmlFor="fieldnote-date" className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center gap-1.5">
                     <Calendar size={14} className="text-[#888888]" />
                     <span>Date of Field Trip<span className="text-[#e53e3e]"> *</span></span>
                   </label>
-                  <input
+                  <DateInput
                     id="fieldnote-date"
-                    type="date"
                     name="date"
                     required
-                    placeholder="DD/MM/YYYY"
+                    placeholder="DD / MM / YYYY"
                     max={todayLocalISO()}
-                    className="w-full bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15 scroll-mt-28"
+                    className="bg-[#f7f7f8] border border-[#e5e7eb] rounded-[10px] px-3.5 py-2.5 font-sans text-[0.92rem] text-[#111111] outline-none transition-all focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15 scroll-mt-28"
                     value={formData.date || ''}
                     onChange={handleChange}
                   />

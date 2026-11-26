@@ -13,6 +13,57 @@
 
 import { useEffect, useRef } from 'react';
 
+// Reference-counted iOS-safe body scroll lock so nested modals never unlock early
+// and iOS Safari cannot touch-scroll the blurred background behind an open modal.
+let activeScrollLocks = 0;
+let savedScrollY = 0;
+let savedStyles = null;
+
+function acquireScrollLock() {
+  if (typeof document === 'undefined' || typeof window === 'undefined') return;
+  if (activeScrollLocks === 0) {
+    savedScrollY = window.scrollY || window.pageYOffset || 0;
+    const html = document.documentElement;
+    const body = document.body;
+    savedStyles = {
+      htmlOverflow: html.style.overflow,
+      bodyOverflow: body.style.overflow,
+      bodyPosition: body.style.position,
+      bodyTop: body.style.top,
+      bodyLeft: body.style.left,
+      bodyRight: body.style.right,
+      bodyWidth: body.style.width,
+    };
+    html.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+    body.style.position = 'fixed';
+    body.style.top = `-${savedScrollY}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.width = '100%';
+  }
+  activeScrollLocks += 1;
+}
+
+function releaseScrollLock() {
+  if (typeof document === 'undefined' || typeof window === 'undefined') return;
+  if (activeScrollLocks <= 0) return;
+  activeScrollLocks -= 1;
+  if (activeScrollLocks === 0 && savedStyles) {
+    const html = document.documentElement;
+    const body = document.body;
+    html.style.overflow = savedStyles.htmlOverflow || '';
+    body.style.overflow = savedStyles.bodyOverflow || '';
+    body.style.position = savedStyles.bodyPosition || '';
+    body.style.top = savedStyles.bodyTop || '';
+    body.style.left = savedStyles.bodyLeft || '';
+    body.style.right = savedStyles.bodyRight || '';
+    body.style.width = savedStyles.bodyWidth || '';
+    savedStyles = null;
+    window.scrollTo(0, savedScrollY);
+  }
+}
+
 const FOCUSABLE_SELECTOR = [
   'a[href]',
   'area[href]',
@@ -100,6 +151,15 @@ export function useFocusTrap(containerRef, isOpen = true, options = {}) {
       }
     };
   }, [disableRestoreFocus]);
+
+  // 1b. Lock background scroll on all platforms (including iOS Safari touch scroll) while open
+  useEffect(() => {
+    if (!isOpen) return;
+    acquireScrollLock();
+    return () => {
+      releaseScrollLock();
+    };
+  }, [isOpen]);
 
   // 2. Initial focus into the modal on open
   useEffect(() => {

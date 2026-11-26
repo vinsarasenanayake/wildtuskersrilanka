@@ -6,8 +6,8 @@
  * (morphological identification guides, ear biometrics, and presentations).
  */
 
-import React, { useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import React, { useEffect, useCallback } from 'react';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import { GraduationCap, Binoculars, Layers, ShieldAlert } from 'lucide-react';
 import SpecialObservations from './SpecialObservations';
 import TuskerIdentification from './TuskerIdentification';
@@ -16,9 +16,31 @@ import RiskFrameworkView from './RiskFrameworkView';
 
 export default function Learn() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const currentTab = searchParams.get('tab');
   const validTabs = ['observations', 'identification', 'zones', 'risk-framework'];
   const activeTab = validTabs.includes(currentTab) ? currentTab : 'observations';
+
+  const scrollElementBelowNavbar = useCallback((elementId, smooth = true) => {
+    const doScroll = (useSmooth) => {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const headerEl = document.querySelector('header');
+      const navbarHeight = headerEl ? headerEl.getBoundingClientRect().height : (window.innerWidth >= 640 ? 84 : 68);
+      const rect = el.getBoundingClientRect();
+      const currentScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+      const targetY = Math.max(0, Math.round(currentScrollY + rect.top - navbarHeight - 8));
+      if (Math.abs(currentScrollY - targetY) > 4) {
+        window.scrollTo({ top: targetY, behavior: useSmooth ? 'smooth' : 'instant' });
+      }
+    };
+    const t1 = setTimeout(() => doScroll(smooth), 120);
+    const t2 = setTimeout(() => doScroll(false), 420);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, []);
 
   useEffect(() => {
     const titles = {
@@ -30,17 +52,20 @@ export default function Learn() {
     document.title = `Wild Tuskers Sri Lanka | ${titles[activeTab] || 'Research & Educational Hub'}`;
   }, [activeTab]);
 
+  // When arriving from a Tusker Profile ("View Risk Calculation"), scroll directly to the Risk Framework hero card
+  useEffect(() => {
+    if (
+      activeTab === 'risk-framework' &&
+      (location.state?.scrollToRiskFramework || location.hash === '#risk-framework-hero')
+    ) {
+      return scrollElementBelowNavbar('risk-framework-hero', true);
+    }
+  }, [activeTab, location.state, location.hash, scrollElementBelowNavbar]);
+
   const handleTabChange = (tabKey) => {
     setSearchParams({ tab: tabKey }, { replace: true });
     if (tabKey === 'zones') {
-      setTimeout(() => {
-        const el = document.getElementById('zones-map-container');
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          const targetY = Math.max(0, window.pageYOffset + rect.top - (window.innerWidth >= 640 ? 84 : 70) - 8);
-          window.scrollTo({ top: Math.round(targetY), behavior: 'smooth' });
-        }
-      }, 100);
+      scrollElementBelowNavbar('zones-map-container', true);
     }
   };
 
@@ -68,11 +93,10 @@ export default function Learn() {
             <button
               type="button"
               onClick={() => handleTabChange('observations')}
-              className={`flex items-center justify-center gap-2 w-full sm:w-auto px-3.5 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 cursor-pointer border-none ${
-                activeTab === 'observations'
-                  ? 'bg-[#0b2518] text-accent shadow-sm'
-                  : 'bg-transparent text-[#4b5563] hover:text-[#111827] hover:bg-gray-100'
-              }`}
+              className={`flex items-center justify-center gap-2 w-full sm:w-auto px-3.5 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 cursor-pointer border-none ${activeTab === 'observations'
+                ? 'bg-[#0b2518] text-accent shadow-sm'
+                : 'bg-transparent text-[#4b5563] hover:text-[#111827] hover:bg-gray-100'
+                }`}
             >
               <Binoculars size={16} />
               <span>Special Observations</span>
@@ -80,11 +104,10 @@ export default function Learn() {
             <button
               type="button"
               onClick={() => handleTabChange('identification')}
-              className={`flex items-center justify-center gap-2 w-full sm:w-auto px-3.5 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 cursor-pointer border-none ${
-                activeTab === 'identification'
-                  ? 'bg-[#0b2518] text-accent shadow-sm'
-                  : 'bg-transparent text-[#4b5563] hover:text-[#111827] hover:bg-gray-100'
-              }`}
+              className={`flex items-center justify-center gap-2 w-full sm:w-auto px-3.5 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 cursor-pointer border-none ${activeTab === 'identification'
+                ? 'bg-[#0b2518] text-accent shadow-sm'
+                : 'bg-transparent text-[#4b5563] hover:text-[#111827] hover:bg-gray-100'
+                }`}
             >
               <GraduationCap size={16} />
               <span>Tusker Identification</span>
@@ -92,11 +115,10 @@ export default function Learn() {
             <button
               type="button"
               onClick={() => handleTabChange('zones')}
-              className={`flex items-center justify-center gap-2 w-full sm:w-auto px-3.5 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 cursor-pointer border-none ${
-                activeTab === 'zones'
-                  ? 'bg-[#0b2518] text-accent shadow-sm'
-                  : 'bg-transparent text-[#4b5563] hover:text-[#111827] hover:bg-gray-100'
-              }`}
+              className={`flex items-center justify-center gap-2 w-full sm:w-auto px-3.5 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 cursor-pointer border-none ${activeTab === 'zones'
+                ? 'bg-[#0b2518] text-accent shadow-sm'
+                : 'bg-transparent text-[#4b5563] hover:text-[#111827] hover:bg-gray-100'
+                }`}
             >
               <Layers size={16} />
               <span>WTS Conservation Zones</span>
@@ -104,11 +126,10 @@ export default function Learn() {
             <button
               type="button"
               onClick={() => handleTabChange('risk-framework')}
-              className={`flex items-center justify-center gap-2 w-full sm:w-auto px-3.5 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 cursor-pointer border-none ${
-                activeTab === 'risk-framework'
-                  ? 'bg-[#0b2518] text-accent shadow-sm'
-                  : 'bg-transparent text-[#4b5563] hover:text-[#111827] hover:bg-gray-100'
-              }`}
+              className={`flex items-center justify-center gap-2 w-full sm:w-auto px-3.5 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 cursor-pointer border-none ${activeTab === 'risk-framework'
+                ? 'bg-[#0b2518] text-accent shadow-sm'
+                : 'bg-transparent text-[#4b5563] hover:text-[#111827] hover:bg-gray-100'
+                }`}
             >
               <ShieldAlert size={16} />
               <span>WTS Risk Framework</span>

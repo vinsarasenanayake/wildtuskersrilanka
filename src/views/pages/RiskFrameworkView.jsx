@@ -22,7 +22,10 @@ export default function RiskFrameworkView() {
     <div className="w-full flex flex-col gap-8 pb-12 animate-fade-in font-sans">
       
       {/* ── 1. Hero Overview & Core Objective ── */}
-      <div className="bg-gradient-to-br from-[#0b2518] via-[#123824] to-[#0b2518] rounded-3xl p-6 sm:p-8 md:p-10 text-white shadow-xl border border-white/10 relative overflow-hidden">
+      <div
+        id="risk-framework-hero"
+        className="bg-gradient-to-br from-[#0b2518] via-[#123824] to-[#0b2518] rounded-3xl p-6 sm:p-8 md:p-10 text-white shadow-xl border border-white/10 relative overflow-hidden scroll-mt-24"
+      >
         {/* Subtle decorative background glow */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
         

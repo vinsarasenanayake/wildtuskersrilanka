@@ -2997,6 +2997,7 @@ export default function TuskerProfile() {
                       </span>
                       <Link
                         to="/tusker-insights?tab=risk-framework"
+                        state={{ scrollToRiskFramework: true }}
                         className="inline-flex items-center gap-1 font-sans text-[0.82rem] font-semibold text-accent hover:text-accent-hover hover:underline transition-colors"
                       >
                         View Risk Calculation <ExternalLink size={12} />

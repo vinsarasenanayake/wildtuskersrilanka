@@ -28,6 +28,7 @@ import { todayLocalISO } from '../../utils/localDate';
 import ImageUploadBox from '../components/ImageUploadBox';
 import TuskerMultiSelect from '../components/TuskerMultiSelect';
 import EditGalleryPhotoModal from '../components/EditGalleryPhotoModal';
+import DateInput from '../components/DateInput';
 import ImageLightboxModal from '../components/ImageLightboxModal';
 import LocationSearchInput from '../components/LocationSearchInput';
 import Footer from '../components/Footer';
@@ -173,19 +174,19 @@ export default function Gallery() {
     };
   }, []);
 
-// Loose phonetic normalizer for Sri Lankan tusker names to handle transliteration variations (v/w, th/t, gh/g, etc.)
-function normalizeTuskerName(str) {
-  return String(str || '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, '')
-    .replace(/w/g, 'v')
-    .replace(/gh/g, 'g')
-    .replace(/th/g, 't')
-    .replace(/tt/g, 't')
-    .replace(/rr/g, 'r')
-    .replace(/ee/g, 'e')
-    .replace(/nb/g, 'mb');
-}
+  // Loose phonetic normalizer for Sri Lankan tusker names to handle transliteration variations (v/w, th/t, gh/g, etc.)
+  function normalizeTuskerName(str) {
+    return String(str || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+      .replace(/w/g, 'v')
+      .replace(/gh/g, 'g')
+      .replace(/th/g, 't')
+      .replace(/tt/g, 't')
+      .replace(/rr/g, 'r')
+      .replace(/ee/g, 'e')
+      .replace(/nb/g, 'mb');
+  }
 
   // Match photo to registered tusker
   const matchedTusker = useMemo(() => {
@@ -316,17 +317,15 @@ function normalizeTuskerName(str) {
             <div className="flex items-center gap-2 p-1.5 bg-white border border-[#e2e6e4] rounded-[10px] w-full lg:w-auto shadow-xs">
               <button
                 onClick={() => setFilter('ALL')}
-                className={`flex-1 lg:flex-initial font-sans text-xs sm:text-[0.88rem] font-bold px-4 sm:px-6 py-2.5 sm:py-2 rounded-[8px] transition-all cursor-pointer border-none text-center justify-center ${
-                  filter === 'ALL' ? 'bg-primary text-white shadow-xs' : 'bg-transparent text-[#666666] hover:text-[#111111]'
-                }`}
+                className={`flex-1 lg:flex-initial font-sans text-xs sm:text-[0.88rem] font-bold px-4 sm:px-6 py-2.5 sm:py-2 rounded-[8px] transition-all cursor-pointer border-none text-center justify-center ${filter === 'ALL' ? 'bg-primary text-white shadow-xs' : 'bg-transparent text-[#666666] hover:text-[#111111]'
+                  }`}
               >
                 Approved ({allApproved.length})
               </button>
               <button
                 onClick={() => setFilter('PENDING')}
-                className={`flex-1 lg:flex-initial font-sans text-xs sm:text-[0.88rem] font-bold px-4 sm:px-6 py-2.5 sm:py-2 rounded-[8px] transition-all cursor-pointer border-none flex items-center justify-center gap-1.5 ${
-                  filter === 'PENDING' ? 'bg-[#c69b55] text-white shadow-xs' : 'bg-transparent text-[#666666] hover:text-[#111111]'
-                }`}
+                className={`flex-1 lg:flex-initial font-sans text-xs sm:text-[0.88rem] font-bold px-4 sm:px-6 py-2.5 sm:py-2 rounded-[8px] transition-all cursor-pointer border-none flex items-center justify-center gap-1.5 ${filter === 'PENDING' ? 'bg-[#c69b55] text-white shadow-xs' : 'bg-transparent text-[#666666] hover:text-[#111111]'
+                  }`}
               >
                 <Clock size={14} />
                 <span>Pending Review</span>
@@ -820,18 +819,11 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
     },
   });
 
-  // Prevent background scrolling while modal is open
-  useEffect(() => {
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prevOverflow === 'hidden' ? '' : (prevOverflow || '');
-    };
-  }, []);
+  // Focus trap & iOS-safe background scroll lock handled by useFocusTrap above
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-fade-in"
+      className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-hidden animate-fade-in"
       onClick={(e) => {
         if (e.target !== e.currentTarget) return;
         handleSafeClose();
@@ -843,177 +835,204 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
         aria-modal="true"
         aria-labelledby="submit-photo-modal-title"
         tabIndex={-1}
-        className="relative bg-white rounded-2xl max-w-[560px] w-full p-6 sm:p-8 shadow-2xl border border-[#e8e8e8] my-auto max-h-[92vh] overflow-y-auto focus-visible:outline-none"
+        className={`relative bg-white rounded-2xl w-full shadow-2xl border border-[#e8e8e8] focus-visible:outline-none ${successMsg
+          ? 'max-w-[420px] p-6 sm:p-7 max-h-[86dvh] overflow-y-auto'
+          : 'max-w-[560px] flex flex-col max-h-[84dvh] sm:max-h-[88dvh] overflow-hidden'
+          }`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center pb-4 mb-5 border-b border-[#eeeeee]">
-          <div className="min-w-0 pr-3">
-            <h3 id="submit-photo-modal-title" className="font-sans text-[1.15rem] sm:text-[1.25rem] font-bold text-[#111111] m-0 truncate">
-              Submit a Tusker Photo
-            </h3>
-            <p className="font-sans text-xs sm:text-[0.84rem] text-[#777777] m-0 mt-0.5 leading-snug">
-              Contribute your field photography to the Wild Tuskers Sri Lanka gallery.
-            </p>
+        {!successMsg && (
+          <div className="flex justify-between items-center px-5 pt-4 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-[#eeeeee] shrink-0 bg-white">
+            <div className="min-w-0 pr-3">
+              <h3 id="submit-photo-modal-title" className="font-sans text-[1.1rem] sm:text-[1.25rem] font-bold text-[#111111] m-0 truncate">
+                Submit a Tusker Photo
+              </h3>
+              <p className="font-sans text-xs sm:text-[0.84rem] text-[#777777] m-0 mt-0.5 leading-snug">
+                Contribute your field photography to the Wild Tuskers Sri Lanka gallery.
+              </p>
+            </div>
+            <button
+              ref={closeBtnRef}
+              aria-label="Close dialog"
+              type="button"
+              onClick={handleSafeClose}
+              className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full shrink-0 bg-[#f4f4f4] hover:bg-[#e8e8e8] text-[#555555] flex items-center justify-center border-none cursor-pointer transition-colors shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              <X size={18} />
+            </button>
           </div>
-          <button
-            ref={closeBtnRef}
-            aria-label="Close dialog"
-            type="button"
-            onClick={handleSafeClose}
-            className="w-8 h-8 aspect-square min-w-[32px] min-h-[32px] rounded-full shrink-0 bg-[#f4f4f4] hover:bg-[#e8e8e8] text-[#555555] flex items-center justify-center border-none cursor-pointer transition-colors shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          >
-            <X size={18} />
-          </button>
-        </div>
+        )}
 
         {successMsg ? (
-          <div className="flex flex-col items-center text-center py-8 gap-3">
-            <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-1">
-              <CheckCircle2 size={32} />
+          <div className="relative flex flex-col items-center text-center gap-3.5 pt-1">
+            <button
+              ref={closeBtnRef}
+              aria-label="Close dialog"
+              type="button"
+              onClick={onClose}
+              className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-[#f4f4f4] hover:bg-[#e8e8e8] text-[#555555] flex items-center justify-center border-none cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              <X size={16} />
+            </button>
+            <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-600 flex items-center justify-center shadow-2xs">
+              <CheckCircle2 size={30} />
             </div>
-            <h4 className="font-sans text-lg font-bold text-[#111111] m-0">
-              Photo Submitted Successfully!
-            </h4>
-            <p className="font-sans text-sm text-[#666666] max-w-[380px] leading-relaxed m-0">
-              Thank you for contributing. Your photograph has been queued and will appear in the gallery as soon as reviewed by a WTS admin.
+            <div className="flex flex-col items-center gap-1.5">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[0.7rem] font-semibold tracking-wide uppercase">
+                Pending Admin Review
+              </span>
+              <h3 id="submit-photo-modal-title" className="font-sans text-[1.15rem] sm:text-xl font-bold text-[#111111] m-0 mt-0.5 leading-snug">
+                Photo Submitted Successfully
+              </h3>
+            </div>
+            <p className="font-sans text-[0.86rem] sm:text-sm text-[#555555] max-w-[340px] leading-relaxed m-0">
+              Thank you for contributing. Your photograph has been queued and will appear in the gallery once reviewed by a WTS admin.
             </p>
             <button
+              type="button"
               onClick={onClose}
-              className="mt-4 bg-primary text-white font-sans text-sm font-semibold rounded-lg px-6 py-2.5 border-none cursor-pointer hover:bg-primary-light transition-colors"
+              className="mt-1.5 w-full bg-primary hover:bg-primary-light text-white font-sans text-sm font-semibold rounded-xl px-6 py-3 border-none cursor-pointer transition-colors shadow-xs"
             >
               Done
             </button>
           </div>
         ) : (
-          <form onSubmit={submit} className="flex flex-col gap-4 font-sans text-sm">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-3.5 py-2.5 rounded-lg text-xs font-medium leading-relaxed">
-                {error}
+          <>
+            <form
+              id="gallery-submit-form"
+              onSubmit={submit}
+              className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-4 sm:px-7 sm:py-5 flex flex-col gap-4 font-sans text-sm"
+            >
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-3.5 py-2.5 rounded-lg text-xs font-medium leading-relaxed">
+                  {error}
+                </div>
+              )}
+
+              {/* Photo Upload Zone: Strictly Single Image */}
+              <div className="flex flex-col gap-1.5">
+                <ImageUploadBox
+                  label="Photo Upload"
+                  required
+                  folder="gallery"
+                  multiple={false}
+                  deferUpload
+                  value={formData.images && formData.images.length > 0 ? formData.images[0] : (formData.image || '')}
+                  onChange={handlePhotosChange}
+                  aspectClass="aspect-[16/10]"
+                />
               </div>
-            )}
 
-            {/* Photo Upload Zone: Strictly Single Image */}
-            <div className="flex flex-col gap-1.5">
-              <ImageUploadBox
-                label="Photo Upload"
-                required
-                folder="gallery"
-                multiple={false}
-                deferUpload
-                value={formData.images && formData.images.length > 0 ? formData.images[0] : (formData.image || '')}
-                onChange={handlePhotosChange}
-                aspectClass="aspect-[16/10]"
-              />
-            </div>
+              {/* Tusker Multi-Select Dropdown with Search: Allows multiple tuskers */}
+              <div className="w-full">
+                <TuskerMultiSelect
+                  label="Tusker Name / ID"
+                  placeholder="Search tusker by ID or name (e.g. T001, Panama Puttuwa)..."
+                  value={formData.tuskerName}
+                  onChange={(_list, formatted) => {
+                    handleChange({ target: { name: 'tuskerName', value: formatted } });
+                    if (!formData.location && _list && _list[0]?.location) {
+                      handleChange({ target: { name: 'location', value: _list[0].location } });
+                    }
+                  }}
+                  helperText="Select one or multiple tuskers featured in this photograph."
+                />
+              </div>
 
-            {/* Tusker Multi-Select Dropdown with Search: Allows multiple tuskers */}
-            <div className="w-full">
-              <TuskerMultiSelect
-                label="Tusker Name / ID"
-                placeholder="Search tusker by ID or name (e.g. T001, Panama Puttuwa)..."
-                value={formData.tuskerName}
-                onChange={(_list, formatted) => {
-                  handleChange({ target: { name: 'tuskerName', value: formatted } });
-                  if (!formData.location && _list && _list[0]?.location) {
-                    handleChange({ target: { name: 'location', value: _list[0].location } });
-                  }
-                }}
-                helperText="Select one or multiple tuskers featured in this photograph."
-              />
-            </div>
-
-            {/* Location */}
-            <div className="flex flex-col gap-1 min-w-0">
-              <label htmlFor="photo-location" className="text-xs font-bold text-[#555555] uppercase tracking-wider">
-                Location / Sanctuary <span className="text-red-500">*</span>
-              </label>
-              <LocationSearchInput
-                id="photo-location"
-                name="location"
-                required
-                placeholder="e.g. Udawalawe / Minneriya"
-                value={formData.location}
-                onChange={handleChange}
-                className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg py-2.5 outline-none focus:border-accent focus:bg-white text-sm scroll-mt-28"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              {/* Photographer Name */}
-              <div className="flex flex-col gap-1 w-full">
-                <label htmlFor="photo-photographer" className="text-xs font-bold text-[#555555] uppercase tracking-wider">
-                  Photographer Name <span className="text-red-500">*</span>
+              {/* Location */}
+              <div className="flex flex-col gap-1 min-w-0">
+                <label htmlFor="photo-location" className="text-xs font-bold text-[#555555] uppercase tracking-wider">
+                  Location / Sanctuary <span className="text-red-500">*</span>
                 </label>
-                <input
-                  id="photo-photographer"
-                  type="text"
-                  name="photographer"
-                  maxLength={200}
+                <LocationSearchInput
+                  id="photo-location"
+                  name="location"
                   required
-                  placeholder="Enter photographer's name"
-                  value={formData.photographer}
+                  placeholder="e.g. Udawalawe / Minneriya"
+                  value={formData.location}
                   onChange={handleChange}
-                  className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm scroll-mt-28"
+                  className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg py-2.5 outline-none focus:border-accent focus:bg-white text-sm scroll-mt-28"
                 />
               </div>
 
-              {/* Date */}
-              <div className="flex flex-col gap-1 w-full">
-                <label htmlFor="photo-date" className="text-xs font-bold text-[#555555] uppercase tracking-wider">
-                  Date Taken <span className="text-red-500">*</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {/* Photographer Name */}
+                <div className="flex flex-col gap-1 w-full min-w-0">
+                  <label htmlFor="photo-photographer" className="text-xs font-bold text-[#555555] uppercase tracking-wider">
+                    Photographer Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="photo-photographer"
+                    type="text"
+                    name="photographer"
+                    maxLength={200}
+                    required
+                    placeholder="Enter photographer's name"
+                    value={formData.photographer}
+                    onChange={handleChange}
+                    className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm scroll-mt-28"
+                  />
+                </div>
+
+                {/* Date */}
+                <div className="flex flex-col gap-1 w-full min-w-0">
+                  <label htmlFor="photo-date" className="text-xs font-bold text-[#555555] uppercase tracking-wider">
+                    Date Taken <span className="text-red-500">*</span>
+                  </label>
+                  <DateInput
+                    id="photo-date"
+                    name="date"
+                    required
+                    placeholder="DD / MM / YYYY"
+                    max={todayLocalISO()}
+                    value={formData.date || ''}
+                    onChange={handleChange}
+                    className="bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm scroll-mt-28"
+                  />
+                </div>
+              </div>
+
+              {/* Copyright Ownership Confirmation Checkbox */}
+              <div className="bg-[#fafafa] border border-[#e8e8e8] rounded-xl p-3 flex flex-col gap-1.5 mt-1">
+                <label className="flex items-start gap-2.5 cursor-pointer text-xs text-[#444444] leading-relaxed">
+                  <input
+                    id="photo-consent"
+                    type="checkbox"
+                    name="consentAgreed"
+                    checked={Boolean(formData.consentAgreed)}
+                    onChange={handleChange}
+                    required
+                    className="mt-0.5 accent-primary cursor-pointer w-4 h-4 shrink-0 rounded"
+                  />
+                  <span>
+                    I confirm that I took this photograph or own the copyright, and grant Wild Tuskers Sri Lanka non-exclusive permission to document and display it for wildlife research, conservation, and education. <span className="text-red-500">*</span>
+                  </span>
                 </label>
-                <input
-                  id="photo-date"
-                  type="date"
-                  name="date"
-                  required
-                  placeholder="DD/MM/YYYY"
-                  max={todayLocalISO()}
-                  value={formData.date || ''}
-                  onChange={handleChange}
-                  className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg px-3.5 py-2.5 outline-none focus:border-accent focus:bg-white text-sm scroll-mt-28"
-                />
               </div>
-            </div>
 
-            {/* Copyright Ownership Confirmation Checkbox */}
-            <div className="bg-[#fafafa] border border-[#e8e8e8] rounded-xl p-3 flex flex-col gap-1.5 mt-1">
-              <label className="flex items-start gap-2.5 cursor-pointer text-xs text-[#444444] leading-relaxed">
-                <input
-                  id="photo-consent"
-                  type="checkbox"
-                  name="consentAgreed"
-                  checked={Boolean(formData.consentAgreed)}
-                  onChange={handleChange}
-                  required
-                  className="mt-0.5 accent-primary cursor-pointer w-4 h-4 shrink-0 rounded"
-                />
-                <span>
-                  I confirm that I took this photograph or own the copyright, and grant Wild Tuskers Sri Lanka non-exclusive permission to document and display it for wildlife research, conservation, and education. <span className="text-red-500">*</span>
-                </span>
-              </label>
-            </div>
+              {/* Admin review notice */}
+              <div className="bg-[#faf5ec] border border-[#c69b55]/30 rounded-xl p-3 flex items-start gap-2.5">
+                <ShieldCheck size={16} className="text-accent shrink-0 mt-0.5" />
+                <p className="text-[0.76rem] text-[#6d5120] leading-relaxed m-0">
+                  To maintain ethical wildlife documentation standards, submissions are moderated by WTS Admins before appearing publicly in the gallery.
+                </p>
+              </div>
+            </form>
 
-            {/* Admin review notice */}
-            <div className="bg-[#faf5ec] border border-[#c69b55]/30 rounded-xl p-3 flex items-start gap-2.5">
-              <ShieldCheck size={16} className="text-accent shrink-0 mt-0.5" />
-              <p className="text-[0.76rem] text-[#6d5120] leading-relaxed m-0">
-                To maintain ethical wildlife documentation standards, submissions are moderated by WTS Admins before appearing publicly in the gallery.
-              </p>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 mt-3 pt-3 border-t border-[#eeeeee]">
+            {/* Pinned Modal Footer */}
+            <div className="flex items-center justify-end gap-3 px-5 py-3.5 sm:px-7 sm:py-4 border-t border-[#eeeeee] bg-white shrink-0">
               <button
                 type="button"
                 onClick={handleSafeClose}
-                className="flex-1 sm:flex-none sm:min-w-[120px] h-10 bg-transparent border border-[#dddddd] text-[#666666] font-semibold rounded-lg px-5 cursor-pointer hover:bg-[#f5f5f5] inline-flex items-center justify-center box-border text-center"
+                className="flex-1 sm:flex-none sm:min-w-[120px] h-10 bg-transparent border border-[#dddddd] text-[#666666] font-semibold rounded-lg px-5 cursor-pointer hover:bg-[#f5f5f5] inline-flex items-center justify-center box-border text-center text-sm"
               >
                 Cancel
               </button>
               <button
                 type="submit"
+                form="gallery-submit-form"
                 disabled={submitting || uploading}
-                className="flex-1 sm:flex-none sm:min-w-[160px] h-10 bg-primary hover:bg-primary-light text-white font-semibold rounded-lg px-6 border border-primary cursor-pointer disabled:opacity-60 transition-all inline-flex items-center justify-center gap-1.5 box-border whitespace-nowrap text-center shadow-xs"
+                className="flex-1 sm:flex-none sm:min-w-[160px] h-10 bg-primary hover:bg-primary-light text-white font-semibold rounded-lg px-6 border border-primary cursor-pointer disabled:opacity-60 transition-all inline-flex items-center justify-center gap-1.5 box-border whitespace-nowrap text-center shadow-xs text-sm"
               >
                 <Upload size={14} />
                 <span>
@@ -1025,7 +1044,7 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
                 </span>
               </button>
             </div>
-          </form>
+          </>
         )}
       </div>
     </div>,

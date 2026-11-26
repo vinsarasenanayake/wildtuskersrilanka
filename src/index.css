@@ -76,6 +76,41 @@ nav button:focus-visible,
   select:focus-visible {
     outline: none !important;
   }
+
+  /* Prevent iOS Safari intrinsic width overflow on native date/time inputs */
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"] {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* On iOS WebKit, empty date/time inputs render completely blank and ignore placeholder */
+  .ios-date-placeholder {
+    display: none;
+  }
+  @supports (-webkit-touch-callout: none) {
+    input[type="date"],
+    input[type="time"] {
+      -webkit-appearance: none;
+      appearance: none;
+      min-height: 44px;
+      line-height: 1.4;
+    }
+    .ios-date-placeholder {
+      display: flex;
+    }
+  }
+
+  /* Prevent iOS Safari from auto-zooming the page when focusing inputs, selects, date pickers, or textareas */
+  @media (hover: none) and (pointer: coarse) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]),
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
 }
 
 @layer utilities {

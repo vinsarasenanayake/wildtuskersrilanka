@@ -48,27 +48,34 @@ export default function PublicConservationZones({ isActive = true }) {
   const containerBoxRef = useRef(null);
   const [mapReady, setMapReady] = useState(false);
 
-  // Smoothly scrolls to the map container so it is in full view
+  // Smoothly scrolls to the map container so it is in full view without showing half-cut tabs above
   const scrollToMapContainer = useCallback((smooth = true) => {
-    const doScroll = () => {
+    const doScroll = (useSmooth) => {
       if (!containerBoxRef.current) return;
       const rect = containerBoxRef.current.getBoundingClientRect();
-      const currentScrollY = window.pageYOffset || document.documentElement.scrollTop;
+      const currentScrollY = window.scrollY || document.documentElement.scrollTop || 0;
       const containerTop = currentScrollY + rect.top;
-      const navbarOffset = window.innerWidth >= 640 ? 84 : 70;
+      const headerEl = document.querySelector('header');
+      const navbarHeight = headerEl ? headerEl.getBoundingClientRect().height : (window.innerWidth >= 640 ? 84 : 68);
 
-      // Position the top of the map container 8px below the fixed navbar
-      const targetY = Math.max(0, containerTop - navbarOffset - 8);
+      // Position the top of the map container 6px below the fixed navbar so tab pills above are cleanly out of view
+      const targetY = Math.max(0, Math.round(containerTop - navbarHeight - 6));
 
-      window.scrollTo({
-        top: Math.round(targetY),
-        behavior: smooth ? 'smooth' : 'instant',
-      });
+      if (Math.abs(currentScrollY - targetY) > 4) {
+        window.scrollTo({
+          top: targetY,
+          behavior: useSmooth ? 'smooth' : 'instant',
+        });
+      }
     };
 
-    // Stagger slightly to ensure layout and map canvas dimensions are rendered
-    setTimeout(doScroll, 80);
-    setTimeout(doScroll, 220);
+    // First scroll after initial paint, then verify once page fade-in/layout finishes
+    const t1 = setTimeout(() => doScroll(smooth), 120);
+    const t2 = setTimeout(() => doScroll(false), 420);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, []);
 
   // Check URL query param for initial zone selection (e.g. from Tusker Profile)
@@ -92,7 +99,7 @@ export default function PublicConservationZones({ isActive = true }) {
     );
 
     if (shouldScroll && isActive) {
-      scrollToMapContainer(true);
+      return scrollToMapContainer(true);
     }
   }, [searchParams, location.hash, location.state, isActive, scrollToMapContainer]);
 
@@ -263,7 +270,7 @@ export default function PublicConservationZones({ isActive = true }) {
       <div
         id="zones-map-container"
         ref={containerBoxRef}
-        className="w-full h-[540px] sm:h-[560px] md:h-[580px] lg:h-[600px] max-h-[calc(100vh-96px)] min-h-[440px] rounded-2xl overflow-hidden border border-[#e5e7eb] shadow-[0_8px_30px_rgba(0,0,0,0.06)] flex flex-col bg-white scroll-mt-24"
+        className="w-full h-[540px] sm:h-[560px] md:h-[580px] lg:h-[600px] max-h-[calc(100dvh-96px)] min-h-[440px] rounded-2xl overflow-hidden border border-[#e5e7eb] shadow-[0_8px_30px_rgba(0,0,0,0.06)] flex flex-col bg-white scroll-mt-24"
       >
         
         {/* Mobile View Switcher */}
