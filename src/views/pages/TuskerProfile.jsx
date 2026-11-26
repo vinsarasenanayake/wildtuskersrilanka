@@ -3394,16 +3394,18 @@ export default function TuskerProfile() {
         {isAdmin && (
           <div className="mt-16 pt-10 border-t border-[#e2e8e0]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-              <div>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[0.72rem] font-bold bg-[#0b2518] text-[#c69b55] uppercase tracking-wider">
-                    <Lock size={12} /> Admin Only View
-                  </span>
-                  <span className="font-sans text-xs font-semibold text-[#888888]">
-                    {(sortedSightings.length || 0) + 1} Total Records
-                  </span>
+              <div className="w-full">
+                <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 mb-2 w-full">
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <span className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1 sm:py-0.5 rounded-full text-[0.7rem] sm:text-[0.72rem] font-bold bg-[#0b2518] text-[#c69b55] uppercase tracking-wider whitespace-nowrap">
+                      <Lock size={12} className="shrink-0" /> Admin Only View
+                    </span>
+                    <span className="flex-1 sm:flex-initial inline-flex items-center justify-center sm:justify-start px-3 sm:px-0 py-1 sm:py-0 rounded-full sm:rounded-none bg-[#f3f4f6] sm:bg-transparent font-sans text-[0.72rem] sm:text-xs font-semibold text-[#666666] sm:text-[#888888] whitespace-nowrap">
+                      {(sortedSightings.length || 0) + 1} Total Records
+                    </span>
+                  </div>
                   {(sortedSightings.length || 0) > 1 && (
-                    <span className="font-sans text-[0.72rem] text-accent font-semibold bg-accent/10 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    <span className="w-full sm:w-auto font-sans text-[0.72rem] text-accent font-semibold bg-accent/10 px-3 py-1 sm:py-0.5 rounded-full inline-flex items-center justify-center gap-1 whitespace-nowrap">
                       ↕ Scroll table to view all records
                     </span>
                   )}

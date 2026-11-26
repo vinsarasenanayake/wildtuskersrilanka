@@ -245,7 +245,7 @@ export default function EditSightingModal({
         aria-modal="true"
         aria-labelledby="edit-sighting-modal-title"
         tabIndex={-1}
-        className="bg-white rounded-[16px] max-w-xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-[#e5e7eb] overflow-hidden focus-visible:outline-none"
+        className="bg-white rounded-[16px] max-w-xl w-full max-h-[92vh] flex flex-col shadow-2xl ring-1 ring-black/10 overflow-hidden focus-visible:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
@@ -256,7 +256,7 @@ export default function EditSightingModal({
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className="text-[0.68rem] sm:text-[0.7rem] font-bold bg-[#faf5ec] text-accent px-2 py-0.5 rounded uppercase tracking-wider whitespace-nowrap">
+                <span className="text-[0.68rem] sm:text-[0.7rem] font-bold bg-accent/20 text-accent border border-accent/35 px-2 py-0.5 rounded uppercase tracking-wider whitespace-nowrap">
                   Row {rowNum} • Sighting #{sightingNum}
                 </span>
               </div>

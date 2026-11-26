@@ -590,8 +590,8 @@ export default function OurProjects() {
         {/* Upcoming Events Section (Hidden for visitors if empty) */}
         {(isAdmin || upcomingEvents.length > 0) && (
           <section className="flex flex-col gap-4">
-            {/* Header Row: Maintained single-line on mobile portrait */}
-            <div className="flex flex-row items-center justify-between gap-2 sm:gap-3">
+            {/* Header Row: Stacks full-width action button on mobile portrait */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <h2 className="font-sans text-[0.95rem] sm:text-[1.2rem] font-bold text-[#111111] m-0 whitespace-nowrap shrink-0 flex items-center gap-2">
                 <span>Upcoming Events</span>
                 {upcomingEvents.length > 0 && (
@@ -601,10 +601,10 @@ export default function OurProjects() {
                 )}
               </h2>
               {isAdmin && (
-                <div className="flex gap-2 w-auto shrink-0">
+                <div className="flex gap-2 w-full sm:w-auto shrink-0">
                   <button
                     type="button"
-                    className="bg-accent text-primary font-semibold text-[0.72rem] sm:text-[0.88rem] px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-[6px] inline-flex items-center justify-center gap-1.5 border-none cursor-pointer hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap shadow-sm w-auto text-center"
+                    className="w-full sm:w-auto bg-accent text-primary font-semibold text-xs sm:text-[0.88rem] px-3 sm:px-4 py-2.5 sm:py-2 rounded-[6px] inline-flex items-center justify-center gap-1.5 border-none cursor-pointer hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap shadow-sm text-center"
                     onClick={() => navigate('/admin/create-event')}
                   >
                     <PlusCircle size={14} className="shrink-0" />

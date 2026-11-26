@@ -317,6 +317,12 @@ export default function TuskerSightingsMap({
 }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
+  const registryRowRef = useRef(null);
+  const isDraggingRegistryRef = useRef(false);
+  const registryStartXRef = useRef(0);
+  const registryScrollLeftRef = useRef(0);
+  const registryMovedRef = useRef(0);
+  const [isGrabbingRegistry, setIsGrabbingRegistry] = useState(false);
 
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
@@ -1050,13 +1056,13 @@ export default function TuskerSightingsMap({
         </div>
 
         {/* ── View Full Range Button ── */}
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0">
           <button
             type="button"
             onClick={handleViewHomeRange}
-            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${!selectedPoint
-                ? 'bg-emerald-50 text-emerald-900 border-emerald-300 shadow-xs cursor-default'
-                : 'bg-white text-gray-700 border-gray-200 hover:bg-emerald-50/50 hover:text-emerald-900 shadow-2xs'
+            className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3.5 py-2.5 sm:py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${!selectedPoint
+              ? 'bg-emerald-50 text-emerald-900 border-emerald-300 shadow-xs cursor-default'
+              : 'bg-white text-gray-700 border-gray-200 hover:bg-emerald-50/50 hover:text-emerald-900 shadow-2xs'
               }`}
             title="Display full conservation landscape on map"
           >
@@ -1082,7 +1088,45 @@ export default function TuskerSightingsMap({
           )}
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+        <div
+          ref={registryRowRef}
+          onMouseDown={(e) => {
+            if (e.button !== 0 || !registryRowRef.current || e.target.closest('button, a')) return;
+            isDraggingRegistryRef.current = true;
+            registryStartXRef.current = e.pageX - registryRowRef.current.offsetLeft;
+            registryScrollLeftRef.current = registryRowRef.current.scrollLeft;
+            registryMovedRef.current = 0;
+            setIsGrabbingRegistry(true);
+          }}
+          onMouseMove={(e) => {
+            if (!isDraggingRegistryRef.current || !registryRowRef.current) return;
+            e.preventDefault();
+            const x = e.pageX - registryRowRef.current.offsetLeft;
+            const walk = (x - registryStartXRef.current) * 1.3;
+            registryMovedRef.current = Math.abs(x - registryStartXRef.current);
+            registryRowRef.current.scrollLeft = registryScrollLeftRef.current - walk;
+          }}
+          onMouseUp={() => {
+            if (!isDraggingRegistryRef.current) return;
+            isDraggingRegistryRef.current = false;
+            setIsGrabbingRegistry(false);
+          }}
+          onMouseLeave={() => {
+            if (!isDraggingRegistryRef.current) return;
+            isDraggingRegistryRef.current = false;
+            setIsGrabbingRegistry(false);
+          }}
+          onClickCapture={(e) => {
+            if (registryMovedRef.current > 6) {
+              e.stopPropagation();
+              e.preventDefault();
+              registryMovedRef.current = 0;
+            }
+          }}
+          className={`flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin select-none ${isGrabbingRegistry ? 'cursor-grabbing' : 'cursor-grab'
+            }`}
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
           {/* Main Conservation Zone / Range Pill */}
           {homeRangeShape?.zoneData ? (
             <div
@@ -1117,8 +1161,8 @@ export default function TuskerSightingsMap({
             <div
               onClick={handleViewHomeRange}
               className={`shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs cursor-pointer transition-all select-none ${!selectedPoint
-                  ? `${statusTheme.cardActive} shadow-xs`
-                  : `${statusTheme.cardInactive} shadow-2xs`
+                ? `${statusTheme.cardActive} shadow-xs`
+                : `${statusTheme.cardInactive} shadow-2xs`
                 }`}
             >
               <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${statusTheme.dotBg} text-white shadow-2xs`}>
@@ -1141,8 +1185,8 @@ export default function TuskerSightingsMap({
             <div
               onClick={() => handleSelectPoint(lastSeenPoint)}
               className={`shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs cursor-pointer transition-all select-none ${selectedPoint?.id === 'last-seen-pin'
-                  ? `${statusTheme.cardActive} shadow-xs`
-                  : `${statusTheme.cardInactive} shadow-2xs`
+                ? `${statusTheme.cardActive} shadow-xs`
+                : `${statusTheme.cardInactive} shadow-2xs`
                 }`}
             >
               <div
@@ -1187,8 +1231,8 @@ export default function TuskerSightingsMap({
             <div
               onClick={() => handleSelectPoint(firstRecordedPoint)}
               className={`shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs cursor-pointer transition-all select-none ${selectedPoint?.id === 'first-recorded-pin'
-                  ? 'bg-amber-50 text-amber-950 border-amber-400 ring-2 ring-amber-300/40 shadow-xs'
-                  : 'bg-white text-gray-700 border-gray-200 hover:border-amber-300 shadow-2xs'
+                ? 'bg-amber-50 text-amber-950 border-amber-400 ring-2 ring-amber-300/40 shadow-xs'
+                : 'bg-white text-gray-700 border-gray-200 hover:border-amber-300 shadow-2xs'
                 }`}
             >
               <div
@@ -1238,8 +1282,8 @@ export default function TuskerSightingsMap({
                 key={point.id}
                 onClick={() => handleSelectPoint(point)}
                 className={`shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl border text-xs cursor-pointer transition-all select-none ${isSelected
-                    ? 'bg-emerald-50 text-emerald-950 border-emerald-400 ring-2 ring-emerald-300/40 shadow-xs'
-                    : 'bg-white text-gray-700 border-gray-200 hover:border-emerald-300 shadow-2xs'
+                  ? 'bg-emerald-50 text-emerald-950 border-emerald-400 ring-2 ring-emerald-300/40 shadow-xs'
+                  : 'bg-white text-gray-700 border-gray-200 hover:border-emerald-300 shadow-2xs'
                   }`}
               >
                 <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-emerald-600 text-white shadow-2xs">

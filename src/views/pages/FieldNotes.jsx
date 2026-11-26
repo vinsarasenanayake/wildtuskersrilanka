@@ -191,7 +191,7 @@ export default function FieldNotes() {
             {isAdmin && (
               <button
                 onClick={() => setActiveTab('pending')}
-                className={`font-sans text-xs sm:text-[0.92rem] font-bold py-2 sm:py-2.5 px-3.5 sm:px-5 rounded-t-[8px] transition-all cursor-pointer border-none outline-none flex items-center gap-2 shrink-0 ${isPendingView
+                className={`flex-1 sm:flex-initial justify-center font-sans text-xs sm:text-[0.92rem] font-bold py-2 sm:py-2.5 px-3.5 sm:px-5 rounded-t-[8px] transition-all cursor-pointer border-none outline-none flex items-center gap-2 shrink-0 ${isPendingView
                   ? 'bg-amber-500 text-white shadow-sm'
                   : 'bg-amber-100 text-amber-900 hover:bg-amber-200'
                   }`}
@@ -212,7 +212,7 @@ export default function FieldNotes() {
               <button
                 key={year}
                 onClick={() => setActiveTab(year)}
-                className={`font-sans text-xs sm:text-[0.95rem] font-bold py-2 sm:py-2.5 px-4 sm:px-6 rounded-t-[8px] transition-colors cursor-pointer border-none outline-none shrink-0 ${activeTab === year
+                className={`flex-1 sm:flex-initial text-center font-sans text-xs sm:text-[0.95rem] font-bold py-2 sm:py-2.5 px-4 sm:px-6 rounded-t-[8px] transition-colors cursor-pointer border-none outline-none shrink-0 ${activeTab === year
                   ? 'bg-[#f3f4f6] text-[#111111]' // Highlighted tab
                   : 'bg-[#4b5563] text-white hover:bg-[#374151]' // Gray tab
                   }`}

@@ -227,8 +227,8 @@ export default function PhotographicCollageModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Minimal Top Bar */}
-        <div className="px-5 sm:px-6 py-3.5 bg-[#f8f9fa] border-b border-[#e5e7eb] flex items-center justify-between gap-4 shrink-0">
-          <span className="font-sans text-xs sm:text-sm font-bold uppercase tracking-wider text-[#555555]">
+        <div className="px-4 sm:px-6 py-3.5 bg-[#f8f9fa] border-b border-[#e5e7eb] flex items-center justify-between gap-3 shrink-0">
+          <span className="font-sans text-[clamp(0.8rem,3.5vw,0.98rem)] font-bold text-[#111111] whitespace-nowrap truncate">
             Photography Comparison Collage Builder
           </span>
           <button
@@ -342,17 +342,24 @@ export default function PhotographicCollageModal({
                   Collage Preview
                 </h3>
                 <span className="font-sans text-xs text-[#777777]">
-                  Select 2 or more sightings on the left
+                  Select 2 or more sightings{' '}
+                  <span className="md:hidden">above</span>
+                  <span className="hidden md:inline">on the left</span>
                 </span>
               </div>
 
               {selectedItems.length < 2 ? (
                 <div className="flex-1 min-h-[220px] rounded-xl border border-dashed border-[#d1d5db] bg-[#f9fafb] flex items-center justify-center py-10 px-4 text-center font-sans text-xs sm:text-sm text-[#666666]">
-                  Select at least <strong className="mx-1">2 sightings</strong> from the left list to preview your comparison collage.
+                  <span>
+                    Select at least <strong>2 sightings</strong>{' '}
+                    <span className="md:hidden">above</span>
+                    <span className="hidden md:inline">from the left list</span>{' '}
+                    to preview your comparison collage.
+                  </span>
                 </div>
               ) : (
                 <div className="rounded-xl border border-[#e5e7eb] bg-white p-3 sm:p-4 shadow-xs overflow-x-auto">
-                  <div className="min-w-[460px]">
+                  <div className={selectedItems.length > 4 ? 'min-w-[460px]' : 'w-full'}>
                     <div className="text-center font-sans text-sm sm:text-base font-bold text-[#111111] pb-2.5">
                       {tuskerHeaderText}
                     </div>
@@ -394,7 +401,7 @@ export default function PhotographicCollageModal({
             type="button"
             disabled={downloading}
             onClick={onClose}
-            className="px-4 py-2 rounded-lg border border-[#d1d5db] bg-white hover:bg-[#f3f4f6] text-[#444444] font-sans text-xs sm:text-sm font-semibold cursor-pointer transition-colors"
+            className="flex-1 sm:flex-initial sm:min-w-[140px] px-6 py-2.5 sm:py-2 rounded-lg border border-[#d1d5db] bg-white hover:bg-[#f3f4f6] text-[#444444] font-sans text-xs sm:text-sm font-semibold cursor-pointer transition-colors text-center"
           >
             Close
           </button>
@@ -402,7 +409,7 @@ export default function PhotographicCollageModal({
             type="button"
             disabled={selectedItems.length < 2 || downloading}
             onClick={handleDownload}
-            className="px-5 py-2 rounded-lg border-none bg-primary hover:bg-primary-light disabled:opacity-50 disabled:cursor-not-allowed text-white font-sans text-xs sm:text-sm font-semibold cursor-pointer inline-flex items-center gap-2 shadow-xs transition-all"
+            className="flex-1 sm:flex-initial px-5 py-2.5 sm:py-2 rounded-lg border-none bg-primary hover:bg-primary-light disabled:opacity-50 disabled:cursor-not-allowed text-white font-sans text-xs sm:text-sm font-semibold cursor-pointer inline-flex items-center justify-center gap-2 shadow-xs transition-all whitespace-nowrap"
           >
             {downloading ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
             <span>{downloading ? 'Generating Collage…' : 'Download Collage (PNG)'}</span>
