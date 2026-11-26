@@ -13,7 +13,17 @@ import { supabase } from '../lib/supabaseClient';
    the signed-in user is listed in public.admin_users - the same
    check the database's Row Level Security uses.
 ============================================================== */
-let authState = { isAdmin: false, authLoading: true, user: null };
+const ADMIN_HINT_KEY = 'wts_admin_hint';
+
+function readAdminHint() {
+  try {
+    return typeof localStorage !== 'undefined' && localStorage.getItem(ADMIN_HINT_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+let authState = { isAdmin: readAdminHint(), authLoading: true, user: null };
 if (import.meta.env.DEV) {
   try {
     if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('wts_qa_admin') === 'true') {
@@ -29,6 +39,14 @@ const listeners = new Set();
 
 function setAuthState(next) {
   authState = { ...authState, ...next };
+  if (!authState.authLoading) {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        if (authState.isAdmin) localStorage.setItem(ADMIN_HINT_KEY, '1');
+        else localStorage.removeItem(ADMIN_HINT_KEY);
+      }
+    } catch { /* ignore */ }
+  }
   listeners.forEach(l => l());
 }
 
