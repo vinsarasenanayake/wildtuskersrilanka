@@ -103,15 +103,31 @@ function App() {
       );
     } catch { /* ignore */ }
 
-    if (navType === 'PUSH' && !location.state?.returnPhotoId && !location.state?.restoreScroll && !hasGalleryReturn && !location.state?.scrollToMap && !location.hash?.includes('zones-map')) {
+    if (
+      navType === 'PUSH' &&
+      !location.state?.returnPhotoId &&
+      !location.state?.restoreScroll &&
+      !hasGalleryReturn &&
+      !location.state?.scrollToMap &&
+      !location.hash?.includes('zones-map') &&
+      !location.state?.scrollToRiskFramework &&
+      !location.hash?.includes('risk-framework')
+    ) {
       window.scrollTo(0, 0);
     }
   }, [location.pathname, location.state, location.hash, navType]);
 
+  const skipMainFade = Boolean(
+    location.state?.scrollToRiskFramework ||
+    location.state?.scrollToMap ||
+    location.state?.returnPhotoId ||
+    location.state?.restoreScroll
+  );
+
   return (
     <>
       {showNavbar && <Navbar />}
-      <main id="main-content" key={location.pathname} className="animate-fade-in flex-1 flex flex-col w-full max-w-full overflow-x-hidden">
+      <main id="main-content" key={location.pathname} className={`${skipMainFade ? '' : 'animate-fade-in '}flex-1 flex flex-col w-full max-w-full overflow-x-hidden`}>
         <ErrorBoundary>
           <Routes>
             {/* Public Core Routes */}

@@ -551,7 +551,7 @@ export default function ImageUploadBox({
       {/* ── Populated State: Single Photo vs Multi-Photo Grid ── */}
       {hasImages && !isMultiple && (
         <div className="flex flex-col items-center gap-2.5">
-          <div className={`relative ${aspectClass} rounded-[14px] overflow-hidden border border-[#d8e0da] shadow-sm bg-[#eef3f0] group max-w-[280px] w-full mx-auto`}>
+          <div className={`relative ${aspectClass} rounded-[14px] overflow-hidden border border-[#d8e0da] shadow-sm bg-[#eef3f0] group max-w-[200px] sm:max-w-[280px] w-full mx-auto`}>
             <img
               src={imageList[0]}
               alt="Uploaded photo"

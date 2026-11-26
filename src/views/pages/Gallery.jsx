@@ -837,12 +837,12 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
         tabIndex={-1}
         className={`relative bg-white rounded-2xl w-full shadow-2xl border border-[#e8e8e8] focus-visible:outline-none ${successMsg
           ? 'max-w-[420px] p-6 sm:p-7 max-h-[86dvh] overflow-y-auto'
-          : 'max-w-[560px] flex flex-col max-h-[84dvh] sm:max-h-[88dvh] overflow-hidden'
+          : 'max-w-[560px] flex flex-col max-h-[92dvh] sm:max-h-[90dvh] overflow-hidden'
           }`}
         onClick={(e) => e.stopPropagation()}
       >
         {!successMsg && (
-          <div className="flex justify-between items-center px-5 pt-4 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-[#eeeeee] shrink-0 bg-white">
+          <div className="flex justify-between items-center px-4 pt-3.5 pb-3 sm:px-7 sm:pt-6 sm:pb-4 border-b border-[#eeeeee] shrink-0 bg-white">
             <div className="min-w-0 pr-3">
               <h3 id="submit-photo-modal-title" className="font-sans text-[1.1rem] sm:text-[1.25rem] font-bold text-[#111111] m-0 truncate">
                 Submit a Tusker Photo
@@ -1020,7 +1020,7 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
             </form>
 
             {/* Pinned Modal Footer */}
-            <div className="flex items-center justify-end gap-3 px-5 py-3.5 sm:px-7 sm:py-4 border-t border-[#eeeeee] bg-white shrink-0">
+            <div className="flex items-center justify-end gap-3 px-4 py-3 sm:px-7 sm:py-4 border-t border-[#eeeeee] bg-white shrink-0">
               <button
                 type="button"
                 onClick={handleSafeClose}

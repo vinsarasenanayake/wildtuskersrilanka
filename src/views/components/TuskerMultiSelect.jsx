@@ -184,8 +184,19 @@ export default function TuskerMultiSelect({
       .slice(0, 30);
   }, [tuskersList, searchQuery]);
 
+  // Keep the search input & its dropdown comfortably in view inside scrollable modals on mobile
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = setTimeout(() => {
+      if (containerRef.current && window.innerWidth < 768) {
+        containerRef.current.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      }
+    }, 180);
+    return () => clearTimeout(timer);
+  }, [isOpen]);
+
   return (
-    <div className="flex flex-col gap-1.5 w-full" ref={containerRef}>
+    <div className="flex flex-col gap-1.5 w-full scroll-mt-3" ref={containerRef}>
       {label && (
         <label className="text-xs font-bold text-[#555555] uppercase tracking-wider flex items-center justify-between">
           <span>

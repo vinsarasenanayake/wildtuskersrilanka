@@ -208,7 +208,7 @@ export default function FieldNoteForm() {
                   />
                 </div>
 
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-1.5 min-w-0">
                   <label htmlFor="fieldnote-time" className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center gap-1.5">
                     <Clock size={14} className="text-[#888888]" />
                     <span>Time of Sighting<span className="text-[#e53e3e]"> *</span></span>
@@ -222,7 +222,7 @@ export default function FieldNoteForm() {
                   />
                 </div>
 
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-1.5 min-w-0">
                   <label htmlFor="fieldnote-location" className="font-sans text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px] flex items-center gap-1.5">
                     <MapPin size={14} className="text-[#888888]" />
                     <span>Location<span className="text-[#e53e3e]"> *</span></span>
@@ -355,10 +355,10 @@ export default function FieldNoteForm() {
               </div>
 
               {/* Actions */}
-              <div className="flex flex-col-reverse portrait:flex-col-reverse landscape:sm:flex-row items-center justify-end gap-3 mt-4 pt-6 border-t border-[#eeeeee]">
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 mt-4 pt-6 border-t border-[#eeeeee]">
                 <button
                   type="button"
-                  className="w-full portrait:w-full landscape:sm:w-auto bg-none border border-[#d1d5db] text-[#555555] font-sans text-xs sm:text-[0.88rem] font-medium rounded-[10px] px-6 py-2.5 cursor-pointer hover:bg-gray-100 hover:text-[#222222] transition-colors text-center justify-center"
+                  className="w-full sm:w-auto bg-none border border-[#d1d5db] text-[#555555] font-sans text-sm font-medium rounded-[10px] px-6 py-3 sm:py-2.5 cursor-pointer hover:bg-gray-100 hover:text-[#222222] transition-colors text-center justify-center"
                   onClick={() => navigate('/field-notes')}
                 >
                   Cancel
@@ -366,7 +366,7 @@ export default function FieldNoteForm() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full portrait:w-full landscape:sm:w-auto disabled:opacity-60 disabled:cursor-wait bg-primary text-white border-none font-sans text-xs sm:text-[0.88rem] font-semibold rounded-[10px] px-7 py-2.5 cursor-pointer flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(11,37,24,0.15)] hover:bg-primary-light transition-all text-center"
+                  className="w-full sm:w-auto disabled:opacity-60 disabled:cursor-wait bg-primary text-white border-none font-sans text-sm font-semibold rounded-[10px] px-7 py-3 sm:py-2.5 cursor-pointer flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(11,37,24,0.15)] hover:bg-primary-light transition-all text-center"
                 >
                   <Save size={16} />
                   <span>{submitting ? 'Submitting…' : isAdmin ? 'Publish Field Note' : 'Submit for Review'}</span>

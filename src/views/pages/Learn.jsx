@@ -6,7 +6,7 @@
  * (morphological identification guides, ear biometrics, and presentations).
  */
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useLayoutEffect, useCallback } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import { GraduationCap, Binoculars, Layers, ShieldAlert } from 'lucide-react';
 import SpecialObservations from './SpecialObservations';
@@ -52,15 +52,30 @@ export default function Learn() {
     document.title = `Wild Tuskers Sri Lanka | ${titles[activeTab] || 'Research & Educational Hub'}`;
   }, [activeTab]);
 
-  // When arriving from a Tusker Profile ("View Risk Calculation"), scroll directly to the Risk Framework hero card
-  useEffect(() => {
-    if (
-      activeTab === 'risk-framework' &&
-      (location.state?.scrollToRiskFramework || location.hash === '#risk-framework-hero')
-    ) {
-      return scrollElementBelowNavbar('risk-framework-hero', true);
-    }
-  }, [activeTab, location.state, location.hash, scrollElementBelowNavbar]);
+  const isDirectRiskJump = Boolean(
+    activeTab === 'risk-framework' &&
+    (location.state?.scrollToRiskFramework || location.hash === '#risk-framework-hero')
+  );
+
+  // When arriving from a Tusker Profile ("View Risk Calculation"), jump immediately before paint
+  // with zero animation shift so there is no flicker between old and final scroll positions
+  useLayoutEffect(() => {
+    if (!isDirectRiskJump) return;
+    const jumpToRiskHero = () => {
+      const el = document.getElementById('risk-framework-hero');
+      if (!el) return;
+      const headerEl = document.querySelector('header');
+      const navbarHeight = headerEl ? headerEl.getBoundingClientRect().height : (window.innerWidth >= 640 ? 84 : 68);
+      const rect = el.getBoundingClientRect();
+      const currentScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+      const gap = window.innerWidth >= 640 ? 28 : 20;
+      const targetY = Math.max(0, Math.round(currentScrollY + rect.top - navbarHeight - gap));
+      window.scrollTo({ top: targetY, behavior: 'instant' });
+    };
+    jumpToRiskHero();
+    const raf = requestAnimationFrame(jumpToRiskHero);
+    return () => cancelAnimationFrame(raf);
+  }, [isDirectRiskJump]);
 
   const handleTabChange = (tabKey) => {
     setSearchParams({ tab: tabKey }, { replace: true });
@@ -147,7 +162,7 @@ export default function Learn() {
         <div className={activeTab === 'zones' ? 'w-full block animate-fade-in' : 'hidden'}>
           {activeTab === 'zones' && <PublicConservationZones isActive={true} />}
         </div>
-        <div className={activeTab === 'risk-framework' ? 'w-full block animate-fade-in' : 'hidden'}>
+        <div className={activeTab === 'risk-framework' ? `w-full block ${isDirectRiskJump ? '' : 'animate-fade-in'}` : 'hidden'}>
           <RiskFrameworkView />
         </div>
 

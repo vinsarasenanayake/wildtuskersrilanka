@@ -270,7 +270,7 @@ export default function PublicConservationZones({ isActive = true }) {
       <div
         id="zones-map-container"
         ref={containerBoxRef}
-        className="w-full h-[540px] sm:h-[560px] md:h-[580px] lg:h-[600px] max-h-[calc(100dvh-96px)] min-h-[440px] rounded-2xl overflow-hidden border border-[#e5e7eb] shadow-[0_8px_30px_rgba(0,0,0,0.06)] flex flex-col bg-white scroll-mt-24"
+        className="w-full h-[calc(100dvh-92px)] min-h-[580px] landscape:h-[calc(100dvh-84px)] landscape:min-h-[320px] sm:h-[560px] md:h-[580px] lg:h-[600px] sm:min-h-[440px] rounded-2xl overflow-hidden border border-[#e5e7eb] shadow-[0_8px_30px_rgba(0,0,0,0.06)] flex flex-col bg-white scroll-mt-24"
       >
         
         {/* Mobile View Switcher */}
