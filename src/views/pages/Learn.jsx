@@ -6,7 +6,7 @@
  * (morphological identification guides, ear biometrics, and presentations).
  */
 
-import React, { useEffect, useLayoutEffect, useCallback } from 'react';
+import React, { useEffect, useLayoutEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import { GraduationCap, Binoculars, Layers, ShieldAlert } from 'lucide-react';
 import SpecialObservations from './SpecialObservations';
@@ -80,8 +80,18 @@ export default function Learn() {
     return () => cancelAnimationFrame(raf);
   }, [isDirectRiskJump]);
 
+  const pendingTabScrollRef = useRef(null);
+
+  // Scroll smoothly to the newly activated tab's first card AFTER React commits the activeTab DOM change
+  // so hidden tabs (display: none -> block) already have real layout geometry on the very first click
+  useEffect(() => {
+    const pending = pendingTabScrollRef.current;
+    if (!pending || pending.tabKey !== activeTab) return;
+    pendingTabScrollRef.current = null;
+    return scrollElementBelowNavbar(pending.targetId, true, pending.gap);
+  }, [activeTab, scrollElementBelowNavbar]);
+
   const handleTabChange = (tabKey) => {
-    setSearchParams({ tab: tabKey }, { replace: true });
     const tabTargetIds = {
       observations: 'tab-content-observations',
       identification: 'tab-content-identification',
@@ -89,14 +99,22 @@ export default function Learn() {
       'risk-framework': 'risk-framework-hero',
     };
     const targetId = tabTargetIds[tabKey];
-    if (targetId) {
-      const gap = tabKey === 'zones' ? (window.innerWidth >= 640 ? 16 : 20) : (window.innerWidth >= 640 ? 28 : 20);
+    const gap = tabKey === 'zones' ? (window.innerWidth >= 640 ? 24 : 20) : (window.innerWidth >= 640 ? 28 : 20);
+
+    if (tabKey === activeTab && targetId) {
+      // Clicking the already-active tab (e.g. Special Observations from top of page) scrolls right away
       scrollElementBelowNavbar(targetId, true, gap);
+      return;
     }
+
+    if (targetId) {
+      pendingTabScrollRef.current = { tabKey, targetId, gap };
+    }
+    setSearchParams({ tab: tabKey }, { replace: true });
   };
 
   return (
-    <div className={`bg-[#f7f8fa] min-h-screen pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2.5rem)] ${activeTab === 'zones' ? 'pb-4 sm:pb-8' : 'pb-24 sm:pb-32'} flex-1 flex flex-col font-sans w-full max-w-full overflow-x-hidden`}>
+    <div className={`bg-[#f7f8fa] min-h-screen pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2.5rem)] ${activeTab === 'zones' ? 'pb-5 sm:pb-6' : 'pb-24 sm:pb-32'} flex-1 flex flex-col font-sans w-full max-w-full overflow-x-hidden`}>
       <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-6 sm:gap-8 min-w-0">
 
         {/* ── Page Header ── */}

@@ -652,18 +652,21 @@ export default function OurProjects() {
         {/* Past Events Section */}
         <section className={`flex flex-col gap-4 ${(isAdmin || upcomingEvents.length > 0) ? 'pt-4 sm:pt-6 border-t border-[#e5e7eb]' : ''}`}>
           <div className="flex items-center justify-between flex-wrap gap-3">
-            <h2 className="font-sans text-base sm:text-[1.2rem] font-bold text-[#111111] m-0 flex items-center gap-2">
+            <h2 className="font-sans text-base sm:text-[1.2rem] font-bold text-[#111111] m-0 flex items-center gap-2 shrink-0">
               <span>Past Events & Expeditions</span>
               {pastEvents.length > 0 && (
                 <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900">
-                  {pastEvents.length}
+                  {filteredPastEvents.length}
                 </span>
               )}
             </h2>
 
-            {/* Year Filter Pills */}
+            {/* Year Filter Pills: max 5 pills visible (All Years + 4 years), others scroll horizontally on one line */}
             {availableYears.length > 0 && (
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <div
+                className="flex items-center flex-nowrap gap-1.5 max-w-full sm:max-w-[396px] overflow-x-auto pb-1 wts-slim-scrollbar"
+                style={{ WebkitOverflowScrolling: 'touch' }}
+              >
                 <button
                   type="button"
                   onClick={() => setSelectedYear('ALL')}

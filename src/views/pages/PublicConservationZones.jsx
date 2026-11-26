@@ -62,7 +62,7 @@ export default function PublicConservationZones({ isActive = true }) {
     const containerTop = currentScrollY + rect.top;
     const headerEl = document.querySelector('header');
     const navbarHeight = headerEl ? headerEl.getBoundingClientRect().height : (window.innerWidth >= 640 ? 84 : 68);
-    const topGap = window.innerWidth >= 640 ? 16 : 20;
+    const topGap = window.innerWidth >= 640 ? 24 : 20;
 
     const targetY = Math.max(0, Math.round(containerTop - navbarHeight - topGap));
     if (Math.abs(currentScrollY - targetY) > 2) {
@@ -246,11 +246,11 @@ export default function PublicConservationZones({ isActive = true }) {
       }
     });
 
-    // If a zone is selected, fit bounds to that zone; otherwise center all Sri Lanka
+    // If a zone is selected, smoothly zoom to that zone; otherwise smoothly center all Sri Lanka
     if (selectedZone && WTS_CONSERVATION_ZONES[selectedZone]?.bbox) {
-      map.fitBounds(WTS_CONSERVATION_ZONES[selectedZone].bbox, { padding: 45 });
+      map.fitBounds(WTS_CONSERVATION_ZONES[selectedZone].bbox, { padding: 45, animate: true, duration: 0.85 });
     } else {
-      map.setView(SRI_LANKA_CENTER, 7);
+      map.setView(SRI_LANKA_CENTER, 7, { animate: true, duration: 0.85 });
     }
   }, [mapReady, selectedZone, handleSelectZone]);
 
@@ -259,18 +259,18 @@ export default function PublicConservationZones({ isActive = true }) {
     setQuery('');
     setStatusFilter('');
     if (mapRef.current) {
-      mapRef.current.setView(SRI_LANKA_CENTER, 7);
+      mapRef.current.setView(SRI_LANKA_CENTER, 7, { animate: true, duration: 0.85 });
     }
   };
 
   return (
-    <div className="w-full flex flex-col gap-4 font-sans mb-3 sm:mb-6">
+    <div className="w-full flex flex-col gap-4 font-sans mb-0">
       
       {/* ── Main Map + Directory Container ── */}
       <div
         id="zones-map-container"
         ref={containerBoxRef}
-        className="w-full h-[calc(100dvh-114px)] min-h-[540px] landscape:h-[calc(100dvh-84px)] landscape:min-h-[320px] sm:h-[560px] md:h-[580px] lg:h-[600px] sm:min-h-[440px] rounded-2xl overflow-hidden border border-[#e5e7eb] shadow-[0_8px_30px_rgba(0,0,0,0.06)] flex flex-col bg-white scroll-mt-24"
+        className="w-full h-[calc(100dvh-116px)] min-h-[520px] landscape:h-[calc(100dvh-108px)] landscape:min-h-[320px] sm:h-[calc(100dvh-144px)] sm:min-h-[440px] rounded-2xl overflow-hidden border border-[#e5e7eb] shadow-[0_8px_30px_rgba(0,0,0,0.06)] flex flex-col bg-white scroll-mt-24"
       >
         
         {/* Mobile View Switcher */}

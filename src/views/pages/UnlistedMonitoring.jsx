@@ -188,15 +188,23 @@ export default function UnlistedMonitoring() {
           </p>
         </div>
 
-        {/* Admin Add Button */}
-        <div className="w-full sm:w-auto flex justify-start sm:justify-end shrink-0 landscape:mr-4 sm:landscape:mr-6 min-[1280px]:landscape:mr-0">
+        {/* Admin Add & Registry Navigation Buttons */}
+        <div className="flex max-sm:flex-row sm:flex-row items-center gap-2 sm:gap-2.5 w-full sm:w-auto shrink-0 justify-center sm:justify-end">
           <button
+            type="button"
             onClick={() => setShowAddModal(true)}
-            className="w-full sm:w-auto justify-center bg-accent text-primary font-semibold text-[0.78rem] sm:text-[0.85rem] px-4 py-2 sm:py-2.5 rounded-full inline-flex items-center gap-1.5 shadow-sm hover:shadow-md transition-all duration-200 border-none cursor-pointer"
+            className="max-sm:flex-1 sm:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full bg-accent hover:bg-accent-hover text-primary font-semibold text-[0.78rem] sm:text-[0.85rem] shadow-sm hover:shadow-md transition-all duration-200 border-none cursor-pointer shrink-0 whitespace-nowrap text-center"
           >
             <PlusCircle size={15} />
             <span>Add Unlisted Tusker</span>
           </button>
+          <Link
+            to="/tuskers"
+            className="max-sm:flex-1 sm:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full bg-[#faf5ec] hover:bg-[#f3ebd9] text-primary border border-accent/40 font-semibold text-[0.78rem] sm:text-[0.85rem] shadow-sm hover:shadow-md transition-all duration-200 no-underline shrink-0 whitespace-nowrap text-center"
+          >
+            <Layers size={15} className="text-accent" />
+            <span>Wild Tuskers List</span>
+          </Link>
         </div>
       </div>
 

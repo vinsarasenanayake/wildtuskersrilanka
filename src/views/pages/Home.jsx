@@ -5,7 +5,7 @@
  * and quick-access navigation pillars.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { SITE_ASSETS } from '../../constants/siteAssets';
 import hero960 from '../../assets/images/hero-bg-960.webp';
@@ -27,21 +27,12 @@ export default function Home() {
     return null;
   });
 
-  useEffect(() => {
-    document.title = 'Wild Tuskers Sri Lanka | Home';
-    let active = true;
-
-    // Harmonize mobile browser status bar tint with the dark hero backdrop
-    const metaTheme = document.querySelector('meta[name="theme-color"]');
-    const originalTheme = metaTheme?.getAttribute('content') || '#0b2518';
-    if (metaTheme) {
-      metaTheme.setAttribute('content', '#0b120e');
-    }
-
-    // Lock document scroll on Home in portrait to completely prevent any bounce/scrolling
+  // Lock document scroll synchronously before paint on Home (except ultra-short landscape phones)
+  // so no 4px fade-in scrollbar flash or white bar appears on desktop/tablet/mobile
+  useLayoutEffect(() => {
     const updateScrollLock = () => {
-      const isPortrait = window.matchMedia('(orientation: portrait)').matches;
-      if (isPortrait) {
+      const needsScroll = window.innerHeight < 500;
+      if (!needsScroll) {
         document.body.style.overflow = 'hidden';
         document.documentElement.style.overflow = 'hidden';
         document.body.style.overscrollBehavior = 'none';
@@ -54,6 +45,25 @@ export default function Home() {
     updateScrollLock();
     window.addEventListener('resize', updateScrollLock);
     window.addEventListener('orientationchange', updateScrollLock);
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      document.body.style.overscrollBehavior = '';
+      window.removeEventListener('resize', updateScrollLock);
+      window.removeEventListener('orientationchange', updateScrollLock);
+    };
+  }, []);
+
+  useEffect(() => {
+    document.title = 'Wild Tuskers Sri Lanka | Home';
+    let active = true;
+
+    // Harmonize mobile browser status bar tint with the dark hero backdrop
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    const originalTheme = metaTheme?.getAttribute('content') || '#0b2518';
+    if (metaTheme) {
+      metaTheme.setAttribute('content', '#0b120e');
+    }
 
     getTuskers()
       .then((tuskers) => {
@@ -77,16 +87,11 @@ export default function Home() {
       if (metaTheme) {
         metaTheme.setAttribute('content', originalTheme);
       }
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-      document.body.style.overscrollBehavior = '';
-      window.removeEventListener('resize', updateScrollLock);
-      window.removeEventListener('orientationchange', updateScrollLock);
     };
   }, []);
 
   return (
-    <div className="relative h-[100dvh] max-h-[100dvh] text-white bg-[#0b120e] overflow-hidden landscape:max-h-[500px]:overflow-y-auto flex flex-col justify-between select-none portrait:overscroll-none">
+    <div className="relative h-[100dvh] max-h-[100dvh] text-white bg-[#0b120e] overflow-hidden [@media(max-height:500px)]:overflow-y-auto flex flex-col justify-between select-none overscroll-none">
       {/* Full-screen fixed background image eliminating any white bar or gap */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <picture className="absolute inset-0 w-full h-full">

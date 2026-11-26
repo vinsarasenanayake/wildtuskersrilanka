@@ -412,10 +412,21 @@ function createLeafletMap(L, container, { center, zoom, gestureHandling: _gestur
 
   return {
     engine: 'leaflet',
-    setView(pos, z, { animate = true } = {}) { map.setView(pos, z, { animate }); },
-    fitBounds(points, { padding = 50, maxZoom = 13, animate = false } = {}) {
+    setView(pos, z, { animate = true, duration = 0.75 } = {}) {
+      if (animate && typeof map.flyTo === 'function') {
+        map.flyTo(pos, z, { duration, easeLinearity: 0.25 });
+      } else {
+        map.setView(pos, z, { animate });
+      }
+    },
+    fitBounds(points, { padding = 50, maxZoom = 13, animate = false, duration = 0.85 } = {}) {
       map.invalidateSize();
-      map.fitBounds(L.latLngBounds(points), { padding: [padding, padding], maxZoom, animate });
+      const bounds = L.latLngBounds(points);
+      if (animate && typeof map.flyToBounds === 'function') {
+        map.flyToBounds(bounds, { padding: [padding, padding], maxZoom, duration, easeLinearity: 0.25 });
+      } else {
+        map.fitBounds(bounds, { padding: [padding, padding], maxZoom, animate });
+      }
     },
     addMarker(pos, { html, popup, onClick, height = 42, centered = false } = {}) {
       const lat = Array.isArray(pos) ? pos[0] : (pos?.lat ?? 0);
