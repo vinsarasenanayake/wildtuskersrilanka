@@ -24,6 +24,7 @@ export function useGallery(initialActivePhoto = null) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [photos, setPhotos] = useState(() => getCachedGalleryPhotos(false) || []);
   const [loading, setLoading] = useState(() => !getCachedGalleryPhotos(false));
+  const [adminPhotosLoaded, setAdminPhotosLoaded] = useState(false);
   const [filter, setFilterState] = useState(() => (searchParams.get('tab') === 'pending' ? 'PENDING' : 'ALL')); // 'ALL' or 'PENDING'
   const [searchQuery, setSearchQuery] = useState('');
   const [activePhoto, setActivePhoto] = useState(initialActivePhoto); // Instant frame 0 restoration
@@ -53,6 +54,7 @@ export function useGallery(initialActivePhoto = null) {
     try {
       const data = await getGalleryPhotos({ admin: isAdmin, force: true });
       setPhotos(data);
+      if (isAdmin) setAdminPhotosLoaded(true);
     } catch (err) {
       console.error(err);
     } finally {
@@ -73,7 +75,10 @@ export function useGallery(initialActivePhoto = null) {
   }, [photos]);
 
   const filteredPhotos = useMemo(() => {
-    const list = isAdmin && filter === 'PENDING' ? pendingPhotos : approvedPhotos;
+    const list =
+      filter === 'PENDING'
+        ? (isAdmin && !authLoading && adminPhotosLoaded ? pendingPhotos : [])
+        : approvedPhotos;
     if (!searchQuery.trim()) return list;
     const q = searchQuery.toLowerCase().trim();
     return list.filter(
@@ -83,7 +88,7 @@ export function useGallery(initialActivePhoto = null) {
         (p.location && p.location.toLowerCase().includes(q)) ||
         (p.photographer && p.photographer.toLowerCase().includes(q))
     );
-  }, [isAdmin, filter, approvedPhotos, pendingPhotos, searchQuery]);
+  }, [isAdmin, authLoading, adminPhotosLoaded, filter, approvedPhotos, pendingPhotos, searchQuery]);
 
   const handleApprove = async (id) => {
     await approveGalleryPhoto(id);
@@ -118,7 +123,7 @@ export function useGallery(initialActivePhoto = null) {
     photos: filteredPhotos,
     allApproved: approvedPhotos,
     pendingCount: pendingPhotos.length,
-    loading,
+    loading: loading || (filter === 'PENDING' && (authLoading || (isAdmin && !adminPhotosLoaded))),
     filter,
     setFilter,
     searchQuery,

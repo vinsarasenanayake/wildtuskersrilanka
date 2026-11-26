@@ -24,11 +24,13 @@ import { friendlyError } from '../utils/friendlyError';
 export function useFieldNotesFeed() {
   const [allNotes, setAllNotes] = useState(() => getCachedFieldNotes(false) || []);
   const [loading, setLoading] = useState(() => !getCachedFieldNotes(false));
+  const [adminNotesLoaded, setAdminNotesLoaded] = useState(false);
   const { isAdmin, authLoading } = useAuth();
 
   const reloadNotes = useCallback(async () => {
     try {
       setAllNotes(await getFieldNotes({ admin: isAdmin }));
+      if (isAdmin) setAdminNotesLoaded(true);
     } catch (err) {
       console.error(err);
     } finally {
@@ -83,6 +85,7 @@ export function useFieldNotesFeed() {
 
   return {
     loading,
+    pendingLoading: authLoading || (isAdmin && !adminNotesLoaded),
     notes: approvedNotes,
     approvedNotes,
     pendingNotes,

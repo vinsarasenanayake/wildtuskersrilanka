@@ -30,6 +30,7 @@ export default function FieldNotes() {
     availableYears,
     pendingNotes,
     loading,
+    pendingLoading,
     isAdmin,
     authLoading,
     approveNote,
@@ -242,7 +243,11 @@ export default function FieldNotes() {
               </span>
             </div>
 
-            {pendingNotes.length === 0 ? (
+            {pendingLoading ? (
+              <div className="py-16 text-center text-[#888888] font-sans text-sm">
+                Loading pending submissions…
+              </div>
+            ) : pendingNotes.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 sm:py-16 px-4 gap-3 text-center">
                 <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-1">
                   <CheckCircle2 size={32} />
