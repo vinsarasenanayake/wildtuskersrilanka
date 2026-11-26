@@ -9,7 +9,7 @@
  * last-seen location pins, precise GPS coordinates, and specific sighting spot names.
  */
 
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import {
   Search,
@@ -48,34 +48,26 @@ export default function PublicConservationZones({ isActive = true }) {
   const containerBoxRef = useRef(null);
   const [mapReady, setMapReady] = useState(false);
 
-  // Smoothly scrolls to the map container so it is in full view without showing half-cut tabs above
-  const scrollToMapContainer = useCallback((smooth = true) => {
-    const doScroll = (useSmooth) => {
-      if (!containerBoxRef.current) return;
-      const rect = containerBoxRef.current.getBoundingClientRect();
-      const currentScrollY = window.scrollY || document.documentElement.scrollTop || 0;
-      const containerTop = currentScrollY + rect.top;
-      const headerEl = document.querySelector('header');
-      const navbarHeight = headerEl ? headerEl.getBoundingClientRect().height : (window.innerWidth >= 640 ? 84 : 68);
+  const shouldAutoJump = Boolean(
+    searchParams.get('zone') ||
+    location.hash?.includes('zones-map') ||
+    location.state?.scrollToMap
+  );
 
-      // Position the top of the map container 6px below the fixed navbar so tab pills above are cleanly out of view
-      const targetY = Math.max(0, Math.round(containerTop - navbarHeight - 6));
+  // Instant scroll to map container with balanced top/bottom spacing and zero flicker
+  const jumpToMapContainer = useCallback(() => {
+    if (!containerBoxRef.current) return;
+    const rect = containerBoxRef.current.getBoundingClientRect();
+    const currentScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    const containerTop = currentScrollY + rect.top;
+    const headerEl = document.querySelector('header');
+    const navbarHeight = headerEl ? headerEl.getBoundingClientRect().height : (window.innerWidth >= 640 ? 84 : 68);
+    const topGap = window.innerWidth >= 640 ? 16 : 20;
 
-      if (Math.abs(currentScrollY - targetY) > 4) {
-        window.scrollTo({
-          top: targetY,
-          behavior: useSmooth ? 'smooth' : 'instant',
-        });
-      }
-    };
-
-    // First scroll after initial paint, then verify once page fade-in/layout finishes
-    const t1 = setTimeout(() => doScroll(smooth), 120);
-    const t2 = setTimeout(() => doScroll(false), 420);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
+    const targetY = Math.max(0, Math.round(containerTop - navbarHeight - topGap));
+    if (Math.abs(currentScrollY - targetY) > 2) {
+      window.scrollTo({ top: targetY, behavior: 'instant' });
+    }
   }, []);
 
   // Check URL query param for initial zone selection (e.g. from Tusker Profile)
@@ -90,18 +82,13 @@ export default function PublicConservationZones({ isActive = true }) {
     }
   }, [searchParams]);
 
-  // Auto-scroll so map container is in full view when arriving via link or zone selection
-  useEffect(() => {
-    const shouldScroll = Boolean(
-      searchParams.get('zone') ||
-      location.hash?.includes('zones-map') ||
-      location.state?.scrollToMap
-    );
-
-    if (shouldScroll && isActive) {
-      return scrollToMapContainer(true);
-    }
-  }, [searchParams, location.hash, location.state, isActive, scrollToMapContainer]);
+  // Jump immediately before first paint when arriving from a Tusker Profile or direct link
+  useLayoutEffect(() => {
+    if (!shouldAutoJump || !isActive) return;
+    jumpToMapContainer();
+    const raf = requestAnimationFrame(jumpToMapContainer);
+    return () => cancelAnimationFrame(raf);
+  }, [shouldAutoJump, isActive, jumpToMapContainer]);
 
   useEffect(() => {
     getTuskers()
@@ -264,13 +251,13 @@ export default function PublicConservationZones({ isActive = true }) {
   };
 
   return (
-    <div className="w-full flex flex-col gap-4 animate-fade-in font-sans mb-3 sm:mb-6">
+    <div className={`w-full flex flex-col gap-4 ${shouldAutoJump ? '' : 'animate-fade-in '}font-sans mb-3 sm:mb-6`}>
       
       {/* ── Main Map + Directory Container ── */}
       <div
         id="zones-map-container"
         ref={containerBoxRef}
-        className="w-full h-[calc(100dvh-92px)] min-h-[580px] landscape:h-[calc(100dvh-84px)] landscape:min-h-[320px] sm:h-[560px] md:h-[580px] lg:h-[600px] sm:min-h-[440px] rounded-2xl overflow-hidden border border-[#e5e7eb] shadow-[0_8px_30px_rgba(0,0,0,0.06)] flex flex-col bg-white scroll-mt-24"
+        className="w-full h-[calc(100dvh-114px)] min-h-[540px] landscape:h-[calc(100dvh-84px)] landscape:min-h-[320px] sm:h-[560px] md:h-[580px] lg:h-[600px] sm:min-h-[440px] rounded-2xl overflow-hidden border border-[#e5e7eb] shadow-[0_8px_30px_rgba(0,0,0,0.06)] flex flex-col bg-white scroll-mt-24"
       >
         
         {/* Mobile View Switcher */}

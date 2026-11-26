@@ -17,12 +17,14 @@ import { useEffect, useRef } from 'react';
 // and iOS Safari cannot touch-scroll the blurred background behind an open modal.
 let activeScrollLocks = 0;
 let savedScrollY = 0;
+let savedPathname = '';
 let savedStyles = null;
 
 function acquireScrollLock() {
   if (typeof document === 'undefined' || typeof window === 'undefined') return;
   if (activeScrollLocks === 0) {
     savedScrollY = window.scrollY || window.pageYOffset || 0;
+    savedPathname = window.location.pathname;
     const html = document.documentElement;
     const body = document.body;
     savedStyles = {
@@ -60,7 +62,9 @@ function releaseScrollLock() {
     body.style.right = savedStyles.bodyRight || '';
     body.style.width = savedStyles.bodyWidth || '';
     savedStyles = null;
-    window.scrollTo(0, savedScrollY);
+    if (window.location.pathname === savedPathname) {
+      window.scrollTo(0, savedScrollY);
+    }
   }
 }
 

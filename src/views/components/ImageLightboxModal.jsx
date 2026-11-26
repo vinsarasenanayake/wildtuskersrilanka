@@ -596,8 +596,10 @@ export default function ImageLightboxModal({
                 to={`/tuskers/${t.id.toLowerCase()}`}
                 onClick={() => {
                   try {
+                    const lockedTop = Math.abs(parseInt(document.body.style.top || '0', 10)) || 0;
+                    const currentY = window.scrollY || lockedTop || 0;
                     sessionStorage.setItem('wts_last_gallery_photo_id', String(photo.id));
-                    sessionStorage.setItem('wts_last_gallery_scroll', String(window.scrollY));
+                    sessionStorage.setItem('wts_last_gallery_scroll', String(currentY));
                   } catch { /* ignore */ }
                 }}
                 state={{ from: fromPath || '/gallery', returnPhotoId: photo.id }}

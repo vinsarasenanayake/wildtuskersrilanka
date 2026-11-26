@@ -295,19 +295,19 @@ export default function WildTuskersList() {
     <div className="w-full max-w-[1280px] mx-auto pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2.5rem)] pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-white">
 
       {/* ── Page Header ── */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-5 mb-8 sm:mb-10 pb-6 border-b border-[#eeeeee]">
-        <div className="text-center sm:text-left w-full sm:w-auto shrink-0">
-          <h1 className="font-sans text-2xl sm:text-3xl md:text-[2.25rem] font-bold text-[#111111] mb-1.5 whitespace-nowrap text-center sm:text-left">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-5 mb-8 sm:mb-10 pb-6 border-b border-[#eeeeee]">
+        <div className="text-center md:text-left w-full md:w-auto md:flex-1 min-w-0">
+          <h1 className="font-sans text-2xl sm:text-3xl md:text-[2.1rem] lg:text-[2.25rem] font-bold text-[#111111] mb-1.5 text-center md:text-left">
             Wild Tuskers List
           </h1>
-          <p className="font-sans text-[0.84rem] sm:text-[0.92rem] md:text-[0.98rem] text-[#777777] m-0 text-center sm:text-left">
+          <p className="font-sans text-[0.84rem] sm:text-[0.92rem] md:text-[0.96rem] text-[#777777] m-0 text-center md:text-left">
             {tuskers.length} identified tuskers documented by the WTS team
           </p>
         </div>
 
         {/* Compact Frosted Glass Population Counts Box (Public Only) */}
         {!isAdmin && (
-          <div className="w-full sm:w-auto shrink-0 sm:ml-auto">
+          <div className="w-full md:w-auto max-w-full shrink-0 md:ml-auto">
             <div className="rounded-[14px] bg-white/70 backdrop-blur-md border border-[#e2e2e4] shadow-[0_4px_16px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,0.9)] overflow-hidden">
               <div className="grid grid-cols-4 divide-x divide-[#e8e8e8]">
                 {/* 1. Total Recorded */}
@@ -315,15 +315,15 @@ export default function WildTuskersList() {
                   type="button"
                   onClick={() => setStatusFilter('ALL')}
                   title="Filter by All Recorded Tuskers"
-                  className={`flex flex-col items-center justify-center text-center py-1.5 sm:py-2 px-2.5 sm:px-3.5 min-w-[68px] sm:min-w-[80px] md:min-w-[86px] border-none transition-all cursor-pointer ${statusFilter === 'ALL'
+                  className={`flex flex-col items-center justify-center text-center py-1.5 sm:py-2 px-1.5 sm:px-3 lg:px-3.5 min-w-0 border-none transition-all cursor-pointer ${statusFilter === 'ALL'
                     ? 'bg-black/[0.05]'
                     : 'bg-transparent hover:bg-black/[0.025]'
                     }`}
                 >
-                  <span className="font-sans text-[1.1rem] sm:text-[1.22rem] font-bold text-[#111111] leading-none tracking-tight">
+                  <span className="font-sans text-[1.05rem] sm:text-[1.2rem] font-bold text-[#111111] leading-none tracking-tight">
                     {overallCounts.total}
                   </span>
-                  <span className="font-sans text-[0.54rem] sm:text-[0.6rem] font-semibold text-[#111111] uppercase tracking-[0.4px] mt-1 whitespace-nowrap">
+                  <span className="font-sans text-[0.5rem] sm:text-[0.58rem] font-semibold text-[#111111] uppercase tracking-[0.3px] mt-1 whitespace-nowrap">
                     Total Recorded
                   </span>
                 </button>
@@ -333,15 +333,15 @@ export default function WildTuskersList() {
                   type="button"
                   onClick={() => setStatusFilter('Alive')}
                   title="Filter by Living Tuskers"
-                  className={`flex flex-col items-center justify-center text-center py-1.5 sm:py-2 px-2.5 sm:px-3.5 min-w-[68px] sm:min-w-[80px] md:min-w-[86px] border-none transition-all cursor-pointer ${statusFilter === 'Alive'
+                  className={`flex flex-col items-center justify-center text-center py-1.5 sm:py-2 px-1.5 sm:px-3 lg:px-3.5 min-w-0 border-none transition-all cursor-pointer ${statusFilter === 'Alive'
                     ? 'bg-black/[0.05]'
                     : 'bg-transparent hover:bg-black/[0.025]'
                     }`}
                 >
-                  <span className="font-sans text-[1.1rem] sm:text-[1.22rem] font-bold text-[#111111] leading-none tracking-tight">
+                  <span className="font-sans text-[1.05rem] sm:text-[1.2rem] font-bold text-[#111111] leading-none tracking-tight">
                     {overallCounts.living}
                   </span>
-                  <span className="font-sans text-[0.54rem] sm:text-[0.6rem] font-semibold text-[#111111] uppercase tracking-[0.4px] mt-1 whitespace-nowrap">
+                  <span className="font-sans text-[0.5rem] sm:text-[0.58rem] font-semibold text-[#111111] uppercase tracking-[0.3px] mt-1 whitespace-nowrap">
                     Living
                   </span>
                 </button>
@@ -351,15 +351,15 @@ export default function WildTuskersList() {
                   type="button"
                   onClick={() => setStatusFilter('No Recent Record')}
                   title="Filter by No Recent Record"
-                  className={`flex flex-col items-center justify-center text-center py-1.5 sm:py-2 px-2.5 sm:px-3.5 min-w-[68px] sm:min-w-[80px] md:min-w-[86px] border-none transition-all cursor-pointer ${statusFilter === 'No Recent Record'
+                  className={`flex flex-col items-center justify-center text-center py-1.5 sm:py-2 px-1.5 sm:px-3 lg:px-3.5 min-w-0 border-none transition-all cursor-pointer ${statusFilter === 'No Recent Record'
                     ? 'bg-black/[0.05]'
                     : 'bg-transparent hover:bg-black/[0.025]'
                     }`}
                 >
-                  <span className="font-sans text-[1.1rem] sm:text-[1.22rem] font-bold text-[#111111] leading-none tracking-tight">
+                  <span className="font-sans text-[1.05rem] sm:text-[1.2rem] font-bold text-[#111111] leading-none tracking-tight">
                     {overallCounts.missing}
                   </span>
-                  <span className="font-sans text-[0.54rem] sm:text-[0.6rem] font-semibold text-[#111111] uppercase tracking-[0.4px] mt-1 whitespace-nowrap">
+                  <span className="font-sans text-[0.5rem] sm:text-[0.58rem] font-semibold text-[#111111] uppercase tracking-[0.3px] mt-1 whitespace-nowrap">
                     No Recent Record
                   </span>
                 </button>
@@ -369,15 +369,15 @@ export default function WildTuskersList() {
                   type="button"
                   onClick={() => setStatusFilter('Deceased')}
                   title="Filter by Deceased Tuskers"
-                  className={`flex flex-col items-center justify-center text-center py-1.5 sm:py-2 px-2.5 sm:px-3.5 min-w-[68px] sm:min-w-[80px] md:min-w-[86px] border-none transition-all cursor-pointer ${statusFilter === 'Deceased'
+                  className={`flex flex-col items-center justify-center text-center py-1.5 sm:py-2 px-1.5 sm:px-3 lg:px-3.5 min-w-0 border-none transition-all cursor-pointer ${statusFilter === 'Deceased'
                     ? 'bg-black/[0.05]'
                     : 'bg-transparent hover:bg-black/[0.025]'
                     }`}
                 >
-                  <span className="font-sans text-[1.1rem] sm:text-[1.22rem] font-bold text-[#111111] leading-none tracking-tight">
+                  <span className="font-sans text-[1.05rem] sm:text-[1.2rem] font-bold text-[#111111] leading-none tracking-tight">
                     {overallCounts.deceased}
                   </span>
-                  <span className="font-sans text-[0.54rem] sm:text-[0.6rem] font-semibold text-[#111111] uppercase tracking-[0.4px] mt-1 whitespace-nowrap">
+                  <span className="font-sans text-[0.5rem] sm:text-[0.58rem] font-semibold text-[#111111] uppercase tracking-[0.3px] mt-1 whitespace-nowrap">
                     Deceased
                   </span>
                 </button>

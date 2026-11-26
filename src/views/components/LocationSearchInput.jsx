@@ -58,6 +58,8 @@ export default function LocationSearchInput({
   const [modalSuggestions, setModalSuggestions] = useState([]);
   const [pendingPickedLocation, setPendingPickedLocation] = useState(null);
   const [isReverseGeocoding, setIsReverseGeocoding] = useState(false);
+  const [isLocatingGps, setIsLocatingGps] = useState(false);
+  const [gpsError, setGpsError] = useState('');
 
   const containerRef = useRef(null);
   const inputRef = useRef(null);
@@ -519,6 +521,60 @@ export default function LocationSearchInput({
     setModalSearch('');
   };
 
+  // Retrieve device GPS location (prompts browser/OS to enable Location Services if needed)
+  const handleUseCurrentLocation = () => {
+    setGpsError('');
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      setGpsError('Location services are not supported by this browser.');
+      return;
+    }
+
+    setIsLocatingGps(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setIsLocatingGps(false);
+
+        const map = modalMapRef.current;
+        if (map) {
+          map.setView([lat, lng], 14);
+        }
+
+        const tempName = `GPS (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+        placePickPin(lat, lng, 'Current GPS location');
+        setPendingPickedLocation({ name: tempName, lat, lng });
+        setIsReverseGeocoding(true);
+
+        try {
+          const geo = await reverseGeocodeCoordinatesAsync(lat, lng);
+          if (modalMapRef.current) {
+            const finalName = (geo && geo.name) || tempName;
+            setPendingPickedLocation({ name: finalName, lat, lng, region: geo?.region });
+            placePickPin(lat, lng, finalName);
+          }
+        } catch {
+          // Keep coordinates if reverse geocoding fails
+        } finally {
+          setIsReverseGeocoding(false);
+        }
+      },
+      (err) => {
+        setIsLocatingGps(false);
+        if (err?.code === 1) {
+          setGpsError('Location access was denied. Please turn on Location Services and allow permission in your browser settings.');
+        } else if (err?.code === 2) {
+          setGpsError('Device location is unavailable. Please turn on GPS / Location Services and try again.');
+        } else if (err?.code === 3) {
+          setGpsError('Location request timed out. Please move to an open area or pick a pin on the map.');
+        } else {
+          setGpsError('Could not retrieve your current location. You can search or tap the map instead.');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 }
+    );
+  };
+
   // Base input style fallback
   const baseInputStyle = className
     ? `w-full min-w-0 max-w-full box-border ${className}`
@@ -733,37 +789,71 @@ export default function LocationSearchInput({
               </button>
             </div>
 
-            {/* Search (results float over the map, nothing scrolls the dialog) */}
-            <div className="relative z-[1200]">
-              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#c69b55] pointer-events-none" />
-              <input
-                type="text"
-                placeholder="Search any building, store, business, park, sanctuary, road, or city…"
-                value={modalSearch}
-                onChange={(e) => setModalSearch(e.target.value)}
-                autoComplete="off"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (modalSuggestions.length > 0) {
-                      handleModalSuggestionClick(modalSuggestions[0]);
-                    } else if (modalSearch.trim()) {
-                      handleModalSuggestionClick({ name: modalSearch.trim() });
-                    }
-                    setModalSearch('');
-                  }
-                }}
-                className="w-full pl-10 pr-9 py-2.5 bg-[#202622] border border-[#2e3831] rounded-[12px] text-sm text-white placeholder:text-[#6f7d75] outline-none focus:border-[#c69b55]/60 transition-colors"
-              />
-              {modalSearch && (
+            {/* Search + Current GPS Location Button */}
+            <div className="relative z-[1200] flex flex-col gap-2">
+              <div className="flex items-stretch gap-2">
+                <div className="relative flex-1 min-w-0">
+                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#c69b55] pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Search any place, park, sanctuary, or road…"
+                    value={modalSearch}
+                    onChange={(e) => setModalSearch(e.target.value)}
+                    autoComplete="off"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (modalSuggestions.length > 0) {
+                          handleModalSuggestionClick(modalSuggestions[0]);
+                        } else if (modalSearch.trim()) {
+                          handleModalSuggestionClick({ name: modalSearch.trim() });
+                        }
+                        setModalSearch('');
+                      }
+                    }}
+                    className="w-full pl-10 pr-9 py-2.5 bg-[#202622] border border-[#2e3831] rounded-[12px] text-sm text-white placeholder:text-[#6f7d75] outline-none focus:border-[#c69b55]/60 transition-colors"
+                  />
+                  {modalSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setModalSearch('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ba8a0] hover:text-white bg-transparent border-none cursor-pointer p-0"
+                      aria-label="Clear search"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+
                 <button
                   type="button"
-                  onClick={() => setModalSearch('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ba8a0] hover:text-white bg-transparent border-none cursor-pointer p-0"
-                  aria-label="Clear search"
+                  onClick={handleUseCurrentLocation}
+                  disabled={isLocatingGps}
+                  title="Use device GPS / current location"
+                  className="px-3 sm:px-3.5 py-2 rounded-[12px] bg-[#0b2518] hover:bg-[#133824] border border-[#c69b55]/45 text-white font-sans text-xs sm:text-[0.8rem] font-semibold flex items-center justify-center gap-1.5 shrink-0 cursor-pointer disabled:opacity-60 transition-colors whitespace-nowrap shadow-xs"
                 >
-                  <X size={14} />
+                  {isLocatingGps ? (
+                    <Loader2 size={14} className="animate-spin text-[#c69b55]" />
+                  ) : (
+                    <Navigation size={14} className="text-[#c69b55]" />
+                  )}
+                  <span className="hidden sm:inline">{isLocatingGps ? 'Locating…' : 'Current Location'}</span>
+                  <span className="sm:hidden">{isLocatingGps ? 'GPS…' : 'My GPS'}</span>
                 </button>
+              </div>
+
+              {gpsError && (
+                <div className="flex items-start justify-between gap-2 px-3 py-2 rounded-[10px] bg-amber-950/60 border border-amber-500/40 text-amber-200 text-xs leading-snug">
+                  <span>{gpsError}</span>
+                  <button
+                    type="button"
+                    onClick={() => setGpsError('')}
+                    className="text-amber-300 hover:text-white bg-transparent border-none cursor-pointer p-0 shrink-0"
+                    aria-label="Dismiss location notice"
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
               )}
 
               {modalSearch.trim() && (

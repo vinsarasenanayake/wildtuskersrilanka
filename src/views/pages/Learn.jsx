@@ -52,6 +52,11 @@ export default function Learn() {
     document.title = `Wild Tuskers Sri Lanka | ${titles[activeTab] || 'Research & Educational Hub'}`;
   }, [activeTab]);
 
+  const isDirectZoneJump = Boolean(
+    activeTab === 'zones' &&
+    (searchParams.get('zone') || location.hash?.includes('zones-map') || location.state?.scrollToMap)
+  );
+
   const isDirectRiskJump = Boolean(
     activeTab === 'risk-framework' &&
     (location.state?.scrollToRiskFramework || location.hash === '#risk-framework-hero')
@@ -79,8 +84,15 @@ export default function Learn() {
 
   const handleTabChange = (tabKey) => {
     setSearchParams({ tab: tabKey }, { replace: true });
-    if (tabKey === 'zones') {
-      scrollElementBelowNavbar('zones-map-container', true);
+    const tabTargetIds = {
+      observations: 'tab-content-observations',
+      identification: 'tab-content-identification',
+      zones: 'zones-map-container',
+      'risk-framework': 'risk-framework-hero',
+    };
+    const targetId = tabTargetIds[tabKey];
+    if (targetId) {
+      scrollElementBelowNavbar(targetId, true);
     }
   };
 
@@ -153,13 +165,13 @@ export default function Learn() {
         </div>
 
         {/* ── Content Views (Kept mounted for 0ms instant switching and scroll preservation) ── */}
-        <div className={activeTab === 'observations' ? 'w-full block animate-fade-in' : 'hidden'}>
+        <div id="tab-content-observations" className={activeTab === 'observations' ? 'w-full block animate-fade-in' : 'hidden'}>
           <SpecialObservations embedded />
         </div>
-        <div className={activeTab === 'identification' ? 'w-full block animate-fade-in' : 'hidden'}>
+        <div id="tab-content-identification" className={activeTab === 'identification' ? 'w-full block animate-fade-in' : 'hidden'}>
           <TuskerIdentification embedded />
         </div>
-        <div className={activeTab === 'zones' ? 'w-full block animate-fade-in' : 'hidden'}>
+        <div className={activeTab === 'zones' ? `w-full block ${isDirectZoneJump ? '' : 'animate-fade-in'}` : 'hidden'}>
           {activeTab === 'zones' && <PublicConservationZones isActive={true} />}
         </div>
         <div className={activeTab === 'risk-framework' ? `w-full block ${isDirectRiskJump ? '' : 'animate-fade-in'}` : 'hidden'}>

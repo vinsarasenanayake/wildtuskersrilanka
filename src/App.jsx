@@ -4,7 +4,7 @@
  * navigation scroll restoration, and global crash fallback error boundary.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useLayoutEffect } from 'react';
 import { Routes, Route, useLocation, useNavigationType, Navigate } from 'react-router-dom';
 
 /* ── Components & Views ────────────────────────────────────── */
@@ -89,6 +89,110 @@ function App() {
   const navType = useNavigationType();
   const showNavbar = location.pathname !== '/login';
 
+  // Use manual history scroll restoration so async-loaded pages restore accurately on
+  // Desktop Browser Back, iPhone swipe-right, and Android Back (POP navigation)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+  }, []);
+
+  // Continuously save scroll position per history entry key so POP back works everywhere
+  useEffect(() => {
+    const key = location.key || 'default';
+    const saveScroll = () => {
+      // Do not overwrite saved scroll with 0 while a modal/lightbox has body fixed-locked
+      if (document.body.style.position === 'fixed') return;
+      try {
+        sessionStorage.setItem(`wts_scroll_${key}`, String(window.scrollY || 0));
+      } catch { /* ignore */ }
+    };
+
+    let rafId = null;
+    const onScroll = () => {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        saveScroll();
+      });
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      saveScroll();
+    };
+  }, [location.key]);
+
+  // Restore scroll on POP (browser back / iOS swipe / Android back), waiting for async content if needed
+  useLayoutEffect(() => {
+    if (navType !== 'POP') return;
+
+    // Gallery has its own card-centering restoration when returning from a Tusker Profile
+    if (location.pathname === '/gallery') {
+      try {
+        if (
+          sessionStorage.getItem('wts_last_gallery_photo_id') ||
+          sessionStorage.getItem('wts_last_gallery_scroll')
+        ) {
+          return;
+        }
+      } catch { /* ignore */ }
+    }
+
+    let savedY = null;
+    try {
+      const raw = sessionStorage.getItem(`wts_scroll_${location.key || 'default'}`);
+      if (raw !== null) {
+        const parsed = parseInt(raw, 10);
+        if (!Number.isNaN(parsed) && parsed >= 0) savedY = parsed;
+      }
+    } catch { /* ignore */ }
+
+    if (savedY === null) return;
+
+    let cancelled = false;
+    const cancelOnUserScroll = () => {
+      cancelled = true;
+    };
+    window.addEventListener('wheel', cancelOnUserScroll, { passive: true, once: true });
+    window.addEventListener('touchstart', cancelOnUserScroll, { passive: true, once: true });
+
+    const tryRestore = () => {
+      if (cancelled) return false;
+      window.scrollTo({ top: savedY, behavior: 'instant' });
+      return document.documentElement.scrollHeight >= savedY + window.innerHeight * 0.5;
+    };
+
+    tryRestore();
+
+    const mainEl = document.getElementById('main-content');
+    let observer = null;
+    if (mainEl && typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(() => {
+        if (tryRestore()) {
+          observer?.disconnect();
+        }
+      });
+      observer.observe(mainEl);
+    }
+
+    const stopTimer = setTimeout(() => {
+      observer?.disconnect();
+      window.removeEventListener('wheel', cancelOnUserScroll);
+      window.removeEventListener('touchstart', cancelOnUserScroll);
+    }, 1800);
+
+    return () => {
+      cancelled = true;
+      observer?.disconnect();
+      clearTimeout(stopTimer);
+      window.removeEventListener('wheel', cancelOnUserScroll);
+      window.removeEventListener('touchstart', cancelOnUserScroll);
+    };
+  }, [location.key, location.pathname, navType]);
+
   // Automatically ensure body overflow and padding are never locked across page transitions
   useEffect(() => {
     document.body.style.overflow = '';
@@ -96,30 +200,39 @@ function App() {
     document.documentElement.style.overflow = '';
 
     let hasGalleryReturn = false;
-    try {
-      hasGalleryReturn = Boolean(
-        sessionStorage.getItem('wts_last_gallery_scroll') ||
-        sessionStorage.getItem('wts_last_gallery_photo_id')
-      );
-    } catch { /* ignore */ }
+    if (location.pathname === '/gallery') {
+      try {
+        hasGalleryReturn = Boolean(
+          sessionStorage.getItem('wts_last_gallery_scroll') ||
+          sessionStorage.getItem('wts_last_gallery_photo_id')
+        );
+      } catch { /* ignore */ }
+    }
+
+    const isDirectZoneOrRisk =
+      location.state?.scrollToMap ||
+      location.hash?.includes('zones-map') ||
+      location.search?.includes('zone=') ||
+      location.state?.scrollToRiskFramework ||
+      location.hash?.includes('risk-framework');
 
     if (
       navType === 'PUSH' &&
       !location.state?.returnPhotoId &&
       !location.state?.restoreScroll &&
       !hasGalleryReturn &&
-      !location.state?.scrollToMap &&
-      !location.hash?.includes('zones-map') &&
-      !location.state?.scrollToRiskFramework &&
-      !location.hash?.includes('risk-framework')
+      !isDirectZoneOrRisk
     ) {
       window.scrollTo(0, 0);
     }
-  }, [location.pathname, location.state, location.hash, navType]);
+  }, [location.pathname, location.state, location.hash, location.search, navType]);
 
   const skipMainFade = Boolean(
     location.state?.scrollToRiskFramework ||
+    location.hash?.includes('risk-framework') ||
     location.state?.scrollToMap ||
+    location.hash?.includes('zones-map') ||
+    location.search?.includes('zone=') ||
     location.state?.returnPhotoId ||
     location.state?.restoreScroll
   );
