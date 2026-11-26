@@ -25,7 +25,7 @@ export default function TuskerMultiSelect({
   value,
   onChange,
   label = 'Tusker Name / ID',
-  placeholder = 'Search tusker by ID or name (e.g. T001, Panama Puttuwa)...',
+  placeholder = 'Search by ID or name…',
   required = false,
   allowConnector = false,
   connector = 'vs',
@@ -275,11 +275,13 @@ export default function TuskerMultiSelect({
           <input
             ref={searchInputRef}
             type="text"
-            className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg pl-9 pr-24 py-2.5 outline-none focus:border-accent focus:bg-white text-sm text-[#111111] placeholder:text-[#999999] transition-all"
+            className={`w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg pl-9 ${
+              isOpen || searchQuery ? 'pr-24' : 'pr-10'
+            } py-2.5 outline-none focus:border-accent focus:bg-white text-sm text-[#111111] placeholder:text-[#999999] transition-all`}
             placeholder={
               selectedTuskers.length === 0
                 ? placeholder
-                : '+ Add another tusker from list...'
+                : '+ Add another tusker…'
             }
             value={searchQuery}
             onFocus={() => setIsOpen(true)}

@@ -20,7 +20,7 @@
   html {
     scroll-behavior: auto; /* Fast, responsive 1:1 hardware scroll */
     background-color: #0b2518;
-    overflow-x: hidden;
+    overflow-x: clip;
     max-width: 100vw;
   }
   body {
@@ -28,12 +28,12 @@
     background-color: #ffffff;
     color: var(--color-text-dark);
     line-height: 1.6;
-    overflow-x: hidden;
+    overflow-x: clip;
     max-width: 100vw;
     -webkit-font-smoothing: antialiased;
   }
   #root {
-    overflow-x: hidden;
+    overflow-x: clip;
     max-width: 100vw;
   }
   h1, h2, h3, h4, h5, h6 {

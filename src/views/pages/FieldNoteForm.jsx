@@ -4,7 +4,7 @@
  * to submit wild tusker field observations for verification and archiving.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -42,6 +42,7 @@ export default function FieldNoteForm() {
   } = useFieldNoteForm();
   const [submittedStatus, setSubmittedStatus] = useState(null);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const autoSuggestedLocationRef = useRef('');
 
   useEffect(() => {
     document.title = 'Wild Tuskers Sri Lanka | Add Field Note';
@@ -180,10 +181,16 @@ export default function FieldNoteForm() {
               <div className="w-full">
                 <TuskerMultiSelect
                   label="Tuskers Involved / Observed"
-                  placeholder="Search tusker by ID or name (e.g. T001, Panama Puttuwa)..."
+                  placeholder="Search by ID or name…"
                   value={formData.specialNote}
                   onChange={(_list, formatted) => {
                     handleChange({ target: { name: 'specialNote', value: formatted } });
+                    const nextSuggested = (_list && _list[0]?.lastSeenArea) || '';
+                    const currentLocation = formData.title || '';
+                    if (!currentLocation || currentLocation === autoSuggestedLocationRef.current) {
+                      handleChange({ target: { name: 'title', value: nextSuggested } });
+                      autoSuggestedLocationRef.current = nextSuggested;
+                    }
                   }}
                   helperText="Select one or multiple tuskers observed during this field trip."
                 />

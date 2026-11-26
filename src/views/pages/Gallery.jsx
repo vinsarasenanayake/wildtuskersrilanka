@@ -800,6 +800,7 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
 
   const containerRef = useRef(null);
   const closeBtnRef = useRef(null);
+  const autoSuggestedLocationRef = useRef('');
 
   const handleSafeClose = useCallback(() => {
     // If a nested child dialog (like location map picker) is open, do NOT close the submission modal
@@ -942,12 +943,15 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
               <div className="w-full">
                 <TuskerMultiSelect
                   label="Tusker Name / ID"
-                  placeholder="Search tusker by ID or name (e.g. T001, Panama Puttuwa)..."
+                  placeholder="Search by ID or name…"
                   value={formData.tuskerName}
                   onChange={(_list, formatted) => {
                     handleChange({ target: { name: 'tuskerName', value: formatted } });
-                    if (!formData.location && _list && _list[0]?.location) {
-                      handleChange({ target: { name: 'location', value: _list[0].location } });
+                    const nextSuggested = (_list && _list[0]?.lastSeenArea) || '';
+                    const currentLocation = formData.location || '';
+                    if (!currentLocation || currentLocation === autoSuggestedLocationRef.current) {
+                      handleChange({ target: { name: 'location', value: nextSuggested } });
+                      autoSuggestedLocationRef.current = nextSuggested;
                     }
                   }}
                   helperText="Select one or multiple tuskers featured in this photograph."

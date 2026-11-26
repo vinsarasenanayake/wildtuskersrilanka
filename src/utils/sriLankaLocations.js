@@ -816,16 +816,17 @@ async function googleReverseGeocode(lat, lng) {
   await loadGoogleMaps();
   const { Geocoder } = await window.google.maps.importLibrary('geocoding');
   const { results } = await new Geocoder().geocode({ location: { lat, lng }, language: 'en' });
-  const best = (results || []).find((r) => !(r.types || []).includes('plus_code')) || null;
+  const isPlusCode = (val) => /\b[23456789CFGHJMPQRVWX]{4,8}\+[23456789CFGHJMPQRVWX]{2,4}\b/i.test(String(val || ''));
+  const best = (results || []).find((r) => !(r.types || []).includes('plus_code') && !isPlusCode(r.formatted_address?.split(',')[0])) || null;
   if (!best) return null;
-  const comps = best.address_components || [];
+  const comps = (best.address_components || []).filter((c) => !(c.types || []).includes('plus_code') && !isPlusCode(c.long_name));
   const pick = (...types) => comps.find((c) => types.some((t) => (c.types || []).includes(t)))?.long_name;
   const name =
     pick('natural_feature', 'park', 'point_of_interest', 'establishment') ||
     pick('sublocality', 'locality', 'administrative_area_level_4', 'administrative_area_level_3') ||
     pick('route') ||
     comps[0]?.long_name;
-  if (!name) return null;
+  if (!name || isPlusCode(name)) return null;
   const region = pick('administrative_area_level_2', 'administrative_area_level_1') || 'Sri Lanka';
   return { name, fullAddress: best.formatted_address, region };
 }

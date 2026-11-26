@@ -165,7 +165,7 @@ export default function SpecialObservationForm() {
                   }}
                   placeholder={
                     selectedTuskers.length === 0
-                      ? "Search tusker by ID or name (e.g. T001, Panama Puttuwa)..."
+                      ? "Search by ID or name…"
                       : "+ Add another tusker to compare (e.g. T001, Panama Puttuwa)..."
                   }
                 />

@@ -114,7 +114,7 @@ export default function Learn() {
   };
 
   return (
-    <div className={`bg-[#f7f8fa] min-h-screen pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2.5rem)] ${activeTab === 'zones' ? 'pb-5 sm:pb-6' : 'pb-24 sm:pb-32'} flex-1 flex flex-col font-sans w-full max-w-full overflow-x-hidden`}>
+    <div className={`bg-[#f7f8fa] min-h-screen pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2.5rem)] ${activeTab === 'zones' ? 'pb-5 sm:pb-6' : 'pb-24 sm:pb-32'} flex-1 flex flex-col font-sans w-full max-w-full overflow-x-clip`}>
       <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-6 sm:gap-8 min-w-0">
 
         {/* ── Page Header ── */}

@@ -97,14 +97,17 @@ function App() {
     }
   }, []);
 
-  // Continuously save scroll position per history entry key so POP back works everywhere
+  // Continuously save scroll position per history entry key & route so POP back and browser Reload restore accurately
   useEffect(() => {
     const key = location.key || 'default';
+    const routeKey = `${location.pathname}${location.search || ''}`;
     const saveScroll = () => {
       // Do not overwrite saved scroll with 0 while a modal/lightbox has body fixed-locked
       if (document.body.style.position === 'fixed') return;
       try {
-        sessionStorage.setItem(`wts_scroll_${key}`, String(window.scrollY || 0));
+        const y = String(window.scrollY || 0);
+        sessionStorage.setItem(`wts_scroll_${key}`, y);
+        sessionStorage.setItem(`wts_scroll_route_${routeKey}`, y);
       } catch { /* ignore */ }
     };
 
@@ -118,14 +121,18 @@ function App() {
     };
 
     window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('pagehide', saveScroll);
+    window.addEventListener('beforeunload', saveScroll);
     return () => {
       window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('pagehide', saveScroll);
+      window.removeEventListener('beforeunload', saveScroll);
       if (rafId !== null) cancelAnimationFrame(rafId);
       saveScroll();
     };
-  }, [location.key]);
+  }, [location.key, location.pathname, location.search]);
 
-  // Restore scroll on POP (browser back / iOS swipe / Android back), waiting for async content if needed
+  // Restore scroll on POP (browser back / iOS swipe / Android back / browser reload), waiting for async content if needed
   useLayoutEffect(() => {
     if (navType !== 'POP') return;
 
@@ -143,7 +150,16 @@ function App() {
 
     let savedY = null;
     try {
-      const raw = sessionStorage.getItem(`wts_scroll_${location.key || 'default'}`);
+      let raw = sessionStorage.getItem(`wts_scroll_${location.key || 'default'}`);
+      if (raw === null) {
+        const navEntry = typeof performance !== 'undefined' && performance.getEntriesByType
+          ? performance.getEntriesByType('navigation')[0]
+          : null;
+        const isReload = navEntry?.type === 'reload' || window.performance?.navigation?.type === 1;
+        if (isReload) {
+          raw = sessionStorage.getItem(`wts_scroll_route_${location.pathname}${location.search || ''}`);
+        }
+      }
       if (raw !== null) {
         const parsed = parseInt(raw, 10);
         if (!Number.isNaN(parsed) && parsed >= 0) savedY = parsed;
@@ -191,7 +207,7 @@ function App() {
       window.removeEventListener('wheel', cancelOnUserScroll);
       window.removeEventListener('touchstart', cancelOnUserScroll);
     };
-  }, [location.key, location.pathname, navType]);
+  }, [location.key, location.pathname, location.search, navType]);
 
   // Automatically ensure body overflow and padding are never locked across page transitions
   useEffect(() => {
@@ -251,7 +267,7 @@ function App() {
   return (
     <>
       {showNavbar && <Navbar />}
-      <main id="main-content" key={location.pathname} className={`${skipMainFade ? '' : 'animate-fade-in '}flex-1 flex flex-col w-full max-w-full overflow-x-hidden`}>
+      <main id="main-content" key={location.pathname} className={`${skipMainFade ? '' : 'animate-fade-in '}flex-1 flex flex-col w-full max-w-full overflow-x-clip`}>
         <ErrorBoundary>
           <Routes>
             {/* Public Core Routes */}

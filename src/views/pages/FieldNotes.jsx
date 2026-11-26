@@ -5,8 +5,8 @@
  * photo lightbox integration, and direct tusker profile links.
  */
 
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   FileText,
   PlusCircle,
@@ -24,28 +24,48 @@ import ImageLightboxModal from '../components/ImageLightboxModal';
 
 export default function FieldNotes() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     notesByYear,
     availableYears,
     pendingNotes,
     loading,
     isAdmin,
+    authLoading,
     approveNote,
     rejectNote,
     deleteNote
   } = useFieldNotesFeed();
 
-  // Active view: either a specific year or 'pending' for admin review
-  const [activeTab, setActiveTab] = useState(null);
+  // Active view: either a specific year or 'pending' for admin review (persisted via ?tab= across reloads)
+  const [activeTab, setActiveTabState] = useState(() => searchParams.get('tab') || null);
   const [actionNotice, setActionNotice] = useState(null);
   const [activeLightboxPhoto, setActiveLightboxPhoto] = useState(null);
+
+  const setActiveTab = useCallback((nextTab) => {
+    setActiveTabState(nextTab);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (nextTab) {
+        next.set('tab', nextTab);
+      } else {
+        next.delete('tab');
+      }
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
 
   useEffect(() => {
     document.title = 'Wild Tuskers Sri Lanka | Field Notes';
   }, []);
 
-  // Set default active tab
+  // Set default active tab once auth resolves, and fall back if a non-admin visits ?tab=pending
   useEffect(() => {
+    if (authLoading) return;
+    if (activeTab === 'pending' && !isAdmin) {
+      setActiveTab(availableYears.length > 0 ? availableYears[0] : null);
+      return;
+    }
     if (!activeTab) {
       if (isAdmin && pendingNotes.length > 0) {
         // Automatically default admin to review tab if there are pending notes
@@ -54,7 +74,7 @@ export default function FieldNotes() {
         setActiveTab(availableYears[0]);
       }
     }
-  }, [availableYears, activeTab, isAdmin, pendingNotes.length]);
+  }, [authLoading, availableYears, activeTab, isAdmin, pendingNotes.length, setActiveTab]);
 
   const handleApprove = (note) => {
     approveNote(note.id);
@@ -163,7 +183,7 @@ export default function FieldNotes() {
         )}
 
         {/* Tabs Bar - Scrollable on mobile */}
-        {(availableYears.length > 0 || (isAdmin && pendingNotes.length > 0)) && (
+        {(availableYears.length > 0 || isAdmin) && (
           <div className="bg-white p-2 rounded-t-[12px] shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex items-center gap-1 border-b-[3px] border-[#d1d5db] overflow-x-auto scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
 
             {/* Admin Review & Accept Tab */}

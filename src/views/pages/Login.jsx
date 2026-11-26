@@ -47,7 +47,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-[#0b2518] flex flex-col lg:flex-row items-center justify-center p-3.5 sm:p-6 lg:p-12 gap-3 sm:gap-6 lg:gap-24 relative overflow-x-hidden">
+    <div className="min-h-[100dvh] bg-[#0b2518] flex flex-col lg:flex-row items-center justify-center p-3.5 sm:p-6 lg:p-12 gap-3 sm:gap-6 lg:gap-24 relative overflow-x-clip">
       {/* Back to Home Link */}
       <div className="absolute top-3.5 left-3.5 sm:top-8 sm:left-8 z-20">
         <Link

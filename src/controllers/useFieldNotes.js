@@ -90,6 +90,7 @@ export function useFieldNotesFeed() {
     availableYears,
     canAddNote: true, // Field notes can be added by anyone
     isAdmin,
+    authLoading,
     approveNote: handleApprove,
     rejectNote: handleReject,
     deleteNote: handleDelete,

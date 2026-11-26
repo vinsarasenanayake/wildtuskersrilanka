@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   getGalleryPhotos,
   getCachedGalleryPhotos,
@@ -20,13 +21,33 @@ import { todayLocalISO } from '../utils/localDate';
 import { friendlyError } from '../utils/friendlyError';
 
 export function useGallery(initialActivePhoto = null) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [photos, setPhotos] = useState(() => getCachedGalleryPhotos(false) || []);
   const [loading, setLoading] = useState(() => !getCachedGalleryPhotos(false));
-  const [filter, setFilter] = useState('ALL'); // 'ALL' or specific location / year
+  const [filter, setFilterState] = useState(() => (searchParams.get('tab') === 'pending' ? 'PENDING' : 'ALL')); // 'ALL' or 'PENDING'
   const [searchQuery, setSearchQuery] = useState('');
   const [activePhoto, setActivePhoto] = useState(initialActivePhoto); // Instant frame 0 restoration
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const { isAdmin, authLoading } = useAuth();
+
+  const setFilter = useCallback((nextFilter) => {
+    setFilterState(nextFilter);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (nextFilter === 'PENDING') {
+        next.set('tab', 'pending');
+      } else {
+        next.delete('tab');
+      }
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  useEffect(() => {
+    if (!authLoading && !isAdmin && filter === 'PENDING') {
+      setFilter('ALL');
+    }
+  }, [authLoading, isAdmin, filter, setFilter]);
 
   const reloadPhotos = useCallback(async () => {
     try {

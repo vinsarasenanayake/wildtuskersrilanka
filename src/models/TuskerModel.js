@@ -243,6 +243,18 @@ function mapTusker(row) {
       t.deathDate = String(t.deathYear);
     }
   }
+  // Replace malformed geocode/Plus Code/raw-coordinate lastSeenArea with the first location of Home Range
+  if (t.lastSeenArea && typeof t.lastSeenArea === 'string') {
+    const raw = t.lastSeenArea.trim();
+    const isPlusCode = /\b[23456789CFGHJMPQRVWX]{4,8}\+[23456789CFGHJMPQRVWX]{2,4}\b/i.test(raw);
+    const isRawCoords = /^(?:Location|GPS)\s*\(/i.test(raw) || /^-?\d+\.\d+\s*,\s*-?\d+\.\d+$/.test(raw);
+    if ((isPlusCode || isRawCoords) && t.location) {
+      const firstHomeLoc = String(t.location).split(/[/,;]/)[0].trim();
+      if (firstHomeLoc) {
+        t.lastSeenArea = firstHomeLoc;
+      }
+    }
+  }
   // No invented defaults: missing values stay empty and the UI hides them.
   if (!t.photographicComparison) delete t.photographicComparison;
   if (!t.earComparison) delete t.earComparison;
