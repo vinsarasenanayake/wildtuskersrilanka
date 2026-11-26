@@ -9,11 +9,8 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import {
   MapPin,
   Compass,
-  Calendar,
-  UserCheck,
   Eye,
   Check,
-  X,
   AlertCircle,
   Edit,
 } from 'lucide-react';
@@ -314,7 +311,7 @@ function getStatusTheme(status) {
  */
 export default function TuskerSightingsMap({
   tusker,
-  onPreviewPhoto,
+  onPreviewPhoto: _onPreviewPhoto,
   onEditSighting,
   onEditTusker,
 }) {
@@ -813,6 +810,7 @@ export default function TuskerSightingsMap({
             tusker?.location ? `Corridor: ${tusker.location}` : '',
             tusker?.livingStatus ? `Status: ${tusker.livingStatus}` : '',
           ].filter(Boolean),
+          onClose: handleViewHomeRange,
         },
         onClick: () => handleSelectPoint(lastSeenPoint),
       });
@@ -845,6 +843,7 @@ export default function TuskerSightingsMap({
             tusker?.recordedBy ? `Recorded By: ${tusker.recordedBy}` : '',
             tusker?.livingStatus ? `Status: ${tusker.livingStatus}` : '',
           ].filter(Boolean),
+          onClose: handleViewHomeRange,
         },
         onClick: () => handleSelectPoint(firstRecordedPoint),
       });
@@ -876,6 +875,7 @@ export default function TuskerSightingsMap({
             point.author ? `Recorder: ${point.author}` : '',
             point.notes && point.notes !== '-' ? point.notes : '',
           ].filter(Boolean),
+          onClose: handleViewHomeRange,
         },
         onClick: () => handleSelectPoint(point),
       });
@@ -1038,124 +1038,6 @@ export default function TuskerSightingsMap({
       {/* ── Interactive Map View Container ── */}
       <div className="relative w-full h-[340px] sm:h-[480px] bg-[#0e1210] overflow-hidden">
         <div ref={mapContainerRef} className="w-full h-full" />
-
-        {/* Floating Active Sighting Detail Card Overlay */}
-        {selectedPoint && (
-          <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:max-w-xs bg-white/95 rounded-xl p-3.5 shadow-xl border border-black/10 z-[1000] animate-in fade-in">
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <div>
-                <span className={`inline-block px-2 py-0.5 rounded text-[0.68rem] font-bold ${selectedPoint.id === 'first-recorded-pin'
-                    ? 'bg-amber-100 text-amber-900 border border-amber-300'
-                    : 'bg-[#e8f5ec] text-[#1f7a3d]'
-                  }`}>
-                  {selectedPoint.badge}
-                </span>
-                <h4 className="font-sans text-sm font-bold text-[#111111] m-0 mt-1">
-                  {selectedPoint.location}
-                </h4>
-              </div>
-              <div className="flex items-center gap-1.5 shrink-0">
-                {(onEditSighting || onEditTusker) && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (selectedPoint.type === 'sighting' && typeof onEditSighting === 'function') {
-                        const mergedSighting = {
-                          ...(selectedPoint.rawSighting || {}),
-                          id: selectedPoint.rawSighting?.id || selectedPoint.id,
-                          captureDate: selectedPoint.rawSighting?.captureDate || selectedPoint.date,
-                          date: selectedPoint.date || selectedPoint.rawSighting?.captureDate,
-                          author: selectedPoint.rawSighting?.author || selectedPoint.author,
-                          location: selectedPoint.location || selectedPoint.rawSighting?.location,
-                          imageUrl: selectedPoint.photo || selectedPoint.rawSighting?.imageUrl,
-                          images: (selectedPoint.rawSighting?.images?.length
-                            ? selectedPoint.rawSighting.images
-                            : (selectedPoint.photo ? [selectedPoint.photo] : [])),
-                          photo: selectedPoint.photo,
-                          // keep the original stored note so every field is read back correctly
-                          note: selectedPoint.rawSighting?.note || '',
-                          notes: selectedPoint.notes && selectedPoint.notes !== '-' ? selectedPoint.notes : '',
-                          healthCondition: selectedPoint.health !== '-' ? selectedPoint.health : (selectedPoint.rawSighting?.healthCondition || ''),
-                          threatLevel: selectedPoint.threat !== '-' ? selectedPoint.threat : (selectedPoint.rawSighting?.threatLevel || ''),
-                          coords: selectedPoint.coords || selectedPoint.rawSighting?.coords,
-                        };
-                        onEditSighting({
-                          sighting: mergedSighting,
-                          sightingNum: selectedPoint.sightingNum,
-                          rowNum: selectedPoint.rowNum,
-                        });
-                      } else if (typeof onEditTusker === 'function') {
-                        onEditTusker();
-                      }
-                    }}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-950 border border-emerald-300/80 rounded-lg transition-colors cursor-pointer shadow-2xs"
-                    title={selectedPoint.type === 'sighting' ? 'Edit Sighting' : 'Edit Profile'}
-                  >
-                    <Edit size={12} className="text-emerald-600" />
-                    <span>Edit</span>
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={handleViewHomeRange}
-                  className="text-gray-400 hover:text-gray-600 bg-transparent border-none cursor-pointer p-1 rounded-md hover:bg-black/5 transition-colors"
-                  title="Close and view full overview"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            </div>
-
-            <div className="text-xs text-[#555555] flex flex-col gap-1 mb-2.5">
-              <div className="flex items-center gap-1.5">
-                <Calendar size={12} className="text-accent" />
-                <span>Date: {selectedPoint.date}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <UserCheck size={12} className="text-accent" />
-                <span>Recorder: {selectedPoint.author}</span>
-              </div>
-              {selectedPoint.coords && (
-                <div className="flex items-center gap-1.5 font-mono text-[0.72rem] text-[#888888]">
-                  <MapPin size={11} className="text-accent" />
-                  <span>{selectedPoint.coords.lat.toFixed(4)}, {selectedPoint.coords.lng.toFixed(4)}</span>
-                </div>
-              )}
-            </div>
-
-            {selectedPoint.notes && selectedPoint.notes !== '-' && (
-              <p className="text-xs text-[#666666] m-0 mb-2 italic">
-                {selectedPoint.notes}
-              </p>
-            )}
-
-            {selectedPoint.photo && (
-              <div
-                className="relative h-24 rounded-lg overflow-hidden bg-black/5 cursor-pointer group"
-                onClick={() => {
-                  if (typeof onPreviewPhoto === 'function') {
-                    onPreviewPhoto({
-                      url: selectedPoint.photo,
-                      title: selectedPoint.title,
-                      date: selectedPoint.date,
-                      author: selectedPoint.author,
-                      location: selectedPoint.location,
-                      healthCondition: selectedPoint.health,
-                      threatLevel: selectedPoint.threat,
-                      note: selectedPoint.notes && selectedPoint.notes !== '-' ? selectedPoint.notes : '',
-                    });
-                  }
-                }}
-              >
-                <img src={selectedPoint.photo} alt="Point photo" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
-                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs gap-1 font-semibold">
-                  <Eye size={12} />
-                  <span>View Photo</span>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       {/* ── Points Registry Strip below Map ── */}
@@ -1251,6 +1133,21 @@ export default function TuskerSightingsMap({
               ) : (
                 <MapPin size={12} className="text-gray-400" />
               )}
+              {typeof onEditTusker === 'function' && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditTusker();
+                  }}
+                  title="Edit Profile & Last Seen Location"
+                  aria-label="Edit Last Seen Location"
+                  className="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300/80 text-[11px] font-semibold cursor-pointer transition-colors shrink-0"
+                >
+                  <Edit size={11} className="text-emerald-600" />
+                  <span>Edit</span>
+                </button>
+              )}
             </div>
           )}
 
@@ -1281,6 +1178,21 @@ export default function TuskerSightingsMap({
                 <Check size={12} className="text-amber-700" />
               ) : (
                 <MapPin size={12} className="text-gray-400" />
+              )}
+              {typeof onEditTusker === 'function' && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditTusker();
+                  }}
+                  title="Edit Profile & First Recorded Location"
+                  aria-label="Edit First Recorded Location"
+                  className="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300/80 text-[11px] font-semibold cursor-pointer transition-colors shrink-0"
+                >
+                  <Edit size={11} className="text-amber-700" />
+                  <span>Edit</span>
+                </button>
               )}
             </div>
           )}
@@ -1314,6 +1226,43 @@ export default function TuskerSightingsMap({
                   <Check size={12} className={isSelected ? 'text-emerald-600' : 'text-gray-400'} />
                 ) : (
                   <AlertCircle size={12} className="text-amber-500" title="Location coordinates pending" />
+                )}
+                {typeof onEditSighting === 'function' && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const mergedSighting = {
+                        ...(point.rawSighting || {}),
+                        id: point.rawSighting?.id || point.id,
+                        captureDate: point.rawSighting?.captureDate || point.date,
+                        date: point.date || point.rawSighting?.captureDate,
+                        author: point.rawSighting?.author || point.author,
+                        location: point.location || point.rawSighting?.location,
+                        imageUrl: point.photo || point.rawSighting?.imageUrl,
+                        images: (point.rawSighting?.images?.length
+                          ? point.rawSighting.images
+                          : (point.photo ? [point.photo] : [])),
+                        photo: point.photo,
+                        note: point.rawSighting?.note || '',
+                        notes: point.notes && point.notes !== '-' ? point.notes : '',
+                        healthCondition: point.health !== '-' ? point.health : (point.rawSighting?.healthCondition || ''),
+                        threatLevel: point.threat !== '-' ? point.threat : (point.rawSighting?.threatLevel || ''),
+                        coords: point.coords || point.rawSighting?.coords,
+                      };
+                      onEditSighting({
+                        sighting: mergedSighting,
+                        sightingNum: point.sightingNum,
+                        rowNum: point.rowNum,
+                      });
+                    }}
+                    title={`Edit Sighting #${point.sightingNum}`}
+                    aria-label={`Edit Sighting #${point.sightingNum}`}
+                    className="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300/80 text-[11px] font-semibold cursor-pointer transition-colors shrink-0"
+                  >
+                    <Edit size={11} className="text-emerald-600" />
+                    <span>Edit</span>
+                  </button>
                 )}
               </div>
             );

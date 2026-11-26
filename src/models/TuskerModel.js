@@ -344,19 +344,33 @@ export function getCachedTuskers() {
   return null;
 }
 
+let inFlightTuskersPromise = null;
+
 export async function getTuskers(forceRefresh = false) {
   const now = Date.now();
   if (!forceRefresh && tuskersCache && (now - tuskersCacheTime < CACHE_TTL_MS)) {
     return tuskersCache;
   }
-  const rows = await queryTuskers((q) => q);
-  const result = rows
-    .map(mapTusker)
-    .sort((a, b) => compareTuskerId(a.id, b.id));
+  if (!forceRefresh && inFlightTuskersPromise) {
+    return inFlightTuskersPromise;
+  }
 
-  tuskersCache = result;
-  tuskersCacheTime = now;
-  return result;
+  inFlightTuskersPromise = (async () => {
+    const rows = await queryTuskers((q) => q);
+    const result = rows
+      .map(mapTusker)
+      .sort((a, b) => compareTuskerId(a.id, b.id));
+
+    tuskersCache = result;
+    tuskersCacheTime = Date.now();
+    return result;
+  })();
+
+  try {
+    return await inFlightTuskersPromise;
+  } finally {
+    inFlightTuskersPromise = null;
+  }
 }
 
 export async function getTuskerById(id, forceRefresh = false) {

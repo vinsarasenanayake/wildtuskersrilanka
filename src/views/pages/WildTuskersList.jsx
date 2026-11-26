@@ -291,6 +291,25 @@ export default function WildTuskersList() {
     };
   }, [tuskers]);
 
+  const [renderAllCards, setRenderAllCards] = useState(() => {
+    try {
+      return Boolean(sessionStorage.getItem('wts_last_tusker_id'));
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    if (renderAllCards || filtered.length <= 24) return;
+    const raf = requestAnimationFrame(() => setRenderAllCards(true));
+    return () => cancelAnimationFrame(raf);
+  }, [renderAllCards, filtered.length]);
+
+  const visibleTuskers = useMemo(
+    () => (renderAllCards ? filtered : filtered.slice(0, 24)),
+    [filtered, renderAllCards]
+  );
+
   return (
     <div className="w-full max-w-[1280px] mx-auto pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2.5rem)] pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-white">
 
@@ -623,7 +642,7 @@ export default function WildTuskersList() {
         <div className="flex items-center justify-center min-h-[60vh] font-sans text-[#e53e3e]">Could not load tuskers: {loadError}</div>
       ) : filtered.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3.5 sm:gap-x-6 gap-y-6 sm:gap-y-8 min-h-[60vh] content-start">
-          {filtered.map(tusker => (
+          {visibleTuskers.map(tusker => (
             <Link
               key={tusker.id}
               id={`tusker-card-${tusker.id.toLowerCase()}`}

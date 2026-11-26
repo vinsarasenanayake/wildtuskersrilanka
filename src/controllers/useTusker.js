@@ -138,7 +138,9 @@ export function useTuskerList() {
   useEffect(() => {
     let active = true;
     getTuskers()
-      .then(list => { if (active) setTuskers(list); })
+      .then(list => {
+        if (active && list !== initialCache) setTuskers(list);
+      })
       .catch(err => { if (active && !initialCache) setLoadError(err.message); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };

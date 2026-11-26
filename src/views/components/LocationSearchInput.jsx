@@ -144,19 +144,9 @@ export default function LocationSearchInput({
     }
   }, [value, multi]);
 
-  // While the map picker is open: freeze the page behind it and close on Esc
+  // While the map picker is open: close on Esc (scroll lock handled by useFocusTrap)
   useEffect(() => {
     if (!showMapModal) return undefined;
-    const { body, documentElement } = document;
-    const prev = {
-      bodyOverflow: body.style.overflow,
-      bodyPadding: body.style.paddingRight,
-      htmlOverflow: documentElement.style.overflow,
-    };
-    const scrollbar = window.innerWidth - documentElement.clientWidth;
-    body.style.overflow = 'hidden';
-    documentElement.style.overflow = 'hidden';
-    if (scrollbar > 0) body.style.paddingRight = `${scrollbar}px`;
     const onKey = (e) => {
       if (e.key === 'Escape') {
         e.stopImmediatePropagation();
@@ -166,9 +156,6 @@ export default function LocationSearchInput({
     };
     window.addEventListener('keydown', onKey, true);
     return () => {
-      body.style.overflow = prev.bodyOverflow;
-      body.style.paddingRight = prev.bodyPadding;
-      documentElement.style.overflow = prev.htmlOverflow;
       window.removeEventListener('keydown', onKey, true);
     };
   }, [showMapModal]);

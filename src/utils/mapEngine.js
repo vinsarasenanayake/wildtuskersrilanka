@@ -97,7 +97,7 @@ export function loadGoogleMaps() {
 function buildPopup({ badge, date, title, lines = [] } = {}, onClose) {
   const root = document.createElement('div');
   root.style.cssText =
-    'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-width:190px;max-width:270px;line-height:1.4;padding:4px 2px;color:#f3f4f6;position:relative;';
+    'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-width:240px;max-width:310px;line-height:1.4;padding:4px 2px;color:#f3f4f6;position:relative;';
 
   const top = document.createElement('div');
   top.style.cssText =
@@ -128,7 +128,7 @@ function buildPopup({ badge, date, title, lines = [] } = {}, onClose) {
     closeBtn.setAttribute('aria-label', 'Close popup');
     closeBtn.textContent = '✕';
     closeBtn.style.cssText =
-      'position:absolute;top:1px;right:-3px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:#d1d5db;font-size:11px;font-weight:700;cursor:pointer;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.15s ease;padding:0;line-height:1;flex-shrink:0;z-index:10;';
+      'position:absolute;top:2px;right:2px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:#d1d5db;font-size:11px;font-weight:700;cursor:pointer;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.15s ease;padding:0;line-height:1;flex-shrink:0;z-index:10;';
     closeBtn.onmouseenter = () => { closeBtn.style.backgroundColor = 'rgba(255,255,255,0.22)'; closeBtn.style.color = '#ffffff'; };
     closeBtn.onmouseleave = () => { closeBtn.style.backgroundColor = 'rgba(255,255,255,0.08)'; closeBtn.style.color = '#d1d5db'; };
     closeBtn.onclick = (e) => {
@@ -262,7 +262,10 @@ function createGoogleMap(maps, container, { center, zoom, gestureHandling, mapTy
   }
 
   const openPopupAt = (pos, popup, offsetY) => {
-    info.setContent(buildPopup(popup, () => info.close()));
+    info.setContent(buildPopup(popup, () => {
+      info.close();
+      popup?.onClose?.();
+    }));
     info.setOptions({ pixelOffset: new maps.Size(0, -offsetY) });
     info.setPosition({ lat: pos[0], lng: pos[1] });
     info.open({ map });
@@ -437,8 +440,11 @@ function createLeafletMap(L, container, { center, zoom, gestureHandling: _gestur
         ? L.divIcon({ className: 'custom-leaflet-marker', html: `<div style="position:relative;transform:translate(-50%,-50%);width:max-content">${safeHtml}</div>`, iconSize: [0, 0], iconAnchor: [0, 0] })
         : iconFor(safeHtml, height);
       const m = L.marker(safePos, { icon }).addTo(layer);
-      const closePopup = () => map.closePopup();
-      if (popup) m.bindPopup(buildPopup(popup, closePopup), { closeButton: false });
+      const makeCloseHandler = (p) => () => {
+        map.closePopup();
+        p?.onClose?.();
+      };
+      if (popup) m.bindPopup(buildPopup(popup, makeCloseHandler(popup)), { closeButton: false });
       if (onClick) m.on('click', onClick);
       return {
         setPosition(p) {
@@ -447,7 +453,7 @@ function createLeafletMap(L, container, { center, zoom, gestureHandling: _gestur
           m.setLatLng([plat, plng]);
         },
         setHtml(h) { m.setIcon(iconFor((typeof h === 'string') ? h : '', height)); },
-        openPopup(p) { if (p) m.bindPopup(buildPopup(p, closePopup), { closeButton: false }); m.openPopup(); },
+        openPopup(p) { if (p) m.bindPopup(buildPopup(p, makeCloseHandler(p)), { closeButton: false }); m.openPopup(); },
         remove() { layer.removeLayer(m); },
       };
     },

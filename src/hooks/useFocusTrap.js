@@ -54,8 +54,8 @@ function releaseScrollLock() {
   if (activeScrollLocks === 0 && savedStyles) {
     const html = document.documentElement;
     const body = document.body;
-    html.style.overflow = savedStyles.htmlOverflow || '';
-    body.style.overflow = savedStyles.bodyOverflow || '';
+    html.style.overflow = savedStyles.htmlOverflow === 'hidden' ? '' : (savedStyles.htmlOverflow || '');
+    body.style.overflow = savedStyles.bodyOverflow === 'hidden' ? '' : (savedStyles.bodyOverflow || '');
     body.style.position = savedStyles.bodyPosition || '';
     body.style.top = savedStyles.bodyTop || '';
     body.style.left = savedStyles.bodyLeft || '';
