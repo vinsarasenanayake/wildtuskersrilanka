@@ -4,7 +4,7 @@
  * with photographic evidence, GPS coordinates, location names, and health condition notes.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Image as ImageIcon, MapPin, Activity, ShieldAlert, Sparkles, AlertCircle } from 'lucide-react';
 import { useSightingForm } from '../../controllers/useTusker';
@@ -23,6 +23,8 @@ export default function AddTuskerSighting() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { formData, initialTusker, error, handleChange, handleImagesChange, submitSighting } = useSightingForm(id);
+  const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     document.title = `Wild Tuskers Sri Lanka | Add Sighting for ${id.toUpperCase()}`;
@@ -30,9 +32,17 @@ export default function AddTuskerSighting() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = await submitSighting();
-    if (success) {
-      navigate(`/tuskers/${id.toLowerCase()}`);
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    setSubmitting(true);
+    try {
+      const success = await submitSighting();
+      if (success) {
+        navigate(`/tuskers/${id.toLowerCase()}`);
+      }
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
     }
   };
 
@@ -260,10 +270,11 @@ export default function AddTuskerSighting() {
               </button>
               <button
                 type="submit"
-                className="w-full portrait:w-full landscape:sm:w-auto bg-primary text-white border-none font-sans text-xs sm:text-[0.88rem] font-semibold rounded-[10px] px-7 py-2.5 sm:py-3 cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_4px_14px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-primary-light hover:shadow-[0_6px_20px_rgba(11,37,24,0.25)] transition-all text-center"
+                disabled={submitting}
+                className="w-full portrait:w-full landscape:sm:w-auto disabled:opacity-60 disabled:cursor-wait bg-primary text-white border-none font-sans text-xs sm:text-[0.88rem] font-semibold rounded-[10px] px-7 py-2.5 sm:py-3 cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_4px_14px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-primary-light hover:shadow-[0_6px_20px_rgba(11,37,24,0.25)] transition-all text-center"
               >
                 <Save size={16} />
-                <span>Save Sighting</span>
+                <span>{submitting ? 'Saving Sighting…' : 'Save Sighting'}</span>
               </button>
             </div>
           </form>

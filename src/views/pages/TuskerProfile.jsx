@@ -909,6 +909,7 @@ function ComparisonFormModal({
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (isSaving) return;
     setFormErr('');
 
     if (!photo) {
@@ -2433,9 +2434,12 @@ export default function TuskerProfile() {
   const [comparisonModal, setComparisonModal] = useState(null); // { type: 'photographic' | 'ear', item?: object, index?: number }
   const [deletingComparison, setDeletingComparison] = useState(null); // { type: 'photographic' | 'ear', index: number, item: object }
   const [isSavingComparison, setIsSavingComparison] = useState(false);
+  const isSavingComparisonRef = useRef(false);
   const [comparisonSaveError, setComparisonSaveError] = useState('');
 
   const handleSaveComparison = async (formData, formType) => {
+    if (isSavingComparisonRef.current) return;
+    isSavingComparisonRef.current = true;
     setIsSavingComparison(true);
     setComparisonSaveError('');
     try {
@@ -2469,12 +2473,14 @@ export default function TuskerProfile() {
       console.error('Failed to save comparison milestone:', err);
       setComparisonSaveError(err.message || 'Failed to save comparison item.');
     } finally {
+      isSavingComparisonRef.current = false;
       setIsSavingComparison(false);
     }
   };
 
   const handleConfirmDeleteComparison = async () => {
-    if (!deletingComparison) return;
+    if (!deletingComparison || isSavingComparisonRef.current) return;
+    isSavingComparisonRef.current = true;
     setIsSavingComparison(true);
     try {
       if (deletingComparison.type === 'photographic') {
@@ -2495,6 +2501,7 @@ export default function TuskerProfile() {
     } catch (err) {
       console.error('Failed to delete comparison milestone:', err);
     } finally {
+      isSavingComparisonRef.current = false;
       setIsSavingComparison(false);
     }
   };

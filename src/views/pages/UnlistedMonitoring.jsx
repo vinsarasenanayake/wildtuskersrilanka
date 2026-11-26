@@ -91,8 +91,12 @@ export default function UnlistedMonitoring() {
     document.title = 'Wild Tuskers Sri Lanka | Unlisted Monitoring';
   }, []);
 
+  const [savingNew, setSavingNew] = useState(false);
+  const savingNewRef = useRef(false);
+
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
+    if (savingNewRef.current) return;
     if (!newFormData.location || !newFormData.description) {
       alert('Please provide at least location and description.');
       return;
@@ -109,6 +113,8 @@ export default function UnlistedMonitoring() {
               : [newFormData.photoUrl])
           : []);
     let created;
+    savingNewRef.current = true;
+    setSavingNew(true);
     try {
       created = await addUnlistedTusker({
         id: newFormData.id.trim() || undefined,
@@ -122,6 +128,9 @@ export default function UnlistedMonitoring() {
     } catch (err) {
       alert(`Could not add unlisted tusker: ${err.message}`);
       return;
+    } finally {
+      savingNewRef.current = false;
+      setSavingNew(false);
     }
     setShowAddModal(false);
     setNewFormData({
@@ -575,9 +584,10 @@ export default function UnlistedMonitoring() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 text-xs font-bold text-white bg-primary hover:bg-primary-light rounded-lg border-none shadow-sm cursor-pointer"
+                  disabled={savingNew}
+                  className="px-5 py-2 text-xs font-bold text-white bg-primary hover:bg-primary-light disabled:opacity-60 disabled:cursor-wait rounded-lg border-none shadow-sm cursor-pointer"
                 >
-                  Save Unlisted Tusker
+                  {savingNew ? 'Saving…' : 'Save Unlisted Tusker'}
                 </button>
               </div>
             </form>

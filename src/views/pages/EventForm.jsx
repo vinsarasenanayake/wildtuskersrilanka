@@ -4,7 +4,7 @@
  * field expeditions, and awareness outreach events.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, CalendarPlus } from 'lucide-react';
 import { useEventForm } from '../../controllers/useProjects';
@@ -28,6 +28,8 @@ export default function EventForm() {
     isPastDate,
   } = useEventForm(eventId);
   const { isAdmin, authLoading } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     document.title = `Wild Tuskers Sri Lanka | ${isEdit ? 'Edit Event' : 'Create Event'}`;
@@ -42,9 +44,17 @@ export default function EventForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = await createEvent();
-    if (success) {
-      navigate('/projects');
+    if (submittingRef.current || loadingEvent) return;
+    submittingRef.current = true;
+    setSubmitting(true);
+    try {
+      const success = await createEvent();
+      if (success) {
+        navigate('/projects');
+      }
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
     }
   };
 
@@ -207,9 +217,9 @@ export default function EventForm() {
               <button type="button" className="w-full portrait:w-full landscape:sm:w-auto bg-none border-1.5 border-[#e8e8e8] text-[#555555] font-sans text-xs sm:text-[0.88rem] font-semibold rounded-[10px] px-6 py-2.5 sm:py-3 cursor-pointer hover:bg-[#f7f7f8] hover:text-[#222222] transition-all text-center justify-center" onClick={() => navigate(-1)}>
                 Cancel
               </button>
-              <button type="submit" disabled={loadingEvent} className="w-full portrait:w-full landscape:sm:w-auto disabled:opacity-60 bg-primary text-white border-none font-sans text-xs sm:text-[0.88rem] font-semibold rounded-[10px] px-7 py-2.5 sm:py-3 cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_4px_14px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-primary-light hover:shadow-[0_6px_20px_rgba(11,37,24,0.25)] transition-all text-center">
+              <button type="submit" disabled={loadingEvent || submitting} className="w-full portrait:w-full landscape:sm:w-auto disabled:opacity-60 disabled:cursor-wait bg-primary text-white border-none font-sans text-xs sm:text-[0.88rem] font-semibold rounded-[10px] px-7 py-2.5 sm:py-3 cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_4px_14px_rgba(11,37,24,0.15)] hover:-translate-y-[0.5px] hover:bg-primary-light hover:shadow-[0_6px_20px_rgba(11,37,24,0.25)] transition-all text-center">
                 <Save size={16} />
-                <span>{isEdit ? 'Save Changes' : 'Create Event'}</span>
+                <span>{submitting ? 'Saving…' : isEdit ? 'Save Changes' : 'Create Event'}</span>
               </button>
             </div>
           </form>

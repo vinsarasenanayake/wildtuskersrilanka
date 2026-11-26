@@ -183,6 +183,7 @@ export default function EditSightingModal({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (saving) return;
     if (!formData.captureDate) {
       setError('Please provide a capture date.');
       return;
