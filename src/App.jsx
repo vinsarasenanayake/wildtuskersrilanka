@@ -227,6 +227,16 @@ function App() {
     }
   }, [location.pathname, location.state, location.hash, location.search, navType]);
 
+  let hasGalleryReturnFlag = false;
+  if (location.pathname === '/gallery') {
+    try {
+      hasGalleryReturnFlag = Boolean(
+        sessionStorage.getItem('wts_last_gallery_photo_id') ||
+        sessionStorage.getItem('wts_last_gallery_scroll')
+      );
+    } catch { /* ignore */ }
+  }
+
   const skipMainFade = Boolean(
     location.state?.scrollToRiskFramework ||
     location.hash?.includes('risk-framework') ||
@@ -234,7 +244,8 @@ function App() {
     location.hash?.includes('zones-map') ||
     location.search?.includes('zone=') ||
     location.state?.returnPhotoId ||
-    location.state?.restoreScroll
+    location.state?.restoreScroll ||
+    hasGalleryReturnFlag
   );
 
   return (

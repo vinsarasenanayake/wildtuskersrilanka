@@ -136,11 +136,11 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
         aria-modal="true"
         aria-labelledby="edit-photo-modal-title"
         tabIndex={-1}
-        className="bg-white rounded-2xl w-full max-w-[580px] overflow-hidden shadow-2xl border border-amber-900/10 animate-fade-in my-auto focus-visible:outline-none"
+        className="bg-white rounded-2xl w-full max-w-[580px] flex flex-col max-h-[90dvh] overflow-hidden shadow-2xl border border-amber-900/10 animate-fade-in focus-visible:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-[#0b2518] px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between text-white border-b border-[#133c27]">
+        <div className="bg-[#0b2518] px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between text-white border-b border-[#133c27] shrink-0">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1 mr-2">
             <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-lg sm:rounded-xl bg-accent/20 flex items-center justify-center text-accent shrink-0 aspect-square">
               <Camera size={18} />
@@ -165,7 +165,7 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
         </div>
 
         {/* Content Body */}
-        <div className="p-5 sm:p-6 max-h-[80vh] overflow-y-auto">
+        <div className="p-5 sm:p-6 flex-1 min-h-0 overflow-y-auto overscroll-contain">
           {success ? (
             <div className="py-12 flex flex-col items-center justify-center text-center">
               <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-3 animate-bounce">
@@ -179,7 +179,7 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
               </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4 font-sans text-sm">
+            <form id="edit-gallery-photo-form" onSubmit={handleSubmit} className="flex flex-col gap-4 font-sans text-sm">
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-3.5 py-2.5 rounded-lg text-xs font-medium">
                   {error}
@@ -322,28 +322,32 @@ export default function EditGalleryPhotoModal({ photo, onClose, onSave }) {
                 </div>
               </div>
 
-              {/* Buttons */}
-              <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-2 sm:gap-2.5 pt-3 border-t border-gray-200 mt-2">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  disabled={saving}
-                  className="w-full sm:w-auto h-9 px-4 rounded-lg font-sans text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors border-none cursor-pointer inline-flex items-center justify-center"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="w-full sm:w-auto h-9 px-5 rounded-lg font-sans text-xs font-semibold text-primary bg-accent hover:bg-accent-hover transition-colors border-none cursor-pointer inline-flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
-                >
-                  <Save size={14} />
-                  <span>{saving ? 'Saving Changes...' : 'Save Changes'}</span>
-                </button>
-              </div>
             </form>
           )}
         </div>
+
+        {/* Pinned Footer */}
+        {!success && (
+          <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-2 sm:gap-2.5 px-5 py-3.5 sm:px-6 border-t border-gray-200 bg-white shrink-0">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              className="w-full sm:w-auto h-10 sm:h-9 px-4 rounded-lg font-sans text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors border-none cursor-pointer inline-flex items-center justify-center"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="edit-gallery-photo-form"
+              disabled={saving}
+              className="w-full sm:w-auto h-10 sm:h-9 px-5 rounded-lg font-sans text-xs font-semibold text-primary bg-accent hover:bg-accent-hover transition-colors border-none cursor-pointer inline-flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+            >
+              <Save size={14} />
+              <span>{saving ? 'Saving Changes...' : 'Save Changes'}</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>,
     document.body

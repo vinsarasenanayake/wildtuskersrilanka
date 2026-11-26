@@ -428,8 +428,8 @@ export default function AdminPortal() {
           </div>
         )}
 
-        {/* Quick Metrics Bar: 2-col balanced on mobile/tablet portrait, 5-col on landscape/desktop */}
-        <div className="grid grid-cols-2 min-[800px]:grid-cols-5 gap-3.5 sm:gap-4 mb-8">
+        {/* Quick Metrics Bar: 2-col on mobile portrait, 3-col on mobile landscape/tablet, 5-col on desktop */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4 mb-8">
           <div
             onClick={() => setActiveTab('tuskers')}
             className={`p-5 rounded-2xl border transition-all cursor-pointer ${activeTab === 'tuskers'
@@ -472,9 +472,9 @@ export default function AdminPortal() {
               : 'bg-white border-[#e2e8e4] hover:border-[#c8d4ce]'
               }`}
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-[#6a7c73] uppercase tracking-wider">Observations</span>
-              <Binoculars size={18} className="text-[#0b2518]" />
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <span className="text-xs font-bold text-[#6a7c73] uppercase tracking-wider truncate">Observations</span>
+              <Binoculars size={18} className="text-[#0b2518] shrink-0" />
             </div>
             {dataLoading && observations.length === 0 ? (
               <div className="h-9 w-16 bg-[#0b2518]/10 animate-pulse rounded-lg my-1" />

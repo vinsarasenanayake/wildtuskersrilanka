@@ -408,10 +408,10 @@ export default function WildTuskersList() {
       </div>
 
       {/* ── Search Toolbar: Name Search, District Filter, Location Filter ── */}
-      <div className="flex items-center gap-3 sm:gap-3.5 mb-4 flex-wrap max-sm:flex-col">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[1fr_205px_205px] lg:grid-cols-[1fr_245px_245px] items-center gap-3 sm:gap-3.5 mb-4">
 
         {/* Name Search (Stretched to fill remaining section width) */}
-        <div className="relative flex-1 min-w-[220px] max-sm:w-full" ref={nameRef}>
+        <div className="relative w-full min-w-0 sm:col-span-2 md:col-span-1" ref={nameRef}>
           <div className="flex items-center gap-2 bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-2.5 transition-all focus-within:border-accent focus-within:bg-white focus-within:ring-3 focus-within:ring-accent/12">
             <Search size={16} className="text-[#aaaaaa] shrink-0" />
             <input
@@ -444,7 +444,7 @@ export default function WildTuskersList() {
         </div>
 
         {/* District Filter (Exact length) */}
-        <div className="relative w-full sm:w-[230px] md:w-[245px] shrink-0" ref={districtRef}>
+        <div className="relative w-full min-w-0" ref={districtRef}>
           <div className="flex items-center gap-2 bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-2.5 transition-all focus-within:border-accent focus-within:bg-white focus-within:ring-3 focus-within:ring-accent/12">
             <Layers size={16} className="text-[#aaaaaa] shrink-0 text-accent" />
             <input
@@ -508,7 +508,7 @@ export default function WildTuskersList() {
         </div>
 
         {/* Location Filter (Exact length, District-scoped) */}
-        <div className="relative w-full sm:w-[230px] md:w-[245px] shrink-0" ref={locationRef}>
+        <div className="relative w-full min-w-0" ref={locationRef}>
           <div className="flex items-center gap-2 bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-2.5 transition-all focus-within:border-accent focus-within:bg-white focus-within:ring-3 focus-within:ring-accent/12">
             <MapPin size={16} className="text-[#aaaaaa] shrink-0 text-accent" />
             <input

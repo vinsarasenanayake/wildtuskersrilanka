@@ -90,6 +90,19 @@ export default function PublicConservationZones({ isActive = true }) {
     return () => cancelAnimationFrame(raf);
   }, [shouldAutoJump, isActive, jumpToMapContainer]);
 
+  // If the user clicks a zone while #zones-map-container is partially scrolled under the navbar
+  // (e.g. mobile landscape split-pane), gently bring the container below the navbar so the overlay card is never clipped
+  useEffect(() => {
+    if (!selectedZone || !isActive || !containerBoxRef.current) return;
+    const headerEl = document.querySelector('header');
+    const navbarHeight = headerEl ? headerEl.getBoundingClientRect().height : (window.innerWidth >= 640 ? 84 : 68);
+    const rect = containerBoxRef.current.getBoundingClientRect();
+    if (rect.top < navbarHeight + 4) {
+      const targetY = Math.max(0, Math.round((window.scrollY || 0) + rect.top - navbarHeight - 12));
+      window.scrollTo({ top: targetY, behavior: 'smooth' });
+    }
+  }, [selectedZone, isActive]);
+
   useEffect(() => {
     getTuskers()
       .then(setTuskers)
@@ -251,7 +264,7 @@ export default function PublicConservationZones({ isActive = true }) {
   };
 
   return (
-    <div className={`w-full flex flex-col gap-4 ${shouldAutoJump ? '' : 'animate-fade-in '}font-sans mb-3 sm:mb-6`}>
+    <div className="w-full flex flex-col gap-4 font-sans mb-3 sm:mb-6">
       
       {/* ── Main Map + Directory Container ── */}
       <div
@@ -514,7 +527,7 @@ export default function PublicConservationZones({ isActive = true }) {
 
             {/* Floating Selected Zone Overlay Card on Map */}
             {selectedZone && (
-              <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-[5] w-[calc(100%-1.5rem)] sm:w-[320px] max-w-[320px] bg-[#0b2518]/95 backdrop-blur-md rounded-2xl shadow-2xl border border-emerald-500/30 text-white p-4 animate-in fade-in">
+              <div className="absolute top-2.5 left-2.5 sm:top-4 sm:left-4 z-[5] w-[calc(100%-1.25rem)] sm:w-[310px] max-w-[310px] bg-[#0b2518]/95 backdrop-blur-md rounded-2xl shadow-2xl border border-emerald-500/30 text-white p-3 sm:p-4 animate-in fade-in">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex items-center gap-2 min-w-0">
                     <span

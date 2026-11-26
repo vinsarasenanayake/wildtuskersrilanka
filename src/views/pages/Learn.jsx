@@ -21,24 +21,27 @@ export default function Learn() {
   const validTabs = ['observations', 'identification', 'zones', 'risk-framework'];
   const activeTab = validTabs.includes(currentTab) ? currentTab : 'observations';
 
-  const scrollElementBelowNavbar = useCallback((elementId, smooth = true) => {
-    const doScroll = (useSmooth) => {
+  const scrollElementBelowNavbar = useCallback((elementId, smooth = true, topGap) => {
+    const doScroll = () => {
       const el = document.getElementById(elementId);
       if (!el) return;
       const headerEl = document.querySelector('header');
       const navbarHeight = headerEl ? headerEl.getBoundingClientRect().height : (window.innerWidth >= 640 ? 84 : 68);
       const rect = el.getBoundingClientRect();
       const currentScrollY = window.scrollY || document.documentElement.scrollTop || 0;
-      const targetY = Math.max(0, Math.round(currentScrollY + rect.top - navbarHeight - 8));
-      if (Math.abs(currentScrollY - targetY) > 4) {
-        window.scrollTo({ top: targetY, behavior: useSmooth ? 'smooth' : 'instant' });
+      const gap = typeof topGap === 'number' ? topGap : (window.innerWidth >= 640 ? 28 : 20);
+      const targetY = Math.max(0, Math.round(currentScrollY + rect.top - navbarHeight - gap));
+      if (Math.abs(currentScrollY - targetY) > 2) {
+        window.scrollTo({ top: targetY, behavior: smooth ? 'smooth' : 'instant' });
       }
     };
-    const t1 = setTimeout(() => doScroll(smooth), 120);
-    const t2 = setTimeout(() => doScroll(false), 420);
+    let raf2 = null;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(doScroll);
+    });
     return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
+      cancelAnimationFrame(raf1);
+      if (raf2 !== null) cancelAnimationFrame(raf2);
     };
   }, []);
 
@@ -51,11 +54,6 @@ export default function Learn() {
     };
     document.title = `Wild Tuskers Sri Lanka | ${titles[activeTab] || 'Research & Educational Hub'}`;
   }, [activeTab]);
-
-  const isDirectZoneJump = Boolean(
-    activeTab === 'zones' &&
-    (searchParams.get('zone') || location.hash?.includes('zones-map') || location.state?.scrollToMap)
-  );
 
   const isDirectRiskJump = Boolean(
     activeTab === 'risk-framework' &&
@@ -92,7 +90,8 @@ export default function Learn() {
     };
     const targetId = tabTargetIds[tabKey];
     if (targetId) {
-      scrollElementBelowNavbar(targetId, true);
+      const gap = tabKey === 'zones' ? (window.innerWidth >= 640 ? 16 : 20) : (window.innerWidth >= 640 ? 28 : 20);
+      scrollElementBelowNavbar(targetId, true, gap);
     }
   };
 
@@ -171,7 +170,7 @@ export default function Learn() {
         <div id="tab-content-identification" className={activeTab === 'identification' ? 'w-full block animate-fade-in' : 'hidden'}>
           <TuskerIdentification embedded />
         </div>
-        <div className={activeTab === 'zones' ? `w-full block ${isDirectZoneJump ? '' : 'animate-fade-in'}` : 'hidden'}>
+        <div className={activeTab === 'zones' ? 'w-full block' : 'hidden'}>
           {activeTab === 'zones' && <PublicConservationZones isActive={true} />}
         </div>
         <div className={activeTab === 'risk-framework' ? `w-full block ${isDirectRiskJump ? '' : 'animate-fade-in'}` : 'hidden'}>

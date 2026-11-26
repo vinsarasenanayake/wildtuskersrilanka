@@ -112,7 +112,7 @@ export default function Gallery() {
       }
     }
 
-    const performScroll = () => {
+    const performScroll = (clearKeys = true) => {
       if (targetId) {
         const card = document.getElementById(`gallery-photo-${targetId}`);
         if (card) {
@@ -121,14 +121,16 @@ export default function Gallery() {
           setTimeout(() => {
             card.classList.remove('ring-4', 'ring-[#0b2518]/40');
           }, 2000);
-          returnTargetIdRef.current = null;
-          try {
-            sessionStorage.removeItem('wts_last_gallery_photo_id');
-            sessionStorage.removeItem('wts_last_gallery_scroll');
-            sessionStorage.removeItem('wts_last_gallery_photo_obj');
-          } catch { /* ignore */ }
-          if (location.state?.returnPhotoId || location.state?.returnPhoto) {
-            window.history.replaceState({}, '', window.location.pathname);
+          if (clearKeys) {
+            returnTargetIdRef.current = null;
+            try {
+              sessionStorage.removeItem('wts_last_gallery_photo_id');
+              sessionStorage.removeItem('wts_last_gallery_scroll');
+              sessionStorage.removeItem('wts_last_gallery_photo_obj');
+            } catch { /* ignore */ }
+            if (location.state?.returnPhotoId || location.state?.returnPhoto) {
+              window.history.replaceState({}, '', window.location.pathname);
+            }
           }
           return true;
         }
@@ -136,10 +138,23 @@ export default function Gallery() {
       return false;
     };
 
-    if (!performScroll()) {
-      const frame = requestAnimationFrame(performScroll);
-      return () => cancelAnimationFrame(frame);
+    // Re-center after iOS Safari swipe-back transition finishes (~150ms-350ms) so Safari's
+    // native snapshot scroll-to-0 cannot override the target photo position
+    const t1 = setTimeout(() => performScroll(false), 150);
+    const t2 = setTimeout(() => performScroll(true), 360);
+
+    if (!performScroll(false)) {
+      const frame = requestAnimationFrame(() => performScroll(false));
+      return () => {
+        cancelAnimationFrame(frame);
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
     }
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, [photos, returnPhotoIdFromNav, location.state]);
 
   const handleCloseLightbox = useCallback(() => {
