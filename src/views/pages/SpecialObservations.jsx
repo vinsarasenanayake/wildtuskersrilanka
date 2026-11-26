@@ -62,7 +62,7 @@ const LOOKALIKE_EXPANDED_PAIRS = [
     location: 'Yala',
     title: 'Pair 04: Devra (Left) vs. Parinda (Right)',
     image: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/observations/lookalikes/4_devra_vs_parinda.jpg',
-    description: `• Left Tusker: Devra (T173) - Roaming Range: Yala\n• Right Tusker: Parinda (T162) - Roaming Range: Yala / Yala Block 3, 5\n• Diagnostic Differences:\n  - Tusks: Devra bears short, parallel tusks with slight asymmetrical elevation (left tusk slightly higher). Parinda's tusks are slightly longer, more divergent, and curve forward with sharper tapering tips.\n  - Ears & Head Conformation: Devra has broad, forward-pointing ear folds with distinctive edge frills. Parinda features smaller, more rounded ear folds and distinctive depigmentation flecks along the inner ear border and trunk bridge.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nKey Takeaway for Field Researchers:\nAlways look beyond tusks alone. Ear notch biometrics, top-fold rolling degree, tears, and depigmentation patterns remain the immutable biometric fingerprints of Sri Lanka's wild tuskers.`,
+    description: `• Left Tusker: Devra (T173) - Roaming Range: Yala\n• Right Tusker: Parinda (T162) - Roaming Range: Yala / Yala Block 3, 5\n• Diagnostic Differences:\n  - Tusks: Devra bears short, parallel tusks with slight asymmetrical elevation (left tusk slightly higher). Parinda's tusks are slightly longer, more divergent, and curve forward with sharper tapering tips.\n  - Ears & Head Conformation: Devra has broad, forward-pointing ear folds with distinctive edge frills. Parinda features smaller, more rounded ear folds and distinctive depigmentation flecks along the inner ear border and trunk bridge.`,
   },
 ];
 

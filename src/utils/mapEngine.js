@@ -437,7 +437,7 @@ function createLeafletMap(L, container, { center, zoom, gestureHandling: _gestur
         map.setView(pos, z, { animate });
       }
     },
-    fitBounds(points, { padding = 50, maxZoom = 13, animate = false, duration = 0.85 } = {}) {
+    fitBounds(points, { padding = 50, maxZoom = 13, animate = true, duration = 0.75 } = {}) {
       map.invalidateSize();
       const bounds = L.latLngBounds(points);
       if (animate && typeof map.flyToBounds === 'function') {
