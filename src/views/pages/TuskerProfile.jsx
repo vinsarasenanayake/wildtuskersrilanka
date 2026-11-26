@@ -2372,6 +2372,170 @@ function DeleteSightingConfirmModal({ deletingSighting, tusker, isDeleting, onCa
   );
 }
 
+/* ── Photographic Comparison Horizontal Carousel (3 visible on desktop, drag/touch + arrows) ── */
+function PhotographicComparisonCarousel({ items, tusker, onSelect }) {
+  const rowRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const isDraggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const scrollLeftRef = useRef(0);
+  const movedDistanceRef = useRef(0);
+  const [isGrabbing, setIsGrabbing] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = rowRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 6);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 6);
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [checkScroll, items.length]);
+
+  const scrollByCard = (direction) => {
+    const el = rowRef.current;
+    if (!el) return;
+    const isDesktop = window.innerWidth >= 640;
+    const step = isDesktop ? (el.clientWidth + 24) / 3 : el.clientWidth * 0.84;
+    el.scrollBy({ left: direction === 'left' ? -step : step, behavior: 'smooth' });
+    setTimeout(checkScroll, 350);
+  };
+
+  const handleMouseDown = (e) => {
+    if (e.button !== 0 || !rowRef.current) return;
+    isDraggingRef.current = true;
+    startXRef.current = e.pageX - rowRef.current.offsetLeft;
+    scrollLeftRef.current = rowRef.current.scrollLeft;
+    movedDistanceRef.current = 0;
+    setIsGrabbing(true);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDraggingRef.current || !rowRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - rowRef.current.offsetLeft;
+    const walk = (x - startXRef.current) * 1.4;
+    movedDistanceRef.current = Math.abs(x - startXRef.current);
+    rowRef.current.scrollLeft = scrollLeftRef.current - walk;
+    checkScroll();
+  };
+
+  const handleMouseUpOrLeave = () => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    setIsGrabbing(false);
+  };
+
+  return (
+    <div className="mt-16 pt-10 border-t border-[#eeeeee]">
+      <div className="flex items-center justify-between gap-4 mb-6 sm:mb-8">
+        <h2 className="font-sans text-[1.35rem] sm:text-[1.6rem] font-bold text-[#111111] leading-snug m-0">
+          Photographic Comparison
+        </h2>
+
+        {(canScrollLeft || canScrollRight) && (
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => scrollByCard('left')}
+              disabled={!canScrollLeft}
+              aria-label="Scroll comparison left"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white hover:bg-[#f7f7f8] disabled:opacity-30 disabled:pointer-events-none text-[#111111] shadow-xs flex items-center justify-center transition-all duration-150 hover:scale-105 active:scale-95 cursor-pointer border border-[#e5e7eb] shrink-0"
+            >
+              <ChevronLeft size={19} strokeWidth={2.5} className="-ml-0.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollByCard('right')}
+              disabled={!canScrollRight}
+              aria-label="Scroll comparison right"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white hover:bg-[#f7f7f8] disabled:opacity-30 disabled:pointer-events-none text-[#111111] shadow-xs flex items-center justify-center transition-all duration-150 hover:scale-105 active:scale-95 cursor-pointer border border-[#e5e7eb] shrink-0"
+            >
+              <ChevronRight size={19} strokeWidth={2.5} className="-mr-0.5" />
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div
+        ref={rowRef}
+        onScroll={checkScroll}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUpOrLeave}
+        onMouseLeave={handleMouseUpOrLeave}
+        className={`flex items-stretch gap-5 sm:gap-6 overflow-x-auto pb-2 overscroll-x-contain select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${
+          isGrabbing ? 'cursor-grabbing' : 'cursor-grab'
+        }`}
+        style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y' }}
+      >
+        {items.map((item, index) => (
+          <div
+            key={item.recordNum || index}
+            className="w-[82%] sm:w-[calc((100%-3rem)/3)] shrink-0 bg-[#fcfdfd] border border-[#e5e7eb] rounded-[16px] overflow-hidden flex flex-col shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+          >
+            {/* Top Location & Year Header Only (No title) */}
+            <div className="px-4 py-3 bg-white border-b border-[#f0f0f0] flex items-center justify-between gap-2 min-h-[44px]">
+              <div className="flex items-center gap-1.5 min-w-0 pr-2">
+                <MapPin size={13} className="text-accent shrink-0" />
+                <span className="font-sans text-[0.82rem] font-semibold text-[#555555] truncate">
+                  {item.location || '-'}
+                </span>
+              </div>
+              <span className="text-[#111111] font-sans text-[0.84rem] font-extrabold flex items-center gap-1.5 shrink-0">
+                <Calendar size={13} className="text-accent shrink-0" />
+                <span>{item.year || item.date || (index === 0 && (tusker.listedDate || tusker.firstRecordedDate || tusker.firstRecordDate || tusker.sightings?.[0]?.captureDate) ? formatDate(tusker.listedDate || tusker.firstRecordedDate || tusker.firstRecordDate || tusker.sightings?.[0]?.captureDate) : '') || '-'}</span>
+              </span>
+            </div>
+
+            {/* Photo Card */}
+            <div
+              onClick={() => {
+                if (movedDistanceRef.current > 6) return;
+                if (item.photo) onSelect(item);
+              }}
+              className={`relative w-full aspect-[4/3] bg-[#eef1ee] overflow-hidden flex items-center justify-center ${
+                item.photo ? 'cursor-pointer group' : ''
+              }`}
+            >
+              {item.photo ? (
+                <>
+                  <img
+                    src={item.photo}
+                    alt={`${tusker.name} ${item.year || ''}`}
+                    draggable={false}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 select-none"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-1.5 font-sans text-xs font-semibold">
+                    <Maximize2 size={16} />
+                    <span>Click to Enlarge</span>
+                  </div>
+                </>
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-[#f8faf9] to-[#edf3ef]">
+                  <Camera size={22} className="opacity-70 text-[#0b2518] mb-2" />
+                  <span className="font-sans text-xs font-bold text-[#2d4036] uppercase tracking-wider mb-1">
+                    {tusker.id} {item.year ? `• ${item.year}` : ''}
+                  </span>
+                  <span className="font-sans text-[0.78rem] text-[#6b7c73] max-w-[200px] leading-tight">
+                    {item.stage || 'Sighting Record'}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ── Main Profile Page ───────────────────────────────────────── */
 export default function TuskerProfile() {
   const { id } = useParams();
@@ -3099,70 +3263,11 @@ export default function TuskerProfile() {
 
         {/* PHOTOGRAPHIC COMPARISON (3x1 Horizontal Collage) */}
         {comparisonList && comparisonList.length > 0 && (
-          <div className="mt-16 pt-10 border-t border-[#eeeeee]">
-            <div className="mb-6 sm:mb-8">
-              <h2 className="font-sans text-[1.35rem] sm:text-[1.6rem] font-bold text-[#111111] leading-snug m-0">
-                Photographic Comparison
-              </h2>
-            </div>
-
-            {/* Responsive Collage: 3 images per row on sm+, fixed size when 1 or 2 */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-6">
-              {comparisonList.map((item, index) => (
-                <div
-                  key={item.recordNum || index}
-                  className="bg-[#fcfdfd] border border-[#e5e7eb] rounded-[16px] overflow-hidden flex flex-col shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
-                >
-                  {/* Top Location & Year Header Only (No title) */}
-                  <div className="px-4 py-3 bg-white border-b border-[#f0f0f0] flex items-center justify-between gap-2 min-h-[44px]">
-                    <div className="flex items-center gap-1.5 min-w-0 pr-2">
-                      <MapPin size={13} className="text-accent shrink-0" />
-                      <span className="font-sans text-[0.82rem] font-semibold text-[#555555] truncate">
-                        {item.location || '-'}
-                      </span>
-                    </div>
-                    <span className="text-[#111111] font-sans text-[0.84rem] font-extrabold flex items-center gap-1.5 shrink-0">
-                      <Calendar size={13} className="text-accent shrink-0" />
-                      <span>{item.year || item.date || (index === 0 && (tusker.listedDate || tusker.firstRecordedDate || tusker.firstRecordDate || tusker.sightings?.[0]?.captureDate) ? formatDate(tusker.listedDate || tusker.firstRecordedDate || tusker.firstRecordDate || tusker.sightings?.[0]?.captureDate) : '') || '-'}</span>
-                    </span>
-                  </div>
-
-                  {/* Photo Card */}
-                  <div
-                    onClick={() => item.photo && setSelectedComparisonImg(item)}
-                    className={`relative w-full aspect-[4/3] bg-[#eef1ee] overflow-hidden flex items-center justify-center ${
-                      item.photo ? 'cursor-pointer group' : ''
-                    }`}
-                  >
-                    {item.photo ? (
-                      <>
-                        <img
-                          src={item.photo}
-                          alt={`${tusker.name} ${item.year || ''}`}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-1.5 font-sans text-xs font-semibold">
-                          <Maximize2 size={16} />
-                          <span>Click to Enlarge</span>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-[#f8faf9] to-[#edf3ef]">
-                        <Camera size={22} className="opacity-70 text-[#0b2518] mb-2" />
-                        <span className="font-sans text-xs font-bold text-[#2d4036] uppercase tracking-wider mb-1">
-                          {tusker.id} {item.year ? `• ${item.year}` : ''}
-                        </span>
-                        <span className="font-sans text-[0.78rem] text-[#6b7c73] max-w-[200px] leading-tight">
-                          {item.stage || 'Sighting Record'}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <PhotographicComparisonCarousel
+            items={comparisonList}
+            tusker={tusker}
+            onSelect={setSelectedComparisonImg}
+          />
         )}
 
         {/* EAR BIOMETRIC COMPARISON (2 Boxes) */}

@@ -608,21 +608,43 @@ export default function TuskerSightingsMap({
     return sightingPoints.filter((rec) => Boolean(rec.coords));
   }, [sightingPoints]);
 
-  // Points displayed on map (filtered if a single sighting is isolated)
+  // Points displayed on map (filtered if a single sighting or special pin is isolated)
   const displayedSightings = useMemo(() => {
     if (selectedPoint) {
       const single = activeSightings.find((p) => p.id === selectedPoint.id);
-      return single ? [single] : activeSightings;
+      return single ? [single] : [];
     }
     return activeSightings;
   }, [selectedPoint, activeSightings]);
 
-  // View full home range handler: restores map to full home range polygon
+  // View full home range handler: zooms cleanly to frame all pinpoints (or full zone polygon if < 2 pins)
   const handleViewHomeRange = useCallback(() => {
     setSelectedPoint(null);
     const map = mapRef.current;
     if (!map) return;
     map.closePopup?.();
+
+    const pinPtsRaw = [];
+    if (lastSeenPoint?.coords) pinPtsRaw.push([lastSeenPoint.coords.lat, lastSeenPoint.coords.lng]);
+    if (firstRecordedPoint?.coords) pinPtsRaw.push([firstRecordedPoint.coords.lat, firstRecordedPoint.coords.lng]);
+    activeSightings.forEach((p) => {
+      if (p.coords) pinPtsRaw.push([p.coords.lat, p.coords.lng]);
+    });
+
+    const uniquePinPts = [];
+    const pinSeen = new Set();
+    pinPtsRaw.forEach(([lat, lng]) => {
+      const k = `${lat.toFixed(4)},${lng.toFixed(4)}`;
+      if (!pinSeen.has(k)) {
+        pinSeen.add(k);
+        uniquePinPts.push([lat, lng]);
+      }
+    });
+
+    if (uniquePinPts.length >= 2) {
+      map.fitBounds(uniquePinPts, { padding: 55, maxZoom: 12 });
+      return;
+    }
 
     if (homeRangeShape?.zoneData?.bbox) {
       map.fitBounds(homeRangeShape.zoneData.bbox, { padding: 40 });
@@ -786,21 +808,17 @@ export default function TuskerSightingsMap({
     const latLngs = [];
     let lastPin = null;
 
-    // ── 2. Render Final Spotted / Last Seen Location Pin (Exact point marked) ──
+    // ── 2–3. Collect Visible Pins & Group Co-located Points in Full-Zone Mode ──
+    const markerEntries = [];
+
     if (lastSeenPoint?.coords && (!selectedPoint || selectedPoint.id === 'last-seen-pin')) {
-      const pos = [lastSeenPoint.coords.lat, lastSeenPoint.coords.lng];
-      latLngs.push(pos);
       const isSelected = selectedPoint?.id === 'last-seen-pin';
       const markerLabel = isDeceased ? 'Final Spotted Location' : 'Last Seen Location';
-
-      const markerHtml = `
-        <div title="${escapeHtml(markerLabel)}: ${escapeHtml(lastSeenPoint.name)}" style="width: 14px; height: 14px; border-radius: 50%; background: ${statusTheme.pinFill}; border: 2.5px solid #ffffff; box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.6); cursor: pointer; transition: transform 0.15s ease; ${isSelected ? 'transform: scale(1.3);' : ''}"></div>
-      `;
-
-      const m = map.addMarker(pos, {
-        html: markerHtml,
-        height: 14,
-        centered: true,
+      markerEntries.push({
+        pos: [lastSeenPoint.coords.lat, lastSeenPoint.coords.lng],
+        point: lastSeenPoint,
+        isSelected,
+        html: `<div title="${escapeHtml(markerLabel)}: ${escapeHtml(lastSeenPoint.name)}" style="width: 14px; height: 14px; border-radius: 50%; background: ${statusTheme.pinFill}; border: 2.5px solid #ffffff; box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.6); cursor: pointer; transition: transform 0.15s ease; ${isSelected ? 'transform: scale(1.3);' : ''}"></div>`,
         popup: {
           badge: markerLabel,
           date: lastSeenPoint.date || 'Registered baseline',
@@ -812,28 +830,16 @@ export default function TuskerSightingsMap({
           ].filter(Boolean),
           onClose: handleViewHomeRange,
         },
-        onClick: () => handleSelectPoint(lastSeenPoint),
       });
-
-      if (isSelected) {
-        lastPin = m;
-      }
     }
 
-    // ── 2.5. Render First Recorded Location Pin (Row 1 Baseline) ──
     if (firstRecordedPoint?.coords && (!selectedPoint || selectedPoint.id === 'first-recorded-pin')) {
-      const pos = [firstRecordedPoint.coords.lat, firstRecordedPoint.coords.lng];
-      latLngs.push(pos);
       const isSelected = selectedPoint?.id === 'first-recorded-pin';
-
-      const markerHtml = `
-        <div title="First Recorded Location: ${escapeHtml(firstRecordedPoint.name)}" style="width: 14px; height: 14px; border-radius: 50%; background: #0b2518; border: 2.5px solid #c69b55; box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.6); cursor: pointer; transition: transform 0.15s ease; ${isSelected ? 'transform: scale(1.3);' : ''}"></div>
-      `;
-
-      const m = map.addMarker(pos, {
-        html: markerHtml,
-        height: 14,
-        centered: true,
+      markerEntries.push({
+        pos: [firstRecordedPoint.coords.lat, firstRecordedPoint.coords.lng],
+        point: firstRecordedPoint,
+        isSelected,
+        html: `<div title="First Recorded Location: ${escapeHtml(firstRecordedPoint.name)}" style="width: 14px; height: 14px; border-radius: 50%; background: #0b2518; border: 2.5px solid #c69b55; box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.6); cursor: pointer; transition: transform 0.15s ease; ${isSelected ? 'transform: scale(1.3);' : ''}"></div>`,
         popup: {
           badge: 'Row 1 • First Recorded Location',
           date: firstRecordedPoint.date || 'Baseline Registration',
@@ -845,28 +851,17 @@ export default function TuskerSightingsMap({
           ].filter(Boolean),
           onClose: handleViewHomeRange,
         },
-        onClick: () => handleSelectPoint(firstRecordedPoint),
       });
-
-      if (isSelected) {
-        lastPin = m;
-      }
     }
 
-    // ── 3. Render Field Sightings (Row 2+) if any exist ──
     displayedSightings.forEach((point) => {
       if (!point.coords) return;
-      const pos = [point.coords.lat, point.coords.lng];
-      latLngs.push(pos);
-
-      const markerHtml = `
-        <div title="Sighting #${escapeHtml(point.sightingNum)}: ${escapeHtml(point.location)}" style="width: 14px; height: 14px; border-radius: 50%; background: #059669; border: 2.5px solid #ffffff; box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.6); cursor: pointer; transition: transform 0.15s ease;"></div>
-      `;
-
-      const m = map.addMarker(pos, {
-        html: markerHtml,
-        height: 14,
-        centered: true,
+      const isSelected = selectedPoint?.id === point.id;
+      markerEntries.push({
+        pos: [point.coords.lat, point.coords.lng],
+        point,
+        isSelected,
+        html: `<div title="Sighting #${escapeHtml(point.sightingNum)}: ${escapeHtml(point.location)}" style="width: 14px; height: 14px; border-radius: 50%; background: #059669; border: 2.5px solid #ffffff; box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.6); cursor: pointer; transition: transform 0.15s ease;"></div>`,
         popup: {
           badge: `Sighting #${point.sightingNum}`,
           date: point.date,
@@ -877,10 +872,44 @@ export default function TuskerSightingsMap({
           ].filter(Boolean),
           onClose: handleViewHomeRange,
         },
-        onClick: () => handleSelectPoint(point),
+      });
+    });
+
+    // Group markers that share the exact same coordinates when viewing full zone
+    const groupedByCoord = new Map();
+    markerEntries.forEach((entry) => {
+      const coordKey = selectedPoint
+        ? entry.point.id
+        : `${entry.pos[0].toFixed(4)},${entry.pos[1].toFixed(4)}`;
+      if (!groupedByCoord.has(coordKey)) {
+        groupedByCoord.set(coordKey, []);
+      }
+      groupedByCoord.get(coordKey).push(entry);
+    });
+
+    groupedByCoord.forEach((group) => {
+      const primary = group[0];
+      latLngs.push(primary.pos);
+
+      const isMulti = group.length > 1;
+      const combinedTitle = group.map((g) => g.popup.badge).join(' & ');
+      const markerHtml = isMulti
+        ? `<div title="${escapeHtml(combinedTitle)} (${group.length} records at this location)" style="position: relative; width: 16px; height: 16px; border-radius: 50%; background: ${statusTheme.pinFill}; border: 2.5px solid #ffffff; box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.6); cursor: pointer; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 9px; font-weight: 800; font-family: sans-serif;">${group.length}</div>`
+        : primary.html;
+
+      const popupConfig = isMulti
+        ? { items: group.map((g) => g.popup), onClose: () => map.closePopup?.() }
+        : primary.popup;
+
+      const m = map.addMarker(primary.pos, {
+        html: markerHtml,
+        height: isMulti ? 16 : 14,
+        centered: true,
+        popup: popupConfig,
+        onClick: isMulti ? undefined : () => handleSelectPoint(primary.point),
       });
 
-      if (selectedPoint?.id === point.id) {
+      if (group.some((g) => g.isSelected)) {
         lastPin = m;
       }
     });
@@ -889,6 +918,8 @@ export default function TuskerSightingsMap({
     if (selectedPoint && lastPin) {
       map.setView([selectedPoint.coords.lat, selectedPoint.coords.lng], 12, { animate: true });
       lastPin.openPopup();
+    } else if (latLngs.length >= 2) {
+      map.fitBounds(latLngs, { padding: 55, maxZoom: 12 });
     } else if (homeRangeShape?.zoneData?.bbox) {
       map.fitBounds(homeRangeShape.zoneData.bbox, { padding: 40 });
     } else if (uniquePts.length === 1) {

@@ -94,14 +94,10 @@ export function loadGoogleMaps() {
 }
 
 /* ── Popup content (built from text, never raw HTML) ──────────────── */
-function buildPopup({ badge, date, title, lines = [] } = {}, onClose) {
-  const root = document.createElement('div');
-  root.style.cssText =
-    'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-width:240px;max-width:310px;line-height:1.4;padding:4px 2px;color:#f3f4f6;position:relative;';
-
+function renderPopupSection(parent, { badge, date, title, lines = [] } = {}, hasClosePadding = false) {
   const top = document.createElement('div');
   top.style.cssText =
-    'display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;padding-right:24px;';
+    `display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;${hasClosePadding ? 'padding-right:24px;' : ''}`;
 
   const leftMeta = document.createElement('div');
   leftMeta.style.cssText = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;';
@@ -120,7 +116,35 @@ function buildPopup({ badge, date, title, lines = [] } = {}, onClose) {
     leftMeta.appendChild(d);
   }
   top.appendChild(leftMeta);
-  root.appendChild(top);
+  parent.appendChild(top);
+
+  if (title) {
+    const t = document.createElement('div');
+    t.style.cssText =
+      'font-weight:700;font-size:13.5px;color:#ffffff;line-height:1.3;margin-bottom:4px;word-break:break-word;';
+    t.textContent = title;
+    parent.appendChild(t);
+  }
+
+  lines.filter(Boolean).forEach((line) => {
+    const l = document.createElement('div');
+    const trimmed = String(line).trim();
+    if (/^-?\d+\.\d+,\s*-?\d+\.\d+$/.test(trimmed)) {
+      l.style.cssText =
+        'display:inline-flex;align-items:center;gap:4px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;font-weight:600;color:#a7f3d0;background:#13261c;padding:2px 7px;border-radius:5px;border:1px solid #1f422e;margin-top:4px;';
+      l.textContent = `📍 ${trimmed}`;
+    } else {
+      l.style.cssText = 'font-size:11.5px;color:#d1d5db;margin-top:2px;line-height:1.35;';
+      l.textContent = line;
+    }
+    parent.appendChild(l);
+  });
+}
+
+function buildPopup(popupData = {}, onClose) {
+  const root = document.createElement('div');
+  root.style.cssText =
+    'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-width:240px;max-width:310px;max-height:260px;overflow-y:auto;line-height:1.4;padding:4px 2px;color:#f3f4f6;position:relative;';
 
   if (onClose) {
     const closeBtn = document.createElement('button');
@@ -139,26 +163,17 @@ function buildPopup({ badge, date, title, lines = [] } = {}, onClose) {
     root.appendChild(closeBtn);
   }
 
-  if (title) {
-    const t = document.createElement('div');
-    t.style.cssText =
-      'font-weight:700;font-size:13.5px;color:#ffffff;line-height:1.3;margin-bottom:4px;word-break:break-word;';
-    t.textContent = title;
-    root.appendChild(t);
-  }
+  const sections = Array.isArray(popupData.items) && popupData.items.length > 0
+    ? popupData.items
+    : [popupData];
 
-  lines.filter(Boolean).forEach((line) => {
-    const l = document.createElement('div');
-    const trimmed = String(line).trim();
-    if (/^-?\d+\.\d+,\s*-?\d+\.\d+$/.test(trimmed)) {
-      l.style.cssText =
-        'display:inline-flex;align-items:center;gap:4px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;font-weight:600;color:#a7f3d0;background:#13261c;padding:2px 7px;border-radius:5px;border:1px solid #1f422e;margin-top:4px;';
-      l.textContent = `📍 ${trimmed}`;
-    } else {
-      l.style.cssText = 'font-size:11.5px;color:#d1d5db;margin-top:2px;line-height:1.35;';
-      l.textContent = line;
+  sections.forEach((sec, idx) => {
+    const wrap = document.createElement('div');
+    if (idx > 0) {
+      wrap.style.cssText = 'margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.14);';
     }
-    root.appendChild(l);
+    renderPopupSection(wrap, sec, idx === 0);
+    root.appendChild(wrap);
   });
 
   return root;
