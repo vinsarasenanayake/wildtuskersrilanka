@@ -42,6 +42,7 @@ import {
   Loader2,
   AlertCircle,
   Sliders,
+  LayoutGrid,
 } from 'lucide-react';
 import { useTuskerProfile } from '../../controllers/useTusker';
 import { calculateTuskerAge, parseSightingDetails, updateSighting, deleteSighting, updateTusker, getRecordTimestamp } from '../../models/TuskerModel';
@@ -51,6 +52,7 @@ import EditSightingModal from '../components/EditSightingModal';
 import ImageUploadBox from '../components/ImageUploadBox';
 import LocationSearchInput from '../components/LocationSearchInput';
 import PhotoWatermarkBadge from '../components/PhotoWatermarkBadge';
+import PhotographicCollageModal from '../components/PhotographicCollageModal';
 import { getCachedAspect, setCachedAspect, probeImageAspect } from '../../utils/photoAspectCache';
 import useFocusTrap from '../../hooks/useFocusTrap';
 
@@ -1672,14 +1674,14 @@ function ComparisonPhotoLightbox({
 
           {/* Milestone Thumbnails Strip (if > 1) */}
           {items && items.length > 1 && (
-            <div className="flex items-center justify-between gap-3 pt-2 border-t border-white/10">
-              <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-thin">
+            <div className="flex flex-col gap-1.5 pt-2 border-t border-white/10">
+              <div className="flex items-center gap-2 overflow-x-auto py-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {items.map((it, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => changeItem(idx)}
-                    className={`h-11 px-2.5 rounded-lg flex items-center gap-2 border transition-all cursor-pointer bg-black/40 text-left ${idx === activeIdx
+                    className={`h-11 px-2.5 rounded-lg flex items-center gap-2 border transition-all cursor-pointer bg-black/40 text-left shrink-0 ${idx === activeIdx
                       ? 'border-accent ring-2 ring-accent/60 bg-white/15'
                       : 'border-white/15 opacity-60 hover:opacity-100 hover:border-white/40'
                       }`}
@@ -1699,7 +1701,7 @@ function ComparisonPhotoLightbox({
                 ))}
               </div>
 
-              <div className="text-[11px] text-white/40 hidden md:flex items-center gap-2 shrink-0">
+              <div className="text-[11px] text-white/40 hidden md:flex items-center justify-end gap-2">
                 <span>Scroll / Double-click to zoom</span>
                 <span>•</span>
                 <span>Drag to pan</span>
@@ -2377,6 +2379,8 @@ function PhotographicComparisonCarousel({ items, tusker, onSelect }) {
   const rowRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [showCollageModal, setShowCollageModal] = useState(false);
+  const photoItemsCount = useMemo(() => (items || []).filter((i) => Boolean(i?.photo)).length, [items]);
 
   const isDraggingRef = useRef(false);
   const startXRef = useRef(0);
@@ -2532,6 +2536,30 @@ function PhotographicComparisonCarousel({ items, tusker, onSelect }) {
           </div>
         ))}
       </div>
+
+      {photoItemsCount >= 2 && (
+        <div className="mt-5 pt-4 border-t border-[#f0f0f0] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <p className="font-sans text-xs sm:text-[0.86rem] text-[#555555] m-0 leading-relaxed max-w-2xl">
+            Select two or more sightings from {tusker?.name ? `${tusker.name}'s` : 'this tusker\'s'} chronological timeline to generate and download a single side-by-side photographic comparison collage.
+          </p>
+          <button
+            type="button"
+            onClick={() => setShowCollageModal(true)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[10px] bg-primary hover:bg-primary-light text-white font-sans text-xs sm:text-[0.85rem] font-semibold border-none cursor-pointer shadow-xs transition-all shrink-0 whitespace-nowrap"
+          >
+            <LayoutGrid size={15} className="text-accent" />
+            <span>Create Photography Comparison Collage</span>
+          </button>
+        </div>
+      )}
+
+      <PhotographicCollageModal
+        isOpen={showCollageModal}
+        onClose={() => setShowCollageModal(false)}
+        tusker={tusker}
+        items={items}
+        formatDate={formatDate}
+      />
     </div>
   );
 }
