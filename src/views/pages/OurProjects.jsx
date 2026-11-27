@@ -307,12 +307,12 @@ function ProjectCard({ event, isAdmin, onEdit, onDelete, onPhotoClick }) {
           </div>
         </div>
 
-        {/* Row 2: Organizer on left, Admin action buttons on right (same horizontal line on all screens) */}
-        <div className="flex items-center justify-between gap-2 w-full">
+        {/* Row 2: Organizer on left, Admin action buttons on right */}
+        <div className="flex items-center justify-between gap-2 flex-wrap w-full">
           {event.sharedBy ? (
-            <span className="inline-flex items-center gap-1.5 font-sans text-[0.75rem] sm:text-[0.82rem] text-[#6b7280] min-w-0 truncate">
+            <span className="inline-flex items-center gap-1.5 font-sans text-[0.75rem] sm:text-[0.82rem] text-[#6b7280] min-w-0">
               <User size={13} className="text-[#9ca3af] shrink-0" />
-              <span className="truncate">
+              <span>
                 Organized by <strong className="text-[#374151] font-semibold">{event.sharedBy}</strong>
               </span>
             </span>

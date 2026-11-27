@@ -227,7 +227,7 @@ export default function UnlistedMonitoring() {
             <input
               type="text"
               className="border-none bg-transparent outline-none font-sans text-[0.88rem] sm:text-[0.9rem] text-[#111111] caret-[#111111] w-full placeholder:text-[#bbbbbb]"
-              placeholder="Search unlisted ID or location..."
+              placeholder="Search ID or location…"
               value={searchQuery}
               onChange={e => handleSearchInput(e.target.value)}
             />

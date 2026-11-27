@@ -163,7 +163,7 @@ export default function EventForm() {
                   name="location"
                   value={formData.location}
                   onChange={handleChange}
-                  placeholder="Search venue, building, store, park, or pick on map..."
+                  placeholder="Search venue or location…"
                   showMapButton={true}
                   autoComplete="off"
                   className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"

@@ -209,7 +209,7 @@ export default function SpecialObservationForm() {
                 </label>
                 <LocationSearchInput
                   name="location"
-                  placeholder="e.g. Yala National Park - Block 1"
+                  placeholder="e.g. Yala - Block 1"
                   value={formData.location}
                   onChange={handleChange}
                   className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
@@ -226,7 +226,7 @@ export default function SpecialObservationForm() {
                   name="title"
                   required
                   className="w-full bg-[#f7f7f8] border-1.5 border-[#e8e8e8] rounded-[10px] px-3.5 py-3 font-sans text-[0.92rem] text-[#111111] outline-none transition-all placeholder:text-[#bbbbbb] focus:border-accent focus:bg-white focus:ring-3 focus:ring-accent/12"
-                  placeholder="e.g. Rare Musth Encounter & Territorial Dominance"
+                  placeholder="e.g. Rare Musth Encounter"
                   value={formData.title}
                   onChange={handleChange}
                 />

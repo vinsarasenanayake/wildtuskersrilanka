@@ -967,7 +967,7 @@ function SubmitPhotoModal({ onClose, onSuccess }) {
                   id="photo-location"
                   name="location"
                   required
-                  placeholder="e.g. Udawalawe / Minneriya"
+                  placeholder="e.g. Udawalawe"
                   value={formData.location}
                   onChange={handleChange}
                   className="w-full bg-[#f7f7f8] border border-[#e5e5e5] rounded-lg py-2.5 outline-none focus:border-accent focus:bg-white text-sm scroll-mt-28"

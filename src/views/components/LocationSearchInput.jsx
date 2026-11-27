@@ -124,7 +124,7 @@ export default function LocationSearchInput({
               });
             }
           })
-          .catch(() => {});
+          .catch(() => { });
       }, 300);
     }
   }, [modalSearch]);
@@ -415,10 +415,10 @@ export default function LocationSearchInput({
     if (!map) return;
     const popup = name
       ? {
-          badge: 'Selected Location',
-          title: name,
-          lines: [`${lat.toFixed(4)}, ${lng.toFixed(4)}`],
-        }
+        badge: 'Selected Location',
+        title: name,
+        lines: [`${lat.toFixed(4)}, ${lng.toFixed(4)}`],
+      }
       : null;
     if (modalMarkerRef.current) {
       modalMarkerRef.current.setPosition([lat, lng]);
@@ -569,7 +569,7 @@ export default function LocationSearchInput({
 
   const dynamicPlaceholder = multi
     ? selectedLocations.length > 0
-      ? 'Search & add another home range location (e.g. Wellawaya)...'
+      ? 'Search & add another…'
       : placeholder || 'Search & select home range (e.g. Buttala)...'
     : placeholder;
 
@@ -622,7 +622,10 @@ export default function LocationSearchInput({
           required={required && (!multi || selectedLocations.length === 0)}
           disabled={disabled}
           autoComplete={autoComplete}
-          className={`${baseInputStyle} pl-10 pr-24 text-ellipsis`}
+          className={`${baseInputStyle} pl-10 ${showMapButton
+            ? (inputValue || (multi && selectedLocations.length > 0) ? 'pr-24' : 'pr-18')
+            : (inputValue || (multi && selectedLocations.length > 0) ? 'pr-10' : 'pr-3.5')
+            } text-ellipsis`}
         />
 
         {/* Right Action Buttons */}
@@ -686,9 +689,8 @@ export default function LocationSearchInput({
                     key={index}
                     onClick={() => handleSelect(item)}
                     onMouseEnter={() => setSelectedIndex(index)}
-                    className={`px-3.5 py-2.5 flex items-start gap-3 cursor-pointer transition-colors ${
-                      isSelected ? 'bg-[#faf5ec]' : 'hover:bg-[#fafaf8]'
-                    }`}
+                    className={`px-3.5 py-2.5 flex items-start gap-3 cursor-pointer transition-colors ${isSelected ? 'bg-[#faf5ec]' : 'hover:bg-[#fafaf8]'
+                      }`}
                   >
                     <div className="mt-0.5 w-6 h-6 rounded-full bg-[#f4f4f0] text-accent flex items-center justify-center shrink-0">
                       <MapPin size={13} />

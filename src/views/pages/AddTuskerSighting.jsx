@@ -69,7 +69,7 @@ export default function AddTuskerSighting() {
             <div className="w-[46px] h-[46px] sm:w-[50px] sm:h-[50px] rounded-[12px] bg-accent/12 text-accent flex items-center justify-center mb-1 shrink-0 aspect-square">
               <ImageIcon size={20} />
             </div>
-            <h1 className="font-sans text-lg sm:text-[1.45rem] font-bold text-[#111111] m-0 whitespace-nowrap truncate max-w-full">
+            <h1 className="font-sans text-base sm:text-[1.45rem] font-bold text-[#111111] m-0 leading-snug max-w-full">
               Add Photo / Sighting for {tuskerDisplayName}
             </h1>
             <p className="font-sans text-xs sm:text-[0.88rem] text-[#777777] max-w-[540px] leading-relaxed m-0">
@@ -167,7 +167,7 @@ export default function AddTuskerSighting() {
                   </label>
                   <LocationSearchInput
                     name="lastSeenArea"
-                    placeholder="e.g. Kumana / Panama"
+                    placeholder="e.g. Kumana"
                     className={INPUT_CLASS}
                     value={formData.lastSeenArea}
                     onChange={handleChange}

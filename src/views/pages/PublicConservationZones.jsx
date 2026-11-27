@@ -275,28 +275,30 @@ export default function PublicConservationZones({ isActive = true }) {
         
         {/* Mobile View Switcher */}
         <div className="portrait:flex landscape:hidden flex items-center justify-center p-2.5 bg-[#0b2518] border-b border-white/10 shrink-0">
-          <div className="flex rounded-xl bg-white/10 p-1 border border-white/15 w-full max-w-sm text-xs font-semibold">
+          <div className="flex rounded-xl bg-white/10 p-1 border border-white/15 w-full max-w-sm text-[11px] sm:text-xs font-semibold">
             <button
               type="button"
               onClick={() => setMobileTab('map')}
-              className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer border-none ${
+              className={`flex-1 min-w-0 py-2 px-2 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer border-none whitespace-nowrap ${
                 mobileTab === 'map'
                   ? 'bg-accent text-primary font-bold shadow-xs'
                   : 'bg-transparent text-gray-300 hover:text-white'
               }`}
             >
-              <MapPin size={14} /> Map Canvas
+              <MapPin size={13} className="shrink-0" />
+              <span>Map Canvas</span>
             </button>
             <button
               type="button"
               onClick={() => setMobileTab('directory')}
-              className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer border-none ${
+              className={`flex-1 min-w-0 py-2 px-2 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer border-none whitespace-nowrap ${
                 mobileTab === 'directory'
                   ? 'bg-accent text-primary font-bold shadow-xs'
                   : 'bg-transparent text-gray-300 hover:text-white'
               }`}
             >
-              <Layers size={14} /> Tuskers Directory ({filteredTuskers.length})
+              <Layers size={13} className="shrink-0" />
+              <span>Tuskers Directory ({filteredTuskers.length})</span>
             </button>
           </div>
         </div>
@@ -392,7 +394,7 @@ export default function PublicConservationZones({ isActive = true }) {
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder={selectedZone ? `Search within ${selectedZone}…` : 'Search tusker name, ID, or district…'}
+                  placeholder={selectedZone ? `Search within ${selectedZone}…` : 'Search name, ID, or district…'}
                   className="w-full pl-8 pr-8 py-2 text-xs bg-[#f4f7f5] border border-[#dce3df] rounded-lg text-[#0b2518] placeholder:text-[#9aa8a0] focus:outline-none focus:border-accent focus:bg-white"
                 />
                 {query && (
@@ -408,7 +410,7 @@ export default function PublicConservationZones({ isActive = true }) {
               </div>
 
               {/* Status Filter Chips */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
+              <div className="flex flex-wrap items-center gap-1.5 pb-0.5">
                 <button
                   type="button"
                   onClick={() => setStatusFilter('')}

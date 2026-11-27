@@ -206,7 +206,7 @@ export default function TuskerForm() {
                 <LocationSearchInput
                   name="location"
                   multi={true}
-                  placeholder="Search & add home range locations (e.g. Buttala, Wellawaya, Kumana, Panama)..."
+                  placeholder="Search & add location…"
                   value={formData.location}
                   onChange={handleChange}
                   className={INPUT_CLASS}
@@ -218,7 +218,7 @@ export default function TuskerForm() {
               <Field label="First Recorded Location">
                 <LocationSearchInput
                   name="firstRecordedLocation"
-                  placeholder="e.g. Okanda, Kumana, Galgamuwa..."
+                  placeholder="e.g. Okanda, Kumana"
                   value={formData.firstRecordedLocation}
                   onChange={handleChange}
                   className={INPUT_CLASS}
@@ -376,7 +376,7 @@ export default function TuskerForm() {
                 <Field label="Final Spotted Location">
                   <LocationSearchInput
                     name="lastSeenArea"
-                    placeholder="e.g. Okanda, Kumana, Galgamuwa..."
+                    placeholder="e.g. Okanda, Kumana"
                     value={formData.lastSeenArea}
                     onChange={handleChange}
                     className={INPUT_CLASS}
@@ -434,7 +434,7 @@ export default function TuskerForm() {
                       type="text"
                       name="healthCondition"
                       className={INPUT_CLASS}
-                      placeholder="e.g. Good, Healthy, Injured"
+                      placeholder="e.g. Good, Healthy"
                       value={formData.healthCondition}
                       onChange={handleChange}
                     />
@@ -446,7 +446,7 @@ export default function TuskerForm() {
                   <Field label="Last Seen Area">
                     <LocationSearchInput
                       name="lastSeenArea"
-                      placeholder="e.g. Galgamuwa, Yala, Wilpattu..."
+                      placeholder="e.g. Galgamuwa, Yala"
                       value={formData.lastSeenArea}
                       onChange={handleChange}
                       className={INPUT_CLASS}
@@ -536,13 +536,13 @@ export default function TuskerForm() {
               {/* District: Spanning full width for clean horizontal tags and comfortable interaction */}
               <Field
                 label={
-                  <div className="flex items-center justify-between w-full">
+                  <div className="flex flex-wrap items-center justify-between gap-2 w-full">
                     <span>Administrative District(s)</span>
                     <button
                       type="button"
                       onClick={handleAutoDetectRegion}
                       title="Auto-detect districts from home range and sighting locations"
-                      className="inline-flex items-center gap-1.5 text-[0.74rem] font-semibold text-accent hover:text-accent-hover bg-accent/10 hover:bg-accent/20 px-2.5 py-0.5 rounded-full border border-accent/30 transition-all cursor-pointer"
+                      className="inline-flex items-center gap-1.5 text-[0.72rem] sm:text-[0.74rem] font-semibold text-accent hover:text-accent-hover bg-accent/10 hover:bg-accent/20 px-2.5 py-0.5 rounded-full border border-accent/30 transition-all cursor-pointer whitespace-nowrap shrink-0"
                     >
                       <Sparkles size={11} className="text-accent" />
                       <span>Auto-detect from Home Range</span>
@@ -581,7 +581,7 @@ export default function TuskerForm() {
                     type="text"
                     name="province"
                     className={INPUT_CLASS}
-                    placeholder="Auto-derived from selected districts (e.g. Southern / Uva)"
+                    placeholder="Auto-derived from districts"
                     value={formData.province}
                     onChange={handleChange}
                   />
@@ -613,7 +613,7 @@ export default function TuskerForm() {
                       type="text"
                       name="riskLink"
                       className={INPUT_CLASS}
-                      placeholder="#risk-assessment (default) or https://..."
+                      placeholder="#risk-assessment or https://…"
                       value={formData.riskLink}
                       onChange={handleChange}
                     />
