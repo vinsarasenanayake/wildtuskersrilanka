@@ -39,7 +39,7 @@ export default function RiskFrameworkView() {
             WTS Multi-Factorial Risk Evaluation Framework
           </h2>
 
-          <p className="text-gray-300 text-sm sm:text-base leading-relaxed mt-4 max-w-3xl">
+          <p className="text-gray-300 text-sm sm:text-base leading-relaxed mt-4 max-w-3xl text-justify">
             Sri Lanka’s wild tuskers represent less than two percent of the island&apos;s total wild elephant population. 
             To effectively protect these rare genetic flagships amid escalating Human-Elephant Conflict (HEC), 
             Wild Tuskers Sri Lanka (WTS) developed an evidence-based risk prioritization index. 

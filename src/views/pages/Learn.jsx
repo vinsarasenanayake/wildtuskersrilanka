@@ -6,9 +6,9 @@
  * (morphological identification guides, ear biometrics, and presentations).
  */
 
-import React, { useEffect, useLayoutEffect, useCallback, useRef } from 'react';
-import { useSearchParams, useLocation } from 'react-router-dom';
-import { GraduationCap, Binoculars, Layers, ShieldAlert } from 'lucide-react';
+import React, { useEffect, useLayoutEffect, useCallback, useRef, useState } from 'react';
+import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
+import { GraduationCap, Binoculars, Layers, ShieldAlert, ArrowLeft } from 'lucide-react';
 import SpecialObservations from './SpecialObservations';
 import TuskerIdentification from './TuskerIdentification';
 import PublicConservationZones from './PublicConservationZones';
@@ -17,6 +17,21 @@ import RiskFrameworkView from './RiskFrameworkView';
 export default function Learn() {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [fromTusker, setFromTusker] = useState(() =>
+    location.state?.fromTuskerPath
+      ? { path: location.state.fromTuskerPath, name: location.state.fromTuskerName || 'Tusker Profile' }
+      : null
+  );
+
+  useEffect(() => {
+    if (location.state?.fromTuskerPath) {
+      setFromTusker({
+        path: location.state.fromTuskerPath,
+        name: location.state.fromTuskerName || 'Tusker Profile',
+      });
+    }
+  }, [location.state?.fromTuskerPath, location.state?.fromTuskerName]);
   const currentTab = searchParams.get('tab');
   const validTabs = ['observations', 'identification', 'zones', 'risk-framework'];
   const activeTab = validTabs.includes(currentTab) ? currentTab : 'observations';
@@ -189,9 +204,37 @@ export default function Learn() {
           <TuskerIdentification embedded />
         </div>
         <div className={activeTab === 'zones' ? 'w-full block' : 'hidden'}>
-          {activeTab === 'zones' && <PublicConservationZones isActive={true} />}
+          {activeTab === 'zones' && (
+            <>
+              {fromTusker && (
+                <div className="mb-3">
+                  <button
+                    type="button"
+                    onClick={() => navigate(fromTusker.path)}
+                    className="inline-flex items-center gap-1.5 font-sans text-xs sm:text-sm font-semibold text-primary bg-white hover:bg-[#f0f3f1] border border-[#dce3df] rounded-xl px-3.5 py-2 cursor-pointer transition-colors shadow-2xs"
+                  >
+                    <ArrowLeft size={15} className="text-accent shrink-0" />
+                    <span>Back to {fromTusker.name}</span>
+                  </button>
+                </div>
+              )}
+              <PublicConservationZones isActive={true} />
+            </>
+          )}
         </div>
         <div className={activeTab === 'risk-framework' ? `w-full block ${isDirectRiskJump ? '' : 'animate-fade-in'}` : 'hidden'}>
+          {fromTusker && activeTab === 'risk-framework' && (
+            <div className="mb-3">
+              <button
+                type="button"
+                onClick={() => navigate(fromTusker.path)}
+                className="inline-flex items-center gap-1.5 font-sans text-xs sm:text-sm font-semibold text-primary bg-white hover:bg-[#f0f3f1] border border-[#dce3df] rounded-xl px-3.5 py-2 cursor-pointer transition-colors shadow-2xs"
+              >
+                <ArrowLeft size={15} className="text-accent shrink-0" />
+                <span>Back to {fromTusker.name}</span>
+              </button>
+            </div>
+          )}
           <RiskFrameworkView />
         </div>
 

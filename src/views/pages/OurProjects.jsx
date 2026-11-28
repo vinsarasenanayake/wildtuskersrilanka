@@ -441,6 +441,7 @@ export default function OurProjects() {
   const [selectedYear, setSelectedYear] = useState('ALL');
   const [actionNotice, setActionNotice] = useState(null);
   const [activeLightboxPhoto, setActiveLightboxPhoto] = useState(null);
+  const [activeLightboxPhotos, setActiveLightboxPhotos] = useState([]);
 
   // Compute available years for past events (sorted descending)
   const availableYears = useMemo(() => {
@@ -537,13 +538,20 @@ export default function OurProjects() {
   };
 
   const handlePhotoClick = (imgUrl, event) => {
-    setActiveLightboxPhoto({
-      imageUrl: imgUrl,
-      title: event.title,
-      date: event.date,
-      author: event.sharedBy,
+    const rawImages = Array.isArray(event?.images) && event.images.length > 0
+      ? event.images
+      : (event?.image ? [event.image] : [imgUrl]);
+    const photosList = rawImages.map((url, idx) => ({
+      id: `${event?.id || 'event'}-${idx}`,
+      imageUrl: url,
+      title: event?.title,
+      date: event?.date,
+      author: event?.sharedBy,
       item: event,
-    });
+    }));
+    const clicked = photosList.find((p) => p.imageUrl === imgUrl) || photosList[0];
+    setActiveLightboxPhotos(photosList);
+    setActiveLightboxPhoto(clicked);
   };
 
   return (
@@ -751,7 +759,12 @@ export default function OurProjects() {
       {activeLightboxPhoto && (
         <ImageLightboxModal
           photo={activeLightboxPhoto}
-          onClose={() => setActiveLightboxPhoto(null)}
+          allPhotos={activeLightboxPhotos}
+          onNavigatePhoto={setActiveLightboxPhoto}
+          onClose={() => {
+            setActiveLightboxPhoto(null);
+            setActiveLightboxPhotos([]);
+          }}
           fromPath="/projects"
         />
       )}

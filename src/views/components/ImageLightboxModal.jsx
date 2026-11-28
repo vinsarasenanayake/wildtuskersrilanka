@@ -199,9 +199,11 @@ export default function ImageLightboxModal({
   const touchStartDistRef = useRef(0);
   const touchStartScaleRef = useRef(1);
   const lastTapRef = useRef(0);
+  const swipeStartRef = useRef(null);
 
   const handleTouchStart = (e) => {
     if (e.touches.length === 2) {
+      swipeStartRef.current = null;
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
@@ -212,6 +214,7 @@ export default function ImageLightboxModal({
     } else if (e.touches.length === 1) {
       const now = Date.now();
       if (now - lastTapRef.current < 300) {
+        swipeStartRef.current = null;
         toggleZoom(e);
         lastTapRef.current = 0;
         return;
@@ -219,11 +222,17 @@ export default function ImageLightboxModal({
       lastTapRef.current = now;
 
       if (scale > 1) {
+        swipeStartRef.current = null;
         setIsDragging(true);
         hasDraggedRef.current = false;
         dragStartRef.current = {
           x: e.touches[0].clientX - position.x,
           y: e.touches[0].clientY - position.y,
+        };
+      } else {
+        swipeStartRef.current = {
+          x: e.touches[0].clientX,
+          y: e.touches[0].clientY,
         };
       }
     }
@@ -254,7 +263,19 @@ export default function ImageLightboxModal({
     }
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e) => {
+    if (scale === 1 && swipeStartRef.current && e?.changedTouches?.length && allPhotos.length > 1 && onNavigatePhoto) {
+      const dx = e.changedTouches[0].clientX - swipeStartRef.current.x;
+      const dy = e.changedTouches[0].clientY - swipeStartRef.current.y;
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+        const curIdx = allPhotos.findIndex((p) => (p.id && photo?.id ? p.id === photo.id : p.imageUrl === photo?.imageUrl));
+        if (curIdx !== -1) {
+          const nextIdx = dx < 0 ? (curIdx + 1) % allPhotos.length : (curIdx - 1 + allPhotos.length) % allPhotos.length;
+          onNavigatePhoto(allPhotos[nextIdx]);
+        }
+      }
+    }
+    swipeStartRef.current = null;
     setIsDragging(false);
     touchStartDistRef.current = 0;
   };

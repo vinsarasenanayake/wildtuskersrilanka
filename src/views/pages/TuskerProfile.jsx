@@ -3196,7 +3196,11 @@ export default function TuskerProfile() {
                       </span>
                       <Link
                         to="/tusker-insights?tab=risk-framework"
-                        state={{ scrollToRiskFramework: true }}
+                        state={{
+                          scrollToRiskFramework: true,
+                          fromTuskerPath: `/tuskers/${tusker.id.toLowerCase()}`,
+                          fromTuskerName: `${tusker.id} - ${tusker.name}`,
+                        }}
                         className="inline-flex items-center gap-1 font-sans text-[0.82rem] font-semibold text-accent hover:text-accent-hover hover:underline transition-colors"
                       >
                         View Risk Calculation <ExternalLink size={12} />
@@ -3268,7 +3272,11 @@ export default function TuskerProfile() {
                       {tusker.zone && (
                         <Link
                           to={`/tusker-insights?tab=zones${tusker.zone ? `&zone=${encodeURIComponent(tusker.zone.match(/Zone\s*([1-4])/i) ? `Zone ${tusker.zone.match(/Zone\s*([1-4])/i)[1]}` : tusker.zone)}` : ''}#zones-map`}
-                          state={{ scrollToMap: true }}
+                          state={{
+                            scrollToMap: true,
+                            fromTuskerPath: `/tuskers/${tusker.id.toLowerCase()}`,
+                            fromTuskerName: `${tusker.id} - ${tusker.name}`,
+                          }}
                           className="inline-flex items-center gap-1 font-sans text-[0.82rem] font-semibold text-accent hover:text-accent-hover hover:underline transition-colors ml-1"
                         >
                           View Conservation Zones <ExternalLink size={12} />
