@@ -212,9 +212,46 @@ export default function TuskerForm() {
                   className={INPUT_CLASS}
                 />
               </Field>
-              <Field label="First Recorded Date">
-                <input type="date" name="listedDate" max={todayLocalISO()} className={INPUT_CLASS} placeholder="DD/MM/YYYY" value={formData.listedDate || ''} onChange={handleChange} />
-              </Field>
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <label className="font-sans text-[0.75rem] sm:text-[0.78rem] font-semibold text-[#555555] uppercase tracking-[0.6px]">
+                    {formData.exactFirstRecordDate ? 'First Recorded Date' : 'First Recorded Year'}
+                  </label>
+                  <label className="inline-flex items-center gap-1.5 font-sans text-[0.74rem] font-semibold text-primary cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      name="exactFirstRecordDate"
+                      checked={Boolean(formData.exactFirstRecordDate)}
+                      onChange={handleChange}
+                      className="w-3.5 h-3.5 accent-primary cursor-pointer rounded"
+                    />
+                    <span>Know exact date</span>
+                  </label>
+                </div>
+                {formData.exactFirstRecordDate ? (
+                  <input
+                    type="date"
+                    name="listedDate"
+                    max={todayLocalISO()}
+                    className={INPUT_CLASS}
+                    placeholder="DD/MM/YYYY"
+                    value={formData.listedDate || ''}
+                    onChange={handleChange}
+                  />
+                ) : (
+                  <input
+                    type="number"
+                    name="listedDate"
+                    min="1900"
+                    max={new Date().getFullYear()}
+                    step="1"
+                    className={INPUT_CLASS}
+                    placeholder="e.g. 2026 (Year only)"
+                    value={formData.listedDate || ''}
+                    onChange={handleChange}
+                  />
+                )}
+              </div>
               <Field label="First Recorded Location">
                 <LocationSearchInput
                   name="firstRecordedLocation"
@@ -235,6 +272,9 @@ export default function TuskerForm() {
                 label="Profile &amp; Field Photos"
                 folder="tuskers"
                 multiple
+                allowCrop
+                cropTitle="Crop Tusker Photo"
+                cropSubtitle="Drag the crop box or handles to frame the tusker cleanly."
                 value={formData.photos && formData.photos.length > 0 ? formData.photos : (formData.photo ? [formData.photo] : [])}
                 onChange={handlePhotosChange}
                 aspectClass="aspect-[16/10]"

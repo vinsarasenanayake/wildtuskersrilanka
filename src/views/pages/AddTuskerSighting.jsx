@@ -99,6 +99,9 @@ export default function AddTuskerSighting() {
                     required
                     folder="sightings"
                     multiple
+                    allowCrop
+                    cropTitle="Crop Sighting Photo"
+                    cropSubtitle="Drag the crop box or handles to frame the tusker sighting cleanly."
                     value={formData.imageUrls && formData.imageUrls.length > 0 ? formData.imageUrls : (formData.imageUrl ? [formData.imageUrl] : [])}
                     onChange={handleImagesChange}
                     aspectClass="aspect-[16/10]"

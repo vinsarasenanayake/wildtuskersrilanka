@@ -178,14 +178,14 @@ function cleanToken(s) {
   return String(s || '').replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim();
 }
 
-function formatDate(dateStr) {
+function formatDate(dateStr, { exact = false } = {}) {
   if (!dateStr) return '';
   const parts = String(dateStr).split('-');
   if (parts.length === 3) {
     const year = parts[0];
     const monthIndex = parseInt(parts[1], 10) - 1;
     const day = parseInt(parts[2], 10);
-    if (parts[1] === '01' && parts[2] === '01') {
+    if (!exact && parts[1] === '01' && parts[2] === '01') {
       return year;
     }
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -472,6 +472,10 @@ export default function TuskerSightingsMap({
       });
     });
 
+    if (sightings.length > 0) {
+      sightings[sightings.length - 1].isLastSeen = true;
+    }
+
 
     // ── 4. Determine Last Seen Pin in this range (exact name + coordinates) ──
     const rawParts = rawLoc ? rawLoc.split(/\s*[/]\s*/).map(cleanToken).filter(Boolean) : [];
@@ -568,7 +572,7 @@ export default function TuskerSightingsMap({
       shape = waitingForParks ? null : buildHomeRange(parkPolygons, placeCoords);
     }
 
-    const lastSeen = (lastSeenAreaName && lastSeenCoords)
+    const lastSeen = (sightings.length === 0 && lastSeenAreaName && lastSeenCoords)
       ? {
         id: 'last-seen-pin',
         type: 'lastSeen',
@@ -593,7 +597,7 @@ export default function TuskerSightingsMap({
           title: `${tusker.name || 'Tusker'} (${tusker.id}) - First Recorded Location`,
           location: firstLoc,
           coords: firstCoords,
-          date: formatDate(tusker.listedDate) || tusker.listedDate || 'Baseline Registration',
+          date: formatDate(tusker.listedDate, { exact: Boolean(tusker.exactFirstRecordDate) }) || tusker.listedDate || 'Baseline Registration',
           author: tusker.recordedBy || 'WTS Admin',
           badge: 'Row 1 • First Recorded Location',
         };
@@ -863,13 +867,15 @@ export default function TuskerSightingsMap({
     displayedSightings.forEach((point) => {
       if (!point.coords) return;
       const isSelected = selectedPoint?.id === point.id;
+      const lastSeenTag = point.isLastSeen ? (isDeceased ? 'Last Known Location' : 'Last Seen Location') : null;
+      const badgeText = lastSeenTag ? `Sighting #${point.sightingNum} · ${lastSeenTag}` : `Sighting #${point.sightingNum}`;
       markerEntries.push({
         pos: [point.coords.lat, point.coords.lng],
         point,
         isSelected,
-        html: `<div title="Sighting #${escapeHtml(point.sightingNum)}: ${escapeHtml(point.location)}" style="width: 14px; height: 14px; border-radius: 50%; background: #059669; border: 2.5px solid #ffffff; box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.6); cursor: pointer; transition: transform 0.15s ease;"></div>`,
+        html: `<div title="${escapeHtml(badgeText)}: ${escapeHtml(point.location)}" style="width: 14px; height: 14px; border-radius: 50%; background: ${point.isLastSeen ? statusTheme.pinFill : '#059669'}; border: 2.5px solid #ffffff; box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.6); cursor: pointer; transition: transform 0.15s ease;"></div>`,
         popup: {
-          badge: `Sighting #${point.sightingNum}`,
+          badge: badgeText,
           date: point.date,
           title: point.location,
           lines: [
@@ -1226,11 +1232,13 @@ export default function TuskerSightingsMap({
             </div>
           )}
 
-          {/* First Recorded Location Pin Card */}
-          {firstRecordedPoint && (
+          {/* First Recorded Location Pin Card (Row 1) */}
+          {tusker && (
             <div
-              onClick={() => handleSelectPoint(firstRecordedPoint)}
-              className={`shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs cursor-pointer transition-all select-none ${selectedPoint?.id === 'first-recorded-pin'
+              onClick={() => firstRecordedPoint && handleSelectPoint(firstRecordedPoint)}
+              className={`shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs transition-all select-none ${
+                firstRecordedPoint ? 'cursor-pointer' : 'cursor-default'
+              } ${selectedPoint?.id === 'first-recorded-pin'
                 ? 'bg-amber-50 text-amber-950 border-amber-400 ring-2 ring-amber-300/40 shadow-xs'
                 : 'bg-white text-gray-700 border-gray-200 hover:border-amber-300 shadow-2xs'
                 }`}
@@ -1246,13 +1254,17 @@ export default function TuskerSightingsMap({
                   <span>First Recorded Location</span>
                 </div>
                 <div className={`text-[11px] truncate max-w-[180px] ${selectedPoint?.id === 'first-recorded-pin' ? 'text-amber-800 font-medium' : 'text-[#666666]'}`}>
-                  {firstRecordedPoint.name}
+                  {firstRecordedPoint?.name || tusker.firstRecordedLocation || 'Location not set'}
                 </div>
               </div>
-              {selectedPoint?.id === 'first-recorded-pin' ? (
-                <Check size={12} className="text-amber-700" />
+              {firstRecordedPoint ? (
+                selectedPoint?.id === 'first-recorded-pin' ? (
+                  <Check size={12} className="text-amber-700" />
+                ) : (
+                  <MapPin size={12} className="text-gray-400" />
+                )
               ) : (
-                <MapPin size={12} className="text-gray-400" />
+                <AlertCircle size={12} className="text-amber-500" title="Set First Recorded Location in Edit Profile to show pin on map" />
               )}
               {typeof onEditTusker === 'function' && (
                 <button
@@ -1290,8 +1302,13 @@ export default function TuskerSightingsMap({
                   S{point.sightingNum}
                 </div>
                 <div>
-                  <div className="font-bold flex items-center gap-1">
+                  <div className="font-bold flex items-center gap-1.5 flex-wrap">
                     <span>Sighting #{point.sightingNum}</span>
+                    {point.isLastSeen && (
+                      <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300/70 text-[10px] font-bold uppercase tracking-wide">
+                        {isDeceased ? 'Last Known Location' : 'Last Seen Location'}
+                      </span>
+                    )}
                   </div>
                   <div className={`text-[11px] truncate max-w-[140px] ${isSelected ? 'text-emerald-800 font-medium' : 'text-[#666666]'}`}>
                     {point.location} · {point.date}

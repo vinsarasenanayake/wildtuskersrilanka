@@ -61,6 +61,7 @@ export default function ImageUploadBox({
   // Interactive Cropper Modal state
   const [cropperOpen, setCropperOpen] = useState(false);
   const [cropperSource, setCropperSource] = useState(null);
+  const [cropperIndex, setCropperIndex] = useState(null);
 
   // Default to multiple=true unless circle mode or explicitly set to false
   const isMultiple = circle ? false : (multiple !== undefined ? multiple : true);
@@ -267,7 +268,12 @@ export default function ImageUploadBox({
       }
 
       if (finalUrl) {
-        emitChange([finalUrl]);
+        if (isMultiple && cropperIndex !== null && cropperIndex >= 0 && cropperIndex < imageList.length) {
+          const nextList = imageList.map((u, i) => (i === cropperIndex ? finalUrl : u));
+          emitChange(nextList);
+        } else {
+          emitChange([finalUrl]);
+        }
       }
     } catch (err) {
       console.error('[ImageUploadBox] handleCropComplete error:', err);
@@ -276,6 +282,7 @@ export default function ImageUploadBox({
       setUploading(false);
       setUploadCount(0);
       setCropperSource(null);
+      setCropperIndex(null);
     }
   };
 
@@ -721,6 +728,25 @@ export default function ImageUploadBox({
                     <GripVertical size={13} />
                   </span>
 
+                  {/* Crop button (bottom-left so it never overlaps Primary badge) */}
+                  {allowCrop && !isVideoUrl(url) && (
+                    <button
+                      type="button"
+                      draggable={false}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCropperIndex(idx);
+                        setCropperSource(url);
+                        setCropperOpen(true);
+                      }}
+                      title={cropLabel}
+                      className="absolute bottom-1.5 left-1.5 w-6 h-6 rounded-full bg-black/65 hover:bg-accent hover:text-primary text-white flex items-center justify-center border-none cursor-pointer transition-colors shadow-xs z-20"
+                    >
+                      <Crop size={12} />
+                    </button>
+                  )}
+
                   {/* Remove button */}
                   <button
                     type="button"
@@ -797,6 +823,7 @@ export default function ImageUploadBox({
           onClose={() => {
             setCropperOpen(false);
             setCropperSource(null);
+            setCropperIndex(null);
           }}
           onCropComplete={handleCropComplete}
         />

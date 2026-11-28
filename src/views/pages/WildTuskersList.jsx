@@ -10,7 +10,7 @@ import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { Search, MapPin, X, ChevronDown, PlusCircle, Radar, ArrowUpDown, Check, Layers } from 'lucide-react';
 import { useTuskerList } from '../../controllers/useTusker';
 import { useAuth } from '../../controllers/useAuth';
-import { LIVING_STATUSES } from '../../models/TuskerModel';
+import { LIVING_STATUSES, getTuskerCardPhoto } from '../../models/TuskerModel';
 import StatusBadge from '../components/StatusBadge';
 import Footer from '../components/Footer';
 import PhotoWatermarkBadge from '../components/PhotoWatermarkBadge';
@@ -642,7 +642,9 @@ export default function WildTuskersList() {
         <div className="flex items-center justify-center min-h-[60vh] font-sans text-[#e53e3e]">Could not load tuskers: {loadError}</div>
       ) : filtered.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3.5 sm:gap-x-6 gap-y-6 sm:gap-y-8 min-h-[60vh] content-start">
-          {visibleTuskers.map(tusker => (
+          {visibleTuskers.map(tusker => {
+            const cardPhoto = getTuskerCardPhoto(tusker);
+            return (
             <Link
               key={tusker.id}
               id={`tusker-card-${tusker.id.toLowerCase()}`}
@@ -664,15 +666,15 @@ export default function WildTuskersList() {
                     className="absolute top-2 left-2 z-[2] text-[0.68rem] px-2 py-0.5"
                   />
                 )}
-                {tusker.photos && tusker.photos[0] ? (
+                {cardPhoto ? (
                   <img
-                    src={thumbUrl(tusker.photos[0])}
+                    src={thumbUrl(cardPhoto)}
                     alt={tusker.name}
                     loading="lazy"
                     decoding="async"
                     onLoad={(e) => {
                       if (e.target.naturalWidth && e.target.naturalHeight) {
-                        setCachedAspect(tusker.photos[0], e.target.naturalHeight > e.target.naturalWidth);
+                        setCachedAspect(cardPhoto, e.target.naturalHeight > e.target.naturalWidth);
                       }
                     }}
                     className="w-full h-full object-cover absolute inset-0"
@@ -683,7 +685,7 @@ export default function WildTuskersList() {
                     <span className="flex items-center gap-[3px] font-sans text-[0.74rem] text-[#4a5568]"><MapPin size={11} className="text-accent shrink-0" /> {tusker.location}</span>
                   </>
                 )}
-                {tusker.photos && tusker.photos[0] && (
+                {cardPhoto && (
                   <PhotoWatermarkBadge
                     size="sm"
                     className={tusker.livingStatus && tusker.livingStatus !== 'Alive' ? '!top-1.5 !left-auto !right-1.5' : '!top-1.5 !left-1.5'}
@@ -701,7 +703,8 @@ export default function WildTuskersList() {
                 </p>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center gap-4 min-h-[60vh] py-8 px-4 text-[#4a5568] font-sans text-[0.95rem]">

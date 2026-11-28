@@ -227,12 +227,16 @@ function mapTusker(row) {
       /* ignore */
     }
   }
-  // Extract embedded deathDate from remarks if present
+  // Extract embedded deathDate and exactFirstRecordDate from remarks if present
   if (t.remarks && typeof t.remarks === 'string') {
     const ddMatch = t.remarks.match(/<!--death_date:(.*?)-->/);
     if (ddMatch) {
       t.deathDate = ddMatch[1].trim();
       t.remarks = t.remarks.replace(/<!--death_date:.*?-->/g, '').trim();
+    }
+    if (/<!--exact_first_date:1-->/.test(t.remarks)) {
+      t.exactFirstRecordDate = true;
+      t.remarks = t.remarks.replace(/<!--exact_first_date:1-->/g, '').trim();
     }
   }
   // Fallback deathDate for deceased tuskers if not explicitly set
@@ -571,11 +575,12 @@ export function getTuskerComparison(tusker) {
     const rawFirstDate = tusker.listedDate || tusker.firstRecordedDate || tusker.firstRecordDate || (tusker.sightings?.[0]?.captureDate) || '';
     const formattedDate = formatDisplayDate(rawFirstDate);
     return tusker.photographicComparison.map((item, idx) => {
-      if (idx === 0 && (!item.year || item.year === '-')) {
+      if (idx === 0) {
         return {
           ...item,
-          year: formattedDate || rawFirstDate || item.year || '',
-          date: rawFirstDate || formattedDate || item.date || '',
+          year: (!item.year || item.year === '-') ? (formattedDate || rawFirstDate || item.year || '') : item.year,
+          date: (!item.date || item.date === '-') ? (rawFirstDate || formattedDate || item.date || '') : item.date,
+          location: (!item.location || item.location === '-') ? (tusker.firstRecordedLocation || '') : item.location,
         };
       }
       return item;
@@ -712,4 +717,75 @@ export function getTuskerEarComparison(tusker) {
       changeType: changeType
     }
   ];
+}
+
+function extractSightingImages(sighting) {
+  if (!sighting) return [];
+  const details = parseSightingDetails(sighting);
+  const raw = [];
+  if (Array.isArray(details.images)) {
+    details.images.forEach((u) => {
+      if (u && typeof u === 'string' && u.trim()) raw.push(u.trim());
+    });
+  }
+  if (sighting.imageUrl) {
+    if (Array.isArray(sighting.imageUrl)) {
+      sighting.imageUrl.forEach((u) => {
+        if (u && typeof u === 'string' && u.trim()) raw.push(u.trim());
+      });
+    } else if (typeof sighting.imageUrl === 'string') {
+      sighting.imageUrl.split(',').forEach((u) => {
+        const trimmed = u.trim();
+        if (trimmed) raw.push(trimmed);
+      });
+    }
+  }
+  if (sighting.note && typeof sighting.note === 'string' && sighting.note.trim().startsWith('{')) {
+    try {
+      const parsed = JSON.parse(sighting.note);
+      const list = Array.isArray(parsed.images)
+        ? parsed.images
+        : (Array.isArray(parsed.imageUrls) ? parsed.imageUrls : []);
+      list.forEach((u) => {
+        if (u && typeof u === 'string' && u.trim()) raw.push(u.trim());
+      });
+    } catch {
+      /* ignore */
+    }
+  }
+  return [...new Set(raw)];
+}
+
+/**
+ * Returns the photos from the tusker's latest sighting that has images,
+ * falling back to the baseline profile photos if no sightings have images.
+ */
+export function getLatestSightingPhotos(tusker) {
+  if (!tusker) return [];
+  const sightings = Array.isArray(tusker.sightings) ? [...tusker.sightings] : [];
+  if (sightings.length > 0) {
+    sightings.sort((a, b) => {
+      const timeA = getRecordTimestamp(a.captureDate);
+      const timeB = getRecordTimestamp(b.captureDate);
+      if (timeA !== timeB) return timeA - timeB;
+      return (a.id || 0) - (b.id || 0);
+    });
+    for (let i = sightings.length - 1; i >= 0; i -= 1) {
+      const imgs = extractSightingImages(sightings[i]);
+      if (imgs.length > 0) return imgs;
+    }
+  }
+  if (Array.isArray(tusker.photos) && tusker.photos.length > 0) {
+    return tusker.photos.filter(Boolean);
+  }
+  return tusker.photo ? [tusker.photo] : [];
+}
+
+/**
+ * Returns the primary thumbnail photo for a tusker card:
+ * the latest sighting's primary image, or baseline profile photo if none.
+ */
+export function getTuskerCardPhoto(tusker) {
+  const photos = getLatestSightingPhotos(tusker);
+  return photos[0] || '';
 }

@@ -77,10 +77,13 @@ export default function PhotographicCollageModal({
           item.recordNum === 1 || idx === 0
             ? '1st Record'
             : `Sighting #${item.recordNum ? item.recordNum - 1 : idx}`;
+        const rawLoc = (item.location || (idx === 0 ? tusker?.firstRecordedLocation : '') || '').trim();
+        const locationLabel = rawLoc && rawLoc !== '-' ? rawLoc : '';
         return {
           ...item,
           _idx: idx,
           yearLabel: String(yearLabel),
+          locationLabel,
           recordLabel,
         };
       })
@@ -151,7 +154,8 @@ export default function PhotographicCollageModal({
       const gap = 6;
       const outerPad = 24;
       const headerH = 68;
-      const footerH = 48;
+      const hasAnyLocation = selectedItems.some((item) => Boolean(item.locationLabel));
+      const footerH = hasAnyLocation ? 64 : 48;
 
       const canvasW = outerPad * 2 + count * panelW + (count - 1) * gap;
       const canvasH = outerPad + headerH + panelH + footerH + outerPad;
@@ -172,8 +176,10 @@ export default function PhotographicCollageModal({
       ctx.fillText(tuskerHeaderText, canvasW / 2, outerPad + headerH / 2 - 4, canvasW - outerPad * 2);
 
       const imgY = outerPad + headerH;
-      const labelY = imgY + panelH + footerH / 2 + 2;
       const yearFontSize = count <= 5 ? 20 : 17;
+      const locFontSize = count <= 5 ? 13 : 11;
+      const yearLabelY = hasAnyLocation ? imgY + panelH + 22 : imgY + panelH + footerH / 2 + 2;
+      const locLabelY = imgY + panelH + 45;
 
       selectedItems.forEach((item, i) => {
         const x = outerPad + i * (panelW + gap);
@@ -186,7 +192,13 @@ export default function PhotographicCollageModal({
         ctx.font = `700 ${yearFontSize}px "Segoe UI", system-ui, -apple-system, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(item.yearLabel, x + panelW / 2, labelY, panelW - 12);
+        ctx.fillText(item.yearLabel, x + panelW / 2, yearLabelY, panelW - 12);
+
+        if (item.locationLabel) {
+          ctx.fillStyle = '#555555';
+          ctx.font = `500 ${locFontSize}px "Segoe UI", system-ui, -apple-system, sans-serif`;
+          ctx.fillText(item.locationLabel, x + panelW / 2, locLabelY, panelW - 14);
+        }
       });
 
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 0.95));
@@ -376,8 +388,15 @@ export default function PhotographicCollageModal({
                               className="w-full h-full object-cover block"
                             />
                           </div>
-                          <div className="py-1.5 text-center font-sans text-xs sm:text-[0.8rem] font-bold text-[#111111] bg-white">
-                            {item.yearLabel}
+                          <div className="py-1.5 px-1 text-center font-sans bg-white flex flex-col items-center gap-0.5 min-w-0">
+                            <span className="text-xs sm:text-[0.8rem] font-bold text-[#111111] leading-tight">
+                              {item.yearLabel}
+                            </span>
+                            {item.locationLabel && (
+                              <span className="text-[10px] sm:text-[11px] font-medium text-[#666666] leading-tight truncate max-w-full">
+                                {item.locationLabel}
+                              </span>
+                            )}
                           </div>
                         </div>
                       ))}

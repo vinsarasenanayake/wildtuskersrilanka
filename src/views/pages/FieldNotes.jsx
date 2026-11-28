@@ -72,7 +72,7 @@ export default function FieldNotes() {
         // Automatically default admin to review tab if there are pending notes
         setActiveTab('pending');
       } else if (availableYears.length > 0) {
-        setActiveTab(availableYears[0]);
+        setActiveTab('all');
       }
     }
   }, [authLoading, availableYears, activeTab, isAdmin, pendingNotes.length, setActiveTab]);
@@ -109,7 +109,14 @@ export default function FieldNotes() {
   };
 
   const isPendingView = activeTab === 'pending';
-  const activeYearNotes = !isPendingView && activeTab ? notesByYear[activeTab] || [] : [];
+  const isAllYears = activeTab === 'all';
+  const activeYearNotes = isPendingView
+    ? []
+    : isAllYears
+      ? availableYears.flatMap((year) => notesByYear[year] || [])
+      : activeTab
+        ? notesByYear[activeTab] || []
+        : [];
 
   return (
     <div className="bg-[#f0f2f5] min-h-screen pt-[calc(68px+1.5rem)] sm:pt-[calc(80px+2.5rem)] pb-20">
@@ -142,7 +149,7 @@ export default function FieldNotes() {
             Field Notes On Wild Tuskers Sri Lanka
           </h1>
           <p className="font-sans text-sm sm:text-[0.98rem] md:text-[1.02rem] text-[#555555] leading-relaxed max-w-3xl mx-auto m-0 text-center">
-            A <strong>Field Note</strong> documents an authentic, on-the-ground encounter with a wild tusker in its natural habitat, capturing details such as location, behavior, physical condition, and herd interactions. Anyone, including wildlife photographers, safari guides, researchers, and everyday visitors, can submit sightings and photos here. Once reviewed by our team, approved field notes are published to help monitor and safeguard Sri Lanka’s rare tuskers.
+            Help safeguard Sri Lanka’s rare tuskers for generations to come. By sharing your sightings, photographs, and observations, you contribute to a growing conservation record that helps identify, monitor, and protect these extraordinary elephants. Every observation adds another piece to their story. Your sighting today can become tomorrow’s conservation legacy.
           </p>
 
           {!isAdmin && (
@@ -204,6 +211,19 @@ export default function FieldNotes() {
                     {pendingNotes.length}
                   </span>
                 )}
+              </button>
+            )}
+
+            {/* All Years Tab */}
+            {availableYears.length > 0 && (
+              <button
+                onClick={() => setActiveTab('all')}
+                className={`flex-1 sm:flex-initial text-center font-sans text-xs sm:text-[0.95rem] font-bold py-2 sm:py-2.5 px-4 sm:px-6 rounded-t-[8px] transition-colors cursor-pointer border-none outline-none shrink-0 whitespace-nowrap ${activeTab === 'all'
+                  ? 'bg-[#f3f4f6] text-[#111111]'
+                  : 'bg-[#4b5563] text-white hover:bg-[#374151]'
+                  }`}
+              >
+                All Years
               </button>
             )}
 
@@ -386,7 +406,7 @@ export default function FieldNotes() {
                     <FileText size={56} strokeWidth={1.2} />
                   </div>
                   <p className="font-sans text-[0.95rem] text-[#888888] m-0">
-                    No approved field notes available for {activeTab}.
+                    No approved field notes available{isAllYears ? '' : ` for ${activeTab}`}.
                   </p>
                 </div>
               ) : (

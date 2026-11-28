@@ -292,6 +292,9 @@ export default function EditSightingModal({
             <ImageUploadBox
               folder="sightings"
               multiple
+              allowCrop
+              cropTitle="Crop Sighting Photo"
+              cropSubtitle="Drag the crop box or handles to frame the tusker sighting cleanly."
               value={formData.images && formData.images.length > 0 ? formData.images : (formData.imageUrl ? [formData.imageUrl] : [])}
               onChange={handleImageChange}
               aspectClass="aspect-[16/10]"

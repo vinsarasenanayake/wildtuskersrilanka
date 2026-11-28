@@ -842,6 +842,7 @@ const EMPTY_TUSKER_FORM = {
   location: '',
   firstRecordedLocation: '',
   listedDate: '',
+  exactFirstRecordDate: false,
   recordedBy: '',
   nicknameGivenBy: '',
   description: '',
@@ -889,6 +890,13 @@ export function useTuskerForm(id) {
         if (existing[k] !== null && existing[k] !== undefined) next[k] = String(existing[k]);
       });
       next.lastSeen = existing.lastSeen ? String(existing.lastSeen).slice(0, 10) : '';
+      const rawListed = existing.listedDate ? String(existing.listedDate).slice(0, 10) : '';
+      const isNonJan1Date = /^\d{4}-\d{2}-\d{2}$/.test(rawListed) && !rawListed.endsWith('-01-01');
+      const hasExactFirstDate = Boolean(existing.exactFirstRecordDate || isNonJan1Date);
+      next.exactFirstRecordDate = hasExactFirstDate;
+      if (rawListed) {
+        next.listedDate = hasExactFirstDate ? rawListed : rawListed.slice(0, 4);
+      }
       if (existing.deathDate) {
         next.deathDate = String(existing.deathDate);
       } else if (existing.livingStatus === 'Deceased') {
@@ -907,8 +915,25 @@ export function useTuskerForm(id) {
   }, [id, isEditMode]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, type, value, checked } = e.target;
+    if (name === 'exactFirstRecordDate') {
+      const nextChecked = Boolean(checked);
+      setFormData((prev) => {
+        const currentListed = String(prev.listedDate || '').trim();
+        let nextListed = currentListed;
+        if (nextChecked) {
+          if (/^\d{4}$/.test(currentListed)) {
+            nextListed = `${currentListed}-01-01`;
+          }
+        } else {
+          const ym = currentListed.match(/^(\d{4})/);
+          nextListed = ym ? ym[1] : '';
+        }
+        return { ...prev, exactFirstRecordDate: nextChecked, listedDate: nextListed };
+      });
+      return;
+    }
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
   const handlePhotosChange = (urls) => {
@@ -942,9 +967,28 @@ export function useTuskerForm(id) {
         return false;
       }
     }
-    if (f.listedDate && f.listedDate > todayLocalISO()) {
-      setError('Registration / listed date cannot be in the future.');
-      return false;
+    let normalizedListedDate = '';
+    if (f.listedDate) {
+      const s = String(f.listedDate).trim();
+      if (f.exactFirstRecordDate) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+          setError('Please select a valid First Recorded Date.');
+          return false;
+        }
+        if (s > todayLocalISO()) {
+          setError('Registration / listed date cannot be in the future.');
+          return false;
+        }
+        normalizedListedDate = s;
+      } else {
+        const yrMatch = s.match(/^(\d{4})/);
+        const currentYear = new Date().getFullYear();
+        if (!yrMatch || Number(yrMatch[1]) < 1900 || Number(yrMatch[1]) > currentYear) {
+          setError(`First Recorded Year must be a valid 4-digit year (1900–${currentYear}).`);
+          return false;
+        }
+        normalizedListedDate = `${yrMatch[1]}-01-01`;
+      }
     }
 
     const formattedId = f.id.toUpperCase();
@@ -982,14 +1026,17 @@ export function useTuskerForm(id) {
     }
 
     let remarksToSave = f.remarks || '';
+    remarksToSave = remarksToSave.replace(/<!--death_date:.*?-->/g, '').replace(/<!--exact_first_date:1-->/g, '').trim();
     if (isDeceased && normalizedDeathDate) {
-      remarksToSave = `${remarksToSave.replace(/<!--death_date:.*?-->/g, '').trim()} <!--death_date:${normalizedDeathDate}-->`.trim();
-    } else {
-      remarksToSave = remarksToSave.replace(/<!--death_date:.*?-->/g, '').trim();
+      remarksToSave = `${remarksToSave} <!--death_date:${normalizedDeathDate}-->`.trim();
+    }
+    if (f.exactFirstRecordDate && normalizedListedDate) {
+      remarksToSave = `${remarksToSave} <!--exact_first_date:1-->`.trim();
     }
 
     const payload = {
       ...f,
+      listedDate: normalizedListedDate || null,
       firstRecordedLocation: f.firstRecordedLocation && f.firstRecordedLocation.trim() ? f.firstRecordedLocation.trim() : null,
       proximateBirthYear: birthNum,
       birthYear: birthNum,
@@ -1003,6 +1050,7 @@ export function useTuskerForm(id) {
     delete payload.id;
     delete payload.photo;
     delete payload.deathDate;
+    delete payload.exactFirstRecordDate;
 
     setError('');
     setSaving(true);

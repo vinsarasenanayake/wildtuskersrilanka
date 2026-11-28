@@ -468,6 +468,19 @@ export default function Gallery() {
           </div>
         )}
 
+        {/* ── Image Usage Policy ── */}
+        <section className="mt-10 sm:mt-12 rounded-2xl border border-[#e5e7eb] bg-[#fafbfa] px-5 py-6 sm:px-8 sm:py-7 text-center">
+          <h2 className="font-sans text-xs sm:text-[0.82rem] font-bold uppercase tracking-wider text-[#374151] m-0 mb-2.5">
+            Image Usage Policy
+          </h2>
+          <p className="font-sans text-xs sm:text-[0.85rem] text-[#555555] leading-relaxed max-w-5xl mx-auto m-0">
+            All images in the Wild Tuskers Sri Lanka Gallery are copyrighted by Wild Tuskers Sri Lanka and their respective photographers. Downloading, copying, reproducing, sharing, or using these images in any form without prior written permission is strictly prohibited.
+          </p>
+          <p className="font-sans text-xs sm:text-[0.85rem] font-medium text-[#374151] leading-relaxed max-w-5xl mx-auto mt-2 mb-0">
+            By accessing this gallery, you agree to respect these rights and support the conservation of Sri Lanka’s rare tusked elephants.
+          </p>
+        </section>
+
         {/* ── Footer Attribution ── */}
         <Footer />
       </div>
@@ -765,8 +778,13 @@ function CoverflowCarousel({ items, onSelectPhoto, getTuskerDisplayName }) {
         })}
       </div>
 
+      {/* Copyright Notice */}
+      <p className="w-full max-w-[920px] mx-auto mt-4 px-3 font-sans text-[0.74rem] sm:text-[0.8rem] font-medium leading-relaxed text-center text-amber-700 mb-0">
+        &copy; Wild Tuskers Sri Lanka. All images are protected by copyright and may not be downloaded, reproduced, shared, or used without prior written permission. Your respect for these rights helps support the documentation and conservation of Sri Lanka&rsquo;s rare tuskers.
+      </p>
+
       {/* Dotted Line Divider replacing arrow buttons */}
-      <div className="w-full max-w-[1360px] border-t-2 border-dotted border-[#cbd5e1] mt-5 mb-2" />
+      <div className="w-full max-w-[1360px] border-t-2 border-dotted border-[#cbd5e1] mt-4 mb-2" />
     </div>
   );
 }

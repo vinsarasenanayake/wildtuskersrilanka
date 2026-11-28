@@ -46,7 +46,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { useTuskerProfile } from '../../controllers/useTusker';
-import { calculateTuskerAge, parseSightingDetails, updateSighting, deleteSighting, updateTusker, getRecordTimestamp } from '../../models/TuskerModel';
+import { calculateTuskerAge, parseSightingDetails, updateSighting, deleteSighting, updateTusker, getRecordTimestamp, getLatestSightingPhotos } from '../../models/TuskerModel';
 import StatusBadge from '../components/StatusBadge';
 import TuskerSightingsMap from '../components/TuskerSightingsMap';
 import EditSightingModal from '../components/EditSightingModal';
@@ -165,8 +165,12 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
           onClose();
         }
       } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        e.stopPropagation();
         handlePrev();
       } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        e.stopPropagation();
         handleNext();
       } else if (e.key === '+' || e.key === '=') {
         zoomIn();
@@ -178,8 +182,8 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
         toggleFullscreen();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [handleNext, handlePrev, onClose, resetZoom, scale, toggleFullscreen, zoomIn, zoomOut]);
 
   useEffect(() => {
@@ -257,9 +261,11 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
   const touchStartDistRef = useRef(0);
   const touchStartScaleRef = useRef(1);
   const lastTapRef = useRef(0);
+  const swipeStartRef = useRef(null);
 
   const handleTouchStart = (e) => {
     if (e.touches.length === 2) {
+      swipeStartRef.current = null;
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
@@ -270,6 +276,7 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
     } else if (e.touches.length === 1) {
       const now = Date.now();
       if (now - lastTapRef.current < 300) {
+        swipeStartRef.current = null;
         toggleZoom(e);
         lastTapRef.current = 0;
         return;
@@ -277,12 +284,15 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
       lastTapRef.current = now;
 
       if (scale > 1) {
+        swipeStartRef.current = null;
         setIsDragging(true);
         hasDraggedRef.current = false;
         dragStartRef.current = {
           x: e.touches[0].clientX - position.x,
           y: e.touches[0].clientY - position.y,
         };
+      } else {
+        swipeStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       }
     }
   };
@@ -315,7 +325,16 @@ function TuskerPhotoZoomLightbox({ photos, name, tuskerId, initialIndex = 0, onC
     }
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e) => {
+    if (scale === 1 && swipeStartRef.current && e?.changedTouches?.length) {
+      const dx = e.changedTouches[0].clientX - swipeStartRef.current.x;
+      const dy = e.changedTouches[0].clientY - swipeStartRef.current.y;
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+        if (dx < 0) handleNext();
+        else handlePrev();
+      }
+    }
+    swipeStartRef.current = null;
     setIsDragging(false);
     touchStartDistRef.current = 0;
   };
@@ -772,15 +791,15 @@ const getHealthStyle = (cond) => {
   return 'bg-gray-100 text-gray-700 border border-gray-200';
 };
 
-function formatDate(dateStr) {
+function formatDate(dateStr, { exact = false } = {}) {
   if (!dateStr) return '';
   const parts = dateStr.split('-');
   if (parts.length === 3) {
     const year = parts[0];
     const monthIndex = parseInt(parts[1], 10) - 1;
     const day = parseInt(parts[2], 10);
-    // If entered as Jan 1 (standard database default when only year is documented):
-    if (parts[1] === '01' && parts[2] === '01') {
+    // If entered as Jan 1 without an explicit exact-date flag, treat as year-only:
+    if (!exact && parts[1] === '01' && parts[2] === '01') {
       return year;
     }
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -1190,6 +1209,8 @@ function ComparisonPhotoLightbox({
   tusker,
   onClose,
   onSelect,
+  isAdmin = false,
+  onEdit,
 }) {
   const currentIndex = items.findIndex(
     (i) => i.year === item.year && i.stage === item.stage && i.photo === item.photo
@@ -1357,9 +1378,11 @@ function ComparisonPhotoLightbox({
   const touchStartDistRef = useRef(0);
   const touchStartScaleRef = useRef(1);
   const lastTapRef = useRef(0);
+  const swipeStartRef = useRef(null);
 
   const handleTouchStart = (e) => {
     if (e.touches.length === 2) {
+      swipeStartRef.current = null;
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
@@ -1370,6 +1393,7 @@ function ComparisonPhotoLightbox({
     } else if (e.touches.length === 1) {
       const now = Date.now();
       if (now - lastTapRef.current < 300) {
+        swipeStartRef.current = null;
         toggleZoom(e);
         lastTapRef.current = 0;
         return;
@@ -1377,12 +1401,15 @@ function ComparisonPhotoLightbox({
       lastTapRef.current = now;
 
       if (scale > 1) {
+        swipeStartRef.current = null;
         setIsDragging(true);
         hasDraggedRef.current = false;
         dragStartRef.current = {
           x: e.touches[0].clientX - position.x,
           y: e.touches[0].clientY - position.y,
         };
+      } else {
+        swipeStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       }
     }
   };
@@ -1415,7 +1442,16 @@ function ComparisonPhotoLightbox({
     }
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e) => {
+    if (scale === 1 && swipeStartRef.current && e?.changedTouches?.length) {
+      const dx = e.changedTouches[0].clientX - swipeStartRef.current.x;
+      const dy = e.changedTouches[0].clientY - swipeStartRef.current.y;
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+        if (dx < 0) handleNext();
+        else handlePrev();
+      }
+    }
+    swipeStartRef.current = null;
     setIsDragging(false);
     touchStartDistRef.current = 0;
   };
@@ -1430,9 +1466,17 @@ function ComparisonPhotoLightbox({
           onClose();
         }
       } else if (e.key === 'ArrowLeft') {
-        if (items && items.length > 1) handlePrev();
+        if (items && items.length > 1) {
+          e.preventDefault();
+          e.stopPropagation();
+          handlePrev();
+        }
       } else if (e.key === 'ArrowRight') {
-        if (items && items.length > 1) handleNext();
+        if (items && items.length > 1) {
+          e.preventDefault();
+          e.stopPropagation();
+          handleNext();
+        }
       } else if (e.key === '+' || e.key === '=') {
         zoomIn();
       } else if (e.key === '-' || e.key === '_') {
@@ -1443,8 +1487,8 @@ function ComparisonPhotoLightbox({
         toggleFullscreen();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [handleNext, handlePrev, items, onClose, resetZoom, scale, toggleFullscreen, zoomIn, zoomOut]);
 
   // Prevent background scrolling
@@ -1487,8 +1531,22 @@ function ComparisonPhotoLightbox({
           )}
         </div>
 
-        {/* Toolbar: Zoom Out, %, Zoom In, Reset, Fullscreen, Close */}
+        {/* Toolbar: Edit (Admin), Zoom Out, %, Zoom In, Reset, Fullscreen, Close */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {isAdmin && typeof onEdit === 'function' && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onEdit(activeItem, activeIdx);
+              }}
+              title="Edit this record"
+              className="h-8 px-2.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/40 flex items-center justify-center gap-1.5 text-xs font-semibold text-amber-200 cursor-pointer transition-colors"
+            >
+              <Edit size={13} />
+              <span className="hidden sm:inline">Edit</span>
+            </button>
+          )}
           <button
             onClick={zoomOut}
             disabled={scale <= 1}
@@ -1894,9 +1952,11 @@ function SightingPhotoLightbox({
   const touchStartDistRef = useRef(0);
   const touchStartScaleRef = useRef(1);
   const lastTapRef = useRef(0);
+  const swipeStartRef = useRef(null);
 
   const handleTouchStart = (e) => {
     if (e.touches.length === 2) {
+      swipeStartRef.current = null;
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
@@ -1907,6 +1967,7 @@ function SightingPhotoLightbox({
     } else if (e.touches.length === 1) {
       const now = Date.now();
       if (now - lastTapRef.current < 300) {
+        swipeStartRef.current = null;
         toggleZoom(e);
         lastTapRef.current = 0;
         return;
@@ -1914,12 +1975,15 @@ function SightingPhotoLightbox({
       lastTapRef.current = now;
 
       if (scale > 1) {
+        swipeStartRef.current = null;
         setIsDragging(true);
         hasDraggedRef.current = false;
         dragStartRef.current = {
           x: e.touches[0].clientX - position.x,
           y: e.touches[0].clientY - position.y,
         };
+      } else {
+        swipeStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       }
     }
   };
@@ -1952,7 +2016,16 @@ function SightingPhotoLightbox({
     }
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e) => {
+    if (scale === 1 && swipeStartRef.current && e?.changedTouches?.length) {
+      const dx = e.changedTouches[0].clientX - swipeStartRef.current.x;
+      const dy = e.changedTouches[0].clientY - swipeStartRef.current.y;
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+        if (dx < 0) handleNext();
+        else handlePrev();
+      }
+    }
+    swipeStartRef.current = null;
     setIsDragging(false);
     touchStartDistRef.current = 0;
   };
@@ -1967,9 +2040,17 @@ function SightingPhotoLightbox({
           onClose();
         }
       } else if (e.key === 'ArrowLeft') {
-        if (images && images.length > 1) handlePrev();
+        if (images && images.length > 1) {
+          e.preventDefault();
+          e.stopPropagation();
+          handlePrev();
+        }
       } else if (e.key === 'ArrowRight') {
-        if (images && images.length > 1) handleNext();
+        if (images && images.length > 1) {
+          e.preventDefault();
+          e.stopPropagation();
+          handleNext();
+        }
       } else if (e.key === '+' || e.key === '=') {
         zoomIn();
       } else if (e.key === '-' || e.key === '_') {
@@ -1980,8 +2061,8 @@ function SightingPhotoLightbox({
         toggleFullscreen();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [handleNext, handlePrev, images, onClose, resetZoom, scale, toggleFullscreen, zoomIn, zoomOut]);
 
   // Prevent background scrolling
@@ -2376,7 +2457,7 @@ function DeleteSightingConfirmModal({ deletingSighting, tusker, isDeleting, onCa
 }
 
 /* ── Photographic Comparison Horizontal Carousel (3 visible on desktop, drag/touch + arrows) ── */
-function PhotographicComparisonCarousel({ items, tusker, onSelect }) {
+function PhotographicComparisonCarousel({ items, tusker, onSelect, isAdmin = false, onEditItem }) {
   const rowRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -2489,13 +2570,31 @@ function PhotographicComparisonCarousel({ items, tusker, onSelect }) {
               <div className="flex items-center gap-1.5 min-w-0 pr-2">
                 <MapPin size={13} className="text-accent shrink-0" />
                 <span className="font-sans text-[0.82rem] font-semibold text-[#555555] truncate">
-                  {item.location || '-'}
+                  {item.location || (index === 0 ? tusker.firstRecordedLocation : '') || '-'}
                 </span>
               </div>
-              <span className="text-[#111111] font-sans text-[0.84rem] font-extrabold flex items-center gap-1.5 shrink-0">
-                <Calendar size={13} className="text-accent shrink-0" />
-                <span>{item.year || item.date || (index === 0 && (tusker.listedDate || tusker.firstRecordedDate || tusker.firstRecordDate || tusker.sightings?.[0]?.captureDate) ? formatDate(tusker.listedDate || tusker.firstRecordedDate || tusker.firstRecordDate || tusker.sightings?.[0]?.captureDate) : '') || '-'}</span>
-              </span>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-[#111111] font-sans text-[0.84rem] font-extrabold flex items-center gap-1.5 shrink-0">
+                  <Calendar size={13} className="text-accent shrink-0" />
+                  <span>{item.year || item.date || (index === 0 && (tusker.listedDate || tusker.firstRecordedDate || tusker.firstRecordDate || tusker.sightings?.[0]?.captureDate) ? formatDate(tusker.listedDate || tusker.firstRecordedDate || tusker.firstRecordDate || tusker.sightings?.[0]?.captureDate) : '') || '-'}</span>
+                </span>
+                {isAdmin && typeof onEditItem === 'function' && (
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditItem(item, index);
+                    }}
+                    title={index === 0 ? 'Edit First Record / Profile' : 'Edit Comparison Record'}
+                    aria-label={index === 0 ? 'Edit First Record / Profile' : 'Edit Comparison Record'}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-[#f4f6f5] hover:bg-amber-50 text-[#333333] hover:text-amber-800 border border-[#e2e8e0] hover:border-amber-300 font-sans text-[0.72rem] font-semibold cursor-pointer transition-colors"
+                  >
+                    <Edit size={11} className="text-accent shrink-0" />
+                    <span>Edit</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Photo Card */}
@@ -2907,62 +3006,8 @@ export default function TuskerProfile() {
     }
   }, [tusker, loading]);
 
-  // Combine baseline tusker photos with ALL subsequent sighting photos at the end
-  const allProfilePhotos = useMemo(() => {
-    const basePhotos = Array.isArray(tusker?.photos)
-      ? [...tusker.photos]
-      : (tusker?.photo ? [tusker.photo] : []);
-    const sightingPhotos = [];
-
-    (tusker?.sightings || []).forEach((s) => {
-      const details = parseSightingDetails(s);
-      const list = [];
-
-      // 1. All images from details.images
-      if (Array.isArray(details.images) && details.images.length > 0) {
-        details.images.forEach((u) => {
-          if (u && typeof u === 'string' && u.trim().length > 0) list.push(u.trim());
-        });
-      }
-
-      // 2. All images from s.imageUrl (string or comma-separated)
-      if (s.imageUrl) {
-        if (Array.isArray(s.imageUrl)) {
-          s.imageUrl.forEach((u) => {
-            if (u && typeof u === 'string' && u.trim().length > 0) list.push(u.trim());
-          });
-        } else if (typeof s.imageUrl === 'string') {
-          s.imageUrl.split(',').forEach((u) => {
-            const trimmed = u.trim();
-            if (trimmed) list.push(trimmed);
-          });
-        }
-      }
-
-      // 3. Fallback to raw note JSON
-      if (s.note && typeof s.note === 'string' && s.note.trim().startsWith('{')) {
-        try {
-          const parsed = JSON.parse(s.note);
-          const rawImgs = Array.isArray(parsed.images)
-            ? parsed.images
-            : (Array.isArray(parsed.imageUrls) ? parsed.imageUrls : []);
-          rawImgs.forEach((u) => {
-            if (u && typeof u === 'string' && u.trim().length > 0) list.push(u.trim());
-          });
-        } catch {
-          /* ignore */
-        }
-      }
-
-      list.forEach((url) => {
-        if (url && !basePhotos.includes(url) && !sightingPhotos.includes(url)) {
-          sightingPhotos.push(url);
-        }
-      });
-    });
-
-    return [...basePhotos, ...sightingPhotos];
-  }, [tusker?.photos, tusker?.photo, tusker?.sightings]);
+  // Hero slideshow displays only the latest sighting's photos (or baseline profile photos if none)
+  const allProfilePhotos = useMemo(() => getLatestSightingPhotos(tusker), [tusker]);
 
   useEffect(() => {
     if (selectedComparisonImg || previewModalPhoto || comparisonModal || deletingComparison) {
@@ -3125,11 +3170,11 @@ export default function TuskerProfile() {
                   value={tusker.nicknameGivenBy}
                 />
               )}
-              {tusker.listedDate && tusker.listedDate !== 'Not Applicable' && formatDate(tusker.listedDate) && (
+              {tusker.listedDate && tusker.listedDate !== 'Not Applicable' && formatDate(tusker.listedDate, { exact: Boolean(tusker.exactFirstRecordDate) }) && (
                 <DetailRow
                   icon={<Calendar size={16} />}
-                  label={/^\d{4}$/.test(formatDate(tusker.listedDate)) ? "First Recorded Year" : "First Recorded Date"}
-                  value={formatDate(tusker.listedDate)}
+                  label={/^\d{4}$/.test(formatDate(tusker.listedDate, { exact: Boolean(tusker.exactFirstRecordDate) })) ? "First Recorded Year" : "First Recorded Date"}
+                  value={formatDate(tusker.listedDate, { exact: Boolean(tusker.exactFirstRecordDate) })}
                 />
               )}
               {tusker.firstRecordedLocation && tusker.firstRecordedLocation !== 'Not Applicable' && (
@@ -3322,6 +3367,28 @@ export default function TuskerProfile() {
             items={comparisonList}
             tusker={tusker}
             onSelect={setSelectedComparisonImg}
+            isAdmin={isAdmin}
+            onEditItem={(item, index) => {
+              if (Array.isArray(tusker.photographicComparison) && tusker.photographicComparison.length > 0) {
+                setComparisonModal({ type: 'photographic', item, index });
+                return;
+              }
+              if (index === 0 && tusker.photos?.[0]) {
+                navigate(`/admin/edit-tusker/${tusker.id.toLowerCase()}`);
+                return;
+              }
+              const sightingIndex = index - (tusker.photos?.[0] ? 1 : 0);
+              const matchedSighting =
+                (item.sightingId && sortedSightings.find((s) => s.id === item.sightingId)) ||
+                sortedSightings[sightingIndex];
+              if (matchedSighting) {
+                setEditingSighting({
+                  sighting: matchedSighting,
+                  sightingNum: sightingIndex + 1,
+                  rowNum: sightingIndex + 2,
+                });
+              }
+            }}
           />
         )}
 
@@ -3468,21 +3535,19 @@ export default function TuskerProfile() {
               }}
               className="w-full overflow-auto bg-white border border-[#e5e7eb] rounded-[14px] shadow-sm"
             >
-              <table className="w-full text-left border-collapse min-w-[1020px]">
+              <table className="w-full text-left border-collapse min-w-[740px]">
                 <thead
                   ref={adminTheadRef}
                   className="sticky top-0 z-10 bg-[#f8f9fa] shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
                 >
                   <tr className="border-b border-[#e5e7eb] text-[0.74rem] uppercase font-bold tracking-[0.6px] text-[#555555]">
-                    <th className="py-3.5 px-4 w-[130px] min-w-[130px] bg-[#f8f9fa] whitespace-nowrap">Record #</th>
-                    <th className="py-3.5 px-4 w-[115px] min-w-[115px] bg-[#f8f9fa] whitespace-nowrap">Date / Year</th>
-                    <th className="py-3.5 px-4 w-[170px] min-w-[170px] bg-[#f8f9fa] whitespace-nowrap">Observer / Recorder</th>
-                    <th className="py-3.5 px-4 w-[160px] min-w-[160px] bg-[#f8f9fa] whitespace-nowrap">Location / Area</th>
-                    <th className="py-3.5 px-4 w-[135px] min-w-[135px] bg-[#f8f9fa] whitespace-nowrap">Health</th>
-                    <th className="py-3.5 px-4 w-[115px] min-w-[115px] bg-[#f8f9fa] whitespace-nowrap">Life Threat</th>
-                    <th className="py-3.5 px-4 w-[190px] min-w-[190px] bg-[#f8f9fa] whitespace-nowrap">Special Marks &amp; Wounds</th>
-                    <th className="py-3.5 px-4 w-[90px] min-w-[90px] text-center bg-[#f8f9fa] whitespace-nowrap">Photo</th>
-                    <th className="py-3.5 px-4 w-[65px] min-w-[65px] text-center bg-[#f8f9fa] whitespace-nowrap">Actions</th>
+                    <th className="py-3.5 px-4 w-[135px] bg-[#f8f9fa] whitespace-nowrap">Record #</th>
+                    <th className="py-3.5 px-4 w-[130px] bg-[#f8f9fa] whitespace-nowrap">Date / Year</th>
+                    <th className="py-3.5 px-4 bg-[#f8f9fa] whitespace-nowrap">Observer / Recorder</th>
+                    <th className="py-3.5 px-4 bg-[#f8f9fa] whitespace-nowrap">Location / Area</th>
+                    <th className="py-3.5 px-4 w-[140px] bg-[#f8f9fa] whitespace-nowrap">Health</th>
+                    <th className="py-3.5 px-4 w-[95px] text-center bg-[#f8f9fa] whitespace-nowrap">Photo</th>
+                    <th className="py-3.5 px-4 w-[75px] text-center bg-[#f8f9fa] whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#edf0f2] font-sans text-[0.84rem] text-[#222222]">
@@ -3503,7 +3568,7 @@ export default function TuskerProfile() {
                     </td>
 
                     <td className="py-3.5 px-4 font-semibold text-[#111111] whitespace-nowrap">
-                      {formatDate(tusker.listedDate) || tusker.listedDate || 'Initial'}
+                      {formatDate(tusker.listedDate, { exact: Boolean(tusker.exactFirstRecordDate) }) || tusker.listedDate || 'Initial'}
                     </td>
 
                     <td className="py-3.5 px-4">
@@ -3531,25 +3596,6 @@ export default function TuskerProfile() {
                       </span>
                     </td>
 
-                    <td className="py-3.5 px-4">
-                      {tusker.threatLevel ? (
-                        <span className={`inline-block px-2 py-0.5 rounded text-[0.72rem] font-bold whitespace-nowrap shrink-0 ${THREAT_STYLES[tusker.threatLevel] || 'bg-gray-100 text-gray-700'}`}>
-                          {tusker.threatLevel}
-                        </span>
-                      ) : (
-                        <span className="text-[#999999]">-</span>
-                      )}
-                    </td>
-
-                    <td className="py-3.5 px-4">
-                      <div
-                        className="line-clamp-2 max-w-[220px] text-[#444444] text-[0.8rem]"
-                        title={[tusker.specialMarks, tusker.specialWounds].filter(m => m && m !== 'Not Applicable' && m !== 'None').join('; ')}
-                      >
-                        {[tusker.specialMarks, tusker.specialWounds].filter(m => m && m !== 'Not Applicable' && m !== 'None' && m !== 'None recorded.').join('; ') || 'None recorded'}
-                      </div>
-                    </td>
-
                     <td className="py-3.5 px-4 text-center">
                       {tusker.photos?.[0] ? (
                         <button
@@ -3557,7 +3603,7 @@ export default function TuskerProfile() {
                           onClick={() => setPreviewModalPhoto({
                             url: tusker.photos[0],
                             title: `${tusker.name} (${tusker.id}) - Baseline Registration Photo`,
-                            date: formatDate(tusker.listedDate) || tusker.listedDate || 'Initial Registry',
+                            date: formatDate(tusker.listedDate, { exact: Boolean(tusker.exactFirstRecordDate) }) || tusker.listedDate || 'Initial Registry',
                             author: tusker.recordedBy || 'WTS Admin',
                             location: tusker.location || '',
                             healthCondition: tusker.healthCondition || 'Good',
@@ -3632,25 +3678,6 @@ export default function TuskerProfile() {
                           ) : (
                             <span className="text-[#999999]">-</span>
                           )}
-                        </td>
-
-                        <td className="py-3.5 px-4">
-                          {details.threatLevel ? (
-                            <span className={`inline-block px-2 py-0.5 rounded text-[0.72rem] font-bold whitespace-nowrap shrink-0 ${THREAT_STYLES[details.threatLevel] || 'bg-gray-100 text-gray-700'}`}>
-                              {details.threatLevel}
-                            </span>
-                          ) : (
-                            <span className="text-[#999999]">-</span>
-                          )}
-                        </td>
-
-                        <td className="py-3.5 px-4">
-                          <div
-                            className="line-clamp-2 max-w-[220px] text-[#444444] text-[0.8rem]"
-                            title={[details.specialMarks, details.specialWounds].filter(Boolean).join('; ')}
-                          >
-                            {[details.specialMarks, details.specialWounds].filter(Boolean).join('; ') || '-'}
-                          </div>
                         </td>
 
                         <td className="py-3.5 px-4 text-center">
@@ -3898,6 +3925,32 @@ export default function TuskerProfile() {
           item={selectedComparisonImg}
           items={selectedComparisonImg.isEar ? earComparisonList : comparisonList}
           tusker={tusker}
+          isAdmin={isAdmin}
+          onEdit={(editedItem, editedIndex) => {
+            if (selectedComparisonImg.isEar) {
+              setComparisonModal({ type: 'ear', item: editedItem, index: editedIndex });
+              return;
+            }
+            if (Array.isArray(tusker.photographicComparison) && tusker.photographicComparison.length > 0) {
+              setComparisonModal({ type: 'photographic', item: editedItem, index: editedIndex });
+              return;
+            }
+            if (editedIndex === 0 && tusker.photos?.[0]) {
+              navigate(`/admin/edit-tusker/${tusker.id.toLowerCase()}`);
+              return;
+            }
+            const sightingIndex = editedIndex - (tusker.photos?.[0] ? 1 : 0);
+            const matchedSighting =
+              (editedItem.sightingId && sortedSightings.find((s) => s.id === editedItem.sightingId)) ||
+              sortedSightings[sightingIndex];
+            if (matchedSighting) {
+              setEditingSighting({
+                sighting: matchedSighting,
+                sightingNum: sightingIndex + 1,
+                rowNum: sightingIndex + 2,
+              });
+            }
+          }}
           onClose={() => setSelectedComparisonImg(null)}
           onSelect={(newItem) => setSelectedComparisonImg(newItem)}
         />

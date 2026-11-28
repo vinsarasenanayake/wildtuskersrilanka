@@ -243,7 +243,7 @@ export default function Navbar() {
                 <span>Logout</span>
               </button>
             </>
-          ) : (
+          ) : isActive('/tusker-insights') ? (
             <Link
               to="/login"
               className={`hidden sm:inline-flex items-center gap-1.5 xl:gap-2 font-medium text-xs sm:text-[0.88rem] xl:text-[0.94rem] 2xl:text-[0.96rem] whitespace-nowrap relative py-2 px-1 transition-all duration-300 group rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f6cf7d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b2518] ${
@@ -263,7 +263,7 @@ export default function Navbar() {
                 <span className="absolute bottom-0 left-1 right-1 h-[2px] bg-accent rounded-full transition-all duration-300" />
               )}
             </Link>
-          )}
+          ) : null}
 
           <button
             ref={toggleBtnRef}
@@ -390,7 +390,7 @@ export default function Navbar() {
                     <span>Logout</span>
                   </button>
                 </div>
-              ) : (
+              ) : isActive('/tusker-insights') ? (
                 <Link
                   to="/login"
                   onClick={closeMenu}
@@ -399,7 +399,7 @@ export default function Navbar() {
                   <Shield size={15} className="text-accent" />
                   <span>Admin Login</span>
                 </Link>
-              )}
+              ) : null}
 
               <p className="font-sans text-[0.65rem] text-white/40 text-center mb-0 mt-0.5">
                 © 2026 Wild Tuskers Sri Lanka
