@@ -49,7 +49,6 @@ import { useTuskerProfile } from '../../controllers/useTusker';
 import { calculateTuskerAge, parseSightingDetails, updateSighting, deleteSighting, updateTusker, getRecordTimestamp } from '../../models/TuskerModel';
 import StatusBadge from '../components/StatusBadge';
 import TuskerSightingsMap from '../components/TuskerSightingsMap';
-import { getLookalikeMatchForTusker } from '../../data/lookalikePairs';
 import EditSightingModal from '../components/EditSightingModal';
 import ImageUploadBox from '../components/ImageUploadBox';
 import LocationSearchInput from '../components/LocationSearchInput';
@@ -2617,7 +2616,6 @@ export default function TuskerProfile() {
 
   const [selectedComparisonImg, setSelectedComparisonImg] = useState(null);
   const [previewModalPhoto, setPreviewModalPhoto] = useState(null);
-  const lookalikeMatch = useMemo(() => getLookalikeMatchForTusker(tusker?.id), [tusker?.id]);
 
   // Sighting Edit & Delete State
   const [activeMenu, setActiveMenu] = useState(null); // { id, sighting, sightingNum, rowNum, top, right }
@@ -3419,158 +3417,6 @@ export default function TuskerProfile() {
           </div>
         )}
 
-        {/* LOOKALIKE COMPARATIVE IDENTIFICATION GUIDE (8 Matched Tuskers) */}
-        {lookalikeMatch && (
-          <div className="mt-16 pt-10 border-t border-[#e2e8e0]">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
-              <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#eef5f0] border border-[#dce6de] text-[#1f3a2e] text-[0.72rem] font-bold uppercase tracking-wider mb-2.5">
-                  <Eye size={13} /> Lookalike Comparative Guide · Pair {lookalikeMatch.pair.pairNumber}
-                </div>
-                <h2 className="font-sans text-[clamp(1.1rem,3vw,1.5rem)] font-bold text-[#111111] leading-snug m-0">
-                  {lookalikeMatch.self.name} ({lookalikeMatch.self.id}) vs. {lookalikeMatch.counterpart.name} ({lookalikeMatch.counterpart.id})
-                </h2>
-                <p className="font-sans text-[0.88rem] text-[#55695d] mt-1 m-0">
-                  Field identification notes distinguishing {lookalikeMatch.self.name} from his close lookalike {lookalikeMatch.counterpart.name}.
-                </p>
-              </div>
-              <Link
-                to={`/tuskers/${lookalikeMatch.counterpart.id.toLowerCase()}`}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0b2518] text-white font-sans text-[0.82rem] font-semibold hover:bg-[#163a28] transition-colors shrink-0 no-underline self-start sm:self-auto"
-              >
-                View {lookalikeMatch.counterpart.name} ({lookalikeMatch.counterpart.id}) <ExternalLink size={14} />
-              </Link>
-            </div>
-
-            <div className="rounded-2xl border border-[#dce6de] bg-white shadow-sm overflow-hidden">
-              <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,1fr)]">
-                {/* Left: Clickable Comparison Photo & Pair Metadata */}
-                <div className="bg-[#f7f9f7] border-b lg:border-b-0 lg:border-r border-[#e2e8e0] p-5 flex flex-col gap-4">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setSelectedComparisonImg({
-                        photo: lookalikeMatch.pair.image,
-                        year: `Pair ${lookalikeMatch.pair.pairNumber}`,
-                        stage: lookalikeMatch.pair.title,
-                        changeSentence: lookalikeMatch.pair.differencesEn.map((d) => `${d.label}: ${d.text}`).join(' '),
-                        isLookalike: true,
-                      })
-                    }
-                    className="group relative w-full overflow-hidden rounded-xl border border-[#dce6de] bg-[#0b1812] text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c69b55]"
-                    aria-label={`Enlarge ${lookalikeMatch.pair.title}`}
-                  >
-                    <img
-                      src={lookalikeMatch.pair.image}
-                      alt={lookalikeMatch.pair.title}
-                      className="w-full h-auto max-h-[360px] object-contain mx-auto block transition-transform duration-300 group-hover:scale-[1.015]"
-                      loading="lazy"
-                    />
-                    <span className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/70 text-white text-[0.75rem] font-semibold backdrop-blur-sm">
-                      <Maximize2 size={13} /> Click to enlarge
-                    </span>
-                  </button>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {[
-                      { role: 'Left Tusker', data: lookalikeMatch.pair.left },
-                      { role: 'Right Tusker', data: lookalikeMatch.pair.right },
-                    ].map(({ role, data }) => {
-                      const isCurrent = data.id.toUpperCase() === lookalikeMatch.self.id.toUpperCase();
-                      return (
-                        <div
-                          key={data.id}
-                          className={`rounded-xl p-3.5 border ${
-                            isCurrent
-                              ? 'bg-[#eef5f0] border-[#9ec0aa]'
-                              : 'bg-white border-[#e2e8e0]'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between gap-2 mb-1">
-                            <span className="text-[0.68rem] font-bold uppercase tracking-wider text-[#55695d]">
-                              {role}
-                            </span>
-                            <span className="text-[0.68rem] font-bold px-2 py-0.5 rounded-full bg-[#0b2518]/10 text-[#0b2518]">
-                              {data.id}
-                            </span>
-                          </div>
-                          {isCurrent ? (
-                            <div className="font-sans text-[0.9rem] font-bold text-[#0b2518]">
-                              {data.name}
-                            </div>
-                          ) : (
-                            <Link
-                              to={`/tuskers/${data.id.toLowerCase()}`}
-                              className="font-sans text-[0.9rem] font-bold text-[#1f3a2e] hover:text-accent hover:underline inline-flex items-center gap-1 no-underline"
-                            >
-                              {data.name} <ExternalLink size={12} />
-                            </Link>
-                          )}
-                          <p className="font-sans text-[0.78rem] text-[#4a5d52] mt-1 mb-0">
-                            Roaming Range: {data.range}
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Right: English & Sinhala Diagnostic Differences */}
-                <div className="p-5 sm:p-6 flex flex-col gap-5">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2.5">
-                      <span className="px-2.5 py-0.5 rounded-md bg-[#0b2518] text-[#c69b55] text-[0.7rem] font-bold uppercase tracking-wider">
-                        English
-                      </span>
-                      <h3 className="font-sans text-[0.98rem] font-bold text-[#111111] m-0">
-                        Diagnostic Differences
-                      </h3>
-                    </div>
-                    <div className="space-y-3">
-                      {lookalikeMatch.pair.differencesEn.map((diff) => (
-                        <div key={diff.label} className="rounded-xl bg-[#f9faf9] border border-[#e6ece7] p-3.5">
-                          <span className="font-sans text-[0.85rem] font-bold text-[#1f3a2e]">
-                            {diff.label}:{' '}
-                          </span>
-                          <span className="font-sans text-[0.86rem] text-[#2c3330] leading-[1.65]">
-                            {diff.text}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="pt-4 border-t border-[#e6ece7]">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span className="px-2.5 py-0.5 rounded-md bg-[#eef5f0] border border-[#cfe0d5] text-[#1f3a2e] text-[0.7rem] font-bold">
-                        සිංහල
-                      </span>
-                      <h3 className="font-sans text-[0.96rem] font-bold text-[#111111] m-0">
-                        හඳුනාගැනීමේ සුවිශේෂී වෙනස්කම්
-                      </h3>
-                    </div>
-                    <p className="font-sans text-[0.8rem] text-[#55695d] mt-0 mb-3">
-                      {lookalikeMatch.pair.titleSi}
-                    </p>
-                    <div className="space-y-3">
-                      {lookalikeMatch.pair.differencesSi.map((diff) => (
-                        <div key={diff.label} className="rounded-xl bg-[#f9faf9] border border-[#e6ece7] p-3.5">
-                          <span className="font-sans text-[0.85rem] font-bold text-[#1f3a2e]">
-                            {diff.label}:{' '}
-                          </span>
-                          <span className="font-sans text-[0.86rem] text-[#2c3330] leading-[1.75]">
-                            {diff.text}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* ── ADMIN ONLY: Sightings & Observation Records History Table ── */}
         {isAdmin && (
           <div className="mt-16 pt-10 border-t border-[#e2e8e0]">
@@ -4050,13 +3896,7 @@ export default function TuskerProfile() {
       {selectedComparisonImg && (
         <ComparisonPhotoLightbox
           item={selectedComparisonImg}
-          items={
-            selectedComparisonImg.isLookalike
-              ? [selectedComparisonImg]
-              : selectedComparisonImg.isEar
-                ? earComparisonList
-                : comparisonList
-          }
+          items={selectedComparisonImg.isEar ? earComparisonList : comparisonList}
           tusker={tusker}
           onClose={() => setSelectedComparisonImg(null)}
           onSelect={(newItem) => setSelectedComparisonImg(newItem)}
