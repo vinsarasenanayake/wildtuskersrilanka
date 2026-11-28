@@ -27,9 +27,12 @@ import {
   Download,
   FileText,
   ExternalLink,
+  Play,
 } from 'lucide-react';
 import ImageLightboxModal from '../components/ImageLightboxModal';
 import PdfDownloadConfirmModal from '../components/PdfDownloadConfirmModal';
+import BilingualParagraphs from '../components/BilingualParagraphs';
+import { isVideoUrl } from '../../utils/storageUpload';
 
 function formatEventDate(dateStr) {
   if (!dateStr) return '';
@@ -100,22 +103,12 @@ function renderJustifiedParagraphs(rawText) {
     );
   }
 
-  return paragraphs.map((para, idx) => {
-    if (/^[━─=\-_]{6,}$/.test(para)) {
-      return (
-        <div key={idx} className="my-2.5 border-t border-[#e5e7eb]" role="separator" />
-      );
-    }
-    return (
-      <p
-        key={idx}
-        className="font-sans text-[0.84rem] sm:text-[0.92rem] text-[#374151] leading-[1.8] text-justify m-0"
-        style={{ textAlign: 'justify', textJustify: 'inter-word' }}
-      >
-        {para}
-      </p>
-    );
-  });
+  return (
+    <BilingualParagraphs
+      paragraphs={paragraphs}
+      className="font-sans text-[0.84rem] sm:text-[0.92rem] text-[#374151] leading-[1.8] text-justify m-0"
+    />
+  );
 }
 
 function PhotosScrollRow({ images, event, onPhotoClick }) {
@@ -179,7 +172,7 @@ function PhotosScrollRow({ images, event, onPhotoClick }) {
   const handleCardClick = (imgUrl, event) => {
     // If the user dragged to scroll (moved > 6px), do not trigger lightbox
     if (movedDistanceRef.current > 6) return;
-    onPhotoClick(imgUrl, event);
+    onPhotoClick(imgUrl, event, images);
   };
 
   return (
@@ -239,25 +232,50 @@ function PhotosScrollRow({ images, event, onPhotoClick }) {
           WebkitUserSelect: 'none',
         }}
       >
-        {images.map((imgUrl, idx) => (
-          <div
-            key={idx}
-            onClick={() => handleCardClick(imgUrl, event)}
-            className="group relative w-[160px] sm:w-[200px] md:w-[230px] aspect-[4/3] rounded-xl overflow-hidden bg-[#f3f4f6] border border-[#e5e7eb] shadow-2xs shrink-0 select-none"
-          >
-            <img
-              src={imgUrl}
-              alt={`${event.title} photograph ${idx + 1}`}
-              draggable={false}
-              onDragStart={(e) => e.preventDefault()}
-              className="w-full h-full object-cover pointer-events-none transition-transform duration-300 group-hover:scale-105 select-none"
-              loading="lazy"
-            />
-            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white pointer-events-none">
-              <ZoomIn size={18} />
+        {images.map((imgUrl, idx) => {
+          const isVideo = isVideoUrl(imgUrl);
+          return (
+            <div
+              key={idx}
+              onClick={() => handleCardClick(imgUrl, event)}
+              className="group relative w-[160px] sm:w-[200px] md:w-[230px] aspect-[4/3] rounded-xl overflow-hidden bg-[#111815] border border-[#e5e7eb] shadow-2xs shrink-0 select-none"
+            >
+              {isVideo ? (
+                <>
+                  <video
+                    src={`${imgUrl}#t=0.1`}
+                    muted
+                    playsInline
+                    preload="metadata"
+                    className="w-full h-full object-cover pointer-events-none transition-transform duration-300 group-hover:scale-105 select-none"
+                  />
+                  <div className="absolute inset-0 bg-black/25 group-hover:bg-black/40 transition-colors flex items-center justify-center pointer-events-none">
+                    <span className="w-10 h-10 rounded-full bg-black/70 text-white border border-white/30 flex items-center justify-center shadow-lg">
+                      <Play size={18} className="ml-0.5 fill-white" />
+                    </span>
+                  </div>
+                  <span className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/75 text-white text-[0.62rem] font-bold uppercase tracking-wider pointer-events-none">
+                    MP4
+                  </span>
+                </>
+              ) : (
+                <>
+                  <img
+                    src={imgUrl}
+                    alt={`${event.title} photograph ${idx + 1}`}
+                    draggable={false}
+                    onDragStart={(e) => e.preventDefault()}
+                    className="w-full h-full object-cover pointer-events-none transition-transform duration-300 group-hover:scale-105 select-none"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white pointer-events-none">
+                    <ZoomIn size={18} />
+                  </div>
+                </>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -537,10 +555,12 @@ export default function OurProjects() {
     }
   };
 
-  const handlePhotoClick = (imgUrl, event) => {
-    const rawImages = Array.isArray(event?.images) && event.images.length > 0
-      ? event.images
-      : (event?.image ? [event.image] : [imgUrl]);
+  const handlePhotoClick = (imgUrl, event, normalizedImages) => {
+    const rawImages = Array.isArray(normalizedImages) && normalizedImages.length > 0
+      ? normalizedImages
+      : (Array.isArray(event?.images) && event.images.length > 0
+          ? event.images
+          : (event?.image ? [event.image] : [imgUrl]));
     const photosList = rawImages.map((url, idx) => ({
       id: `${event?.id || 'event'}-${idx}`,
       imageUrl: url,

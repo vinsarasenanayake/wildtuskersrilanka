@@ -5,8 +5,8 @@
  */
 
 import React, { useRef, useState, useMemo } from 'react';
-import { UploadCloud, Camera, Trash2, Loader2, CheckCircle2, Plus, Image as ImageIcon, GripVertical, Crop } from 'lucide-react';
-import { uploadMediaFile } from '../../utils/storageUpload';
+import { UploadCloud, Camera, Trash2, Loader2, CheckCircle2, Plus, Image as ImageIcon, GripVertical, Crop, Video } from 'lucide-react';
+import { uploadMediaFile, isVideoUrl } from '../../utils/storageUpload';
 import ImageCropperModal from './ImageCropperModal';
 
 /**
@@ -46,6 +46,7 @@ export default function ImageUploadBox({
   cropSubtitle = 'Drag the crop box or handles to focus directly on the ear pinna, margin notches, and venation.',
   cropAspect = 'free',
   deferUpload = false,
+  allowVideo = false,
 }) {
   const fileInputRef = useRef(null);
   const addMoreInputRef = useRef(null);
@@ -102,12 +103,35 @@ export default function ImageUploadBox({
     }
   };
 
+  const isMp4File = (file) =>
+    file &&
+    (file.type === 'video/mp4' ||
+      (typeof file.name === 'string' && file.name.toLowerCase().endsWith('.mp4')));
+
   const validateFile = (file) => {
-    if (file.size > 15 * 1024 * 1024) {
-      throw new Error(`"${file.name}" is too large (max 15 MB).`);
+    const isVideo = allowVideo && isMp4File(file);
+    const maxBytes = isVideo ? 50 * 1024 * 1024 : 15 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      throw new Error(`"${file.name}" is too large (max ${isVideo ? '50 MB for MP4' : '15 MB'}).`);
     }
     if (file.size < 100) {
       throw new Error(`"${file.name}" is corrupted or empty (0 or 1-byte file).`);
+    }
+    if (isVideo) {
+      return new Promise((resolve, reject) => {
+        const video = document.createElement('video');
+        const objectUrl = URL.createObjectURL(file);
+        video.preload = 'metadata';
+        video.onloadedmetadata = () => {
+          URL.revokeObjectURL(objectUrl);
+          resolve();
+        };
+        video.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error(`"${file.name}" is not a valid MP4 video file.`));
+        };
+        video.src = objectUrl;
+      });
     }
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -131,10 +155,16 @@ export default function ImageUploadBox({
   const handleFiles = async (filesList) => {
     if (!filesList || filesList.length === 0) return;
     const rawFiles = Array.from(filesList);
-    const validFiles = rawFiles.filter((f) => f.type && f.type.startsWith('image/'));
+    const validFiles = rawFiles.filter(
+      (f) => (f.type && f.type.startsWith('image/')) || (allowVideo && isMp4File(f))
+    );
 
     if (validFiles.length === 0) {
-      setUploadError('Please select valid image files (JPG, PNG, WEBP).');
+      setUploadError(
+        allowVideo
+          ? 'Please select valid image (JPG, PNG, WEBP) or MP4 video files.'
+          : 'Please select valid image files (JPG, PNG, WEBP).'
+      );
       return;
     }
 
@@ -490,7 +520,7 @@ export default function ImageUploadBox({
         ref={fileInputRef}
         type="file"
         multiple={isMultiple}
-        accept="image/*"
+        accept={allowVideo ? 'image/*,video/mp4,.mp4' : 'image/*'}
         className="hidden"
         onChange={handleFileChange}
       />
@@ -498,7 +528,7 @@ export default function ImageUploadBox({
         ref={addMoreInputRef}
         type="file"
         multiple={isMultiple}
-        accept="image/*"
+        accept={allowVideo ? 'image/*,video/mp4,.mp4' : 'image/*'}
         className="hidden"
         onChange={handleFileChange}
       />
@@ -535,12 +565,20 @@ export default function ImageUploadBox({
               </div>
               <div className="flex flex-col gap-1">
                 <span className="font-sans text-[0.92rem] font-bold text-[#1f2824]">
-                  {isMultiple ? 'Click or drag photos to upload' : 'Click or drag photo to upload'}
+                  {allowVideo
+                    ? isMultiple
+                      ? 'Click or drag photos & MP4 videos to upload'
+                      : 'Click or drag photo or MP4 video to upload'
+                    : isMultiple
+                      ? 'Click or drag photos to upload'
+                      : 'Click or drag photo to upload'}
                 </span>
                 <span className="font-sans text-[0.75rem] text-[#788880]">
-                  {isMultiple
-                    ? 'Supports multiple images up to 15 MB each (JPG, PNG, WEBP)'
-                    : 'Single image upload up to 15 MB (JPG, PNG, WEBP)'}
+                  {allowVideo
+                    ? 'Supports images up to 15 MB (JPG, PNG, WEBP) & MP4 videos up to 50 MB'
+                    : isMultiple
+                      ? 'Supports multiple images up to 15 MB each (JPG, PNG, WEBP)'
+                      : 'Single image upload up to 15 MB (JPG, PNG, WEBP)'}
                 </span>
               </div>
             </div>
@@ -642,12 +680,27 @@ export default function ImageUploadBox({
                   }`}
                   title="Click & drag with mouse to reorder photos"
                 >
-                  <img
-                    src={url}
-                    alt={`Upload ${idx + 1}`}
-                    draggable={false}
-                    className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300 pointer-events-none"
-                  />
+                  {isVideoUrl(url) ? (
+                    <>
+                      <video
+                        src={`${url}#t=0.1`}
+                        muted
+                        playsInline
+                        preload="metadata"
+                        className="w-full h-full object-cover pointer-events-none"
+                      />
+                      <span className="absolute bottom-1.5 left-1.5 bg-black/75 text-white text-[0.6rem] font-bold px-1.5 py-0.5 rounded inline-flex items-center gap-1 pointer-events-none z-10">
+                        <Video size={10} /> MP4
+                      </span>
+                    </>
+                  ) : (
+                    <img
+                      src={url}
+                      alt={`Upload ${idx + 1}`}
+                      draggable={false}
+                      className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300 pointer-events-none"
+                    />
+                  )}
 
                   {/* Primary Photo Badge */}
                   {idx === 0 && (

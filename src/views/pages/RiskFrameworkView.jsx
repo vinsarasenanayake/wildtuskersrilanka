@@ -19,7 +19,7 @@ import { RISK_BANDS } from '../../utils/riskFramework';
 
 export default function RiskFrameworkView() {
   return (
-    <div className="w-full flex flex-col gap-8 pb-12 animate-fade-in font-sans">
+    <div className="w-full flex flex-col gap-8 pb-12 font-sans">
       
       {/* ── 1. Hero Overview & Core Objective ── */}
       <div

@@ -21,7 +21,15 @@ const EXT_BY_TYPE = {
   'image/webp': 'webp',
   'image/gif': 'gif',
   'image/heic': 'heic',
+  'video/mp4': 'mp4',
 };
+
+/** Returns true if a URL or filename points to a supported video (e.g. .mp4). */
+export function isVideoUrl(url) {
+  if (!url || typeof url !== 'string') return false;
+  const clean = url.split(/[?#]/)[0].trim().toLowerCase();
+  return clean.endsWith('.mp4') || clean.endsWith('.webm') || clean.endsWith('.mov');
+}
 
 function generateUuid() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -82,10 +90,29 @@ export async function uploadMediaFile(fileOrDataUrl, folder = 'uploads') {
   if (typeof fileOrDataUrl === 'string' && /^https?:\/\//i.test(fileOrDataUrl)) return fileOrDataUrl;
 
   const original = await toBlob(fileOrDataUrl);
+  const safeFolder = String(folder).toLowerCase().replace(/[^a-z0-9-]/g, '-').slice(0, 40) || 'uploads';
+
+  const isMp4 =
+    original.type === 'video/mp4' ||
+    (typeof fileOrDataUrl?.name === 'string' && fileOrDataUrl.name.toLowerCase().endsWith('.mp4'));
+
+  if (isMp4) {
+    const videoPath = `web/${safeFolder}/${new Date().getUTCFullYear()}/${generateUuid()}.mp4`;
+    const { error } = await supabase.storage.from(MEDIA_BUCKET).upload(videoPath, original, {
+      contentType: 'video/mp4',
+      cacheControl: '31536000',
+      upsert: false,
+    });
+    if (error) {
+      console.error('[storageUpload] Failed to upload MP4 to Supabase storage:', error);
+      throw error;
+    }
+    return supabase.storage.from(MEDIA_BUCKET).getPublicUrl(videoPath).data.publicUrl;
+  }
+
   const web = await compressImage(original);
   const thumb = await compressImage(original, { maxEdge: 480, quality: 0.75 });
 
-  const safeFolder = String(folder).toLowerCase().replace(/[^a-z0-9-]/g, '-').slice(0, 40) || 'uploads';
   const ext = EXT_BY_TYPE[web.type] || 'jpg';
   const name = `${safeFolder}/${new Date().getUTCFullYear()}/${generateUuid()}.${ext}`;
 

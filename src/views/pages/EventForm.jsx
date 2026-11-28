@@ -201,12 +201,13 @@ export default function EventForm() {
               />
             </div>
 
-            {/* Event Photo Upload */}
+            {/* Event Photo & Video Upload */}
             <div className="sm:col-span-2">
               <ImageUploadBox
-                label="Event / Project Photos (Optional)"
+                label="Event / Project Photos & Videos (Optional)"
                 folder="events"
                 multiple
+                allowVideo
                 value={formData.images && formData.images.length > 0 ? formData.images : (formData.image ? [formData.image] : [])}
                 onChange={handleImagesChange}
                 aspectClass="aspect-[16/9]"

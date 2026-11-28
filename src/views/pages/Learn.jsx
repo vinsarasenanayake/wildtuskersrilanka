@@ -30,8 +30,10 @@ export default function Learn() {
         path: location.state.fromTuskerPath,
         name: location.state.fromTuskerName || 'Tusker Profile',
       });
+    } else {
+      setFromTusker(null);
     }
-  }, [location.state?.fromTuskerPath, location.state?.fromTuskerName]);
+  }, [location.key, location.state?.fromTuskerPath, location.state?.fromTuskerName]);
   const currentTab = searchParams.get('tab');
   const validTabs = ['observations', 'identification', 'zones', 'risk-framework'];
   const activeTab = validTabs.includes(currentTab) ? currentTab : 'observations';
@@ -80,7 +82,7 @@ export default function Learn() {
   useLayoutEffect(() => {
     if (!isDirectRiskJump) return;
     const jumpToRiskHero = () => {
-      const el = document.getElementById('risk-framework-hero');
+      const el = document.getElementById('risk-framework-return-bar') || document.getElementById('risk-framework-hero');
       if (!el) return;
       const headerEl = document.querySelector('header');
       const navbarHeight = headerEl ? headerEl.getBoundingClientRect().height : (window.innerWidth >= 640 ? 84 : 68);
@@ -116,6 +118,9 @@ export default function Learn() {
     const targetId = tabTargetIds[tabKey];
     const gap = tabKey === 'zones' ? (window.innerWidth >= 640 ? 24 : 20) : (window.innerWidth >= 640 ? 28 : 20);
 
+    if (tabKey !== activeTab) {
+      setFromTusker(null);
+    }
     if (tabKey === activeTab && targetId) {
       // Clicking the already-active tab (e.g. Special Observations from top of page) scrolls right away
       scrollElementBelowNavbar(targetId, true, gap);
@@ -125,7 +130,7 @@ export default function Learn() {
     if (targetId) {
       pendingTabScrollRef.current = { tabKey, targetId, gap };
     }
-    setSearchParams({ tab: tabKey }, { replace: true });
+    setSearchParams({ tab: tabKey });
   };
 
   return (
@@ -207,7 +212,7 @@ export default function Learn() {
           {activeTab === 'zones' && (
             <>
               {fromTusker && (
-                <div className="mb-3">
+                <div id="zones-return-bar" className="mb-3">
                   <button
                     type="button"
                     onClick={() => navigate(fromTusker.path)}
@@ -224,7 +229,7 @@ export default function Learn() {
         </div>
         <div className={activeTab === 'risk-framework' ? `w-full block ${isDirectRiskJump ? '' : 'animate-fade-in'}` : 'hidden'}>
           {fromTusker && activeTab === 'risk-framework' && (
-            <div className="mb-3">
+            <div id="risk-framework-return-bar" className="mb-3">
               <button
                 type="button"
                 onClick={() => navigate(fromTusker.path)}

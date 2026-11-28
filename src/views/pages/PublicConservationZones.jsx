@@ -57,7 +57,9 @@ export default function PublicConservationZones({ isActive = true }) {
   // Instant scroll to map container with balanced top/bottom spacing and zero flicker
   const jumpToMapContainer = useCallback(() => {
     if (!containerBoxRef.current) return;
-    const rect = containerBoxRef.current.getBoundingClientRect();
+    const targetEl = document.getElementById('zones-return-bar') || containerBoxRef.current;
+    if (!targetEl) return;
+    const rect = targetEl.getBoundingClientRect();
     const currentScrollY = window.scrollY || document.documentElement.scrollTop || 0;
     const containerTop = currentScrollY + rect.top;
     const headerEl = document.querySelector('header');
@@ -96,7 +98,9 @@ export default function PublicConservationZones({ isActive = true }) {
     if (!selectedZone || !isActive || !containerBoxRef.current) return;
     const headerEl = document.querySelector('header');
     const navbarHeight = headerEl ? headerEl.getBoundingClientRect().height : (window.innerWidth >= 640 ? 84 : 68);
-    const rect = containerBoxRef.current.getBoundingClientRect();
+    const targetEl = document.getElementById('zones-return-bar') || containerBoxRef.current;
+    if (!targetEl) return;
+    const rect = targetEl.getBoundingClientRect();
     if (rect.top < navbarHeight + 4) {
       const targetY = Math.max(0, Math.round((window.scrollY || 0) + rect.top - navbarHeight - 12));
       window.scrollTo({ top: targetY, behavior: 'smooth' });

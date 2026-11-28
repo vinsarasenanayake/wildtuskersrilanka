@@ -25,46 +25,74 @@ import {
 } from 'lucide-react';
 import { useSpecialObservationsFeed } from '../../controllers/useSpecialObservations';
 import ImageLightboxModal from '../components/ImageLightboxModal';
+import BilingualParagraphs from '../components/BilingualParagraphs';
 import { formatDisplayTime } from '../../utils/localDate';
+import { LOOKALIKE_PAIRS } from '../../data/lookalikePairs';
 
-const LOOKALIKE_EXPANDED_PAIRS = [
-  {
-    pattern: /wijaya|walagamba/i,
-    idSuffix: 'pair-01',
-    tuskerName: 'T119 - Wijaya vs T219 - Walagamba',
-    location: 'Wilpattu / Karuwalagaswewa',
-    title: 'Pair 01: Wilpattu Wijaya (Left) vs. Thabbowa Karuwalagaswewa Walagamba (Right)',
-    image: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/observations/lookalikes/1_wijaya_vs_walagamba.jpg',
-    description: `• Left Tusker: Wilpattu Wijaya (T119) - Roaming Range: Wilpattu / Eluwankulama / Pomparippu\n• Right Tusker: Walagamba (T219) - Roaming Range: Wilpattu / Karuwalagaswewa / Thabbowa / Puttalam\n• Diagnostic Differences:\n  - Tusks: Wijaya possesses slightly convergent tusks with a downward curve, whereas Walagamba features thicker, more divergent tusks pointing forward.\n  - Ears & Depigmentation: Wijaya exhibits heavy pink depigmentation across both ear lobes and a distinct roll on his upper ear fold. Walagamba displays prominent jagged tear notches on his right ear margin with differing depigmentation distribution on the forehead and trunk base.`,
-  },
-  {
-    pattern: /agbo|gajabahu/i,
-    idSuffix: 'pair-02',
-    tuskerName: 'T096 - Agbo vs T232 - Gajabahu',
-    location: 'Thirappane / Padaviya',
-    title: 'Pair 02: Agbo (Left) vs. Gajabahu (Right)',
-    image: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/observations/lookalikes/2_agbo_vs_gajabahu.jpg',
-    description: `• Left Tusker: Agbo (T096) - Roaming Range: Thirappane / Manankattiya / Mahakanadarawa\n• Right Tusker: Gajabahu (T232) - Roaming Range: Padaviya / Wahalkada / Kebithigollewa\n• Diagnostic Differences:\n  - Tusks: Agbo's tusks are long, divergent, and curve gracefully upward with clean tips. Gajabahu's left tusk features distinctive wear and mud-caking patterns with a slightly steeper downward angle.\n  - Ears: Agbo's ear pinnae have a broad, flat top fold with fine marginal nicks. Gajabahu displays pronounced lateral ear folds with distinct depigmentation patches across the upper ear cartilage and temporal regions.`,
-  },
-  {
-    pattern: /missaka|homo/i,
-    idSuffix: 'pair-03',
-    tuskerName: 'T078 - Missaka vs T073 - Homo',
-    location: 'Galgamuwa / Kala Wewa',
-    title: 'Pair 03: Missaka (Left) vs. Homo (Right)',
-    image: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/observations/lookalikes/3_missaka_vs_homo.jpg',
-    description: `• Left Tusker: Missaka (T078) - Roaming Range: Galgamuwa\n• Right Tusker: Homo (T073) - Roaming Range: Kala Wewa / Galgamuwa\n• Diagnostic Differences:\n  - Tusks: Both bulls bear short, thick, convergent tusks. However, Missaka's tusks are slightly more widely spaced at the base, while Homo's tusks point more sharply inward toward the trunk.\n  - Facial & Ear Features: Missaka has prominent vertical forehead creases with a distinctive scar line on his trunk base. Homo has an iconic dome-shaped double cranial bump and subtle ear notch patterns near the bottom ear lobes that differentiate him in close encounters.`,
-  },
-  {
-    pattern: /devra|parinda/i,
-    idSuffix: 'pair-04',
-    tuskerName: 'T173 - Devra vs T162 - Parinda',
-    location: 'Yala',
-    title: 'Pair 04: Devra (Left) vs. Parinda (Right)',
-    image: 'https://ysloiyecqryftybzcujh.supabase.co/storage/v1/object/public/wts-media/web/observations/lookalikes/4_devra_vs_parinda.jpg',
-    description: `• Left Tusker: Devra (T173) - Roaming Range: Yala\n• Right Tusker: Parinda (T162) - Roaming Range: Yala / Yala Block 3, 5\n• Diagnostic Differences:\n  - Tusks: Devra bears short, parallel tusks with slight asymmetrical elevation (left tusk slightly higher). Parinda's tusks are slightly longer, more divergent, and curve forward with sharper tapering tips.\n  - Ears & Head Conformation: Devra has broad, forward-pointing ear folds with distinctive edge frills. Parinda features smaller, more rounded ear folds and distinctive depigmentation flecks along the inner ear border and trunk bridge.`,
-  },
+const DEFAULT_LOOKALIKE_INTRO_EN = [
+  'In the field, wild tuskers often share remarkably similar silhouettes, tusk lengths, and head shapes, leading to frequent misidentifications even among experienced observers and wildlife photographers. Systematic morphological identification - focusing on ear venation, top-fold curvatures, tears, facial depigmentation, and tusk angles - is essential to correctly distinguish these lookalike individuals.',
+  'This comparative study examines 4 pairs (8 iconic Sri Lankan tuskers) that look remarkably alike at first glance, detailing the key diagnostic features that separate them:',
 ];
+
+function extractLookalikeIntroParagraphs(description) {
+  if (!description || !description.trim()) {
+    return DEFAULT_LOOKALIKE_INTRO_EN;
+  }
+
+  const lines = description.split(/\n+/).map((l) => l.trim()).filter(Boolean);
+  const introParas = [];
+  let inPairBlock = false;
+
+  for (const line of lines) {
+    if (/^[━─\-=_]{3,}$/.test(line)) {
+      continue;
+    }
+    if (/^යුගලය\s*0?[1-4]/i.test(line)) {
+      break;
+    }
+    if (/^Pair\s*0?[1-4]\b/i.test(line)) {
+      inPairBlock = true;
+      continue;
+    }
+    if (
+      inPairBlock &&
+      /^(?:•\s*(?:Left Tusker|Right Tusker|Diagnostic Differences)|-\s*(?:Tusks|Ears|Facial))/i.test(line)
+    ) {
+      continue;
+    }
+    inPairBlock = false;
+    introParas.push(line);
+  }
+
+  const hasEnglishIntro = introParas.some((p) => /[a-zA-Z]{4,}/.test(p));
+  if (!hasEnglishIntro) {
+    return [...DEFAULT_LOOKALIKE_INTRO_EN, ...introParas];
+  }
+  return introParas.length > 0 ? introParas : DEFAULT_LOOKALIKE_INTRO_EN;
+}
+
+const PAIR_PATTERNS = {
+  'pair-01': /wijaya|walagamba/i,
+  'pair-02': /agbo|gajabahu/i,
+  'pair-03': /missaka|homo/i,
+  'pair-04': /devra|parinda/i,
+};
+
+const LOOKALIKE_EXPANDED_PAIRS = LOOKALIKE_PAIRS.map((pair) => ({
+  pattern: PAIR_PATTERNS[pair.id] || new RegExp(pair.left.id, 'i'),
+  idSuffix: pair.id,
+  tuskerName: `${pair.left.id} - ${pair.left.name} vs ${pair.right.id} - ${pair.right.name}`,
+  location: `${pair.left.range.split('/')[0].trim()} / ${pair.right.range.split('/')[0].trim()}`,
+  title: pair.title,
+  image: pair.image,
+  description: [
+    `• Left Tusker: ${pair.left.name} (${pair.left.id}) - Roaming Range: ${pair.left.range}`,
+    `• Right Tusker: ${pair.right.name} (${pair.right.id}) - Roaming Range: ${pair.right.range}`,
+    pair.titleSi,
+    `• වම්පස දළ ඇතා: ${pair.left.nameSi} (${pair.left.id}) - සැරිසරන ප්‍රදේශ: ${pair.left.rangeSi}`,
+    `• දකුණුපස දළ ඇතා: ${pair.right.nameSi} (${pair.right.id}) - සැරිසරන ප්‍රදේශ: ${pair.right.rangeSi}`,
+  ].join('\n'),
+}));
 
 function buildObservationPhotos(item) {
   if (!item.images || item.images.length === 0) return [];
@@ -209,9 +237,8 @@ function ObservationPhotosScrollRow({ item, obsPhotos, onPhotoClick }) {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUpOrLeave}
         onMouseLeave={handleMouseUpOrLeave}
-        className={`flex items-center gap-2.5 sm:gap-3 overflow-x-auto pb-2.5 pt-1 overscroll-contain select-none ${
-          isGrabbing ? 'cursor-grabbing' : 'cursor-grab'
-        }`}
+        className={`flex items-center gap-2.5 sm:gap-3 overflow-x-auto pb-2.5 pt-1 overscroll-contain select-none ${isGrabbing ? 'cursor-grabbing' : 'cursor-grab'
+          }`}
         style={{
           WebkitOverflowScrolling: 'touch',
           scrollbarWidth: 'thin',
@@ -405,74 +432,74 @@ export default function SpecialObservations({ embedded = false }) {
   const mainContent = (
     <>
       <div className={embedded ? "w-full min-w-0 max-w-full flex flex-col gap-6" : "w-full max-w-[1100px] mx-auto px-4 sm:px-6 flex flex-col gap-6 sm:gap-8 min-w-0"}>
-      {/* Page Header (standalone only) */}
-      {!embedded && (
-        <div className="flex flex-col items-center justify-center text-center mb-6 pb-6 border-b border-[#e5e7eb] gap-3">
-          <h1 className="font-sans text-[clamp(1.15rem,4.5vw,2.85rem)] font-bold text-[#111111] m-0 tracking-tight leading-snug whitespace-nowrap text-center">
-            Special Observations Over The Years
-          </h1>
-          <p className="font-sans text-sm sm:text-[0.98rem] md:text-[1.02rem] text-[#555555] leading-relaxed max-w-3xl mx-auto m-0 text-center">
-            In-depth annual field observations documenting significant behaviors, musth cycles, physical developments, and health records of Sri Lanka's wild tuskers.
-          </p>
-        </div>
-      )}
+        {/* Page Header (standalone only) */}
+        {!embedded && (
+          <div className="flex flex-col items-center justify-center text-center mb-6 pb-6 border-b border-[#e5e7eb] gap-3">
+            <h1 className="font-sans text-[clamp(1.15rem,4.5vw,2.85rem)] font-bold text-[#111111] m-0 tracking-tight leading-snug whitespace-nowrap text-center">
+              Special Observations Over The Years
+            </h1>
+            <p className="font-sans text-sm sm:text-[0.98rem] md:text-[1.02rem] text-[#555555] leading-relaxed max-w-3xl mx-auto m-0 text-center">
+              In-depth annual field observations documenting significant behaviors, musth cycles, physical developments, and health records of Sri Lanka's wild tuskers.
+            </p>
+          </div>
+        )}
 
-      {/* Controls Bar: Search (Left) + Add Observation (Right) - Visible strictly to authenticated admins */}
-      {isAdmin && (
-        <div className="flex flex-col gap-2.5">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            {/* Admin Search Box */}
-            <div className="relative w-full sm:max-w-md flex-1">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#999999] pointer-events-none" />
-              <input
-                type="text"
-                placeholder="Search by tusker, title, location..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-10 sm:h-10 bg-white border border-[#e2e8f0] rounded-xl sm:rounded-lg pl-9 pr-9 text-xs sm:text-[0.88rem] text-[#111111] placeholder:text-[#999999] outline-none focus:border-accent transition-all shadow-2xs box-border"
-              />
-              {searchQuery && (
+        {/* Controls Bar: Search (Left) + Add Observation (Right) - Visible strictly to authenticated admins */}
+        {isAdmin && (
+          <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              {/* Admin Search Box */}
+              <div className="relative w-full sm:max-w-md flex-1">
+                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#999999] pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Search by tusker, title, location..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-10 sm:h-10 bg-white border border-[#e2e8f0] rounded-xl sm:rounded-lg pl-9 pr-9 text-xs sm:text-[0.88rem] text-[#111111] placeholder:text-[#999999] outline-none focus:border-accent transition-all shadow-2xs box-border"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 border-none bg-none cursor-pointer p-0 text-base leading-none"
+                    aria-label="Clear search"
+                  >
+                    &times;
+                  </button>
+                )}
+              </div>
+
+              {/* Add Special Observation Button */}
+              {canAddObservation && (
                 <button
                   type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 border-none bg-none cursor-pointer p-0 text-base leading-none"
-                  aria-label="Clear search"
+                  onClick={() => navigate('/admin/add-observation')}
+                  className="h-10 sm:h-10 bg-accent text-primary font-bold text-xs sm:text-[0.88rem] px-4 sm:px-6 rounded-xl sm:rounded-lg inline-flex items-center justify-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors whitespace-nowrap shadow-xs w-full sm:w-auto shrink-0"
                 >
-                  &times;
+                  <PlusCircle size={16} />
+                  <span>Add Special Observation</span>
                 </button>
               )}
             </div>
 
-            {/* Add Special Observation Button */}
-            {canAddObservation && (
-              <button
-                type="button"
-                onClick={() => navigate('/admin/add-observation')}
-                className="h-10 sm:h-10 bg-accent text-primary font-bold text-xs sm:text-[0.88rem] px-4 sm:px-6 rounded-xl sm:rounded-lg inline-flex items-center justify-center gap-2 border-none cursor-pointer hover:bg-accent-hover transition-colors whitespace-nowrap shadow-xs w-full sm:w-auto shrink-0"
-              >
-                <PlusCircle size={16} />
-                <span>Add Special Observation</span>
-              </button>
+            {/* Records Found Indicator */}
+            {searchQuery.trim() && (
+              <div className="font-sans text-xs sm:text-[0.85rem] text-[#666666] px-1 font-medium flex items-center gap-1.5 animate-fade-in">
+                <span>
+                  Found <strong className="text-primary font-bold">{observations.length}</strong> {observations.length === 1 ? 'record' : 'records'} matching &ldquo;<span className="text-[#111111] font-semibold">{searchQuery}</span>&rdquo;
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="text-accent hover:underline cursor-pointer border-none bg-none font-semibold text-xs ml-1"
+                >
+                  Clear search
+                </button>
+              </div>
             )}
           </div>
-
-          {/* Records Found Indicator */}
-          {searchQuery.trim() && (
-            <div className="font-sans text-xs sm:text-[0.85rem] text-[#666666] px-1 font-medium flex items-center gap-1.5 animate-fade-in">
-              <span>
-                Found <strong className="text-primary font-bold">{observations.length}</strong> {observations.length === 1 ? 'record' : 'records'} matching &ldquo;<span className="text-[#111111] font-semibold">{searchQuery}</span>&rdquo;
-              </span>
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="text-accent hover:underline cursor-pointer border-none bg-none font-semibold text-xs ml-1"
-              >
-                Clear search
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+        )}
 
         {/* Observations List & Loading Skeleton */}
         {loading && allObservations.length === 0 ? (
@@ -507,12 +534,12 @@ export default function SpecialObservations({ embedded = false }) {
 
                 const visiblePairs = (isAdmin && searchQuery)
                   ? LOOKALIKE_EXPANDED_PAIRS.filter(
-                      (p) =>
-                        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        p.tuskerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        p.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        p.description.toLowerCase().includes(searchQuery.toLowerCase())
-                    )
+                    (p) =>
+                      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      p.tuskerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      p.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      p.description.toLowerCase().includes(searchQuery.toLowerCase())
+                  )
                   : LOOKALIKE_EXPANDED_PAIRS;
 
                 if (isAdmin && searchQuery && visiblePairs.length === 0 && !item.title.toLowerCase().includes(searchQuery.toLowerCase())) {
@@ -550,12 +577,10 @@ export default function SpecialObservations({ embedded = false }) {
                       </div>
 
                       <div className="flex flex-col gap-2.5 text-sm sm:text-[0.96rem] md:text-[1rem] text-[#4b5563] leading-[1.8] text-justify">
-                        <p className="m-0" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
-                          In the field, wild tuskers often share remarkably similar silhouettes, tusk lengths, and head shapes, leading to frequent misidentifications even among experienced observers and wildlife photographers. Systematic morphological identification - focusing on ear venation, top-fold curvatures, tears, facial depigmentation, and tusk angles - is essential to correctly distinguish these lookalike individuals.
-                        </p>
-                        <p className="m-0" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
-                          This comparative study examines 4 pairs (8 iconic Sri Lankan tuskers) that look remarkably alike at first glance, detailing the key diagnostic features that separate them:
-                        </p>
+                        <BilingualParagraphs
+                          paragraphs={extractLookalikeIntroParagraphs(item.description)}
+                          className="m-0"
+                        />
                       </div>
                     </div>
 
@@ -611,15 +636,10 @@ export default function SpecialObservations({ embedded = false }) {
                               scrollbarColor: '#c5a059 transparent',
                             }}
                           >
-                            {pair.description.split(/\n+/).map((para, paraIdx) => (
-                              <p
-                                key={paraIdx}
-                                className="font-sans text-xs sm:text-[0.93rem] text-[#374151] leading-[1.8] text-justify m-0"
-                                style={{ textAlign: 'justify', textJustify: 'inter-word' }}
-                              >
-                                {para}
-                              </p>
-                            ))}
+                            <BilingualParagraphs
+                              paragraphs={pair.description.split(/\n+/)}
+                              className="font-sans text-xs sm:text-[0.93rem] text-[#374151] leading-[1.8] text-justify m-0"
+                            />
                           </div>
 
                           {/* Photograph in Full View across the section */}
@@ -740,15 +760,10 @@ export default function SpecialObservations({ embedded = false }) {
                         scrollbarColor: '#c5a059 transparent',
                       }}
                     >
-                      {item.description.split(/\n+/).map((para, pIdx) => (
-                        <p
-                          key={pIdx}
-                          className="font-sans text-xs sm:text-[0.93rem] text-[#374151] leading-[1.8] text-justify m-0"
-                          style={{ textAlign: 'justify', textJustify: 'inter-word' }}
-                        >
-                          {para}
-                        </p>
-                      ))}
+                      <BilingualParagraphs
+                        paragraphs={item.description.split(/\n+/)}
+                        className="font-sans text-xs sm:text-[0.93rem] text-[#374151] leading-[1.8] text-justify m-0"
+                      />
                     </div>
                   )}
 
@@ -781,8 +796,8 @@ export default function SpecialObservations({ embedded = false }) {
               {allObservations.length === 0
                 ? <>No special observations have been <span className="inline-block whitespace-nowrap">recorded yet.</span></>
                 : (isAdmin && searchQuery)
-                ? 'No observations match your current search query. Try clearing the search.'
-                : <>No observations recorded yet.</>}
+                  ? 'No observations match your current search query. Try clearing the search.'
+                  : <>No observations recorded yet.</>}
             </p>
             {isAdmin && searchQuery && (
               <button

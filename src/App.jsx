@@ -210,7 +210,11 @@ function App() {
   }, [location.key, location.pathname, location.search, navType]);
 
   // Automatically ensure body overflow and padding are never locked across page transitions
+  const prevPathnameRef = React.useRef(location.pathname);
   useEffect(() => {
+    const pathnameChanged = prevPathnameRef.current !== location.pathname;
+    prevPathnameRef.current = location.pathname;
+
     document.body.style.overflow = '';
     document.body.style.paddingRight = '';
     document.documentElement.style.overflow = '';
@@ -233,6 +237,7 @@ function App() {
       location.hash?.includes('risk-framework');
 
     if (
+      pathnameChanged &&
       navType === 'PUSH' &&
       !location.state?.returnPhotoId &&
       !location.state?.restoreScroll &&
@@ -264,10 +269,23 @@ function App() {
     hasGalleryReturnFlag
   );
 
+  // Latch skipMainFade per pathname visit so in-page searchParam/hash updates
+  // (e.g. switching tabs in Learn or filtering in WildTuskersList) never flip
+  // <main> from no-fade to animate-fade-in and cause a full-page reload flash.
+  const fadeLatchedPathRef = React.useRef(null);
+  const fadeLatchedSkipRef = React.useRef(false);
+  if (fadeLatchedPathRef.current !== location.pathname) {
+    fadeLatchedPathRef.current = location.pathname;
+    fadeLatchedSkipRef.current = skipMainFade;
+  } else if (skipMainFade) {
+    fadeLatchedSkipRef.current = true;
+  }
+  const effectiveSkipMainFade = fadeLatchedSkipRef.current;
+
   return (
     <>
       {showNavbar && <Navbar />}
-      <main id="main-content" key={location.pathname} className={`${skipMainFade ? '' : 'animate-fade-in '}flex-1 flex flex-col w-full max-w-full overflow-x-clip`}>
+      <main id="main-content" key={location.pathname} className={`${effectiveSkipMainFade ? '' : 'animate-fade-in '}flex-1 flex flex-col w-full max-w-full overflow-x-clip`}>
         <ErrorBoundary>
           <Routes>
             {/* Public Core Routes */}

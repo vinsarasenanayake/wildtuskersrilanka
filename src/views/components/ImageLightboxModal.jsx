@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import { X, MapPin, Camera, Calendar, Pencil, Trash2, CheckCircle2, ExternalLink, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getTuskers } from '../../models/TuskerModel';
 import useFocusTrap from '../../hooks/useFocusTrap';
+import { isVideoUrl } from '../../utils/storageUpload';
 
 function formatDisplayDate(dateStr) {
   if (!dateStr) return '';
@@ -452,14 +453,14 @@ export default function ImageLightboxModal({
       <div
         className="flex-1 w-full flex items-center justify-center min-h-0 my-auto py-1 sm:py-2 landscape:py-1 landscape:px-8 relative overflow-hidden select-none lightbox-mobile-landscape-stage"
         style={{
-          cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
+          cursor: isVideoUrl(photo?.imageUrl) ? 'default' : scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
           touchAction: 'none',
         }}
-        onWheel={handleWheel}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
+        onWheel={isVideoUrl(photo?.imageUrl) ? undefined : handleWheel}
+        onMouseDown={isVideoUrl(photo?.imageUrl) ? undefined : handleMouseDown}
+        onMouseMove={isVideoUrl(photo?.imageUrl) ? undefined : handleMouseMove}
+        onMouseUp={isVideoUrl(photo?.imageUrl) ? undefined : handleMouseUp}
+        onMouseLeave={isVideoUrl(photo?.imageUrl) ? undefined : handleMouseUp}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -471,6 +472,7 @@ export default function ImageLightboxModal({
             return;
           }
           e.stopPropagation();
+          if (isVideoUrl(photo?.imageUrl)) return;
           if (hasDraggedRef.current) {
             hasDraggedRef.current = false;
             return;
@@ -478,6 +480,7 @@ export default function ImageLightboxModal({
           if (scale === 1) setScale(2.5);
         }}
         onDoubleClick={(e) => {
+          if (isVideoUrl(photo?.imageUrl)) return;
           e.stopPropagation();
           toggleZoom(e);
         }}
@@ -490,16 +493,31 @@ export default function ImageLightboxModal({
             transition: isDragging ? 'none' : 'transform 0.15s cubic-bezier(0.2, 0, 0, 1)',
           }}
         >
-          <img
-            src={photo.imageUrl}
-            alt={tuskerDisplayName}
-            draggable={false}
-            className={`max-w-full max-h-[70vh] sm:max-h-[76vh] md:max-h-[80vh] w-auto h-auto object-contain select-none block lightbox-mobile-landscape-img ${
-              photo.bgWhite
-                ? 'bg-white p-2 sm:p-4 rounded-xl shadow-2xl border-none'
-                : 'rounded-none shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10'
-            }`}
-          />
+          {isVideoUrl(photo?.imageUrl) ? (
+            <video
+              key={photo.imageUrl}
+              src={photo.imageUrl}
+              controls
+              controlsList="nodownload"
+              disablePictureInPicture
+              autoPlay
+              playsInline
+              onContextMenu={(e) => e.preventDefault()}
+              onClick={(e) => e.stopPropagation()}
+              className="max-w-full max-h-[70vh] sm:max-h-[76vh] md:max-h-[80vh] w-auto h-auto rounded-lg shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10 bg-black"
+            />
+          ) : (
+            <img
+              src={photo.imageUrl}
+              alt={tuskerDisplayName}
+              draggable={false}
+              className={`max-w-full max-h-[70vh] sm:max-h-[76vh] md:max-h-[80vh] w-auto h-auto object-contain select-none block lightbox-mobile-landscape-img ${
+                photo.bgWhite
+                  ? 'bg-white p-2 sm:p-4 rounded-xl shadow-2xl border-none'
+                  : 'rounded-none shadow-[0_24px_70px_rgba(0,0,0,0.95)] border border-white/10'
+              }`}
+            />
+          )}
         </div>
 
         {/* Floating Prev & Next Buttons (when multiple photos available) */}
@@ -535,8 +553,8 @@ export default function ImageLightboxModal({
         <div className="bg-gradient-to-r from-black/92 via-[#0b1c14]/94 to-black/92 backdrop-blur-xl border border-white/15 rounded-xl sm:rounded-2xl px-3 sm:px-6 md:px-7 py-2 sm:py-4 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-1.5 sm:gap-3 text-center md:text-left lightbox-mobile-landscape-bottom">
 
           {/* Left: T-Numbers & Full Names of Tuskers */}
-          <div className="flex flex-col gap-0.5 sm:gap-1 min-w-0 flex-1 items-center md:items-start text-center md:text-left lightbox-mobile-landscape-text">
-            <h2 className="font-serif text-sm sm:text-[1.15rem] md:text-[1.25rem] font-bold text-white tracking-wide m-0 drop-shadow-sm leading-tight truncate max-w-full lightbox-mobile-landscape-title">
+          <div className="flex flex-col gap-0.5 sm:gap-1 w-full min-w-0 flex-1 items-center md:items-start text-center md:text-left lightbox-mobile-landscape-text">
+            <h2 className="font-serif text-sm sm:text-[1.15rem] md:text-[1.25rem] font-bold text-white tracking-wide m-0 drop-shadow-sm leading-snug whitespace-normal break-words max-w-full lightbox-mobile-landscape-title">
               {tuskerDisplayName}
             </h2>
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2.5 sm:gap-x-4 gap-y-0.5 text-[0.72rem] sm:text-[0.85rem] text-[#d4ded8] font-sans lightbox-mobile-landscape-meta">

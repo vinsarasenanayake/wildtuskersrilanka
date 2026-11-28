@@ -5,7 +5,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   ArrowLeft,
   Save,
@@ -30,6 +30,11 @@ import { todayLocalISO } from '../../utils/localDate';
 
 export default function FieldNoteForm() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromTuskerPath = location.state?.fromTuskerPath || null;
+  const fromTuskerName = location.state?.fromTuskerName || 'Tusker Profile';
+  const prefillTusker = location.state?.prefillTusker || '';
+  const prefillLocation = location.state?.prefillLocation || '';
   const {
     formData,
     error,
@@ -43,10 +48,25 @@ export default function FieldNoteForm() {
   const [submittedStatus, setSubmittedStatus] = useState(null);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const autoSuggestedLocationRef = useRef('');
+  const prefillAppliedRef = useRef(false);
 
   useEffect(() => {
     document.title = 'Wild Tuskers Sri Lanka | Add Field Note';
   }, []);
+
+  useEffect(() => {
+    if (prefillAppliedRef.current) return;
+    if (prefillTusker) {
+      prefillAppliedRef.current = true;
+      handleChange({ target: { name: 'specialNote', value: prefillTusker } });
+      if (prefillLocation && !formData.title) {
+        handleChange({ target: { name: 'title', value: prefillLocation } });
+        autoSuggestedLocationRef.current = prefillLocation;
+      }
+    }
+  }, [prefillTusker, prefillLocation, formData.title, handleChange]);
+
+  const returnTarget = fromTuskerPath || '/field-notes';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,7 +76,7 @@ export default function FieldNoteForm() {
       if (result.isPending) {
         setSubmittedStatus('pending');
       } else {
-        navigate('/field-notes');
+        navigate(returnTarget);
       }
     }
   };
@@ -84,9 +104,9 @@ export default function FieldNoteForm() {
         {/* Back Link */}
         <button
           className="inline-flex items-center gap-1.5 font-sans text-xs sm:text-[0.88rem] font-medium text-[#777777] bg-none border-none cursor-pointer p-0 mb-6 transition-colors hover:text-accent"
-          onClick={() => navigate('/field-notes')}
+          onClick={() => navigate(returnTarget)}
         >
-          <ArrowLeft size={16} /> Back to Field Notes
+          <ArrowLeft size={16} /> {fromTuskerPath ? `Back to ${fromTuskerName}` : 'Back to Field Notes'}
         </button>
 
         {submittedStatus === 'pending' ? (
@@ -108,10 +128,10 @@ export default function FieldNoteForm() {
             </p>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 w-full sm:w-auto mt-1.5">
               <button
-                onClick={() => navigate('/field-notes')}
+                onClick={() => navigate(returnTarget)}
                 className="w-full sm:w-auto bg-primary hover:bg-primary-light text-white font-sans text-sm font-semibold px-6 py-3 sm:py-2.5 rounded-xl transition-colors cursor-pointer border-none shadow-xs text-center"
               >
-                Return to Field Notes
+                {fromTuskerPath ? `Return to ${fromTuskerName}` : 'Return to Field Notes'}
               </button>
               <button
                 onClick={() => {
@@ -366,7 +386,7 @@ export default function FieldNoteForm() {
                 <button
                   type="button"
                   className="w-full sm:w-auto bg-none border border-[#d1d5db] text-[#555555] font-sans text-sm font-medium rounded-[10px] px-6 py-3 sm:py-2.5 cursor-pointer hover:bg-gray-100 hover:text-[#222222] transition-colors text-center justify-center"
-                  onClick={() => navigate('/field-notes')}
+                  onClick={() => navigate(returnTarget)}
                 >
                   Cancel
                 </button>
